@@ -2,9 +2,17 @@ package fi.riista.integration.metsastajarekisteri.person.foreign;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import fi.riista.config.BatchConfig;
+import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.feature.shootingtest.ShootingTestParticipantRepository;
+import fi.riista.integration.metsastajarekisteri.InnofactorConstants;
+import fi.riista.integration.metsastajarekisteri.exception.InvalidRhyException;
 import fi.riista.integration.metsastajarekisteri.person.MetsastajaRekisteriPerson;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
@@ -25,7 +33,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static fi.riista.feature.organization.person.Person.DeletionCode.D;
 import static fi.riista.util.Collect.indexingBy;
@@ -38,6 +45,9 @@ public class MetsastajaRekisteriForeignPersonImportService {
 
     @Resource
     private PersonRepository personRepository;
+
+    @Resource
+    private RiistanhoitoyhdistysRepository rhyRepository;
 
     @Resource
     private ShootingTestParticipantRepository shootingTestParticipantRepository;
@@ -68,10 +78,11 @@ public class MetsastajaRekisteriForeignPersonImportService {
         final List<Person> deletedPersons = new ArrayList<>();
 
         final Map<String, Person> hunterNumberToPerson = loadPersons(batch);
+        final ImmutableMap<String, Riistanhoitoyhdistys> officialCodeToRhy = loadRhy(batch);
 
         for (final MetsastajaRekisteriPerson mrPerson : batch) {
             final Person existingPerson = hunterNumberToPerson.get(mrPerson.getHunterNumber());
-
+            final Riistanhoitoyhdistys rhy = officialCodeToRhy.get(mrPerson.getMembershipRhyOfficialCode());
             if (existingPerson != null) {
 
                 // If person with ssn exists, do not overwrite Finnish person's data
@@ -87,24 +98,28 @@ public class MetsastajaRekisteriForeignPersonImportService {
                 if (markDeletedIfDeletionCodePresent(existingPerson, mrPerson, syncTime)) {
                     deletedPersons.add(existingPerson);
                 } else {
-                    update(existingPerson, mrPerson, syncTime);
+                    update(existingPerson, mrPerson, syncTime, rhy);
                 }
 
             } else if (mrPerson.getDeletionCode() == null) {
 
                 final Person person = new Person();
-                update(person, mrPerson, syncTime);
+                update(person, mrPerson, syncTime, rhy);
                 LOG.debug("Creating new foreign person {}", mrPerson);
                 missingPersons.add(person);
             }
         }
 
         if (!missingPersons.isEmpty()) {
-            personRepository.save(missingPersons);
+            personRepository.saveAll(missingPersons);
         }
 
         if (!deletedPersons.isEmpty()) {
-            removeDeletedForeignPersonsNotHavingShootingTestParticipations(deletedPersons);
+            deletedPersons.forEach(person -> {
+                person.clearHunterInformation();
+                person.setHomeMunicipality(null);
+                person.setHomeMunicipalityCode(null);
+            });
         }
 
         // MUST flush session here so that Spring Batch can update metadata tables successfully.
@@ -130,7 +145,7 @@ public class MetsastajaRekisteriForeignPersonImportService {
 
             // TODO: Foreign persons are not necessarily deceased.
             person.setDeletionCode(D);
-            person.getLifecycleFields().setDeletionTime(deletionTime.toDate());
+            person.getLifecycleFields().setDeletionTime(deletionTime);
             person.setMrSyncTime(syncTime);
         }
 
@@ -139,7 +154,8 @@ public class MetsastajaRekisteriForeignPersonImportService {
 
     private static void update(final Person person,
                                final MetsastajaRekisteriPerson mrPerson,
-                               final DateTime syncTime) {
+                               final DateTime syncTime,
+                               final Riistanhoitoyhdistys rhy) {
 
         if (person.isNew()) {
             person.setHunterNumber(mrPerson.getHunterNumber());
@@ -151,8 +167,74 @@ public class MetsastajaRekisteriForeignPersonImportService {
         person.setFirstName(mrPerson.getFirstName());
         person.setLastName(mrPerson.getLastName());
         person.setDateOfBirth(mrPerson.getDateOfBirth());
-
+        updateHunterFields(person, mrPerson, rhy);
         person.setMrSyncTime(syncTime);
+    }
+
+    static void updateHunterFields(final Person person, final MetsastajaRekisteriPerson item,
+                                   final Riistanhoitoyhdistys rhy) {
+
+        if (person.isHuntingCardValidNow()) {
+            if (item.getHuntingCardStart() == null && person.getHuntingCardStart() != null) {
+                LOG.warn("Replacing existing huntingCardStart={} with empty value for personId={}",
+                        person.getHuntingCardStart(), person.getId());
+            }
+        }
+
+        if (person.isHuntingBanActiveNow()) {
+            if (item.getHuntingBanStart() == null && person.getHuntingBanStart() != null) {
+                LOG.warn("Replacing existing huntingBanStart={} with empty value for personId={}",
+                        person.getHuntingBanStart(), person.getId());
+            }
+
+            if (item.getHuntingBanEnd() == null && person.getHuntingBanEnd() != null) {
+                LOG.warn("Replacing existing huntingBanEnd={} with empty value for personId={}",
+                        person.getHuntingBanEnd(), person.getId());
+            }
+        }
+
+        if (item.getHuntingPaymentOneDay() == null && person.getHuntingPaymentOneDay() != null) {
+            LOG.warn("Replacing existing huntingPaymentOneDay={} with empty value for personId={}",
+                    person.getHuntingPaymentOneDay(), person.getId());
+        }
+
+        person.setHuntingCardStart(item.getHuntingCardStart());
+        person.setHuntingCardEnd(item.getHuntingCardEnd());
+        person.setHunterExamDate(item.getHunterExamDate());
+        person.setHunterExamExpirationDate(item.getHunterExamExpirationDate());
+        person.setHuntingBanStart(item.getHuntingBanStart());
+        person.setHuntingBanEnd(item.getHuntingBanEnd());
+
+        person.setHuntingPaymentOneDay(item.getHuntingPaymentOneDay());
+        person.setHuntingPaymentOneYear(item.getHuntingPaymentOneYear());
+
+        person.setHuntingPaymentTwoDay(item.getHuntingPaymentTwoDay());
+        person.setHuntingPaymentTwoYear(item.getHuntingPaymentTwoYear());
+
+        person.setInvoiceReferenceCurrent(item.getInvoiceReferenceCurrent());
+        person.setInvoiceReferencePrevious(item.getInvoiceReferencePrevious());
+        person.setInvoiceReferenceCurrentYear(item.getInvoiceReferenceCurrentYear());
+        person.setInvoiceReferencePreviousYear(item.getInvoiceReferencePreviousYear());
+
+        // Clear hunting card range if not valid right now
+        if (!person.isHuntingCardValidNow() && !person.isHuntingCardValidInFuture()) {
+            person.setHuntingCardStart(null);
+            person.setHuntingCardEnd(null);
+
+            return;
+        }
+
+        if (rhy != null) {
+            person.setRhyMembership(rhy);
+
+        } else if (item.getMembershipRhyOfficialCode() == null ||
+                InnofactorConstants.RHY_AHVENANMAA.equals(item.getMembershipRhyOfficialCode()) ||
+                InnofactorConstants.RHY_NOT_MEMBER_CODE.equals(item.getMembershipRhyOfficialCode()) ||
+                InnofactorConstants.RHY_FOREIGN_MEMBER_CODE.equals(item.getMembershipRhyOfficialCode())) {
+            person.setRhyMembership(null);
+        } else {
+            throw new InvalidRhyException("No such RHY with officialCode=" + item.getMembershipRhyOfficialCode());
+        }
     }
 
     // Load persons in batch using a list of hunter numbers.
@@ -169,20 +251,18 @@ public class MetsastajaRekisteriForeignPersonImportService {
                 .collect(indexingBy(Person::getHunterNumber));
     }
 
-    private void removeDeletedForeignPersonsNotHavingShootingTestParticipations(final List<Person> deletedPersons) {
-        // Do not delete persons with ssn
-        final List<Person> deletedForeignPerons =
-                deletedPersons.stream().filter(Person::isForeignPerson).collect(Collectors.toList());
+    private ImmutableMap<String, Riistanhoitoyhdistys> loadRhy(final List<? extends MetsastajaRekisteriPerson> list) {
+        final List<String> rhyOfficialCodeList =
+                F.mapNonNullsToList(list, MetsastajaRekisteriPerson::getMembershipRhyOfficialCode);
 
-        shootingTestParticipantRepository
-                .countShootingTestParticipationsForForeignPersons(deletedForeignPerons)
-                .forEach((foreignPerson, numParticipations) -> {
-                    if (numParticipations == 0) {
+        if (rhyOfficialCodeList.isEmpty()) {
+            return ImmutableMap.of();
+        }
 
-                        LOG.info("Removing deleted foreign person with id={}", foreignPerson.getId());
+        // Use padded list to optimize SQL
+        final List<String> paddedList = ImmutableList.copyOf(Iterables.limit(
+                Iterables.cycle(rhyOfficialCodeList), BatchConfig.BATCH_SIZE));
 
-                        personRepository.delete(foreignPerson);
-                    }
-                });
+        return Maps.uniqueIndex(rhyRepository.findByOfficialCode(paddedList), Organisation::getOfficialCode);
     }
 }

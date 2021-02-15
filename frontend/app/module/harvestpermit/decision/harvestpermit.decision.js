@@ -6,6 +6,7 @@ angular.module('app.harvestpermit.decision', [])
 
         return $resource(apiPrefix, {id: '@id', spaId: '@spaId'}, {
             hasArea: {method: 'GET', url: apiPrefix + '/hasarea'},
+            hasNatura: {method: 'GET', url: apiPrefix + '/hasnatura'},
             getApplication: {method: 'GET', url: apiPrefix + '/application'},
             getDocument: {method: 'GET', url: apiPrefix + '/document'},
             updateDocument: {method: 'PUT', url: apiPrefix + '/document'},
@@ -19,6 +20,7 @@ angular.module('app.harvestpermit.decision', [])
                 url: apiPrefix + '/generate/:sectionId',
                 params: {id: '@id', sectionId: '@sectionId'}
             },
+            generateAdjustedAreaSizeAction: {method: 'GET', url : apiPrefix + '/generate-area-action'},
             getCompleteStatus: {method: 'GET', url: apiPrefix + '/complete'},
             updateCompleteStatus: {method: 'PUT', url: apiPrefix + '/complete'},
             getPaymentOptions: {method: 'GET', url: apiPrefix + '/payment', isArray: true},
@@ -55,7 +57,8 @@ angular.module('app.harvestpermit.decision', [])
             getDeliveries: {method: 'GET', url: apiPrefix + '/delivery', isArray: true},
             updateDeliveries: {method: 'POST', url: apiPrefix + '/delivery'},
             getAuthorities: {method: 'GET', url: apiPrefix + '/authorities'},
-            updateAuthorities: {method: 'POST', url: apiPrefix + '/authorities'}
+            updateAuthorities: {method: 'POST', url: apiPrefix + '/authorities'},
+            updateGrantStatus: {method: 'PUT', url: apiPrefix + '/grantstatus'}
         });
     })
     .factory('PermitDecisionDerogation', function ($resource) {
@@ -66,6 +69,13 @@ angular.module('app.harvestpermit.decision', [])
             updateReasons: {method: 'POST', url: apiPrefix + '/reasons'},
             getProtectedAreaTypes: {method: 'GET', url: apiPrefix + '/area'},
             updateProtectedAreaTypes: {method: 'POST', url: apiPrefix + '/area'}
+        });
+    })
+    .factory('PermitDecisionRkaAuthority', function ($resource) {
+        var apiPrefix = 'api/v1/decision/rkaauthority/:id';
+
+        return $resource(apiPrefix, {id: '@id'}, {
+            listByPermitDecision: {method: 'GET', url: apiPrefix + '/permitdecision/:decisionId', isArray: true}
         });
     })
     .config(function ($stateProvider) {
@@ -83,12 +93,19 @@ angular.module('app.harvestpermit.decision', [])
                             return res.hasArea;
 
                         });
+                    },
+                    hasNatura: function (PermitDecision, decisionId) {
+                        return PermitDecision.hasNatura({id: decisionId}).$promise.then(function (res) {
+                            return res.hasNatura;
+                        });
                     }
+
                 },
                 controllerAs: '$ctrl',
-                controller: function (hasArea) {
+                controller: function (hasArea, hasNatura) {
                     var $ctrl = this;
                     $ctrl.hasArea = hasArea;
+                    $ctrl.hasNatura = hasNatura;
                 }
             });
     })
@@ -101,7 +118,7 @@ angular.module('app.harvestpermit.decision', [])
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                if ($ctrl.decision) {
+                if ($ctrl.decision && $ctrl.decision.permitHolder) {
                     $ctrl.permitHolderName = $ctrl.decision.permitHolder.name + getCodeSuffix($ctrl.decision.permitHolder);
                 }
 

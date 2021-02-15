@@ -6,11 +6,12 @@ angular.module('app.harvestpermit.decision.document.attachments', [])
             url: '/attachments',
             templateUrl: 'harvestpermit/decision/document/attachments/document.attachments.html',
             controllerAs: '$ctrl',
-            controller: function ($state, PermitDecisionUtils, PermitDecisionAttachmentsModal, decision, decisionId) {
+            controller: function ($state, PermitDecisionUtils, PermitDecisionAttachmentsModal,
+                                  PermitDecisionSection, decision, decisionId) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.sectionId = 'attachments';
+                    $ctrl.sectionId = PermitDecisionSection.ATTACHMENTS;
                     $ctrl.decision = decision;
                     $ctrl.sectionContent = PermitDecisionUtils.getSectionContent(decision, $ctrl.sectionId);
                 };

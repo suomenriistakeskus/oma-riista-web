@@ -1,0 +1,34 @@
+<h2 translate="reporting.dashboard.carnivoreTab.title"></h2>
+
+<div ng-switch="!!$ctrl.data.downloadsSince">
+    <span ng-switch-when="false" translate="reporting.dashboard.carnivoreTab.noStatistics"></span>
+
+    <div ng-switch-when="true">
+        <p>
+            <span ng-bind="$ctrl.data.downloadsSince | date"></span>
+            <span translate="reporting.dashboard.carnivoreTab.since"></span>
+        </p>
+
+        <div class="row">
+            <div class="col-md-6 col-xs-12">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                    <tr>
+                        <td translate="global.species"></td>
+                        <td translate="reporting.dashboard.carnivoreTab.indiviualDecisions"></td>
+                        <td translate="reporting.dashboard.carnivoreTab.downloads"></td>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr ng-repeat="stat in $ctrl.data.statisctics track by stat.speciesCode">
+                        <td ng-bind="::stat.speciesCode | translateSpeciesCode"></td>
+                        <td ng-bind="::stat.decisionCount"></td>
+                        <td ng-bind="::stat.downloadCount"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

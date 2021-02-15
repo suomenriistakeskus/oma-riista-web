@@ -1,0 +1,29 @@
+<div class="row">
+    <div class="col-md-2 col-xs-3">
+        <form>
+            <select name="huntingYearSelection" id="huntingYearSelection"
+                    class="form-control"
+                    ng-model="$ctrl.year"
+                    ng-change="$ctrl.yearChanged()"
+                    ng-options="y for y in $ctrl.years">
+            </select>
+        </form>
+    </div>
+
+    <div class="col-md-10 col-xs-9">
+        <h2>
+            <span translate="club.harvestsummary.harvestSummary"></span>
+            &nbsp;-&nbsp;
+            <span ng-bind="::$ctrl.club | rI18nNameFilter"></span>
+        </h2>
+
+        <h3 translate="global.gameCategory.GAME_MAMMAL"></h3>
+        <club-harvest-summary-category items="$ctrl.mammalSummary"></club-harvest-summary-category>
+
+        <h3 translate="global.gameCategory.FOWL"></h3>
+        <club-harvest-summary-category items="$ctrl.fowlSummary"></club-harvest-summary-category>
+
+        <h3 translate="global.gameCategory.UNPROTECTED"></h3>
+        <club-harvest-summary-category items="$ctrl.unprotectedSummary"></club-harvest-summary-category>
+    </div>
+</div>

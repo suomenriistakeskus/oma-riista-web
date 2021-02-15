@@ -9,7 +9,6 @@ import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -159,7 +158,7 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
         final DateTime beginTime = activityInterval.getStart();
         final DateTime endTime = activityInterval.getEnd();
 
-        final Specification<Occupation> constraint = Specifications
+        final Specification<Occupation> constraint = Specification
                 .where(overlapsInterval(Occupation_.beginDate, Occupation_.endDate, beginTime, endTime))
                 .and(inIdCollection(Occupation_.organisation, Organisation_.id, organisationIds));
 

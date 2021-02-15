@@ -83,7 +83,7 @@
         </div>
     </div>
 
-    <div class="form-group" ng-if="$ctrl.harvest.isAlonePossible()">
+    <div class="form-group" ng-if="$ctrl.isFieldVisible('alone')">
         <label for="alone" class="col-xs-4 control-label">
             <span translate="gamediary.form.solitaryCalf"></span>
         </label>
@@ -220,98 +220,210 @@
         </div>
     </div>
 
-    <div ng-if="$ctrl.harvest.isAntlersPossible()">
-        <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlersType')">
-            <label for="antlersType" class="col-xs-4 control-label">
-                <span translate="gamediary.form.antlersType"></span>
-                <small ng-if="$ctrl.isFieldRequired('antlersType')"
-                       class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
+    <div class="form-group" ng-if="$ctrl.isFieldVisible('antlersLost')">
+        <label for="antlersLost" class="col-xs-4 control-label">
+            <span translate="gamediary.form.antlersLost"></span>
+        </label>
 
-            <div class="col-xs-8">
-                <select name="antlersType" id="antlersType"
-                        class="form-control"
-                        ng-model="$ctrl.harvest.specimens[0].antlersType"
-                        ng-options="('gamediary.antlersType.' + a | translate) for a in $ctrl.getAvailableGameAntlersTypes()"
-                        ng-required="$ctrl.isFieldRequired('antlersType')">
-                    <option ng-disabled="$ctrl.isFieldRequired('antlersType')" value=""></option>
-                </select>
-
-                <p class="help-block has-error"
-                   ng-show="$ctrl.form.antlersType.$invalid"
-                   ng-messages="$ctrl.form.antlersType.$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
+        <div class="col-xs-8">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="antlersLost" id="antlersLost"
+                           class="r-non-labeled-checkbox"
+                           ng-model="$ctrl.harvest.specimens[0].antlersLost">
+                </label>
             </div>
+
+            <p class="help-block has-error"
+               ng-show="$ctrl.form.antlersLost.$invalid"
+               ng-messages="$ctrl.form.antlersLost.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
         </div>
+    </div>
 
-        <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlersWidth')">
-            <label for="antlersWidth" class="col-xs-4 control-label">
-                <span translate="gamediary.form.antlersWidth"></span>
-                <small ng-if="$ctrl.isFieldRequired('antlersWidth')"
-                       class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
+    <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlersType')">
+        <label for="antlersType" class="col-xs-4 control-label">
+            <span translate="gamediary.form.antlersType"></span>
+            <small ng-if="$ctrl.isFieldRequired('antlersType')"
+                    class="glyphicon glyphicon-asterisk text-danger"></small>
+        </label>
 
-            <div class="col-xs-8">
-                <input type="number" name="antlersWidth" id="antlersWidth"
-                       class="form-control"
-                       min="0" max="999" step="1"
-                       r-decimal-separator-fix
-                       ng-model="$ctrl.harvest.specimens[0].antlersWidth"
-                       ng-required="$ctrl.isFieldRequired('antlersWidth')">
+        <div class="col-xs-8">
+            <select name="antlersType" id="antlersType"
+                    class="form-control"
+                    ng-model="$ctrl.harvest.specimens[0].antlersType"
+                    ng-options="('gamediary.antlersType.' + a | translate) for a in $ctrl.getAvailableGameAntlersTypes()"
+                    ng-required="$ctrl.isFieldRequired('antlersType')">
+                <option ng-disabled="$ctrl.isFieldRequired('antlersType')" value=""></option>
+            </select>
 
-                <p class="help-block has-error"
-                   ng-show="$ctrl.form.antlersWidth.$invalid"
-                   ng-messages="$ctrl.form.antlersWidth.$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
-            </div>
+            <p class="help-block has-error"
+                ng-show="$ctrl.form.antlersType.$invalid"
+                ng-messages="$ctrl.form.antlersType.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
         </div>
+    </div>
 
-        <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlerPointsLeft')">
-            <label for="antlerPointsLeft" class="col-xs-4 control-label">
-                <span translate="gamediary.form.antlerPointsLeft"></span>
-                <small ng-if="$ctrl.isFieldRequired('antlerPointsLeft')"
-                       class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
+    <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlersWidth')">
+        <label for="antlersWidth" class="col-xs-4 control-label">
+            <span translate="gamediary.form.antlersWidth"></span>
+            <small ng-if="$ctrl.isFieldRequired('antlersWidth')"
+                    class="glyphicon glyphicon-asterisk text-danger"></small>
+        </label>
 
-            <div class="col-xs-8">
-                <input type="number" name="antlerPointsLeft" id="antlerPointsLeft"
-                       class="form-control"
-                       min="0" max="50" step="1"
-                       r-decimal-separator-fix
-                       ng-model="$ctrl.harvest.specimens[0].antlerPointsLeft"
-                       ng-required="$ctrl.isFieldRequired('antlerPointsLeft')">
+        <div class="col-xs-8">
+            <input type="number" name="antlersWidth" id="antlersWidth"
+                    class="form-control"
+                    min="0" max="200" step="1"
+                    r-decimal-separator-fix
+                    ng-model="$ctrl.harvest.specimens[0].antlersWidth"
+                    ng-required="$ctrl.isFieldRequired('antlersWidth')">
 
-                <p class="help-block has-error"
-                   ng-show="$ctrl.form.antlerPointsLeft.$invalid"
-                   ng-messages="$ctrl.form.antlerPointsLeft.$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
-            </div>
+            <p class="help-block has-error"
+                ng-show="$ctrl.form.antlersWidth.$invalid"
+                ng-messages="$ctrl.form.antlersWidth.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
         </div>
+    </div>
 
-        <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlerPointsRight')">
-            <label for="antlerPointsRight" class="col-xs-4 control-label">
-                <span translate="gamediary.form.antlerPointsRight"></span>
-                <small ng-if="$ctrl.isFieldRequired('antlerPointsRight')"
-                       class="glyphicon glyphicon-asterisk text-danger"></small>
-            </label>
+    <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlerPointsLeft')">
+        <label for="antlerPointsLeft" class="col-xs-4 control-label">
+            <span translate="gamediary.form.antlerPointsLeft"></span>
+            <small ng-if="$ctrl.isFieldRequired('antlerPointsLeft')"
+                    class="glyphicon glyphicon-asterisk text-danger"></small>
+        </label>
 
-            <div class="col-xs-8">
-                <input type="number" name="antlerPointsRight" id="antlerPointsRight"
-                       class="form-control"
-                       min="0" max="50" step="1"
-                       r-decimal-separator-fix
-                       ng-model="$ctrl.harvest.specimens[0].antlerPointsRight"
-                       ng-required="$ctrl.isFieldRequired('antlerPointsRight')">
+        <div class="col-xs-8">
+            <input type="number" name="antlerPointsLeft" id="antlerPointsLeft"
+                    class="form-control"
+                    min="0" max="30" step="1"
+                    r-decimal-separator-fix
+                    ng-model="$ctrl.harvest.specimens[0].antlerPointsLeft"
+                    ng-required="$ctrl.isFieldRequired('antlerPointsLeft')">
 
-                <p class="help-block has-error"
-                   ng-show="$ctrl.form.antlerPointsRight.$invalid"
-                   ng-messages="$ctrl.form.antlerPointsRight.$error">
-                    <span ng-messages-include="common/errorMessages.html"></span>
-                </p>
-            </div>
+            <p class="help-block has-error"
+                ng-show="$ctrl.form.antlerPointsLeft.$invalid"
+                ng-messages="$ctrl.form.antlerPointsLeft.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlerPointsRight')">
+        <label for="antlerPointsRight" class="col-xs-4 control-label">
+            <span translate="gamediary.form.antlerPointsRight"></span>
+            <small ng-if="$ctrl.isFieldRequired('antlerPointsRight')"
+                    class="glyphicon glyphicon-asterisk text-danger"></small>
+        </label>
+
+        <div class="col-xs-8">
+            <input type="number" name="antlerPointsRight" id="antlerPointsRight"
+                    class="form-control"
+                    min="0" max="30" step="1"
+                    r-decimal-separator-fix
+                    ng-model="$ctrl.harvest.specimens[0].antlerPointsRight"
+                    ng-required="$ctrl.isFieldRequired('antlerPointsRight')">
+
+            <p class="help-block has-error"
+                ng-show="$ctrl.form.antlerPointsRight.$invalid"
+                ng-messages="$ctrl.form.antlerPointsRight.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlersGirth')">
+        <label for="antlersGirth" class="col-xs-4 control-label">
+            <span translate="gamediary.form.antlersGirth"></span>
+            <small ng-if="$ctrl.isFieldRequired('antlersGirth')"
+                    class="glyphicon glyphicon-asterisk text-danger"></small>
+        </label>
+
+        <div class="col-xs-8">
+            <input type="number" name="antlersGirth" id="antlersGirth"
+                    class="form-control"
+                    min="0" max="50" step="1"
+                    r-decimal-separator-fix
+                    ng-model="$ctrl.harvest.specimens[0].antlersGirth"
+                    ng-required="$ctrl.isFieldRequired('antlersGirth')">
+
+            <p class="help-block has-error"
+                ng-show="$ctrl.form.antlersGirth.$invalid"
+                ng-messages="$ctrl.form.antlersGirth.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlersLength')">
+        <label for="antlersLength" class="col-xs-4 control-label">
+            <span translate="gamediary.form.antlersLength"></span>
+            <small ng-if="$ctrl.isFieldRequired('antlersLength')"
+                    class="glyphicon glyphicon-asterisk text-danger"></small>
+        </label>
+
+        <div class="col-xs-8">
+            <input type="number" name="antlersLength" id="antlersLength"
+                    class="form-control"
+                    min="0" max="100" step="1"
+                    r-decimal-separator-fix
+                    ng-model="$ctrl.harvest.specimens[0].antlersLength"
+                    ng-required="$ctrl.isFieldRequired('antlersLength')">
+
+            <p class="help-block has-error"
+                ng-show="$ctrl.form.antlersLength.$invalid"
+                ng-messages="$ctrl.form.antlersLength.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlersInnerWidth')">
+        <label for="antlersInnerWidth" class="col-xs-4 control-label">
+            <span translate="gamediary.form.antlersInnerWidth"></span>
+            <small ng-if="$ctrl.isFieldRequired('antlersInnerWidth')"
+                    class="glyphicon glyphicon-asterisk text-danger"></small>
+        </label>
+
+        <div class="col-xs-8">
+            <input type="number" name="antlersInnerWidth" id="antlersInnerWidth"
+                    class="form-control"
+                    min="0" max="100" step="1"
+                    r-decimal-separator-fix
+                    ng-model="$ctrl.harvest.specimens[0].antlersInnerWidth"
+                    ng-required="$ctrl.isFieldRequired('antlersInnerWidth')">
+
+            <p class="help-block has-error"
+                ng-show="$ctrl.form.antlersInnerWidth.$invalid"
+                ng-messages="$ctrl.form.antlersInnerWidth.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+    <div class="form-group" show-errors ng-if="$ctrl.isFieldVisible('antlerShaftWidth')">
+        <label for="antlerShaftWidth" class="col-xs-4 control-label">
+            <span translate="gamediary.form.antlerShaftWidth"></span>
+            <small ng-if="$ctrl.isFieldRequired('antlerShaftWidth')"
+                    class="glyphicon glyphicon-asterisk text-danger"></small>
+        </label>
+
+        <div class="col-xs-8">
+            <input type="number" name="antlerShaftWidth" id="antlerShaftWidth"
+                    class="form-control"
+                    min="0" max="10" step="1"
+                    r-decimal-separator-fix
+                    ng-model="$ctrl.harvest.specimens[0].antlerShaftWidth"
+                    ng-required="$ctrl.isFieldRequired('antlerShaftWidth')">
+
+            <p class="help-block has-error"
+                ng-show="$ctrl.form.antlerShaftWidth.$invalid"
+                ng-messages="$ctrl.form.antlerShaftWidth.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
         </div>
     </div>
 

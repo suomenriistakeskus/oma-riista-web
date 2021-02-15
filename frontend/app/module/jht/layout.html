@@ -7,8 +7,28 @@
             <li active-if-state-includes="jht.harvestreport">
                 <a ui-sref="jht.harvestreport.list" translate="harvestreport.admin.menu"></a>
             </li>
-            <li active-if-state-includes="jht.applications,jht.decision">
-                <a ui-sref="jht.applications" translate="jht.menu.applicationsAndDecisions"></a>
+            <li class="dropdown" active-if-state-includes="jht.applications,jht.decision,jht.nominationdecisions"
+                uib-dropdown dropdown-append-to-body>
+                <a uib-dropdown-toggle>
+                    <span ng-if="$ctrl.myRenewalTodos" class="r-account-todo" ng-bind="$ctrl.myRenewalTodos"></span>
+                    <span translate="jht.menu.applicationsAndDecisions"></span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
+                    <li ui-sref-active="active">
+                        <a ui-sref="jht.applications" ui-sref-opts="{inherit: false}">
+                            <span ng-if="$ctrl.myRenewalTodos" class="r-account-todo"
+                                  ng-bind="$ctrl.myRenewalTodos"></span>
+                            <span translate="jht.menu.permitDecisions"></span>
+                        </a>
+
+                    </li>
+                    <li ui-sref-active="active">
+                        <a ui-sref="jht.nominationdecisions" ui-sref-opts="{inherit: false}">
+                            <span translate="jht.menu.nominationDecisions"></span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li active-if-state-includes="jht.harvestpermits">
                 <a ui-sref="jht.harvestpermits" translate="jht.menu.permits"></a>
@@ -19,27 +39,28 @@
             <li active-if-state-includes="jht.annualstats">
                 <a ui-sref="jht.annualstats" translate="jht.menu.annualStats"></a>
             </li>
-            <li active-if-state-includes="jht.areas">
-                <a ui-sref="jht.areas" translate="jht.menu.areas"></a>
-            </li>
-            <li class="dropdown"
-                active-if-state-includes="jht.moosedatacard,jht.hirvijyvitys"
-                uib-dropdown dropdown-append-to-body>
+            <li active-if-state-includes="jht.areas"
+                class="dropdown" uib-dropdown dropdown-append-to-body>
+
                 <a uib-dropdown-toggle>
-                    <span translate="jht.menu.mooselike"></span>
+                    <span translate="jht.menu.areas"></span>
                     <span class="caret"></span>
                 </a>
+
                 <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
                     <li ui-sref-active="active">
-                        <a ui-sref="jht.hirvijyvitys" ui-sref-opts="{inherit: false}"
-                           translate="jht.menu.hirviJyvitys"></a>
+                        <a ui-sref="jht.areas" ui-sref-opts="{inherit: false}"
+                           translate="jht.menu.areasJht"></a>
                     </li>
                     <li ui-sref-active="active">
-                        <a ui-sref="jht.moosedatacard" ui-sref-opts="{inherit: false}"
-                           translate="jht.menu.mooseDataCard"></a>
+                        <a ui-sref="jht.natura" ui-sref-opts="{inherit: false}"
+                           translate="jht.menu.areasNatura"></a>
                     </li>
-
                 </ul>
+
+            </li>
+            <li active-if-state-includes="jht.hirvijyvitys">
+                <a ui-sref="jht.hirvijyvitys" translate="jht.menu.hirviJyvitys"></a>
             </li>
 
             <li class="dropdown"

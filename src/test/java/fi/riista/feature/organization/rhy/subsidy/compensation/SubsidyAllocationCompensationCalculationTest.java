@@ -95,7 +95,7 @@ public class SubsidyAllocationCompensationCalculationTest {
 
         return F.mapNonNullsToList(round.getResultingSubsidies(), output -> {
 
-            return Tuple.of(output.getRhyCode(), output.getTotalSubsidyAfterCompensation(), output.getDecrement());
+            return Tuple.of(output.getRhyCode(), output.getSubsidyAfterCompensation(), output.getDecrement());
         });
     }
 }

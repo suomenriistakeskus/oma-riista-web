@@ -1,0 +1,191 @@
+<div>
+    <a class="btn btn-default"
+       ui-sref="permitmanagement.dashboard">
+        <span class="fa fa-chevron-left"></span>
+        &nbsp;
+        <span translate="global.button.back"></span>
+    </a>
+</div>
+
+<form name="form" role="form" class="form form-horizontal" ng-submit="$ctrl.save(form)">
+    <div class="permit-management-title-box">
+        <div class="permit-management-main-title">
+            <span translate="harvestpermit.management.dashboard.nestRemovalUsage.pageTitle"></span>
+        </div>
+    </div>
+
+    <div class="permit-management-section">
+        <div class="section-title">
+            <span class="fa fa-file-text"></span>
+            &nbsp;
+            <span translate="harvestpermit.management.dashboard.nestRemovalUsage.pageInfo"></span>
+        </div>
+
+        <div ng-repeat="usage in $ctrl.permitUsages">
+            <h5 ng-bind="$ctrl.getSpeciesName(usage.speciesCode) | capitalize"></h5>
+            <div style="padding-left: 16px" ng-if="usage.permitNestAmount">
+                <span translate="harvestpermit.management.dashboard.nestRemovalUsage.nest"></span>
+                <i>
+                    (
+                    <span translate="harvestpermit.management.dashboard.nestRemovalUsage.remaining"></span>
+                    :
+                    <span ng-bind="usage.permitNestAmount - usage.usedNestAmount"></span>
+                    <span translate="global.pcs"></span>
+                    )
+                </i>
+
+                <div class="form-group" style="margin-top: 8px" show-errors>
+                    <div class="col-xs-3">
+                        <input type="number" class="form-control"
+                               name="nest-amount-{{usage.species.code}}" id="nest-amount-{{usage.species.code}}"
+                               min="0"
+                               step="1"
+                               max="{{usage.permitNestAmount}}"
+                               ng-model="usage.usedNestAmount"
+                               ng-disabled="!usage.canEdit"/>
+                    </div>
+                    <div style="padding-top: 12px" translate="global.pcs"></div>
+                </div>
+            </div>
+
+            <div style="padding-left: 16px" ng-if="usage.permitConstructionAmount">
+                <span translate="harvestpermit.management.dashboard.nestRemovalUsage.construction"></span>
+                <i>
+                    (
+                    <span translate="harvestpermit.management.dashboard.nestRemovalUsage.remaining"></span>
+                    :
+                    <span ng-bind="usage.permitConstructionAmount - usage.usedConstructionAmount"></span>
+                    <span translate="global.pcs"></span>
+                    )
+                </i>
+
+                <div class="form-group" style="margin-top: 8px" show-errors>
+                    <div class="col-xs-3">
+                        <input type="number" class="form-control"
+                               name="construction-amount-{{usage.species.code}}" id="constrcution-amount-{{usage.species.code}}"
+                               min="0"
+                               step="1"
+                               max="{{usage.permitConstructionAmount}}"
+                               ng-model="usage.usedConstructionAmount"
+                               ng-disabled="!usage.canEdit"/>
+                    </div>
+                    <div style="padding-top: 12px" translate="global.pcs"></div>
+                </div>
+            </div>
+
+            <div style="padding-left: 16px" ng-if="usage.permitEggAmount">
+                <span translate="harvestpermit.management.dashboard.nestRemovalUsage.egg"></span>
+                <i>
+                    (
+                    <span translate="harvestpermit.management.dashboard.nestRemovalUsage.remaining"></span>
+                    :
+                    <span ng-bind="usage.permitEggAmount - usage.usedEggAmount"></span>
+                    <span translate="global.pcs"></span>
+                    )
+                </i>
+
+                <div class="form-group" style="margin-top: 8px" show-errors>
+                    <div class="col-xs-3">
+                        <input type="number" class="form-control"
+                               name="egg-amount-{{usage.species.code}}" id="egg-amount-{{usage.species.code}}"
+                               min="0"
+                               step="1"
+                               max="{{usage.permitEggAmount}}"
+                               ng-model="usage.usedEggAmount"
+                               ng-disabled="!usage.canEdit"/>
+                    </div>
+                    <div style="padding-top: 12px" translate="global.pcs"></div>
+                </div>
+            </div>
+
+            <div ng-if="$ctrl.isLocationAddAvailable()">
+                <table class="table table-condensed">
+                    <thead>
+                    <tr>
+                        <th class="col-xs-3" translate="harvestpermit.management.dashboard.nestRemovalUsage.place"></th>
+                        <th class="col-xs-3" translate="harvestpermit.management.dashboard.nestRemovalUsage.location"></th>
+                        <th class="col-xs-2" translate="harvestpermit.management.dashboard.nestRemovalUsage.locationInstruction"></th>
+                        <th class="col-xs-4"></th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+                    <tr ng-repeat="location in usage.nestLocations">
+                        <td>
+                            <select class="form-control"
+                                    name="nestLocationType" id="nestLocationType"
+                                    ng-model="location.nestLocationType"
+                                    ng-options="('harvestpermit.management.dashboard.nestRemovalUsage.locationTypes.'+o|translate) for o in $ctrl.locationTypes"
+                                    required
+                                    ng-disabled="!usage.canEdit"></select>
+                        </td>
+                        <td>
+                            <div translate="harvestpermit.management.dashboard.nestRemovalUsage.latitude" translate-values="location.geoLocation"></div>
+                            <div translate="harvestpermit.management.dashboard.nestRemovalUsage.longitude" translate-values="location.geoLocation"></div>
+                        </td>
+                        <td>
+                            <button class="btn btn-primary"
+                                    type="button"
+                                    ng-click="$ctrl.addLocationFromMap(usage, location, form)"
+                                    ng-disabled="!usage.canEdit">
+                                <span class="fa fa-map-marker"></span> &nbsp;
+                                <span translate="harvestpermit.management.dashboard.nestRemovalUsage.location"></span>
+                            </button>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-link"
+                                    ng-click="$ctrl.removeLocation(usage, location, form)"
+                                    ng-disabled="!usage.canEdit">
+                                <span class="glyphicon glyphicon-remove text-danger"
+                                      title="{{'event.button.remove' | translate}}"></span>
+                            </button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div ng-if="$ctrl.isLocationAddAvailable()">
+                <button class="btn btn-primary"
+                        type="button"
+                        ng-click="$ctrl.addLocation(usage, form)"
+                        ng-disabled="!usage.canEdit">
+                    <span class="glyphicon glyphicon-plus"></span> &nbsp;
+                    <span translate="harvestpermit.management.dashboard.nestRemovalUsage.addLocation"></span>
+                </button>
+            </div>
+
+            <hr>
+
+        </div>
+    </div>
+
+    <div>
+        <button type="submit"
+                class="btn btn-primary"
+                ng-disabled="form.$invalid || form.$pristine || !$ctrl.canEdit || !$ctrl.isNestLocationsValid() || !$ctrl.isUsageAmountsValid()">
+            <span class="fa fa-file-text"></span>
+            &nbsp;
+            <span translate="harvestpermit.management.dashboard.nestRemovalUsage.save"></span>
+        </button>
+    </div>
+
+    <i>
+        <div ng-switch="!!$ctrl.lastModifier" style="margin-top: 15px">
+            <div ng-switch-when="true">
+                <span translate="harvestpermit.management.dashboard.nestRemovalUsage.modificationTime"></span>
+                &nbsp;
+                <span>{{($ctrl.lastModifier.timestamp | date:'d.M.yyyy HH:mm')}}</span>
+                <div>
+                    <span ng-if="$ctrl.lastModifier.adminOrModerator" translate="global.organisationType.RK"></span>
+                    <span>{{$ctrl.lastModifier.firstName}}&nbsp{{$ctrl.lastModifier.lastName}}</span>
+                </div>
+            </div>
+            <div ng-switch-default>
+                <span translate="harvestpermit.management.dashboard.nestRemovalUsage.modificationTime"></span>
+                &nbsp;
+                <span>-</span>
+            </div>
+        </div>
+    </i>
+</form>

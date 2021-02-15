@@ -229,7 +229,7 @@ public class SearchApplicationConflictsFeature {
                     palsta.getConflictAreaSize());
         });
 
-        harvestPermitApplicationConflictPalstaRepository.save(listOfConflicts);
+        harvestPermitApplicationConflictPalstaRepository.saveAll(listOfConflicts);
 
         if (listOfConflicts.isEmpty()) {
             LOG.warn("Removing conflict with no palsta conflicts for firstApplicationId={} secondApplicationId={}",

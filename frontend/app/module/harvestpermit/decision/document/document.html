@@ -1,13 +1,13 @@
 <div class="pull-right row" style="width: 470px">
     <div class="col-xs-4">
-        <span ng-show="$ctrl.reference" translate="harvestpermit.decision.reference.referenceDecision"></span>
+        <span ng-show="$ctrl.reference" translate="decision.reference.referenceDecision"></span>
         <strong ng-show="$ctrl.reference" ng-bind="$ctrl.reference.applicationNumber"></strong>
         <br>
 
         <a ng-show="$ctrl.decision.status === 'DRAFT' && $ctrl.isHandler()"
            ng-click="$ctrl.changeReference()">
-            <span ng-if="$ctrl.reference" translate="harvestpermit.decision.reference.changeReference"></span>
-            <span ng-if="!$ctrl.reference" translate="harvestpermit.decision.reference.selectReference"></span>
+            <span ng-if="$ctrl.reference" translate="decision.reference.changeReference"></span>
+            <span ng-if="!$ctrl.reference" translate="decision.reference.selectReference"></span>
         </a>
     </div>
 
@@ -16,18 +16,18 @@
                 ng-disabled="!$ctrl.canLockDecision()"
                 ng-show="$ctrl.decision.status === 'DRAFT'"
                 ng-click="$ctrl.lockDecision()"
-                translate="harvestpermit.decision.buttons.lockDecision"></button>
+                translate="decision.buttons.lockDecision"></button>
 
         <button type="button" class="btn btn-danger"
                 ng-show="$ctrl.canUnlockDecision()"
                 ng-click="$ctrl.unlockDecision()"
-                translate="harvestpermit.decision.buttons.unlockDecision"></button>
+                translate="decision.buttons.unlockDecision"></button>
 
         <button type="button" class="btn btn-info"
                 ng-show="$ctrl.decision.status === 'DRAFT'"
                 ng-click="$ctrl.previewEnabled = !$ctrl.previewEnabled">
-            <span ng-show="!$ctrl.previewEnabled" translate="harvestpermit.decision.buttons.previewMode"></span>
-            <span ng-show="$ctrl.previewEnabled" translate="harvestpermit.decision.buttons.editMode"></span>
+            <span ng-show="!$ctrl.previewEnabled" translate="decision.buttons.previewMode"></span>
+            <span ng-show="$ctrl.previewEnabled" translate="decision.buttons.editMode"></span>
         </button>
     </div>
 </div>
@@ -39,7 +39,7 @@
         <permit-decision-document-nav
                 publish-date="$ctrl.decision.publishDate"
                 grant-status="$ctrl.decision.grantStatus"
-                complete-status="$ctrl.decision.completeStatus">
+                decision="$ctrl.decision">
         </permit-decision-document-nav>
     </div>
     <div class="col-xs-9">

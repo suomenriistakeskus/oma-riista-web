@@ -60,6 +60,17 @@ public class JaxbConfig {
         return activateLoggingValidation(marshaller);
     }
 
+    @Bean(name = "lukeWhiteTailedDeerExportMarshaller")
+    public Jaxb2Marshaller lukeWhiteTailedDeerExportJaxbMarshaller() {
+        final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+
+        marshaller.setMarshallerProperties(JaxbUtils.getDefaultMarshallerProperties(true));
+        marshaller.setContextPath("fi.riista.integration.luke_export.deerharvests");
+        marshaller.setSchema(new ClassPathResource("/xsd/luke/export-deerharvests-v1.xsd"));
+
+        return activateLoggingValidation(marshaller);
+    }
+
     @Bean(name = "mrJhtExportMarshaller")
     public Jaxb2Marshaller mrJhtExportMarshaller() {
         final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();

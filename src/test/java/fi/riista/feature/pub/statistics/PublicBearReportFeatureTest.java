@@ -2,9 +2,7 @@ package fi.riista.feature.pub.statistics;
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Municipality;
-import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameCategory;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gis.geojson.FeatureCollectionWithProperties;
@@ -27,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -35,7 +35,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 public class PublicBearReportFeatureTest extends EmbeddedDatabaseTest {
 
@@ -47,8 +46,8 @@ public class PublicBearReportFeatureTest extends EmbeddedDatabaseTest {
         final GameSpecies bear = model().newGameSpecies(47348, GameCategory.GAME_MAMMAL, "karhu", "björn", "bear");
 
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
-        final HarvestArea area = model().newHarvestArea(rhy);
-        final HarvestArea area2 = model().newHarvestArea(rhy);
+        final HarvestArea area = model().newHarvestArea();
+        final HarvestArea area2 = model().newHarvestArea();
 
         final HarvestSeason season = model().newHarvestSeason(bear,
                 new LocalDate(2015, 8, 20),
@@ -120,11 +119,11 @@ public class PublicBearReportFeatureTest extends EmbeddedDatabaseTest {
     private Harvest createHarvest(GameSpecies bear, Municipality municipality, Person author) {
         final Harvest harvest = model().newHarvest(bear, author, author);
         harvest.setAmount(1);
-        harvest.setPointOfTime(new LocalDate(2015, 8, 31).toDate());
+        harvest.setPointOfTime(DateUtil.toDateTimeNullSafe(new LocalDate(2015, 8, 31)));
         harvest.setGeoLocation(new GeoLocation(1312312, 2354123));
         harvest.setMunicipalityCode(municipality.getOfficialCode());
 
-        model().newHarvestSpecimen(harvest, GameAge.ADULT, GameGender.MALE);
+        model().newHarvestSpecimen(harvest, ADULT_MALE);
         return harvest;
     }
 

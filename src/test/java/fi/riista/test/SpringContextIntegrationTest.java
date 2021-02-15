@@ -42,8 +42,11 @@ import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static fi.riista.test.Asserts.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isOneOf;
+import static org.hamcrest.Matchers.notNullValue;
 
 @ContextConfiguration(classes = IntegrationTestApplicationContext.class)
 public abstract class SpringContextIntegrationTest extends SpringRuleConfigurer
@@ -224,6 +227,15 @@ public abstract class SpringContextIntegrationTest extends SpringRuleConfigurer
         }
     }
 
+    protected void onAuthenticated(final SystemUser user, final Runnable task) {
+        authenticate(user);
+        try {
+            task.run();
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
+    }
+
     protected void onSavedAndAuthenticated(final SystemUser user, final Consumer<SystemUser> task) {
         onSavedAndAuthenticated(user, () -> task.accept(user));
     }
@@ -297,15 +309,22 @@ public abstract class SpringContextIntegrationTest extends SpringRuleConfigurer
     // Revision check utilities -->
 
     protected void assertVersion(final BaseEntity<? extends Serializable> entity, final int version) {
-        assertEquals(Integer.valueOf(version), entity.getConsistencyVersion());
+        assertThat(entity.getConsistencyVersion(), is(equalTo(Integer.valueOf(version))),
+                "entity version not expected");
+    }
+
+    protected void assertVersionOneOf(final BaseEntity<? extends Serializable> entity, final Integer... versions) {
+        assertThat(entity.getConsistencyVersion(), isOneOf(versions),
+                "entity version not expected");
     }
 
     protected <ENTITY extends BaseEntity<ID>, DTO extends BaseEntityDTO<ID>, ID extends Serializable> DTO checkDtoVersionAgainstEntity(
             final DTO dto, final Class<ENTITY> entityClass) {
 
         final ENTITY entity = entityManager.find(entityClass, dto.getId());
-        assertNotNull(entity);
-        assertEquals(entity.getConsistencyVersion(), dto.getRev());
+        assertThat(entity, is(notNullValue()));
+        assertThat(dto.getRev(), is(equalTo(entity.getConsistencyVersion())),
+                "DTO version not matching JPA entity");
         return dto;
     }
 

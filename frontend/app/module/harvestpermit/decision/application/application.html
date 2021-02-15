@@ -4,7 +4,7 @@
     <div class="col-md-6">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title" translate="harvestpermit.decision.summary.applicationSummary.title"></h3>
+                <h3 class="panel-title" translate="decision.summary.applicationSummary.title"></h3>
             </div>
 
             <div class="panel-body" style="min-height: 185px;">
@@ -12,29 +12,29 @@
                     <tbody>
                     <tr>
                         <th class="col-xs-6"
-                            translate="harvestpermit.decision.summary.applicationSummary.applicationNumber"></th>
+                            translate="decision.summary.applicationSummary.applicationNumber"></th>
                         <td>
                             <span ng-bind="$ctrl.applicationSummary.applicationNumber"></span>
                         </td>
                     </tr>
                     <tr>
-                        <th translate="harvestpermit.decision.summary.applicationSummary.receivedDate"></th>
+                        <th translate="decision.summary.applicationSummary.receivedDate"></th>
                         <td>
                             <span ng-class="{'text-danger': $ctrl.isLateApplication()}"
                                   ng-bind="$ctrl.applicationSummary.submitDate | date:'d.M.yyyy HH:mm'"></span>
                         </td>
                     </tr>
                     <tr>
-                        <th translate="harvestpermit.decision.summary.applicationSummary.delivery"></th>
+                        <th translate="decision.summary.applicationSummary.delivery"></th>
                         <td>
                             <span ng-if="$ctrl.applicationSummary.deliveryByMail === true"
-                                  translate="harvestpermit.decision.summary.applicationSummary.deliveryPaper"></span>
+                                  translate="decision.summary.applicationSummary.deliveryPaper"></span>
                             <span ng-if="!$ctrl.applicationSummary.deliveryByMail === true"
-                                  translate="harvestpermit.decision.summary.applicationSummary.deliveryEmail"></span>
+                                  translate="decision.summary.applicationSummary.deliveryEmail"></span>
                         </td>
                     </tr>
                     <tr ng-if="$ctrl.applicationSummary.createdByModeratorName">
-                        <th translate="harvestpermit.decision.summary.applicationSummary.moderatorCreated"></th>
+                        <th translate="decision.summary.applicationSummary.moderatorCreated"></th>
                         <td>
                             <span ng-bind="$ctrl.applicationSummary.createdByModeratorName"></span>
                         </td>
@@ -51,7 +51,7 @@
                             <button type="button" class="btn btn-primary" uib-dropdown-toggle>
                                 <span class="fa fa-download"></span>
                                 &nbsp;
-                                <span translate="harvestpermit.decision.summary.applicationSummary.download"></span>
+                                <span translate="decision.summary.applicationSummary.download"></span>
                                 &nbsp;
                                 <span class="fa fa-caret-down">
                             </span>
@@ -80,26 +80,26 @@
     <div class="col-md-6">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title" translate="harvestpermit.decision.summary.status.title"></h3>
+                <h3 class="panel-title" translate="decision.summary.status.title"></h3>
             </div>
 
             <div class="panel-body" style="min-height: 185px;">
                 <table class="table">
                     <tbody>
                     <tr>
-                        <th class="col-xs-6" translate="harvestpermit.decision.summary.status.status"></th>
+                        <th class="col-xs-6" translate="decision.summary.status.status"></th>
                         <td>
-                            <strong translate="harvestpermit.decision.unifiedStatus.{{$ctrl.resolveUnifiedStatus()}}"></strong>
+                            <strong translate="decision.unifiedStatus.{{$ctrl.resolveUnifiedStatus()}}"></strong>
                         </td>
                     </tr>
                     <tr>
-                        <th class="col-xs-6" translate="harvestpermit.decision.settings.document.decisionType"></th>
+                        <th class="col-xs-6" translate="decision.settings.document.decisionType"></th>
                         <td>
-                            <span translate="harvestpermit.decision.decisionType.{{$ctrl.decision.decisionType}}"></span>
+                            <span translate="decision.decisionType.{{$ctrl.decision.decisionType}}"></span>
                         </td>
                     </tr>
                     <tr>
-                        <th class="col-xs-6" translate="harvestpermit.decision.summary.status.handler"></th>
+                        <th class="col-xs-6" translate="decision.summary.status.handler"></th>
                         <td>
                             <div ng-show="$ctrl.decision.handler">
                                 <span ng-bind="$ctrl.decision.handler.byName"></span>
@@ -108,10 +108,10 @@
                         </td>
                     </tr>
                     <tr>
-                        <th class="col-xs-6" translate="harvestpermit.decision.summary.status.appealStatus"></th>
+                        <th class="col-xs-6" translate="decision.summary.status.appealStatus"></th>
                         <td>
                             <span ng-if="$ctrl.decision.appealStatus"
-                                  translate="harvestpermit.decision.appealStatus.{{$ctrl.decision.appealStatus}}"></span>
+                                  translate="decision.appealStatus.{{$ctrl.decision.appealStatus}}"></span>
                         </td>
                     </tr>
                     </tbody>
@@ -122,11 +122,13 @@
                         <button type="button" class="btn btn-default pull-left"
                                 ng-click="$ctrl.showActions()">
                             <span class="fa fa-fw fa-eye"></span>
-                            <span translate="harvestpermit.decision.summary.status.showActions"></span>
+                            <span translate="decision.summary.status.showActions"></span>
                         </button>
                     </div>
                     <div class="col-xs-6">
-                        <assign-decision-handler decision="$ctrl.decision"></assign-decision-handler>
+                        <assign-decision-handler decision="$ctrl.decision"
+                                                 assign="$ctrl.assignDecision()"
+                                                 unassign="$ctrl.unassignDecision()"></assign-decision-handler>
                     </div>
                 </div>
                 <div class="row" style="padding-top: 5px" ng-if="$ctrl.decision.userIsHandler">
@@ -135,7 +137,7 @@
 
                                 ng-click="$ctrl.editAppealSettings()">
                             <span class="fa fa-fw fa-cog"></span>
-                            <span translate="harvestpermit.decision.summary.status.appealSettings"></span>
+                            <span translate="decision.summary.status.appealSettings"></span>
                         </button>
                     </div>
                 </div>
@@ -168,6 +170,49 @@
             ng-switch-when="LARGE_CARNIVORE_BEAR|LARGE_CARNIVORE_LYNX|LARGE_CARNIVORE_LYNX_PORONHOITO|LARGE_CARNIVORE_WOLF"
             application="$ctrl.applicationSummary"></carnivore-application-summary>
 
+    <mammal-application-summary
+        ng-switch-when="MAMMAL"
+        application="$ctrl.applicationSummary"></mammal-application-summary>
+
+    <nest-removal-application-summary
+        ng-switch-when="NEST_REMOVAL"
+        application="$ctrl.applicationSummary"></nest-removal-application-summary>
+
+    <lawsectionten-application-summary
+        ng-switch-when="LAW_SECTION_TEN"
+        application="$ctrl.applicationSummary"></lawsectionten-application-summary>
+
+    <weapon-transportation-application-summary
+        ng-switch-when="WEAPON_TRANSPORTATION"
+        application="$ctrl.applicationSummary"></weapon-transportation-application-summary>
+
+    <disability-application-summary
+            ng-switch-when="DISABILITY"
+            application="$ctrl.applicationSummary"></disability-application-summary>
+
+    <r-dog-disturbance-application-summary
+        ng-switch-when="DOG_DISTURBANCE"
+        application="$ctrl.applicationSummary"></r-dog-disturbance-application-summary>
+
+    <r-dog-unleash-application-summary
+        ng-switch-when="DOG_UNLEASH"
+        application="$ctrl.applicationSummary"></r-dog-unleash-application-summary>
+
+    <deportation-application-summary
+        ng-switch-when="DEPORTATION"
+        application="$ctrl.applicationSummary"></deportation-application-summary>
+
+    <research-application-summary
+        ng-switch-when="RESEARCH"
+        application="$ctrl.applicationSummary"></research-application-summary>
+
+    <importing-application-summary
+        ng-switch-when="IMPORTING"
+        application="$ctrl.applicationSummary"></importing-application-summary>
+
+    <game-management-application-summary
+        ng-switch-when="GAME_MANAGEMENT"
+        application="$ctrl.applicationSummary"></game-management-application-summary>
 </div>
 
 <div class="text-right">
@@ -176,7 +221,7 @@
             ng-confirm-click
             ng-confirm-click-action="$ctrl.editApplication()">
         <span class="fa fa-fw fa-edit"></span>
-        <span translate="harvestpermit.decision.summary.amend"></span>
+        <span translate="decision.summary.amend"></span>
     </button>
 </div>
 

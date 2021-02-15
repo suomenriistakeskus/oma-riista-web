@@ -2,6 +2,7 @@ package fi.riista.feature.moderatorarea;
 
 import com.newrelic.api.agent.Trace;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneEditService;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.security.EntityPermission;
@@ -13,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Optional;
+
+import static java.util.Objects.requireNonNull;
 
 @Component
 public class ModeratorAreaZoneFeature {
@@ -46,21 +49,26 @@ public class ModeratorAreaZoneFeature {
 
     @Trace
     @Transactional(timeout = 300)
-    public long updateGeoJSON(final long id, final FeatureCollection featureCollection) {
+    public void updateGeoJSON(final long id, final FeatureCollection featureCollection) {
         final ModeratorArea area = requireEntityService.requireModeratorArea(id, EntityPermission.UPDATE);
 
-        zoneEditService.storeFeatures(featureCollection, area.getZone());
+        final GISZone zone = area.getZone() != null ? area.getZone() : new GISZone();
+        zoneEditService.storeFeatures(featureCollection, zone);
 
-        area.setZone(area.getZone());
+        area.setZone(zone);
         area.setModificationTimeToCurrentTime();
-
-        return area.getZone().getId();
     }
 
     @Trace
     @Async
-    @Transactional(timeout = 900)
-    public void updateAreaSize(final long zoneId) {
-        zoneEditService.updateAreaSize(zoneId);
+    @Transactional
+    public void updateAreaSize(final long areaId) {
+        final ModeratorArea area = requireEntityService.requireModeratorArea(areaId, EntityPermission.UPDATE);
+        final long zoneId = requireNonNull(area.getZone()).getId();
+        try {
+            zoneEditService.updateAreaSize(zoneId);
+        } catch (Exception e) {
+            zoneEditService.markCalculationFailed(zoneId);
+        }
     }
 }

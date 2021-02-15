@@ -9,7 +9,7 @@ import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmoun
 import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCause;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethods;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.test.DefaultEntitySupplierProvider;
 import org.joda.time.LocalDate;
@@ -44,7 +44,7 @@ public class BirdPermitApplicationValidatorTest implements DefaultEntitySupplier
     private BirdPermitApplication birdApplication;
 
     @DataPoints
-    public static final Method[] forbiddenMethods = BirdPermitApplicationForbiddenMethods.class.getMethods();
+    public static final Method[] forbiddenMethods = DerogationPermitApplicationForbiddenMethods.class.getMethods();
 
     @Rule
     public final ExpectedException thrown = ExpectedException.none();
@@ -175,7 +175,7 @@ public class BirdPermitApplicationValidatorTest implements DefaultEntitySupplier
     @Test
     public void validateContent_noCauseSelected() {
         thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("No cause selected");
+        thrown.expectMessage("No reasons selected");
 
         initializeValidBirdPermitFor(unprotectedBird);
 
@@ -310,6 +310,21 @@ public class BirdPermitApplicationValidatorTest implements DefaultEntitySupplier
                         spa.setBeginDate(new LocalDate(2018, 1, 1));
                         spa.setEndDate(new LocalDate(2019, 1, 1));
                     });
+        });
+    }
+
+    @Test
+    public void validateContent_attachmentList() {
+        initializeApplicationAndValidateAfterRunning(() ->
+                application.setAttachments(
+                        singletonList(getEntitySupplier().newHarvestPermitApplicationAttachment(application))));
+    }
+
+    @Test
+    public void validateContent_attachmentListEmpty_descriptionPresent() {
+        initializeApplicationAndValidateAfterRunning(() -> {
+            application.setAttachments(emptyList());
+            birdApplication.setAreaDescription("description");
         });
     }
 

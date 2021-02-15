@@ -1,5 +1,6 @@
 package fi.riista.feature.organization.rhy.annualstats;
 
+import com.google.common.base.Preconditions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.sql.SQLQueryFactory;
 import fi.riista.feature.account.user.ActiveUserService;
@@ -11,6 +12,8 @@ import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.annualstats.audit.RhyAnnualStatisticsModeratorUpdateEvent;
 import fi.riista.feature.organization.rhy.annualstats.audit.RhyAnnualStatisticsModeratorUpdateEventRepository;
 import fi.riista.feature.organization.rhy.annualstats.statechange.RhyAnnualStatisticsStateTransitionService;
+import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspectionEventRepository;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventRepository;
 import fi.riista.util.DateUtil;
 import io.vavr.Tuple2;
 import org.springframework.stereotype.Component;
@@ -32,6 +35,7 @@ import static fi.riista.feature.gamediary.srva.SrvaEventTypeEnum.TRAFFIC_ACCIDEN
 import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKOE;
 import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS;
 import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKOULUTUS;
+import static fi.riista.feature.organization.calendar.CalendarEventType.HIRVIELAINTEN_VEROTUSSUUNNITTELU;
 import static fi.riista.feature.organization.calendar.CalendarEventType.JALJESTAJAKOULUTUS;
 import static fi.riista.feature.organization.calendar.CalendarEventType.JOUSIAMPUMAKOE;
 import static fi.riista.feature.organization.calendar.CalendarEventType.METSASTAJAKOULUTUS_HIRVIELAIMET;
@@ -59,6 +63,8 @@ import static fi.riista.feature.organization.occupation.OccupationType.METSASTAJ
 import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA;
 import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.NOT_STARTED;
+import static fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType.LARGE_CARNIVORE;
+import static fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType.MOOSELIKE;
 import static fi.riista.feature.shootingtest.ShootingTestType.ROE_DEER;
 import static fi.riista.feature.shootingtest.ShootingTestType.MOOSE;
 import static fi.riista.feature.shootingtest.ShootingTestType.BEAR;
@@ -76,6 +82,12 @@ public class AnnualStatisticsService {
 
     @Resource
     private CalendarEventRepository eventRepository;
+
+    @Resource
+    private GameDamageInspectionEventRepository gameDamageInspectionEventRepository;
+
+    @Resource
+    private HuntingControlEventRepository huntingControlEventRepository;
 
     @Resource
     private RhyAnnualStatisticsModeratorUpdateEventRepository moderatorUpdateEventRepository;
@@ -99,7 +111,8 @@ public class AnnualStatisticsService {
                                                                 final int calendarYear) {
 
         return new AnnualStatisticsResolver(
-                rhy, calendarYear, occupationRepository, eventRepository, jpaQueryFactory, sqlQueryFactory);
+                rhy, calendarYear, occupationRepository, eventRepository, gameDamageInspectionEventRepository,
+                huntingControlEventRepository, jpaQueryFactory, sqlQueryFactory);
     }
 
     public AnnualStatisticsResolver getAnnualStatisticsResolver(@Nonnull final RhyAnnualStatistics entity) {
@@ -309,13 +322,23 @@ public class AnnualStatisticsService {
 
         final HuntingControlStatistics copy = new HuntingControlStatistics(statistics);
         copy.setHuntingControllers(resolver.getOccupationTypeCount(METSASTYKSENVALVOJA));
+
+        if (!copy.isHuntingControlEventsOverridden()) {
+            copy.setHuntingControlEvents(resolver.getHuntingControlEventCount());
+        }
+        if (!copy.isHuntingControlCustomersOverridden()) {
+            copy.setHuntingControlCustomers(resolver.getHuntingControlCustomersCount());
+        }
+        if (!copy.isProofOrdersOverridden()) {
+            copy.setProofOrders(resolver.getHuntingControlProofOrdersCount());
+        }
+
         return copy;
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void updateHuntingControl(@Nonnull final RhyAnnualStatistics statistics,
                                      @Nonnull final HuntingControlStatistics group) {
-
         updateGroup(statistics, statistics.getOrCreateHuntingControl(), group);
     }
 
@@ -328,13 +351,20 @@ public class AnnualStatisticsService {
 
         final GameDamageStatistics copy = new GameDamageStatistics(statistics);
         copy.setGameDamageInspectors(resolver.getOccupationTypeCount(RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA));
+
+        if (!copy.isMooselikeDamageInspectionLocationsOverridden()) {
+            copy.setMooselikeDamageInspectionLocations(resolver.getGameDamageInspectionEventCount(MOOSELIKE));
+        }
+        if (!copy.isLargeCarnivoreDamageInspectionLocationsOverridden()) {
+            copy.setLargeCarnivoreDamageInspectionLocations(resolver.getGameDamageInspectionEventCount(LARGE_CARNIVORE));
+        }
+
         return copy;
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void updateGameDamage(@Nonnull final RhyAnnualStatistics statistics,
                                  @Nonnull final GameDamageStatistics group) {
-
         updateGroup(statistics, statistics.getOrCreateGameDamage(), group);
     }
 
@@ -384,14 +414,6 @@ public class AnnualStatisticsService {
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void updateHunterExamTraining(@Nonnull final RhyAnnualStatistics statistics,
                                          @Nonnull final HunterExamTrainingStatistics group) {
-
-        final HunterExamTrainingStatistics original = statistics.getOrCreateHunterExamTraining();
-
-        final boolean originalOverridden = original.isHunterExamTraininingParticipantsOverridden();
-        final boolean hunterExamTrainingParticipantsOverridden = originalOverridden ||
-                !Objects.equals(original.getHunterExamTrainingParticipants(), group.getHunterExamTrainingParticipants());
-        group.setHunterExamTrainingParticipantsOverridden(hunterExamTrainingParticipantsOverridden);
-
         updateGroup(statistics, statistics.getOrCreateHunterExamTraining(), group);
     }
 
@@ -410,22 +432,15 @@ public class AnnualStatisticsService {
         final HunterExamTrainingStatistics updated = original.makeCopy();
         updated.setHunterExamTrainingParticipants(dto.getHunterExamTrainingParticipants());
 
-        final boolean originalOverridden = original.isHunterExamTraininingParticipantsOverridden();
-        final boolean hunterExamTrainingParticipantsOverridden = originalOverridden ||
-                !Objects.equals(original.getHunterExamTrainingParticipants(), updated.getHunterExamTrainingParticipants());
-
         final boolean changed = original.merge(updated);
 
         final Integer overriddenTrainingEvents = dto.getModeratorOverriddenHunterExamTrainingEvents();
         final boolean overriddenTrainingEventsUpdated = overriddenTrainingEvents != null
                 && !Objects.equals(overriddenTrainingEvents, original.getHunterExamTrainingEvents());
 
-        if (changed || overriddenTrainingEventsUpdated || hunterExamTrainingParticipantsOverridden) {
+        if (changed || overriddenTrainingEventsUpdated) {
             if (overriddenTrainingEventsUpdated) {
                 original.setHunterExamTrainingEventsOverridden(overriddenTrainingEvents);
-            }
-            if (hunterExamTrainingParticipantsOverridden) {
-                original.setHunterExamTrainingParticipantsOverridden(hunterExamTrainingParticipantsOverridden);
             }
             addModeratorUpdateEvent(statistics, original);
         }
@@ -436,41 +451,6 @@ public class AnnualStatisticsService {
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void updateJhtTraining(@Nonnull final RhyAnnualStatistics statistics,
                                   @Nonnull final JHTTrainingStatistics group) {
-
-        final JHTTrainingStatistics original = statistics.getOrCreateJhtTraining();
-
-        // Shooting test trainings
-        final boolean shootingTestTrainingEventsOverridden = original.isShootingTestTrainingEventsOverridden();
-        group.setShootingTestTrainingEventsOverridden(shootingTestTrainingEventsOverridden ||
-                !Objects.equals(original.getShootingTestTrainingEvents(), group.getShootingTestTrainingEvents()));
-        final boolean shootingTestTrainingParticipantsOverridden = original.isShootingTestTrainingParticipantsOverridden();
-        group.setShootingTestTrainingParticipantsOverridden(shootingTestTrainingParticipantsOverridden ||
-                !Objects.equals(original.getShootingTestTrainingParticipants(), group.getShootingTestTrainingParticipants()));
-
-        // Hunter exam official trainings
-        final boolean hunterExamOfficialTrainingEventsOverridden = original.isHunterExamOfficialTrainingEventsOverridden();
-        group.setHunterExamOfficialTrainingEventsOverridden(hunterExamOfficialTrainingEventsOverridden ||
-                !Objects.equals(original.getHunterExamOfficialTrainingEvents(), group.getHunterExamOfficialTrainingEvents()));
-        final boolean hunterExamOfficialTrainingParticipantsOverridden = original.isHunterExamOfficialTrainingParticipantsOverridden();
-        group.setHunterExamOfficialTrainingParticipantsOverridden(hunterExamOfficialTrainingParticipantsOverridden ||
-                !Objects.equals(original.getHunterExamOfficialTrainingParticipants(), group.getHunterExamOfficialTrainingParticipants()));
-
-        // Game damage trainings
-        final boolean gameDamageTrainingEventsOverridden = original.isGameDamageTrainingEventsOverridden();
-        group.setGameDamageTrainingEventsOverridden(gameDamageTrainingEventsOverridden ||
-                !Objects.equals(original.getGameDamageTrainingEvents(), group.getGameDamageTrainingEvents()));
-        final boolean gameDamageTrainingParticipantsOverridden = original.isGameDamageTrainingParticipantsOverridden();
-        group.setGameDamageTrainingParticipantsOverridden(gameDamageTrainingParticipantsOverridden ||
-                !Objects.equals(original.getGameDamageTrainingParticipants(), group.getGameDamageTrainingParticipants()));
-
-        // Hunting control trainings
-        final boolean huntingControlTrainingEventsOverridden = original.isHuntingControlTrainingEventsOverridden();
-        group.setHuntingControlTrainingEventsOverridden(huntingControlTrainingEventsOverridden ||
-                !Objects.equals(original.getHuntingControlTrainingEvents(), group.getHuntingControlTrainingEvents()));
-        final boolean huntingControlTrainingParticipantsOverridden = original.isHuntingControlTrainingParticipantsOverridden();
-        group.setHuntingControlTrainingParticipantsOverridden(huntingControlTrainingParticipantsOverridden ||
-                !Objects.equals(original.getHuntingControlTrainingParticipants(), group.getHuntingControlTrainingParticipants()));
-
         updateGroup(statistics, statistics.getOrCreateJhtTraining(), group);
     }
 
@@ -521,65 +501,6 @@ public class AnnualStatisticsService {
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void updateHunterTraining(@Nonnull final RhyAnnualStatistics statistics,
                                      @Nonnull final HunterTrainingStatistics group) {
-
-        final HunterTrainingStatistics original = statistics.getOrCreateHunterTraining();
-
-        // Mooselike hunting trainings
-        final boolean mooselikeHuntingTrainingEventsOverridden = original.isMooselikeHuntingTrainingEventsOverridden();
-        group.setMooselikeHuntingTrainingEventsOverridden(mooselikeHuntingTrainingEventsOverridden ||
-                !Objects.equals(original.getMooselikeHuntingTrainingEvents(), group.getMooselikeHuntingTrainingEvents()));
-        final boolean mooselikeHuntingTrainingParticipantsOverridden = original.isMooselikeHuntingTrainingParticipantsOverridden();
-        group.setMooselikeHuntingTrainingParticipantsOverridden(mooselikeHuntingTrainingParticipantsOverridden ||
-                !Objects.equals(original.getMooselikeHuntingTrainingParticipants(), group.getMooselikeHuntingTrainingParticipants()));
-
-        // Mooselike hunting leader trainings
-        final boolean mooselikeHuntingLeaderTrainingEventsOverridden = original.isMooselikeHuntingLeaderTrainingEventsOverridden();
-        group.setMooselikeHuntingLeaderTrainingEventsOverridden(mooselikeHuntingLeaderTrainingEventsOverridden ||
-                !Objects.equals(original.getMooselikeHuntingLeaderTrainingEvents(), group.getMooselikeHuntingLeaderTrainingEvents()));
-        final boolean mooselikeHuntingLeaderTrainingParticipantsOverridden = original.isMooselikeHuntingLeaderTrainingParticipantsOverridden();
-        group.setMooselikeHuntingLeaderTrainingParticipantsOverridden(mooselikeHuntingLeaderTrainingParticipantsOverridden ||
-                !Objects.equals(original.getMooselikeHuntingLeaderTrainingParticipants(), group.getMooselikeHuntingLeaderTrainingParticipants()));
-
-        // Carnivore hunting trainings
-        final boolean carnivoreHuntingTrainingEventsOverridden = original.isCarnivoreHuntingTrainingEventsOverridden();
-        group.setCarnivoreHuntingTrainingEventsOverridden(carnivoreHuntingTrainingEventsOverridden ||
-                !Objects.equals(original.getCarnivoreHuntingTrainingEvents(), group.getCarnivoreHuntingTrainingEvents()));
-        final boolean carnivoreHuntingTrainingParticipantsOverridden = original.isCarnivoreHuntingTrainingParticipantsOverridden();
-        group.setCarnivoreHuntingTrainingParticipantsOverridden(carnivoreHuntingTrainingParticipantsOverridden ||
-                !Objects.equals(original.getCarnivoreHuntingTrainingParticipants(), group.getCarnivoreHuntingTrainingParticipants()));
-
-        // Carnivore hunting leader trainings
-        final boolean carnivoreHuntingLeaderTrainingEventsOverridden = original.isCarnivoreHuntingLeaderTrainingEventsOverridden();
-        group.setCarnivoreHuntingLeaderTrainingEventsOverridden(carnivoreHuntingLeaderTrainingEventsOverridden ||
-                !Objects.equals(original.getCarnivoreHuntingLeaderTrainingEvents(), group.getCarnivoreHuntingLeaderTrainingEvents()));
-        final boolean carnivoreHuntingLeaderTrainingParticipantsOverridden = original.isCarnivoreHuntingLeaderTrainingParticipantsOverridden();
-        group.setCarnivoreHuntingLeaderTrainingParticipantsOverridden(carnivoreHuntingLeaderTrainingParticipantsOverridden ||
-                !Objects.equals(original.getCarnivoreHuntingLeaderTrainingParticipants(), group.getCarnivoreHuntingLeaderTrainingParticipants()));
-
-        // Srva trainings
-        final boolean srvaTrainingEventsOverridden = original.isSrvaTrainingEventsOverridden();
-        group.setSrvaTrainingEventsOverridden(srvaTrainingEventsOverridden ||
-                !Objects.equals(original.getSrvaTrainingEvents(), group.getSrvaTrainingEvents()));
-        final boolean srvaTrainingParticipantsOverridden = original.isSrvaTrainingParticipantsOverridden();
-        group.setSrvaTrainingParticipantsOverridden(srvaTrainingParticipantsOverridden ||
-                !Objects.equals(original.getSrvaTrainingParticipants(), group.getSrvaTrainingParticipants()));
-
-        // Carnivore contact person trainings
-        final boolean carnivoreContactPersonTrainingEventsOverridden = original.isCarnivoreContactPersonTrainingEventsOverridden();
-        group.setCarnivoreContactPersonTrainingEventsOverridden(carnivoreContactPersonTrainingEventsOverridden ||
-                !Objects.equals(original.getCarnivoreContactPersonTrainingEvents(), group.getCarnivoreContactPersonTrainingEvents()));
-        final boolean carnivoreContactPersonTrainingParticipantsOverridden = original.isCarnivoreContactPersonTrainingParticipantsOverridden();
-        group.setCarnivoreContactPersonTrainingParticipantsOverridden(carnivoreContactPersonTrainingParticipantsOverridden ||
-                !Objects.equals(original.getCarnivoreContactPersonTrainingParticipants(), group.getCarnivoreContactPersonTrainingParticipants()));
-
-        // Accident prevention trainings
-        final boolean accidentPreventionTrainingEventsOverridden = original.isAccidentPreventionTrainingEventsOverridden();
-        group.setAccidentPreventionTrainingEventsOverridden(accidentPreventionTrainingEventsOverridden ||
-                !Objects.equals(original.getAccidentPreventionTrainingEvents(), group.getAccidentPreventionTrainingEvents()));
-        final boolean accidentPreventionTrainingParticipantsOverridden = original.isAccidentPreventionTrainingParticipantsOverridden();
-        group.setAccidentPreventionTrainingParticipantsOverridden(accidentPreventionTrainingParticipantsOverridden ||
-                !Objects.equals(original.getAccidentPreventionTrainingParticipants(), group.getAccidentPreventionTrainingParticipants()));
-
         updateGroup(statistics, statistics.getOrCreateHunterTraining(), group);
     }
 
@@ -654,33 +575,6 @@ public class AnnualStatisticsService {
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void updateYouthTraining(@Nonnull final RhyAnnualStatistics statistics,
                                      @Nonnull final YouthTrainingStatistics group) {
-
-        final YouthTrainingStatistics original = statistics.getOrCreateYouthTraining();
-
-        //  School trainings
-        final boolean schoolTrainingEventsOverridden = original.isSchoolTrainingEventsOverridden();
-        group.setSchoolTrainingEventsOverridden(schoolTrainingEventsOverridden ||
-                !Objects.equals(original.getSchoolTrainingEvents(), group.getSchoolTrainingEvents()));
-        final boolean schoolTrainingParticipantsOverridden = original.isSchoolTrainingParticipantsOverridden();
-        group.setSchoolTrainingParticipantsOverridden(schoolTrainingParticipantsOverridden ||
-                !Objects.equals(original.getSchoolTrainingParticipants(), group.getSchoolTrainingParticipants()));
-
-        //  College trainings
-        final boolean collegeTrainingEventsOverridden = original.isCollegeTrainingEventsOverridden();
-        group.setCollegeTrainingEventsOverridden(collegeTrainingEventsOverridden ||
-                !Objects.equals(original.getCollegeTrainingEvents(), group.getCollegeTrainingEvents()));
-        final boolean collegeTrainingParticipantsOverridden = original.isCollegeTrainingParticipantsOverridden();
-        group.setCollegeTrainingParticipantsOverridden(collegeTrainingParticipantsOverridden ||
-                !Objects.equals(original.getCollegeTrainingParticipants(), group.getCollegeTrainingParticipants()));
-
-        //  Other youth trainings
-        final boolean otherYouthTargetedTrainingEventsOverridden = original.isOtherYouthTargetedTrainingEventsOverridden();
-        group.setOtherYouthTargetedTrainingEventsOverridden(otherYouthTargetedTrainingEventsOverridden ||
-                !Objects.equals(original.getOtherYouthTargetedTrainingEvents(), group.getOtherYouthTargetedTrainingEvents()));
-        final boolean otherYouthTargetedTrainingParticipantsOverridden = original.isOtherYouthTargetedTrainingParticipantsOverridden();
-        group.setOtherYouthTargetedTrainingParticipantsOverridden(otherYouthTargetedTrainingParticipantsOverridden ||
-                !Objects.equals(original.getOtherYouthTargetedTrainingParticipants(), group.getOtherYouthTargetedTrainingParticipants()));
-
         updateGroup(statistics, statistics.getOrCreateYouthTraining(), group);
     }
 
@@ -705,7 +599,7 @@ public class AnnualStatisticsService {
         if (!copy.isCollegeTrainingEventsOverridden()) {
             copy.setCollegeTrainingEvents(resolver.getEventTypeCount(OPPILAITOSTILAISUUS));
         }
-        if (!copy.isSchoolTrainingParticipantsOverridden()) {
+        if (!copy.isCollegeTrainingParticipantsOverridden()) {
             copy.setCollegeTrainingParticipants(resolver.getEventParticipantsCount(OPPILAITOSTILAISUUS));
         }
 
@@ -723,65 +617,6 @@ public class AnnualStatisticsService {
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void updateOtherHunterTraining(@Nonnull final RhyAnnualStatistics statistics,
                                           @Nonnull final OtherHunterTrainingStatistics group) {
-
-        final OtherHunterTrainingStatistics original = statistics.getOrCreateOtherHunterTraining();
-
-        //  Small carnivore hunting trainings
-        final boolean smallCarnivoreHuntingTrainingEventsOverridden = original.isSmallCarnivoreHuntingTrainingEventsOverridden();
-        group.setSmallCarnivoreHuntingTrainingEventsOverridden(smallCarnivoreHuntingTrainingEventsOverridden ||
-                !Objects.equals(original.getSmallCarnivoreHuntingTrainingEvents(), group.getSmallCarnivoreHuntingTrainingEvents()));
-        final boolean smallCarnivoreHuntingTrainingParticipantsOverridden = original.isSmallCarnivoreHuntingTrainingParticipantsOverridden();
-        group.setSmallCarnivoreHuntingTrainingParticipantsOverridden(smallCarnivoreHuntingTrainingParticipantsOverridden ||
-                !Objects.equals(original.getSmallCarnivoreHuntingTrainingParticipants(), group.getSmallCarnivoreHuntingTrainingParticipants()));
-
-        //  Game counting trainings
-        final boolean gameCountingTrainingEventsOverridden = original.isGameCountingTrainingEventsOverridden();
-        group.setGameCountingTrainingEventsOverridden(gameCountingTrainingEventsOverridden ||
-                !Objects.equals(original.getGameCountingTrainingEvents(), group.getGameCountingTrainingEvents()));
-        final boolean gameCountingTrainingParticipantsOverridden = original.isGameCountingTrainingParticipantsOverridden();
-        group.setGameCountingTrainingParticipantsOverridden(gameCountingTrainingParticipantsOverridden ||
-                !Objects.equals(original.getGameCountingTrainingParticipants(), group.getGameCountingTrainingParticipants()));
-
-        //  Game population management trainings
-        final boolean gamePopulationManagementTrainingEventsOverridden = original.isGamePopulationManagementTrainingEventsOverridden();
-        group.setGamePopulationManagementTrainingEventsOverridden(gamePopulationManagementTrainingEventsOverridden ||
-                !Objects.equals(original.getGamePopulationManagementTrainingEvents(), group.getGamePopulationManagementTrainingEvents()));
-        final boolean gamePopulationManagementTrainingParticipantsOverridden = original.isGamePopulationManagementTrainingParticipantsOverridden();
-        group.setGamePopulationManagementTrainingParticipantsOverridden(gamePopulationManagementTrainingParticipantsOverridden ||
-                !Objects.equals(original.getGamePopulationManagementTrainingParticipants(), group.getGamePopulationManagementTrainingParticipants()));
-
-        //  Game environmental care trainings
-        final boolean gameEnvironmentalCareTrainingEventsOverridden = original.isGameEnvironmentalCareTrainingEventsOverridden();
-        group.setGameEnvironmentalCareTrainingEventsOverridden(gameEnvironmentalCareTrainingEventsOverridden ||
-                !Objects.equals(original.getGameEnvironmentalCareTrainingEvents(), group.getGameEnvironmentalCareTrainingEvents()));
-        final boolean gameEnvironmentalCareTrainingParticipantsOverridden = original.isGameEnvironmentalCareTrainingParticipantsOverridden();
-        group.setGameEnvironmentalCareTrainingParticipantsOverridden(gameEnvironmentalCareTrainingParticipantsOverridden ||
-                !Objects.equals(original.getGameEnvironmentalCareTrainingParticipants(), group.getGameEnvironmentalCareTrainingParticipants()));
-
-        //  Other game keeping trainings
-        final boolean otherGamekeepingTrainingEventsOverridden = original.isOtherGamekeepingTrainingEventsOverridden();
-        group.setOtherGamekeepingTrainingEventsOverridden(otherGamekeepingTrainingEventsOverridden ||
-                !Objects.equals(original.getOtherGamekeepingTrainingEvents(), group.getOtherGamekeepingTrainingEvents()));
-        final boolean otherGamekeepingTrainingParticipantsOverridden = original.isOtherGamekeepingTrainingParticipantsOverridden();
-        group.setOtherGamekeepingTrainingParticipantsOverridden(otherGamekeepingTrainingParticipantsOverridden ||
-                !Objects.equals(original.getOtherGamekeepingTrainingParticipants(), group.getOtherGamekeepingTrainingParticipants()));
-
-        //  Shooting trainings
-        final boolean shootingTrainingEventsOverridden = original.isShootingTrainingEventsOverridden();
-        group.setShootingTrainingEventsOverridden(shootingTrainingEventsOverridden ||
-                !Objects.equals(original.getShootingTrainingEvents(), group.getShootingTrainingEvents()));
-        final boolean shootingTrainingParticipantsOverridden = original.isShootingTrainingParticipantsOverridden();
-        group.setShootingTrainingParticipantsOverridden(shootingTrainingParticipantsOverridden ||
-                !Objects.equals(original.getShootingTrainingParticipants(), group.getShootingTrainingParticipants()));
-
-        //  Tracker trainings
-        final boolean trackerTrainingEventsOverridden = original.isTrackerTrainingEventsOverridden();
-        group.setTrackerTrainingEventsOverridden(trackerTrainingEventsOverridden ||
-                !Objects.equals(original.getTrackerTrainingEvents(), group.getTrackerTrainingEvents()));
-        final boolean trackerTrainingParticipantsOverridden = original.isTrackerTrainingParticipantsOverridden();
-        group.setTrackerTrainingParticipantsOverridden(trackerTrainingParticipantsOverridden ||
-                !Objects.equals(original.getTrackerTrainingParticipants(), group.getTrackerTrainingParticipants()));
-
         updateGroup(statistics, statistics.getOrCreateOtherHunterTraining(), group);
     }
 
@@ -862,6 +697,11 @@ public class AnnualStatisticsService {
 
         final OtherHuntingRelatedStatistics copy = statistics.makeCopy();
         copy.setHarvestPermitApplicationPartners(resolver.getNumberOfHarvestPermitApplicationPartners());
+
+        if (!copy.isMooselikeTaxationPlanningEventsOverridden()) {
+            copy.setMooselikeTaxationPlanningEvents(resolver.getEventTypeCount(HIRVIELAINTEN_VEROTUSSUUNNITTELU));
+        }
+
         return copy;
     }
 
@@ -935,7 +775,14 @@ public class AnnualStatisticsService {
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void updateLuke(@Nonnull final RhyAnnualStatistics statistics, @Nonnull final LukeStatistics group) {
-        updateGroup(statistics, statistics.getOrCreateLuke(), group);
+        final LukeStatistics existing = statistics.getOrCreateLuke();
+
+        // Northern lapland willow grouse lines and carnivore dna collectors can be updated only 2020 onwards
+        Preconditions.checkState(statistics.getYear() > 2019 ||
+                (Objects.equals(existing.getNorthernLaplandWillowGrouseLines(), group.getNorthernLaplandWillowGrouseLines()) &&
+                        Objects.equals(existing.getCarnivoreDnaCollectors(), group.getCarnivoreDnaCollectors())));
+
+        updateGroup(statistics, existing, group);
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
@@ -949,9 +796,9 @@ public class AnnualStatisticsService {
         return statistics.isNew() || statistics.isUpdateableByCoordinator();
     }
 
-    private <T extends AnnualStatisticsNonComputedFields<T>> void updateGroup(final RhyAnnualStatistics statistics,
-                                                                              final T original,
-                                                                              final T updated) {
+    private <T extends AnnualStatisticsManuallyEditableFields<T>> void updateGroup(final RhyAnnualStatistics statistics,
+                                                                                   final T original,
+                                                                                   final T updated) {
         requireNonNull(statistics, "statistics is null");
         requireNonNull(original, "original is null");
 
@@ -980,13 +827,13 @@ public class AnnualStatisticsService {
     }
 
     private void addModeratorUpdateEvent(final RhyAnnualStatistics statistics,
-                                         final AnnualStatisticsNonComputedFields<?> fieldset) {
+                                         final AnnualStatisticsManuallyEditableFields<?> fieldset) {
 
         addModeratorUpdateEvent(statistics, fieldset, activeUserService.requireActiveUser());
     }
 
     private void addModeratorUpdateEvent(final RhyAnnualStatistics statistics,
-                                         final AnnualStatisticsNonComputedFields<?> fieldset,
+                                         final AnnualStatisticsManuallyEditableFields<?> fieldset,
                                          final SystemUser user) {
 
         checkArgument(user.isModeratorOrAdmin(), "user must be moderator");

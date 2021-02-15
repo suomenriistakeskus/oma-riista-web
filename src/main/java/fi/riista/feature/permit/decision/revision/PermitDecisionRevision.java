@@ -1,6 +1,7 @@
 package fi.riista.feature.permit.decision.revision;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
+import fi.riista.feature.common.decision.AppealStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionDocument;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
@@ -79,7 +80,7 @@ public class PermitDecisionRevision extends LifecycleEntity<Long> {
 
     @Enumerated(EnumType.STRING)
     @Column
-    private PermitDecision.AppealStatus appealStatus;
+    private AppealStatus appealStatus;
 
     @Valid
     @Embedded
@@ -95,6 +96,11 @@ public class PermitDecisionRevision extends LifecycleEntity<Long> {
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(nullable = false, unique = true)
     private PersistentFileMetadata pdfMetadata;
+
+    // Publically released version without contact person's information, used with carnivore permits
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(unique = true)
+    private PersistentFileMetadata publicPdfMetadata;
 
     @OneToMany(mappedBy = "decisionRevision")
     private List<PermitDecisionRevisionAttachment> attachments = new LinkedList<>();
@@ -197,11 +203,11 @@ public class PermitDecisionRevision extends LifecycleEntity<Long> {
         this.decisionType = decisionType;
     }
 
-    public PermitDecision.AppealStatus getAppealStatus() {
+    public AppealStatus getAppealStatus() {
         return appealStatus;
     }
 
-    public void setAppealStatus(final PermitDecision.AppealStatus appealStatus) {
+    public void setAppealStatus(final AppealStatus appealStatus) {
         this.appealStatus = appealStatus;
     }
 
@@ -227,6 +233,14 @@ public class PermitDecisionRevision extends LifecycleEntity<Long> {
 
     public void setPdfMetadata(final PersistentFileMetadata pdfMetadata) {
         this.pdfMetadata = pdfMetadata;
+    }
+
+    public PersistentFileMetadata getPublicPdfMetadata() {
+        return publicPdfMetadata;
+    }
+
+    public void setPublicPdfMetadata(final PersistentFileMetadata blankedPdfMetadata) {
+        this.publicPdfMetadata = blankedPdfMetadata;
     }
 
     public List<PermitDecisionRevisionAttachment> getAttachments() {

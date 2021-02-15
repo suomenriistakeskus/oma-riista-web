@@ -1,13 +1,11 @@
 package fi.riista.util.jpa;
 
 import com.google.common.base.Preconditions;
-
 import fi.riista.feature.common.entity.EntityLifecycleFields_;
 import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.common.entity.LifecycleEntity_;
 import fi.riista.util.DateUtil;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -22,7 +20,6 @@ import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.EntityType;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
@@ -88,31 +85,31 @@ public final class JpaPreds {
 
     @Nonnull
     public static Predicate withinInterval(
-            @Nonnull final CriteriaBuilder cb, @Nonnull final Path<Date> path, @Nonnull final Interval interval) {
+            @Nonnull final CriteriaBuilder cb, @Nonnull final Path<DateTime> path, @Nonnull final Interval interval) {
 
         Objects.requireNonNull(interval, "interval must not be null");
 
-        return withinInterval(cb, path, interval.getStart().toDate(), interval.getEnd().toDate());
+        return withinInterval(cb, path, interval.getStart(), interval.getEnd());
     }
 
     @Nonnull
     public static Predicate withinInterval(
             @Nonnull final CriteriaBuilder cb,
-            @Nonnull final Path<Date> path,
+            @Nonnull final Path<DateTime> path,
             @Nullable final LocalDate beginDate,
             @Nullable final LocalDate endDate) {
 
-        Date _endDate = null;
+        DateTime _endDate = null;
 
         if (endDate != null) {
             if (beginDate != null) {
                 Preconditions.checkArgument(!beginDate.isAfter(endDate), "beginDate must not be after endDate");
             }
 
-            _endDate = DateUtil.toDateNullSafe(endDate.plusDays(1));
+            _endDate = DateUtil.toDateTimeNullSafe(endDate.plusDays(1));
         }
 
-        final Date _beginDate = DateUtil.toDateNullSafe(beginDate);
+        final DateTime _beginDate = DateUtil.toDateTimeNullSafe(beginDate);
 
         return withinInterval(cb, path, _beginDate, _endDate);
     }
@@ -120,9 +117,9 @@ public final class JpaPreds {
     @Nonnull
     public static Predicate withinInterval(
             @Nonnull final CriteriaBuilder cb,
-            @Nonnull final Path<Date> path,
-            @Nullable final Date beginDate,
-            @Nullable final Date endDate) {
+            @Nonnull final Path<DateTime> path,
+            @Nullable final DateTime beginDate,
+            @Nullable final DateTime endDate) {
 
         Objects.requireNonNull(cb, "cb must not be null");
         Objects.requireNonNull(path, "path must not be null");

@@ -1,0 +1,32 @@
+<div class="row">
+    <div class="col-xs-12">
+        <table class="table table-condensed">
+            <thead>
+            <tr>
+                <th translate="global.map.areaExternalId"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td ng-bind="$ctrl.permitArea.unionAreaId"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="col-xs-12">
+        <table class="table">
+            <thead>
+            <tr>
+                <th colspan="2" translate="global.map.areaPartnersExternalId"></th>
+            </tr>
+            </thead>
+            <tbody ng-repeat="partner in $ctrl.permitArea.partners">
+            <tr>
+                <td name-translated="partner.club"></td>
+                <td ng-bind="partner.sourceArea.externalId"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

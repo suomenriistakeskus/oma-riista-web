@@ -2,7 +2,7 @@
     <li active-if-state-includes="{{$ctrl.getStateName('general')}}">
         <a ng-click="$ctrl.focus('general')">
             <span class="fa fa-2x fa-fw fa-check-circle text-primary"></span>
-            <span translate="harvestpermit.decision.sectionId.general"></span>
+            <span translate="decision.document.general"></span>
         </a>
     </li>
     <li ng-repeat="sectionId in $ctrl.sectionIds" active-if-state-includes="{{$ctrl.getStateName(sectionId)}}"
@@ -11,7 +11,7 @@
             <span class="fa fa-2x fa-fw fa-check-circle"
                   ng-class="{'text-primary' : $ctrl.isComplete(sectionId), 'text-muted': !$ctrl.isComplete(sectionId)}">
             </span>
-            <span translate="harvestpermit.decision.sectionId.{{::sectionId}}"></span>
+            <span translate="decision.document.sectionId.{{::sectionId}}"></span>
         </a>
     </li>
 </ul>

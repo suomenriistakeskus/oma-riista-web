@@ -1,6 +1,7 @@
 package fi.riista.feature.harvestpermit.mobile;
 
 import fi.riista.feature.common.dto.BaseEntityDTO;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
@@ -12,16 +13,20 @@ import java.util.List;
 
 public class MobileHarvestPermitExistsDTO extends BaseEntityDTO<Long> {
 
-    public static @Nonnull List<MobileHarvestPermitExistsDTO> create(@Nonnull final List<HarvestPermit> permits) {
-        return F.mapNonNullsToList(permits, MobileHarvestPermitExistsDTO::create);
+    public static @Nonnull List<MobileHarvestPermitExistsDTO> create(@Nonnull final List<HarvestPermit> permits,
+                                                                     @Nonnull final HarvestSpecVersion specVersion) {
+
+        return F.mapNonNullsToList(permits, permit -> MobileHarvestPermitExistsDTO.create(permit, specVersion));
     }
 
-    public static @Nonnull MobileHarvestPermitExistsDTO create(@Nonnull final HarvestPermit permit) {
-        MobileHarvestPermitExistsDTO dto = new MobileHarvestPermitExistsDTO();
+    public static @Nonnull MobileHarvestPermitExistsDTO create(@Nonnull final HarvestPermit permit,
+                                                               @Nonnull final HarvestSpecVersion specVersion) {
+
+        final MobileHarvestPermitExistsDTO dto = new MobileHarvestPermitExistsDTO();
         DtoUtil.copyBaseFields(permit, dto);
         dto.setPermitType(permit.getPermitType());
         dto.setPermitNumber(permit.getPermitNumber());
-        dto.setSpeciesAmounts(MobileHarvestPermitSpeciesAmountDTO.create(permit.getSpeciesAmounts()));
+        dto.setSpeciesAmounts(MobileHarvestPermitSpeciesAmountDTO.create(permit.getSpeciesAmounts(), specVersion));
         dto.setUnavailable(permit.isHarvestReportDone());
         return dto;
     }

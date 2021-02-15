@@ -14,7 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
+import static java.util.Optional.ofNullable;
 
 public class HarvestRegistryExcelView extends AbstractXlsxView {
 
@@ -72,13 +73,13 @@ public class HarvestRegistryExcelView extends AbstractXlsxView {
             } else {
                 helper.appendWrappedTextCell(dto.getShooterAddress().formatToString());
             }
-            helper.appendTextCell(dto.getPointOfTime().toString("dd.MM.yyyy"));
-            helper.appendTextCell(dto.getPointOfTime().toString("HH.mm"));
+            helper.appendTextCell(dto.getDate().toString("dd.MM.yyyy"));
+            helper.appendTextCell(ofNullable(dto.getTime()).map(time->time.toString("HH.mm")).orElse(null));
             helper.appendTextCell(localiser.getTranslation(dto.getSpecies()));
             helper.appendNumberCell(dto.getAmount());
             helper.appendTextCell(localiser.getTranslation(dto.getAge()));
             helper.appendTextCell(localiser.getTranslation(dto.getGender()));
-            helper.appendTextCell(Optional.ofNullable(dto.getWeight()).map(w -> w + " kg").orElse(""));
+            helper.appendTextCell(ofNullable(dto.getWeight()).map(w -> w + " kg").orElse(""));
             helper.appendTextCell(localiser.getTranslation(dto.getMunicipality()));
             if (dto.getGeoLocation() == null) {
                 helper.appendEmptyCell(2);

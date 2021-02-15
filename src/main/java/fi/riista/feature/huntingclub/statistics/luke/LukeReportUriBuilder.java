@@ -34,10 +34,12 @@ public class LukeReportUriBuilder {
     private final String rkaOfficialCode;
     private final String htaOfficialCode;
     private final String clubOfficialCode;
+    private final boolean isInPilot;
 
     public LukeReportUriBuilder(final @Nonnull URI baseUri,
                                 final @Nonnull HarvestPermit permit,
-                                final HuntingClub club) {
+                                final HuntingClub club,
+                                final boolean isInPilot) {
         this.baseUri = Objects.requireNonNull(baseUri);
         this.permitId = permit.getId();
         this.clubId = F.getId(club);
@@ -46,6 +48,7 @@ public class LukeReportUriBuilder {
         this.rkaOfficialCode = permit.getRhy().getParentOrganisation().getOfficialCode();
         this.htaOfficialCode = permit.getMooseArea() != null ? permit.getMooseArea().getNumber() : null;
         this.clubOfficialCode = club != null ? club.getOfficialCode() : null;
+        this.isInPilot = isInPilot;
     }
 
     public Long getPermitId() {
@@ -62,18 +65,23 @@ public class LukeReportUriBuilder {
         }
 
         return getReportUri(
-                LukeReportParams.Organisation.CLUB,
-                LukeReportParams.Presentation.FIGURE,
-                LukeReportParams.Presentation.FIGURE.getFileNames().get(0));
+                LukeReportParams.LukeArea.CLUB,
+                LukeReportParams.Presentation.MOOSE_FIGURE,
+                LukeReportParams.Presentation.MOOSE_FIGURE.getFileNames().get(0));
+    }
+
+    public int getHuntingYear() {
+        return huntingYear;
     }
 
     @Nonnull
-    public URI getReportUri(final LukeReportParams.Organisation org,
+    public URI getReportUri(final LukeReportParams.LukeArea org,
                             final LukeReportParams.Presentation presentation,
                             final String fileName) {
         return UriComponentsBuilder.fromUri(baseUri)
-                .replacePath(Joiner.on('/').join(
+                .replacePath(Joiner.on('/').skipNulls().join(
                         this.huntingYear,
+                        presentation.getLukeType(),
                         org.getLukeValue(),
                         // we want to strip leading zeros, but '000' should map to '0'
                         Long.parseLong(getOrganisationId(org)),
@@ -83,9 +91,13 @@ public class LukeReportUriBuilder {
                 .toUri();
     }
 
+    public boolean isInPilot() {
+        return isInPilot;
+    }
+
     @Nonnull
-    private String getOrganisationId(final LukeReportParams.Organisation org) {
-        switch (org) {
+    private String getOrganisationId(final LukeReportParams.LukeArea area) {
+        switch (area) {
             case CLUB:
                 return Objects.requireNonNull(clubOfficialCode);
             case RHY:

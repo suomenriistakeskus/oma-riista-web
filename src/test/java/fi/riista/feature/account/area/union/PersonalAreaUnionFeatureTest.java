@@ -182,7 +182,7 @@ public class PersonalAreaUnionFeatureTest extends EmbeddedDatabaseTest {
             assertThat(all, hasSize(1));
             final Set<HarvestPermitAreaPartner> partners = all.get(0).getHarvestPermitArea().getPartners();
             assertThat(partners, hasSize(1));
-            assertEquals(now.getMillis(), all.get(0).getModificationTime().getTime());
+            assertEquals(now.getMillis(), all.get(0).getModificationTime().getMillis());
             // TODO: Assert geometry matches
         });
     }

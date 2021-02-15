@@ -19,8 +19,8 @@ import static fi.riista.feature.harvestpermit.HarvestPermitCategory.BIRD;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.MOOSELIKE;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.MOOSELIKE_NEW;
 import static fi.riista.feature.permit.decision.PermitDecision.DecisionType.HARVEST_PERMIT;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(Theories.class)
@@ -51,7 +51,7 @@ public class PermitDecisionPaymentAmountTest implements DefaultEntitySupplierPro
     }
 
     @Test
-    public void testMooselikeBird() {
+    public void testBird() {
 
         final List<BigDecimal> options = getDecisionPaymentOptionsFor(BIRD, HARVEST_PERMIT);
 

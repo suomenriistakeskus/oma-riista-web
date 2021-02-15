@@ -7,7 +7,7 @@
                 <select class="form-control"
                         id="permitType"
                         ng-model="$ctrl.searchParams.permitType"
-                        ng-options="a as a.permitType for a in $ctrl.permitTypes | orderBy: ['permitType'] track by a.permitTypeCode"
+                        ng-options="a as a.permitTypeName group by a.category for a in $ctrl.permitTypes | orderBy: ['sortOrder']"
                         ng-change="$ctrl.permitTypeChanged()"
                         ie10-optgroup-fix>
                     <option value="" translate="harvestreport.admin.all"></option>
@@ -176,6 +176,13 @@
                 <span class="glyphicon glyphicon-search"></span> &nbsp;
                 <span translate="harvestreport.admin.button.search"></span>
             </button>
+
+            <button type="button" class="btn btn-lg btn-default btn-block"
+                    ng-if="$ctrl.moderatorView" ng-click="$ctrl.exportToExcel()" ng-disabled="!$ctrl.canSearch()">
+                <span class="glyphicon glyphicon-search"></span> &nbsp;
+                <span translate="global.button.exportToExcel"></span>
+            </button>
+
         </div>
     </div>
 

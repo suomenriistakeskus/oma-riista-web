@@ -2,7 +2,7 @@
 
 angular.module('app.harvestpermit.decision.settings', [])
     .service('PermitDecisionDocumentSettingsModal', function ($uibModal, NotificationService, PermitDecision) {
-        this.open = function (decisionId) {
+        this.open = function (decisionId, permitTypeCode) {
             var modalPromise = $uibModal.open({
                 templateUrl: 'harvestpermit/decision/settings/document-settings.html',
                 controllerAs: '$ctrl',
@@ -10,6 +10,7 @@ angular.module('app.harvestpermit.decision.settings', [])
                 size: 'md',
                 resolve: {
                     decisionId: _.constant(decisionId),
+                    permitTypeCode: _.constant(permitTypeCode),
                     data: function () {
                         return PermitDecision.getDocumentSettings({id: decisionId}).$promise;
                     }
@@ -19,21 +20,16 @@ angular.module('app.harvestpermit.decision.settings', [])
             return NotificationService.handleModalPromise(modalPromise);
         };
 
-        function ModalController($uibModalInstance, decisionId, data) {
+        function ModalController($uibModalInstance, decisionId, permitTypeCode, data, PermitTypeCode) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
                 $ctrl.locale = data.locale;
                 $ctrl.decisionType = data.decisionType;
-                $ctrl.localeOptions = [{
-                    code: 'fi_FI', localisationKey: 'global.languageName.fi'
-                }, {
-                    code: 'sv_FI', localisationKey: 'global.languageName.sv'
-                }];
+                $ctrl.permitTypeCode = permitTypeCode;
             };
 
             $ctrl.save = function () {
-                var appealStatus = $ctrl.appealInitiated ? 'INITIATED' : null;
 
                 PermitDecision.updateDocumentSettings({id: decisionId}, {
                     decisionId: decisionId,
@@ -48,6 +44,10 @@ angular.module('app.harvestpermit.decision.settings', [])
 
             $ctrl.cancel = function () {
                 $uibModalInstance.dismiss('cancel');
+            };
+
+            $ctrl.isCancelRenewalAvailable = function () {
+                return PermitTypeCode.isRenewalPermitType($ctrl.permitTypeCode);
             };
         }
     })
@@ -149,34 +149,6 @@ angular.module('app.harvestpermit.decision.settings', [])
 
             $ctrl.cancel = function () {
                 $uibModalInstance.dismiss('cancel');
-            };
-        }
-    })
-    .component('assignDecisionHandler', {
-        templateUrl: 'harvestpermit/decision/settings/assign-handler.html',
-        bindings: {
-            decision: '<'
-        },
-        controllerAs: '$ctrl',
-        controller: function ($state, NotificationService, PermitDecision) {
-            var $ctrl = this;
-
-            $ctrl.$onInit = function () {
-                $ctrl.lockedAssignment = $ctrl.decision.status !== 'DRAFT';
-            };
-
-            $ctrl.assign = function () {
-                PermitDecision.assign({id: $ctrl.decision.id}).$promise.then(function () {
-                    NotificationService.showDefaultSuccess();
-                    $state.reload();
-                });
-            };
-
-            $ctrl.unassign = function () {
-                PermitDecision.unassign({id: $ctrl.decision.id}).$promise.then(function () {
-                    NotificationService.showDefaultSuccess();
-                    $state.reload();
-                });
             };
         }
     });

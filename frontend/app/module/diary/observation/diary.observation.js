@@ -85,6 +85,7 @@ angular.module('app.diary.observation', [])
             return new Observation({
                 canEdit: true,
                 type: DiaryEntryType.observation,
+                observationCategory: 'MOOSE_HUNTING',
                 observationType: 'NAKO',
                 gameSpeciesCode: harvest.gameSpeciesCode,
                 geoLocation: harvest.geoLocation,
@@ -93,7 +94,6 @@ angular.module('app.diary.observation', [])
                 actorInfo: harvest.actorInfo,
                 huntingDayId: harvest.huntingDayId,
                 totalSpecimenAmount: harvest.totalSpecimenAmount,
-                withinMooseHunting: true,
                 mooselikeMaleAmount: isAdult && isMale ? 1 : 0,
                 mooselikeFemaleAmount: isAdult && isFemale ? 1 : 0,
                 specimens: [],
@@ -104,8 +104,52 @@ angular.module('app.diary.observation', [])
         return Observation;
     })
 
+    .service('ObservationCategory', function () {
+        var self = this;
+
+        this.MOOSE_HUNTING = 'MOOSE_HUNTING';
+        this.DEER_HUNTING = 'DEER_HUNTING';
+        this.NORMAL = 'NORMAL';
+
+        this.from = function (withinMooseHunting, withinDeerHunting) {
+            if (withinMooseHunting) {
+                return self.MOOSE_HUNTING;
+            }
+            if (withinDeerHunting) {
+                return self.DEER_HUNTING;
+            }
+            return self.NORMAL;
+        };
+
+        this.isWithinMooseHunting = function (observationCategory) {
+            return observationCategory === self.MOOSE_HUNTING;
+        };
+
+        this.isWithinDeerHunting = function (observationCategory) {
+            return observationCategory === self.DEER_HUNTING;
+        };
+
+        this.isWithinHunting = function (observationCategory) {
+            return observationCategory === self.MOOSE_HUNTING || observationCategory === self.DEER_HUNTING;
+        };
+
+    })
+
+    .service('DeerHuntingType', function() {
+        var self = this;
+
+        this.STAND_HUNTING = 'STAND_HUNTING';
+        this.DOG_HUNTING = 'DOG_HUNTING';
+        this.OTHER = 'OTHER';
+
+        this.getAll = function () {
+            return [self.STAND_HUNTING, self.DOG_HUNTING, self.OTHER];
+        };
+
+    })
+
     .service('ObservationFieldsMetadata', function ($filter, $resource, $http, AuthenticationService,
-                                                    ObservationFieldRequirements) {
+                                                    ObservationFieldRequirements, ObservationCategory) {
         var rangeFilter = $filter('range');
 
         function appendTransform(defaults, transform) {
@@ -121,6 +165,7 @@ angular.module('app.diary.observation', [])
                 transformResponse: appendTransform($http.defaults.transformResponse, function (data, headersGetter, status) {
                     if (status === 200 && _.isObject(data)) {
                         data.isCarnivoreAuthority = AuthenticationService.isCarnivoreAuthority();
+                        data.isDeerPilotUser = AuthenticationService.isDeerPilotUser();
                         return data;
                     } else {
                         return data || {};
@@ -129,25 +174,26 @@ angular.module('app.diary.observation', [])
             }
         });
 
-        var _findContextSensitiveFieldSets = function (self, withinMooseHunting, observationType) {
+        var _findContextSensitiveFieldSets = function (self, observationCategory, observationType) {
             if (!self.contextSensitiveFieldSets) {
                 return [];
             }
 
-            withinMooseHunting = withinMooseHunting || false;
-
             return _.filter(self.contextSensitiveFieldSets, function (fieldSet) {
-                return fieldSet.withinMooseHunting === withinMooseHunting &&
-                    (!observationType || fieldSet.type === observationType);
+                return fieldSet.category === observationCategory && (!observationType || fieldSet.type === observationType);
             });
         };
 
         var _hasMooseHuntingContexts = function (self) {
-            return _findContextSensitiveFieldSets(self, true).length > 0;
+            return _findContextSensitiveFieldSets(self, ObservationCategory.MOOSE_HUNTING).length > 0;
         };
 
-        ObservationFieldsMetadata.prototype.getAvailableObservationTypes = function (withinMooseHunting) {
-            return _.map(_findContextSensitiveFieldSets(this, withinMooseHunting), 'type');
+        var _hasDeerHuntingContexts = function (self) {
+            return _findContextSensitiveFieldSets(self, ObservationCategory.DEER_HUNTING).length > 0;
+        };
+
+        ObservationFieldsMetadata.prototype.getAvailableObservationTypes = function (category) {
+            return _.map(_findContextSensitiveFieldSets(this, category), 'type');
         };
 
         var halfStepRange = function (min, max) {
@@ -158,6 +204,14 @@ angular.module('app.diary.observation', [])
             return rangeFilter([], min, max, 0.5);
         };
 
+        ObservationFieldsMetadata.prototype.hasDeerHuntingFields = function () {
+            return _hasDeerHuntingContexts(this);
+        };
+
+        ObservationFieldsMetadata.prototype.hasMooseHuntingFields = function () {
+            return _hasMooseHuntingContexts(this);
+        };
+
         ObservationFieldsMetadata.prototype.getWidthOfPawOptions = function () {
             return halfStepRange(this.minWidthOfPaw, this.maxWidthOfPaw);
         };
@@ -166,7 +220,7 @@ angular.module('app.diary.observation', [])
             return halfStepRange(this.minLengthOfPaw, this.maxLengthOfPaw);
         };
 
-        ObservationFieldsMetadata.prototype.getFieldRequirements = function (withinMooseHunting, observationType) {
+        ObservationFieldsMetadata.prototype.getFieldRequirements = function (observationCategory, observationType) {
             if (!this.gameSpeciesCode || !_.isBoolean(this.isCarnivoreAuthority)) {
                 return null;
             }
@@ -174,11 +228,12 @@ angular.module('app.diary.observation', [])
             var requirements = {
                 fields: angular.copy(this.baseFields || {}),
                 specimenFields: angular.copy(this.specimenFields || {}),
-                isCarnivoreAuthority: !!this.isCarnivoreAuthority
+                isCarnivoreAuthority: !!this.isCarnivoreAuthority,
+                isDeerPilotUser: !!this.isDeerPilotUser
             };
 
             if (observationType) {
-                var ctxSensitiveFieldSets = _findContextSensitiveFieldSets(this, withinMooseHunting, observationType);
+                var ctxSensitiveFieldSets = _findContextSensitiveFieldSets(this, observationCategory, observationType);
                 var ctxSensitiveFieldSet = ctxSensitiveFieldSets.length === 1 ? ctxSensitiveFieldSets[0] : null;
 
                 if (ctxSensitiveFieldSet) {
@@ -203,35 +258,39 @@ angular.module('app.diary.observation', [])
             return ObservationFieldRequirements.create(requirements);
         };
 
-        function _isWithinMooseHuntingSelectionRequired(self) {
-            var fieldRequirements = self.getFieldRequirements();
-            return fieldRequirements.fields.withinMooseHunting === 'YES';
-        }
-
-        function _isObservationTypeLegalForMooseHuntingSelection(self, observationType, withinMooseHunting) {
-            return _.find(self.getAvailableObservationTypes(withinMooseHunting), function (obsTypeCandidate) {
+        function _isObservationTypeLegalForCategory(self, observationType, observationCategory) {
+            return _.find(self.getAvailableObservationTypes(observationCategory), function (obsTypeCandidate) {
                 return obsTypeCandidate === observationType;
             });
         }
 
+        // TODO: Check what of these are really needed.
         ObservationFieldsMetadata.prototype.resetIllegalObservationFields = function (observation) {
             if (!observation || !observation.isObservation()) {
                 return;
             }
 
             if (this.gameSpeciesCode) {
-                if (_.isBoolean(observation.withinMooseHunting)) {
-                    if (!_hasMooseHuntingContexts(this)) {
-                        delete observation.withinMooseHunting;
-                    }
-                } else if (_isWithinMooseHuntingSelectionRequired(this)) {
-                    observation.withinMooseHunting = false;
+                if (!_hasMooseHuntingContexts(this) && observation.observationCategory === ObservationCategory.MOOSE_HUNTING) {
+                    observation.observationCategory = ObservationCategory.NORMAL;
                 }
 
-                var withinMooseHunting = observation.withinMooseHunting || false;
+                if (!_hasDeerHuntingContexts(this)) {
+                    delete observation.deerHuntingType;
+                    delete observation.deerHuntingTypeDescription;
+
+                    if (observation.observationCategory === ObservationCategory.DEER_HUNTING) {
+                        observation.observationCategory = ObservationCategory.NORMAL;
+                    }
+                }
+
+                if (!observation.observationCategory) {
+                    observation.observationCategory = ObservationCategory.NORMAL;
+                }
+
                 var type = observation.observationType;
 
-                if (type && !_isObservationTypeLegalForMooseHuntingSelection(this, type, withinMooseHunting)) {
+                if (type && !_isObservationTypeLegalForCategory(this, type, observation.observationCategory)) {
                     observation.observationType = null;
                 }
             }
@@ -248,11 +307,15 @@ angular.module('app.diary.observation', [])
         var allMooseAmountFields =
             ['mooselikeMaleAmount', 'mooselikeFemaleAmount', 'mooselikeCalfAmount', 'mooselikeFemale1CalfAmount',
                 'mooselikeFemale2CalfsAmount', 'mooselikeFemale3CalfsAmount', 'mooselikeUnknownSpecimenAmount'];
-        var allMooselikeAmountFields = _.union(allMooseAmountFields, ['mooselikeFemale4CalfsAmount']);
+        var allMooselikeAmountFields =
+            ['mooselikeMaleAmount', 'mooselikeFemaleAmount', 'mooselikeCalfAmount', 'mooselikeFemale1CalfAmount',
+            'mooselikeFemale2CalfsAmount', 'mooselikeFemale3CalfsAmount', 'mooselikeFemale4CalfsAmount',
+                'mooselikeUnknownSpecimenAmount'];
         var allAmountFields = _.union(['amount'], allMooselikeAmountFields);
 
         var allPossibleBaseFields = _.union(allAmountFields,
-            ['verifiedByCarnivoreAuthority', 'observerName', 'observerPhoneNumber', 'officialAdditionalInfo']);
+            ['verifiedByCarnivoreAuthority', 'observerName', 'observerPhoneNumber', 'officialAdditionalInfo',
+                'deerHuntingType', 'deerHuntingTypeDescription']);
 
         var allPossibleSpecimenFields = ['age', 'gender', 'widthOfPaw', 'lengthOfPaw', 'state', 'marking'];
 
@@ -266,6 +329,10 @@ angular.module('app.diary.observation', [])
 
         ObservationFieldRequirements.getAllMooseAmountFields = function () {
             return angular.copy(allMooseAmountFields);
+        };
+
+        ObservationFieldRequirements.getAllMooselikeAmountFields = function () {
+            return angular.copy(allMooselikeAmountFields);
         };
 
         ObservationFieldRequirements.getAllAmountFields = function () {
@@ -301,14 +368,19 @@ angular.module('app.diary.observation', [])
         };
 
         ObservationFieldRequirements.prototype.isFieldRequired = function (fieldName) {
-            return this.fields[fieldName] === 'YES' || this.specimenFields[fieldName] === 'YES';
+            var requirement = this.fields[fieldName] || this.specimenFields[fieldName];
+            return requirement === 'YES'
+                || requirement === 'YES_DEER_PILOT' && !!this.isDeerPilotUser;
         };
 
         ObservationFieldRequirements.prototype.isFieldLegal = function (fieldName) {
             var requirement = this.fields[fieldName] || this.specimenFields[fieldName];
             return requirement === 'YES'
                 || requirement === 'VOLUNTARY'
-                || requirement === 'VOLUNTARY_CARNIVORE_AUTHORITY' && !!this.isCarnivoreAuthority;
+                || requirement === 'VOLUNTARY_CARNIVORE_AUTHORITY' && !!this.isCarnivoreAuthority
+                || requirement === 'DEER_PILOT' && !!this.isDeerPilotUser
+                || requirement === 'YES_DEER_PILOT' && !!this.isDeerPilotUser
+                || requirement === 'VOLUNTARY_DEER_PILOT' && !!this.isDeerPilotUser;
         };
 
         ObservationFieldRequirements.prototype.getAmountFields = function () {
@@ -317,6 +389,20 @@ angular.module('app.diary.observation', [])
             return _.filter(allAmountFields, function (amountFieldName) {
                 return self.isFieldLegal(amountFieldName);
             });
+        };
+
+        ObservationFieldRequirements.prototype.areRequiredFieldsSet = function (observation) {
+            if (!observation || !observation.isObservation()) {
+                return false;
+            }
+
+            var self = this;
+
+            return _.every(allPossibleBaseFields, function (fieldName) {
+                var observationFieldName = translateMetadataFieldToObservationField(fieldName);
+                return !self.isFieldRequired(fieldName) || !_.isNil(observation[observationFieldName]);
+            });
+
         };
 
         ObservationFieldRequirements.prototype.isSumOfAmountFieldsValid = function (observation) {
@@ -362,8 +448,9 @@ angular.module('app.diary.observation', [])
                     if (isNonMooselikeAmountField) {
                         delete observation.specimens;
                     }
-                } else if (_.includes(allAmountFields, fieldName) && !_.isFinite(observation[observationFieldName]) &&
-                    self.isFieldRequired(fieldName)) {
+                } else if (_.includes(allAmountFields, fieldName)
+                           && !_.isFinite(observation[observationFieldName])
+                           && self.isFieldRequired(fieldName)) {
 
                     if (isNonMooselikeAmountField) {
                         observation[observationFieldName] = 1;
@@ -407,29 +494,43 @@ angular.module('app.diary.observation', [])
         return ObservationFieldRequirements;
     })
 
-    .controller('ObservationFormController', function ($filter, $scope, DiaryEntryService,
-                                                       DiaryImageService, DiaryEntrySpecimenFormService,
-                                                       Helpers, ObservationFieldRequirements, ObservationFieldsMetadata,
-                                                       entry, fieldMetadataForObservationSpecies, parameters) {
+    .controller('ObservationFormController', function ($filter, $scope, DiaryImageService,
+                                                       DiaryEntrySpecimenFormService, ObservationFieldRequirements,
+                                                       ObservationFieldsMetadata, entry,
+                                                       fieldMetadataForObservationSpecies, parameters,
+                                                       ObservationCategory, DeerHuntingType) {
 
         $scope.entry = entry;
+
+        // Hunting day cannot be altered from game diary view. In addition, `huntingDayId` property is not used in game
+        // diary view. Hence, it can be safely deleted in order to avoid unnecessary validation errors and side-effects
+        // in processing of create/update requests on the server-side.
+        delete $scope.entry.huntingDayId;
+
         $scope.species = parameters.species;
         $scope.getCategoryName = parameters.$getCategoryName;
         $scope.getUrl = DiaryImageService.getUrl;
         $scope.maxSpecimenCount = DiaryEntrySpecimenFormService.getMaxSpecimenCountForObservation();
         $scope.fieldMetadata = fieldMetadataForObservationSpecies;
         $scope.fieldRequirements = null;
-
-        if (entry.huntingDayId) {
-            $scope.entry.canEdit = false;
-        }
+        $scope.viewState = {
+            anyLargeCarnivoreFieldsPresent: false,
+            withinMooseHunting: entry.observationCategory === ObservationCategory.MOOSE_HUNTING,
+            withinDeerHunting: entry.observationCategory === ObservationCategory.DEER_HUNTING
+        };
 
         $scope.observationSpecimenTitleVisible = function () {
             return _.some(ObservationFieldRequirements.getAllAmountFields(), $scope.isFieldVisible);
         };
 
         $scope.getAvailableObservationTypes = function () {
-            return $scope.fieldMetadata ? $scope.fieldMetadata.getAvailableObservationTypes($scope.entry.withinMooseHunting) : [];
+            return $scope.fieldMetadata
+                ? $scope.fieldMetadata.getAvailableObservationTypes($scope.entry.observationCategory)
+                : [];
+        };
+
+        $scope.getAvailableDeerHuntingTypes = function () {
+          return DeerHuntingType.getAll();
         };
 
         $scope.isFieldRequired = function (fieldName) {
@@ -438,6 +539,10 @@ angular.module('app.diary.observation', [])
 
         $scope.isFieldVisible = function (fieldName) {
             return $scope.fieldRequirements && $scope.fieldRequirements.isFieldLegal(fieldName);
+        };
+
+        $scope.isDeerPilotUser = function () {
+            return $scope.fieldRequirements && $scope.fieldRequirements.isDeerPilotUser;
         };
 
         $scope.getAvailableGameGenders = function () {
@@ -472,15 +577,16 @@ angular.module('app.diary.observation', [])
             return $scope.fieldRequirements && $scope.fieldRequirements.isSumOfAmountFieldsValid($scope.entry);
         }
 
-        $scope.viewState = {
-            anyLargeCarnivoreFieldsPresent: false
-        };
+        function areRequiredFieldsSet() {
+            return $scope.fieldRequirements && $scope.fieldRequirements.areRequiredFieldsSet($scope.entry);
+        }
 
         $scope.isValid = function () {
             return $scope.entry.gameSpeciesCode &&
                 $scope.entry.observationType &&
                 $scope.entry.geoLocation.latitude &&
-                isSumOfAmountFieldsValid();
+                isSumOfAmountFieldsValid() &&
+                areRequiredFieldsSet();
         };
 
         // Convert timestamp
@@ -540,74 +646,81 @@ angular.module('app.diary.observation', [])
             return $scope.entry.totalSpecimenAmount > DiaryEntrySpecimenFormService.MAX_VISIBLE_AMOUNT;
         };
 
-        $scope.$watch('entry.gameSpeciesCode', function (newValue, oldValue) {
-            if (newValue !== oldValue) {
-                if (newValue) {
-                    ObservationFieldsMetadata.forSpecies({gameSpeciesCode: newValue}).$promise.then(function (metadata) {
-                        $scope.fieldMetadata = metadata;
-                    });
-                } else {
-                    $scope.fieldMetadata = null;
-                }
-            }
-        });
-
-        $scope.$watch('entry.withinMooseHunting', function (newValue, oldValue) {
-            if (newValue !== oldValue) {
-                if ($scope.fieldMetadata) {
-                    $scope.fieldMetadata.resetIllegalObservationFields($scope.entry);
-                    $scope.fieldRequirements = $scope.fieldMetadata.getFieldRequirements(newValue, $scope.entry.observationType);
-                }
-            }
-        });
-
-        $scope.$watch('entry.observationType', function (newValue, oldValue) {
-            if (newValue !== oldValue) {
-                if ($scope.fieldMetadata) {
-                    $scope.fieldRequirements = $scope.fieldMetadata.getFieldRequirements($scope.entry.withinMooseHunting, $scope.entry.observationType);
-                }
-            }
-        });
-
-        $scope.$watch('fieldMetadata', function (newValue, oldValue) {
-            if (newValue) {
-                newValue.resetIllegalObservationFields($scope.entry);
-                $scope.fieldRequirements = newValue.getFieldRequirements($scope.entry.withinMooseHunting, $scope.entry.observationType);
+        // Changed value of 'Laji' dropdown
+        $scope.gameSpeciesChange = function () {
+            if ($scope.entry.gameSpeciesCode) {
+                ObservationFieldsMetadata.forSpecies({gameSpeciesCode: $scope.entry.gameSpeciesCode}).$promise.then(function (metadata) {
+                    $scope.fieldMetadata = metadata;
+                    $scope.updateCategory();
+                });
             } else {
+                $scope.fieldMetadata = null;
                 $scope.fieldRequirements = null;
+                // TODO: Should here reset entry or viewState values too?
+                //       They are reset when another species is been selected, though.
             }
-        });
+        };
 
-        $scope.$watchCollection(
-            function () {
-                return $scope.getAvailableObservationTypes();
-            },
-            function (newValue, oldValue) {
-                if (newValue !== oldValue && newValue) {
-                    if (newValue.length === 1) {
-                        $scope.entry.observationType = newValue[0];
-                    }
+        // Clicked 'Hirvenmetsästyksen yhteydessä' or 'Peuran metsästyksen yhteydessä' checkbox
+        $scope.updateCategory = function () {
+            if ($scope.fieldMetadata) {
+                if (!$scope.fieldMetadata.hasMooseHuntingFields()) {
+                    $scope.viewState.withinMooseHunting = false;
                 }
-            });
 
-        $scope.$watch('fieldRequirements', function (newValue, oldValue) {
-            var anyLargeCarnivoreFieldsPresent = false;
+                if (!$scope.fieldMetadata.hasDeerHuntingFields()) {
+                    $scope.viewState.withinDeerHunting = false;
+                }
 
-            if (newValue) {
-                newValue.resetIllegalObservationFields($scope.entry);
+                $scope.entry.observationCategory = ObservationCategory.from($scope.viewState.withinMooseHunting,
+                                                                            $scope.viewState.withinDeerHunting);
 
-                anyLargeCarnivoreFieldsPresent = newValue.isFieldLegal('verifiedByCarnivoreAuthority')
-                    || newValue.isFieldLegal('observerName')
-                    || newValue.isFieldLegal('observerPhoneNumber')
-                    || newValue.isFieldLegal('officialAdditionalInfo');
+                var availableObservationTypes = $scope.getAvailableObservationTypes();
+                if (availableObservationTypes.length === 1) {
+                    $scope.entry.observationType = availableObservationTypes[0];
+                }
+
+                $scope.updateRequirements();
+            } else {
+                $scope.entry.observationCategory = ObservationCategory.NORMAL;
             }
+        };
+
+        $scope.updateRequirements = function () {
+            $scope.fieldRequirements = $scope.fieldMetadata.getFieldRequirements($scope.entry.observationCategory,
+                                                                                 $scope.entry.observationType);
+
+            $scope.fieldRequirements.resetIllegalObservationFields($scope.entry);
+
+            var anyLargeCarnivoreFieldsPresent = $scope.fieldRequirements.isFieldLegal('verifiedByCarnivoreAuthority')
+                || $scope.fieldRequirements.isFieldLegal('observerName')
+                || $scope.fieldRequirements.isFieldLegal('observerPhoneNumber')
+                || $scope.fieldRequirements.isFieldLegal('officialAdditionalInfo');
             $scope.viewState.anyLargeCarnivoreFieldsPresent = anyLargeCarnivoreFieldsPresent;
-        });
+        };
 
-        $scope.$watch('entry.totalSpecimenAmount', function (newValue, oldValue) {
-            if (newValue) {
-                $scope.entry.totalSpecimenAmount = Math.min(newValue, $scope.maxSpecimenCount);
+        // If observation has been edited, the field requirements needs to be set..
+        // Note! This must be after definition of updateRequirements function.
+        if ($scope.fieldMetadata) {
+            // This is needed for old deer observations that were originally observed 'within moose
+            // hunting' but cannot anymore be saved as 'within moose hunting' according to updated
+            // metadata. Without this, the observation type drop-down may initially be left empty.
+            $scope.fieldMetadata.resetIllegalObservationFields($scope.entry);
+
+            $scope.updateRequirements();
+        }
+
+        // Changed value of 'Havaintotyyppi' dropdown
+        $scope.observationTypeChange = function () {
+            if ($scope.fieldMetadata) {
+                $scope.updateRequirements();
             }
-            DiaryEntrySpecimenFormService.setSpecimenCount($scope.entry, newValue);
-        });
+        };
+
+        // Changed value of 'Määrä' input field
+        $scope.totalSpecimenAmountChange = function () {
+            $scope.entry.totalSpecimenAmount = Math.min($scope.entry.totalSpecimenAmount, $scope.maxSpecimenCount);
+            DiaryEntrySpecimenFormService.setSpecimenCount($scope.entry, $scope.entry.totalSpecimenAmount);
+        };
+
     });

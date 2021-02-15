@@ -14,6 +14,12 @@ angular.module('app.occupation.services', [])
         'METSASTYKSENVALVOJA',
         'RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA'
     ])
+    .constant('BoardRepresentationRoles', [
+        'METSAHALLITUKSEN_EDUSTAJA',
+        'MAANOMISTAJIEN_EDUSTAJA',
+        'METSAHALLITUKSEN_VARAEDUSTAJA',
+        'MAANOMISTAJIEN_VARAEDUSTAJA'
+    ])
     .factory('Occupations', function ($resource) {
         return $resource('api/v1/organisation/:orgId/occupation/:id', {orgId: "@orgId", id: "@id"}, {
             query: {
@@ -26,8 +32,7 @@ angular.module('app.occupation.services', [])
                 isArray: true
             },
             get: {method: 'GET'},
-            update: {method: 'PUT'},
-            delete: {method: 'DELETE'}
+            update: {method: 'PUT'}
         });
     })
     .factory('OccupationTypes', function ($resource) {
@@ -133,13 +138,15 @@ angular.module('app.occupation.services', [])
                     : occupationTypes.all);
         }
 
-        this.addOccupation = function (orgId, occupationTypes, showBoardOnly) {
+        this.addOccupation = function (orgId, occupationTypes, showBoardOnly, currentBoardRoles) {
             return $uibModal.open({
                 templateUrl: 'occupation/form.html',
                 resolve: {
                     orgId: _.constant(orgId),
                     occupation: _.constant({}),
+                    boardTypes:  _.constant(filterOccupations(occupationTypes, true)),
                     occupationTypes: _.constant(filterOccupations(occupationTypes, showBoardOnly)),
+                    currentBoardRoles: _.constant(currentBoardRoles),
                     existingPersons: function () {
                         return Occupations.listCandidatePersons({orgId: orgId}).$promise;
                     }
@@ -148,13 +155,15 @@ angular.module('app.occupation.services', [])
             }).result;
         };
 
-        this.showSelected = function (occupation, orgId, occupationTypes, showBoardOnly) {
+        this.showSelected = function (occupation, orgId, occupationTypes, showBoardOnly, currentBoardRoles) {
             return $uibModal.open({
                 templateUrl: 'occupation/form.html',
                 resolve: {
                     orgId: _.constant(orgId),
                     occupation: _.constant(angular.copy(occupation)),
+                    boardTypes:  _.constant(filterOccupations(occupationTypes, true)),
                     occupationTypes: _.constant(filterOccupations(occupationTypes, showBoardOnly)),
+                    currentBoardRoles: _.constant(currentBoardRoles),
                     existingPersons: function () {
                         return Occupations.listCandidatePersons({orgId: orgId}).$promise;
                     }
@@ -163,16 +172,6 @@ angular.module('app.occupation.services', [])
             }).result;
         };
 
-        this.removeSelected = function (occupation, orgId) {
-            return $uibModal.open({
-                templateUrl: 'occupation/remove.html',
-                resolve: {
-                    orgId: _.constant(orgId),
-                    occupation: _.constant(occupation)
-                },
-                controller: 'OccupationRemoveController'
-            }).result;
-        };
     })
 
     .service('OccupationPermissionService', function (ActiveRoleService, JHTOccupationTypes) {

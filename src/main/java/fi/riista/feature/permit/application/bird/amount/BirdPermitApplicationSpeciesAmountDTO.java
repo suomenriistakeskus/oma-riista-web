@@ -20,7 +20,7 @@ public class BirdPermitApplicationSpeciesAmountDTO {
         requireNonNull(speciesAmount.getGameSpecies(), "species must not be null");
 
         this.gameSpeciesCode = speciesAmount.getGameSpecies().getOfficialCode();
-        this.amount = speciesAmount.getAmount();
+        this.amount = speciesAmount.getSpecimenAmount();
     }
 
     @AssertTrue

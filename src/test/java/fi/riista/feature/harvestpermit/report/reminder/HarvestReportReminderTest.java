@@ -23,7 +23,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
 

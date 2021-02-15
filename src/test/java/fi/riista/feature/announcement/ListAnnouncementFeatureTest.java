@@ -24,7 +24,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyCollectionOf;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
@@ -103,11 +103,11 @@ public class ListAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         return listAnnouncementFeature.listForOrganisation(
                 organisation.getOrganisationType(),
                 organisation.getOfficialCode(),
-                new PageRequest(0, 1000)).getContent();
+                PageRequest.of(0, 1000)).getContent();
     }
 
     private List<ListAnnouncementDTO> listMine() {
-        return listAnnouncementFeature.listMine(new PageRequest(0, 1000)).getContent();
+        return listAnnouncementFeature.listMine(PageRequest.of(0, 1000)).getContent();
     }
 
     private void assertNotVisible(final Person person) {

@@ -50,12 +50,12 @@ public class CarnivorePermitApplicationSpeciesAmountFeature {
                 .findAtMostOneByHarvestPermitApplication(application)
                 .map(spa -> {
                     checkState(dto.getGameSpeciesCode() == spa.getGameSpecies().getOfficialCode());
-                    spa.setAmount(dto.getAmount());
+                    spa.setSpecimenAmount(dto.getAmount());
                     return spa;
                 })
                 .orElseGet(() -> {
                     final GameSpecies gameSpecies = gameSpeciesService.requireByOfficialCode(dto.getGameSpeciesCode());
-                    return new HarvestPermitApplicationSpeciesAmount(application, gameSpecies, dto.getAmount());
+                    return HarvestPermitApplicationSpeciesAmount.createForHarvest(application, gameSpecies, dto.getAmount());
                 });
 
         speciesAmount.setBeginDate(dto.getBegin());

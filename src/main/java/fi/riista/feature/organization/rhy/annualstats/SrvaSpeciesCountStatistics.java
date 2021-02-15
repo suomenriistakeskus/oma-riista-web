@@ -36,6 +36,7 @@ public class SrvaSpeciesCountStatistics implements Serializable {
         result.setBears(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getBears));
         result.setWolves(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getWolves));
         result.setWolverines(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getWolverines));
+        result.setOtherSpecies(nullableIntSum(first, second, SrvaSpeciesCountStatistics::getOtherSpecies));
         return result;
     }
 
@@ -94,6 +95,11 @@ public class SrvaSpeciesCountStatistics implements Serializable {
     @JsonProperty("" + GameSpecies.OFFICIAL_CODE_WOLVERINE)
     private Integer wolverines;
 
+    @Min(0)
+    @Column
+    @JsonProperty("" + GameSpecies.OFFICIAL_CODE_UNKNOWN)
+    private Integer otherSpecies;
+
     public SrvaSpeciesCountStatistics() {
     }
 
@@ -110,6 +116,7 @@ public class SrvaSpeciesCountStatistics implements Serializable {
         this.bears = that.bears;
         this.wolves = that.wolves;
         this.wolverines = that.wolverines;
+        this.otherSpecies = that.otherSpecies;
     }
 
     @JsonGetter("all")
@@ -117,7 +124,7 @@ public class SrvaSpeciesCountStatistics implements Serializable {
     public Integer countAll() {
         return nullableIntSum(
                 mooses, whiteTailedDeers, roeDeers, wildForestReindeers, fallowDeers, wildBoars, lynxes, bears, wolves,
-                wolverines);
+                wolverines, otherSpecies);
     }
 
     @Nullable
@@ -210,5 +217,13 @@ public class SrvaSpeciesCountStatistics implements Serializable {
 
     public void setWolverines(final Integer wolverines) {
         this.wolverines = wolverines;
+    }
+
+    public Integer getOtherSpecies() {
+        return otherSpecies;
+    }
+
+    public void setOtherSpecies(final Integer otherSpecies) {
+        this.otherSpecies = otherSpecies;
     }
 }

@@ -21,18 +21,72 @@
     </div>
 </div>
 
+<div class="row">
+    <div class="col-md-6 col-xs-12 text-center"
+         ng-repeat=" t in $ctrl.otherHarvestPermitTypes">
+        <application-type type="t" on-select-type="$ctrl.onSelect({applicationType: t})"></application-type>
+    </div>
+</div>
+
 <hr class="invisible">
 <hr class="invisible">
 
-<div ng-if="$ctrl.derogationTypes && $ctrl.derogationTypes.length > 0">
+<div ng-if="$ctrl.damageBasedDerogations && $ctrl.damageBasedDerogations.length > 0">
 
-    <h3 translate="harvestpermit.new.instructions.derogationCategory"></h3>
+    <h3 translate="harvestpermit.new.instructions.damageBasedDerogationCategory"></h3>
 
     <hr class="invisible">
 
     <div class="row">
         <div class="col-md-6 col-xs-12 text-center"
-             ng-repeat="t in $ctrl.derogationTypes">
+             ng-repeat="t in $ctrl.damageBasedDerogations">
+            <application-type type="t" on-select-type="$ctrl.onSelect({applicationType: t})"></application-type>
+        </div>
+    </div>
+
+    <hr class="invisible">
+    <hr class="invisible">
+</div>
+<div ng-if="$ctrl.otherDerogations && $ctrl.otherDerogations.length > 0">
+
+    <h3 translate="harvestpermit.new.instructions.otherDerogationCategory"></h3>
+
+    <hr class="invisible">
+
+    <div class="row">
+        <div class="col-md-6 col-xs-12 text-center"
+             ng-repeat="t in $ctrl.otherDerogations">
+            <application-type type="t" on-select-type="$ctrl.onSelect({applicationType: t})"></application-type>
+        </div>
+    </div>
+
+    <hr class="invisible">
+    <hr class="invisible">
+</div>
+<div ng-if="$ctrl.dogEventPermitTypes && $ctrl.dogEventPermitTypes.length > 0">
+
+    <h3 translate="harvestpermit.new.instructions.dogEventCategory"></h3>
+
+    <hr class="invisible">
+
+    <div class="row">
+        <div class="col-md-6 col-xs-12 text-center" ng-repeat="t in $ctrl.dogEventPermitTypes">
+            <application-type type="t" on-select-type="$ctrl.onSelect({applicationType: t})"></application-type>
+        </div>
+    </div>
+
+    <hr class="invisible">
+    <hr class="invisible">
+</div>
+<div ng-if="$ctrl.otherPermitTypes && $ctrl.otherPermitTypes.length > 0">
+
+    <h3 translate="harvestpermit.new.instructions.otherPermitsCategory"></h3>
+
+    <hr class="invisible">
+
+    <div class="row">
+        <div class="col-md-6 col-xs-12 text-center"
+             ng-repeat="t in $ctrl.otherPermitTypes">
             <application-type type="t" on-select-type="$ctrl.onSelect({applicationType: t})"></application-type>
         </div>
     </div>

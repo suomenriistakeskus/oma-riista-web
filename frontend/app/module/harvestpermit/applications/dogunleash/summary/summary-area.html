@@ -1,0 +1,23 @@
+<table class="table">
+    <tbody>
+    <tr>
+        <th class="col-xs-3" translate="harvestpermit.wizard.dogunleash.map.areaSize"></th>
+        <td>
+            <span ng-bind="$ctrl.application.derogationPermitApplicationAreaDTO.areaSize"></span>
+            <span translate="global.hectares"></span>
+        </td>
+    </tr>
+    <tr ng-if="$ctrl.attachments.length > 0">
+        <th class="col-xs-3" translate="harvestpermit.wizard.navigation.attachments"></th>
+        <td>
+            <p ng-repeat="a in ::$ctrl.attachments track by a.id">
+                <a ng-click="$ctrl.downloadAttachment(a.id)" ng-bind="::a.name"></a>
+            </p>
+        </td>
+    </tr>
+    <tr ng-if="$ctrl.application.derogationPermitApplicationAreaDTO.areaDescription">
+        <th class="col-xs-3" translate="harvestpermit.wizard.nestremoval.map.areaDescription"></th>
+        <td ng-bind="$ctrl.application.derogationPermitApplicationAreaDTO.areaDescription"></td>
+    </tr>
+    </tbody>
+</table>

@@ -2,23 +2,23 @@
     <thead>
     <tr>
         <td><span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
-        <td>käyttäjiä</td>
-        <td>latauksia</td>
+        <td translate="reporting.dashboard.usersTab.pdf.users"></td>
+        <td translate="reporting.dashboard.usersTab.pdf.downloads"></td>
     </tr>
     </thead>
     <tr>
-        <td>Metsästyskortti</td>
-        <td>{{$ctrl.metrics.countPdfCertificateUsers}}</td>
-        <td>{{$ctrl.metrics.countPdfCertificateDownloads}}</td>
+        <td translate="reporting.dashboard.usersTab.pdf.huntingCard"></td>
+        <td ng-bind="::$ctrl.metrics.countPdfCertificateUsers"></td>
+        <td ng-bind="::$ctrl.metrics.countPdfCertificateDownloads"></td>
     </tr>
     <tr>
-        <td>Todistus ulkomailla metsästystä varten</td>
-        <td>{{$ctrl.metrics.countForeignPdfCertificateUsers}}</td>
-        <td>{{$ctrl.metrics.countForeignPdfCertificateDownloads}}</td>
+        <td translate="reporting.dashboard.usersTab.pdf.foreignCertificate"></td>
+        <td ng-bind="::$ctrl.metrics.countForeignPdfCertificateUsers"></td>
+        <td ng-bind="::$ctrl.metrics.countForeignPdfCertificateDownloads"></td>
     </tr>
     <tr>
-        <td>Riistanhoitomaksun tilisiirtolomake</td>
-        <td>{{$ctrl.metrics.countHunterPaymentPdfUsers}}</td>
-        <td>{{$ctrl.metrics.countHunterPaymentPdfDownloads}}</td>
+        <td translate="reporting.dashboard.usersTab.pdf.invoice"></td>
+        <td ng-bind="::$ctrl.metrics.countHunterPaymentPdfUsers"></td>
+        <td ng-bind="::$ctrl.metrics.countHunterPaymentPdfDownloads"></td>
     </tr>
 </table>

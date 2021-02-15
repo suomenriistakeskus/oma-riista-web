@@ -14,26 +14,16 @@ import static java.util.Objects.requireNonNull;
 // the expense of other RHYs.
 public final class SubsidyAllocationStage3Calculation {
 
-    public static List<SubsidyAllocationStage3DTO> addSubsidyBatchInfo(
-            @Nonnull final List<BasicSubsidyAllocationDTO> rhyAllocations,
+    public static List<RhySubsidyStage3DTO> addSubsidyComparisonToLastYear(
+            @Nonnull final List<RhySubsidyStage2DTO> rhyAllocations,
             @Nonnull final PreviouslyGrantedSubsidiesDTO previouslyGrantedSubsidies) {
 
         requireNonNull(rhyAllocations);
         requireNonNull(previouslyGrantedSubsidies);
 
-        return F.mapNonNullsToList(rhyAllocations, allocation -> {
+        return F.mapNonNullsToList(rhyAllocations, stage2Allocation -> {
 
-            final String rhyCode = allocation.getRhyCode();
-
-            final BigDecimal subsidyCalculatedForSecondBatch = allocation.getTotalRoundedShare();
-
-            final BigDecimal subsidyGrantedInFirstBatch =
-                    previouslyGrantedSubsidies.getSubsidyGrantedInFirstBatchOfCurrentYear(rhyCode);
-
-            if (subsidyGrantedInFirstBatch == null) {
-                throw new NullPointerException(
-                        "Could not find subsidy granted in first batch for RHY with code: " + rhyCode);
-            }
+            final String rhyCode = stage2Allocation.getRhyCode();
 
             final BigDecimal subsidyGrantedLastYear = previouslyGrantedSubsidies.getSubsidyGrantedLastYear(rhyCode);
 
@@ -41,16 +31,12 @@ public final class SubsidyAllocationStage3Calculation {
                 throw new NullPointerException("Could not find subsidy of last year for RHY with code: " + rhyCode);
             }
 
-            final SubsidyBatchInfoDTO subsidyBatchInfo = SubsidyBatchInfoDTO.create(
-                    subsidyCalculatedForSecondBatch, subsidyGrantedInFirstBatch, subsidyGrantedLastYear);
+            final BigDecimal subsidyAfterStage2 =
+                    stage2Allocation.getCalculation().getSubsidyAfterStage2RemainderAllocation();
 
-            return new SubsidyAllocationStage3DTO(
-                    allocation.getRhy(),
-                    allocation.getRka(),
-                    allocation.getCalculatedShares(),
-                    allocation.getTotalRoundedShare(),
-                    allocation.getGivenRemainderEuros(),
-                    subsidyBatchInfo);
+            return new RhySubsidyStage3DTO(
+                    stage2Allocation,
+                    SubsidyComparisonToLastYearDTO.create(subsidyAfterStage2, subsidyGrantedLastYear));
         });
     }
 

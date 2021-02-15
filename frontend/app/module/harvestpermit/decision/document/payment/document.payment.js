@@ -7,11 +7,12 @@ angular.module('app.harvestpermit.decision.document.payment', [])
             templateUrl: 'harvestpermit/decision/document/payment/document.payment.html',
             controllerAs: '$ctrl',
             controller: function (PermitDecisionUtils, PermitDecisionPaymentModal, NotificationService,
-                                  PermitDecision, RefreshDecisionStateService, decision, decisionId) {
+                                  PermitDecision, PermitDecisionSection, RefreshDecisionStateService,
+                                  decision, decisionId) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.sectionId = 'payment';
+                    $ctrl.sectionId = PermitDecisionSection.PAYMENT;
                     $ctrl.decision = decision;
                     $ctrl.sectionContent = PermitDecisionUtils.getSectionContent(decision, $ctrl.sectionId);
                 };

@@ -1,0 +1,53 @@
+<div ng-repeat="huntingTypeInfo in $ctrl.huntingTypeInfos">
+    <div class="row">
+        <div class="form-group col-xs-4" show-errors>
+            <label class="control-label"
+                   for="huntingType-{{huntingTypeInfo.key}}"
+                   translate="harvestpermit.wizard.disability.justification.huntingTypeTitle">
+            </label>
+            <select class="form-control"
+                    name="huntingType-{{huntingTypeInfo.key}}"
+                    id="huntingType-{{huntingTypeInfo.key}}"
+                    ng-model="huntingTypeInfo.huntingType"
+                    ng-options="type as ('harvestpermit.wizard.disability.justification.huntingType.' + type | translate) for type in ::$ctrl.huntingTypes"
+                    required
+                    ie10-optgroup-fix>
+                <option disabled value="" translate="harvestpermit.wizard.disability.justification.selectHuntingType"></option>
+            </select>
+        </div>
+        <div class="form-group col-xs-4" show-errors ng-if="huntingTypeInfo.huntingType === 'MUU'">
+            <label class="control-label"
+                   for="huntingTypeDescription-{{huntingTypeInfo.key}}"
+                   translate="harvestpermit.wizard.disability.justification.huntingTypeDescription">
+            </label>
+            <input name="huntingTypeDescription-{{huntingTypeInfo.key}}"
+                   id="huntingTypeDescription-{{huntingTypeInfo.key}}"
+                   class="form-control"
+                   ng-model="huntingTypeInfo.huntingTypeDescription"
+                   minlength="2"
+                   maxlength="255"
+                   required/>
+            <p class="help-block has-error"
+               ng-show="disabilityJustificationForm['huntingTypeDescription-{{huntingTypeInfo.key}}'].$invalid"
+               ng-messages="disabilityJustificationForm['huntingTypeDescription-{{huntingTypeInfo.key}}'].$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+        <div ng-show="$ctrl.huntingTypeInfos.length > 1" class="col-xs-2 pull-right" style="margin-top: 20px">
+            <a class="btn btn-link"
+               ng-click="$ctrl.removeHuntingTypeInfo({keyValue: huntingTypeInfo.key})">
+                <span class="fa fa-fw fa-remove text-danger"></span>
+                <span class="text-danger" translate="global.button.delete"></span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-3">
+        <button class="btn btn-primary btn-block"
+                type="button"
+                ng-click="$ctrl.addHuntingTypeInfo()"
+                translate="harvestpermit.wizard.disability.justification.addHuntingTypeInfo"></button>
+    </div>
+</div>

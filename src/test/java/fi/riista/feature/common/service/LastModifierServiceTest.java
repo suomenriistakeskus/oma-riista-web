@@ -5,7 +5,6 @@ import fi.riista.feature.common.dto.LastModifierDTO;
 import fi.riista.feature.common.entity.DateTestEntity;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
@@ -67,6 +66,6 @@ public class LastModifierServiceTest extends EmbeddedDatabaseTest {
     }
 
     private static DateTime ts(final DateTestEntity obj) {
-        return DateUtil.toDateTimeNullSafe(obj.getModificationTime());
+        return obj.getModificationTime();
     }
 }

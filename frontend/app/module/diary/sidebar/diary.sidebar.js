@@ -1,8 +1,109 @@
 'use strict';
 
 angular.module('app.diary.sidebar', [])
-    .service('DiaryEntrySidebar', function ($q, offCanvasStack, Harvest, Observation, Srva,
-                                            HarvestFieldsService) {
+
+    .component('rShowDiarySpeciesTitle', {
+        templateUrl: 'diary/sidebar/show-diary-species-title.html',
+        bindings: {
+            entry: '<'
+        }
+    })
+
+    .component('rShowDiaryDescriptionAndPictures', {
+        templateUrl: 'diary/sidebar/show-diary-description-and-pictures.html',
+        bindings: {
+            entry: '<'
+        },
+        controller: function (DiaryImageService) {
+            var $ctrl = this;
+            $ctrl.getUrl =  DiaryImageService.getUrl;
+        }
+    })
+
+    .component('rShowHarvestEntry', {
+        templateUrl: 'diary/sidebar/show-harvest-entry.html',
+        bindings: {
+            entry: '<',
+            computedFields: '<'
+        },
+        controller: function() {
+            var $ctrl = this;
+
+            $ctrl.isDefined = function(fieldName) {
+                return !_.isNil($ctrl.entry[fieldName]);
+            };
+
+            $ctrl.hasExtraFields = function () {
+                return $ctrl.isDefined('huntingMethod') ||
+                    $ctrl.isDefined('reportedWithPhoneCall') ||
+                    $ctrl.isDefined('feedingPlace') ||
+                    $ctrl.isDefined('taigaBeanGoose') ||
+                    $ctrl.isDefined('huntingAreaType') ||
+                    $ctrl.isDefined('huntingAreaSize') ||
+                    $ctrl.isDefined('huntingParty');
+            };
+
+        }
+    })
+
+    .component('rShowObservationEntry', {
+        templateUrl: 'diary/sidebar/show-observation-entry.html',
+        bindings: {
+            entry: '<'
+        },
+        controller: function (ObservationFieldsMetadata, ObservationCategory) {
+            var $ctrl = this;
+
+            $ctrl.isDefined = function(fieldName) {
+                return !_.isNil($ctrl.entry[fieldName]);
+            };
+
+            $ctrl.isWithinDeerHunting = function () {
+                return ObservationCategory.isWithinDeerHunting($ctrl.entry.observationCategory);
+            };
+
+            $ctrl.isWithinMooseHunting = function () {
+                return ObservationCategory.isWithinMooseHunting($ctrl.entry.observationCategory);
+            };
+
+            $ctrl.carnivoreObserverPresent = function () {
+                var e = $ctrl.entry;
+                return e.observerName || e.observerPhoneNumber;
+            };
+
+        }
+    })
+
+    .component('rShowSrvaEntry', {
+        templateUrl: 'diary/sidebar/show-srva-entry.html',
+        bindings: {
+            entry: '<'
+        },
+        controller: function () {
+            var $ctrl = this;
+
+            $ctrl.showSrvaMethodsInSidebar = function (methods) {
+                return _.some(methods, 'isChecked');
+            };
+
+            $ctrl.getSrvaMethodsForSidebar = function (methods) {
+                return _.chain(methods)
+                    .filter({isChecked: true})
+                    .map('name')
+                    .value();
+            };
+
+        }
+    })
+
+    .component('rHarvestDeerHuntingType', {
+        templateUrl: 'diary/sidebar/show-deer-hunting-type.html',
+        bindings: {
+            entry: '<'
+        }
+    })
+
+    .service('DiaryEntrySidebar', function ($q, Harvest, HarvestFieldsService, Observation, Srva, offCanvasStack) {
         this.showSidebar = function (diaryEntry, largeDialog) {
             return offCanvasStack.open({
                 controller: 'DiaryEntrySidebarController',
@@ -30,20 +131,12 @@ angular.module('app.diary.sidebar', [])
         };
     })
 
-    .controller('DiaryEntrySidebarController', function ($scope, $state,
-                                                         ActiveRoleService,
-                                                         DiaryEntryRemoveModal, DiaryEntryService, DiaryImageService,
-                                                         entry, computedFields) {
+    .controller('DiaryEntrySidebarController', function ($scope, $state, ActiveRoleService,
+                                                         DiaryEntryRemoveModal, DiaryEntryService,
+                                                         computedFields, entry) {
         $scope.entry = entry;
-        $scope.getUrl = DiaryImageService.getUrl;
+        $scope.computedFields = computedFields;
         $scope.moderator = ActiveRoleService.isModerator();
-
-        if (computedFields) {
-            $scope.season = computedFields.season;
-            $scope.harvestArea = computedFields.harvestArea;
-            $scope.rhy = computedFields.rhy;
-            $scope.municipalityName = computedFields.municipalityName;
-        }
 
         $scope.edit = function () {
             $scope.$dismiss('ignore');
@@ -61,33 +154,4 @@ angular.module('app.diary.sidebar', [])
             $scope.$dismiss('cancel');
         };
 
-        $scope.carnivoreObserverPresent = function () {
-            var e = $scope.entry;
-            return e.observerName || e.observerPhoneNumber;
-        };
-
-        $scope.getSrvaMethodsForSidebar = function (methods) {
-            return _.chain(methods)
-                .filter({isChecked: true})
-                .map('name')
-                .value();
-        };
-
-        $scope.showSrvaMethodsInSidebar = function (methods) {
-            return _.some(methods, 'isChecked');
-        };
-
-        function isDefined(fieldName) {
-            return angular.isDefined(entry[fieldName]) && entry[fieldName] !== null;
-        }
-
-        $scope.hasExtraFields = function () {
-            return isDefined('huntingMethod') ||
-                isDefined('reportedWithPhoneCall') ||
-                isDefined('feedingPlace') ||
-                isDefined('taigaBeanGoose') ||
-                isDefined('huntingAreaType') ||
-                isDefined('huntingAreaSize') ||
-                isDefined('huntingParty');
-        };
     });

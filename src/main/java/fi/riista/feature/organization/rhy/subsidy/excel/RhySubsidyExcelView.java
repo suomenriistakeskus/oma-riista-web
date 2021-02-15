@@ -2,23 +2,29 @@ package fi.riista.feature.organization.rhy.subsidy.excel;
 
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.rhy.subsidy.AllSubsidyAllocationInfoDTO;
+import fi.riista.feature.organization.rhy.subsidy.RhySubsidyStage5DTO;
 import fi.riista.feature.organization.rhy.subsidy.StatisticsBasedSubsidyShareDTO;
 import fi.riista.feature.organization.rhy.subsidy.SubsidyAllocatedToCriterionDTO;
-import fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationStage4DTO;
-import fi.riista.feature.organization.rhy.subsidy.SubsidyBatchInfoDTO;
+import fi.riista.feature.organization.rhy.subsidy.SubsidyCalculationStage5DTO;
+import fi.riista.feature.organization.rhy.subsidy.SubsidyComparisonToLastYearDTO;
 import fi.riista.feature.organization.rhy.subsidy.SubsidyProportionDTO;
+import fi.riista.feature.organization.rhy.subsidy.SubsidyRoundingDTO;
 import fi.riista.feature.organization.rhy.subsidy.compensation.SubsidyAllocationCompensationBasis;
 import fi.riista.feature.organization.rhy.subsidy.compensation.SubsidyAllocationCompensationResultDTO;
 import fi.riista.feature.organization.rhy.subsidy.compensation.SubsidyCompensationOutputDTO;
 import fi.riista.feature.organization.rhy.subsidy.excel.RhySubsidyExcelModel.AggregatedSubsidyAllocation;
+import fi.riista.feature.organization.rhy.subsidy.excel.RhySubsidyExcelModel.RkaSubsidyAllocation;
+import fi.riista.feature.organization.rhy.subsidy.excel.RhySubsidyExcelModel.TotalSubsidyAllocation;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.ExcelHelper;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.MediaTypeExtras;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.iban4j.Iban;
 import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.annotation.Nonnull;
@@ -38,17 +44,15 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
 
     private final int subsidyYear;
 
-    private final BigDecimal totalSubsidyAmountForBatch1;
-    private final BigDecimal totalSubsidyAmountForBatch2;
-
-    private final boolean isFirstSubsidyBatchAlreadyGranted;
-
     private final List<SubsidyAllocatedToCriterionDTO> criteriaSpecificAllocations;
-    private final List<AggregatedSubsidyAllocation> allRkaAllocations;
+    private final List<RkaSubsidyAllocation> allRkaAllocations;
+    private final TotalSubsidyAllocation totalAllocation;
 
     private final SubsidyAllocationCompensationResultDTO compensationResult;
 
     private final EnumLocaliser i18n;
+
+    private final Map<Long, Iban> rhyIdToIbanMapping;
 
     public RhySubsidyExcelView(@Nonnull final AllSubsidyAllocationInfoDTO allAllocationInfo,
                                @Nonnull final EnumLocaliser localiser) {
@@ -57,18 +61,16 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
 
         this.subsidyYear = allAllocationInfo.getSubsidyYear();
 
-        this.totalSubsidyAmountForBatch1 = allAllocationInfo.getTotalSubsidyAmountForBatch1();
-        this.totalSubsidyAmountForBatch2 = allAllocationInfo.getTotalSubsidyAmountForBatch2();
-
-        this.isFirstSubsidyBatchAlreadyGranted = allAllocationInfo.isSubsidyBatch1AlreadyGranted();
-
         this.criteriaSpecificAllocations = allAllocationInfo.getCriteriaSpecificAllocations();
         this.allRkaAllocations =
                 RhySubsidyExcelModel.groupRhyAllocationsByRka(allAllocationInfo.getCalculatedRhyAllocations());
+        this.totalAllocation = RhySubsidyExcelModel.aggregate(allRkaAllocations);
 
         this.compensationResult = allAllocationInfo.getCompensationResult();
 
         this.i18n = requireNonNull(localiser, "localiser is null");
+
+        this.rhyIdToIbanMapping = allAllocationInfo.getRhyIdToIbanMapping();
     }
 
     @Override
@@ -89,8 +91,7 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
     }
 
     private void populate(final Workbook workbook) {
-        final int numHeaderRows = isFirstSubsidyBatchAlreadyGranted ? 10 : 8;
-        final ExcelHelper sheetWrapper = new ExcelHelper(workbook).withFreezePane(2, numHeaderRows);
+        final ExcelHelper sheetWrapper = new ExcelHelper(workbook).withFreezePane(2, 10);
 
         addHeaderRows(sheetWrapper);
 
@@ -100,9 +101,10 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
 
         sheetWrapper.appendRow()
                 .appendEmptyCell(1)
-                .appendTextCell(i18n.getTranslation("totalAll").toUpperCase());
+                .appendTextCell(i18n.getTranslation("totalAll").toUpperCase())
+                .appendEmptyCell(1);
 
-        appendAggregateSubsidyAllocation(sheetWrapper, AggregatedSubsidyAllocation.aggregate(allRkaAllocations));
+        appendAggregateSubsidyAllocation(sheetWrapper, totalAllocation);
 
         sheetWrapper.autoSizeColumns();
     }
@@ -113,18 +115,16 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
                 .appendTextCellBold(format("%s %d", i18n.getTranslation("financialYear"), subsidyYear - 1))
                 .appendRow()
                 .appendTextCellBold(localise("RhySubsidyExcel.totalSubsidyAmountForYear", subsidyYear))
-                .appendCurrencyCell(totalSubsidyAmountForBatch1.add(totalSubsidyAmountForBatch2));
+                .appendCurrencyCell(totalAllocation.getSummary().getStage4Rounding().getSubsidyAfterRounding());
 
-        if (isFirstSubsidyBatchAlreadyGranted) {
-            sheetWrapper
-                    .appendRow()
-                    .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.totalSubsidyAmountGrantedInBatch1"))
-                    .appendCurrencyCell(totalSubsidyAmountForBatch1)
+        sheetWrapper
+                .appendRow()
+                .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.totalSubsidyAmountGrantedInBatch1"))
+                .appendCurrencyCell(totalAllocation.getSummary().getSubsidyOfBatch1())
 
-                    .appendRow()
-                    .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.totalSubsidyAmountGrantedInBatch2"))
-                    .appendCurrencyCell(totalSubsidyAmountForBatch2);
-        }
+                .appendRow()
+                .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.totalSubsidyAmountGrantedInBatch2"))
+                .appendCurrencyCell(totalAllocation.getSummary().getSubsidyOfBatch2());
 
         addSubsidyCriteriaHeaderRows(sheetWrapper);
         addHeaderRowForDecrementCoefficientsOfCompensationRounds(sheetWrapper);
@@ -144,7 +144,7 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
     private void addHeaderRowForPercentageSharesOfSubsidyCriteria(final ExcelHelper sheetWrapper) {
         sheetWrapper.appendRow()
                 .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.subsidyCriterionPercentageShare"))
-                .appendEmptyCell(1);
+                .appendEmptyCell(2);
 
         criteriaSpecificAllocations.forEach(allocation -> {
 
@@ -157,7 +157,7 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
     private void addHeaderRowForAllocatedAmountsOfSubsidyCriteria(final ExcelHelper sheetWrapper) {
         sheetWrapper.appendRow()
                 .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.allocatedAmountForSubsidyCriterion"))
-                .appendEmptyCell(1);
+                .appendEmptyCell(2);
 
         criteriaSpecificAllocations.forEach(allocation -> {
 
@@ -168,7 +168,7 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
     private void addHeaderRowForCalculatedUnitAmountsOfSubsidyCriteria(final ExcelHelper sheetWrapper) {
         sheetWrapper.appendRow()
                 .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.calculatedUnitAmountForSubsidyCriterion"))
-                .appendEmptyCell(1);
+                .appendEmptyCell(2);
 
         criteriaSpecificAllocations.forEach(allocation -> {
 
@@ -177,7 +177,7 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
     }
 
     private void addHeaderRowForDecrementCoefficientsOfCompensationRounds(final ExcelHelper sheetWrapper) {
-        sheetWrapper.appendRow().appendEmptyCell(34);
+        sheetWrapper.appendRow().appendEmptyCell(35);
 
         compensationResult.getCompensationBases().forEach(basis -> {
 
@@ -189,25 +189,22 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
 
     private void addColumnTitleRow(final ExcelHelper sheetWrapper) {
         sheetWrapper.appendRow()
-                .appendTextCell(i18n.getTranslation("rhyNumber"), HorizontalAlignment.RIGHT)
-                .appendTextCell(i18n.getTranslation(OrganisationType.RHY));
+                .appendTextCellBold(i18n.getTranslation("rhyNumber"), HorizontalAlignment.RIGHT)
+                .appendTextCellBold(i18n.getTranslation(OrganisationType.RHY))
+                .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.bankAccount"));
 
         criteriaSpecificAllocations.forEach(allocation -> {
 
-            final String criterionTitle = i18n.getTranslation(allocation.getCriterion().getRelatedStatisticItem());
+            final String criterionTitle = String.format("%s (%s)",
+                    i18n.getTranslation(allocation.getCriterion().getRelatedStatisticItem()),
+                    i18n.getTranslation("RhySubsidyExcel.ratio"));
             sheetWrapper.appendTextCellBold(criterionTitle).appendTextCellBold(i18n.getTranslation("subsidy"));
 
         });
 
         sheetWrapper
-                .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.subsidyAmountOfBatch2BeforeRounding"))
+                .appendTextCellBold(localise("RhySubsidyExcel.statisticsBasedSubsidyAmountForYear", subsidyYear))
                 .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.stage2RemainderEuros"));
-
-        if (isFirstSubsidyBatchAlreadyGranted) {
-            sheetWrapper
-                    .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.subsidyAmountOfBatch2"))
-                    .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.subsidyAmountOfBatch1"));
-        }
 
         final int lastYear = subsidyYear - 1;
 
@@ -237,23 +234,26 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
 
         sheetWrapper
                 .appendTextCellBold(localise("RhySubsidyExcel.totalSubsidyAfterCompensation", subsidyYear))
+                .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.batch1AfterCompensation"))
                 .appendTextCellBold(i18n.getTranslation("RhySubsidyExcel.batch2AfterCompensation"));
     }
 
-    private void appendAllocationsOfRka(final ExcelHelper sheetWrapper,
-                                        final AggregatedSubsidyAllocation rkaAllocation) {
-
-        final LocalisedString rkaName = rkaAllocation.summary.getOrganisation().getNameLocalisation();
+    private void appendAllocationsOfRka(final ExcelHelper sheetWrapper, final RkaSubsidyAllocation rkaAllocation) {
+        final LocalisedString rkaName = rkaAllocation.getRka().getNameLocalisation();
 
         sheetWrapper.appendRow()
                 .appendEmptyCell(1)
                 .appendTextCellBold(i18n.getTranslation(rkaName).toUpperCase());
 
-        rkaAllocation.allocations.forEach(rhyAllocation -> {
+        rkaAllocation.getRhyAllocations().forEach(rhyAllocation -> {
+
+            final OrganisationNameDTO rhy = rhyAllocation.getRhy();
+            final Iban iban = rhyIdToIbanMapping.get(rhy.getId());
 
             sheetWrapper.appendRow()
-                    .appendTextCell(rhyAllocation.getOrganisation().getOfficialCode(), HorizontalAlignment.RIGHT)
-                    .appendTextCell(i18n.getTranslation(rhyAllocation.getOrganisation().getNameLocalisation()));
+                    .appendTextCell(rhy.getOfficialCode(), HorizontalAlignment.RIGHT)
+                    .appendTextCell(i18n.getTranslation(rhy.getNameLocalisation()))
+                    .appendTextCell(iban != null ? iban.toFormattedString() : "");
 
             appendRhySubsidyAllocation(sheetWrapper, rhyAllocation);
         });
@@ -262,32 +262,35 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
 
         sheetWrapper.appendRow()
                 .appendEmptyCell(1)
-                .appendTextCell(i18n.getTranslation("total"));
+                .appendTextCell(i18n.getTranslation("total"))
+                .appendEmptyCell(1);
 
         appendAggregateSubsidyAllocation(sheetWrapper, rkaAllocation);
 
         sheetWrapper.appendRow();
     }
 
-    private void appendRhySubsidyAllocation(final ExcelHelper sheetWrapper,
-                                            final SubsidyAllocationStage4DTO allocation) {
+    private void appendRhySubsidyAllocation(final ExcelHelper sheetWrapper, final RhySubsidyStage5DTO rhyAllocation) {
+        final SubsidyCalculationStage5DTO calculation = rhyAllocation.getCalculation();
 
-        appendCommonSubsidyAllocationData(sheetWrapper, allocation);
+        appendSubsidyCalcucationData(sheetWrapper, calculation);
 
-        final SubsidyBatchInfoDTO subsidyBatchInfo = allocation.getSubsidyBatchInfo();
+        final SubsidyComparisonToLastYearDTO subsidyComparison = calculation.getSubsidyComparisonToLastYear();
 
-        if (subsidyBatchInfo.isCalculatedSubsidyBelowLowerLimit()) {
+        if (subsidyComparison.isCalculatedSubsidyBelowLowerLimit()) {
             sheetWrapper
-                    .appendCurrencyCell(subsidyBatchInfo.calculateDifferenceOfTotalSubsidyBeforeCompensationToLowerLimit())
+                    .appendCurrencyCell(subsidyComparison.computeDifferenceOfCalculatedStatisticsToLowerLimit())
                     .appendEmptyCell(1);
         } else {
             sheetWrapper
                     .appendEmptyCell(1)
-                    .appendCurrencyCell(subsidyBatchInfo.calculateTotalSubsidyForCurrentYearBeforeCompensation());
+                    .appendCurrencyCell(subsidyComparison.getSubsidyCalculatedBasedOnStatistics());
         }
 
+        final SubsidyRoundingDTO stage4Rounding = calculation.getStage4Rounding();
+
         if (compensationResult.getNumberOfRounds() > 0) {
-            final String rhyCode = allocation.getOrganisation().getOfficialCode();
+            final String rhyCode = rhyAllocation.getRhy().getOfficialCode();
 
             final List<SubsidyCompensationOutputDTO> compensationResults =
                     compensationResult.getCompensationOutputs(rhyCode);
@@ -303,7 +306,7 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
                     } else {
                         sheetWrapper
                                 .appendEmptyCell(1)
-                                .appendCurrencyCell(compResult.getTotalSubsidyAfterCompensation());
+                                .appendCurrencyCell(compResult.getSubsidyAfterCompensation());
                     }
                 } else {
                     sheetWrapper.appendEmptyCell(3);
@@ -311,27 +314,30 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
             }
 
             sheetWrapper
-                    .appendCurrencyCell(allocation.calculateTotalSubsidyForCurrentYearBeforeFinalRounding())
-                    .appendCurrencyCell(getPositiveBigDecimalOrNull(allocation.getRemainderEurosGivenInStage4()));
+                    .appendCurrencyCell(stage4Rounding.getSubsidyBeforeRounding())
+                    .appendCurrencyCell(getPositiveBigDecimalOrNull(stage4Rounding.getGivenRemainderEuros()));
         }
 
         sheetWrapper
-                .appendCurrencyCell(allocation.calculateTotalSubsidyForCurrentYearAfterFinalRounding())
-                .appendCurrencyCell(allocation.getCalculatedSubsidyAfterFinalRounding());
+                .appendCurrencyCell(stage4Rounding.getSubsidyAfterRounding())
+                .appendCurrencyCell(calculation.getSubsidyOfBatch1())
+                .appendCurrencyCell(calculation.getSubsidyOfBatch2());
     }
 
     private void appendAggregateSubsidyAllocation(final ExcelHelper sheetWrapper,
                                                   final AggregatedSubsidyAllocation aggregate) {
 
-        final SubsidyAllocationStage4DTO summary = aggregate.summary;
+        final SubsidyCalculationStage5DTO summary = aggregate.getSummary();
 
-        appendCommonSubsidyAllocationData(sheetWrapper, summary);
+        appendSubsidyCalcucationData(sheetWrapper, summary);
 
         final List<SubsidyAllocationCompensationBasis> bases = compensationResult.getCompensationBases();
         final int numCompensationRounds = bases.size();
 
-        if (aggregate.isSummaryOfAllRhys) {
-            final SubsidyBatchInfoDTO subsidyBatchInfo = summary.getSubsidyBatchInfo();
+        final SubsidyRoundingDTO stage4Rounding = summary.getStage4Rounding();
+
+        if (aggregate.isSummaryOfAllRhys()) {
+            final SubsidyComparisonToLastYearDTO subsidyComparison = summary.getSubsidyComparisonToLastYear();
 
             if (numCompensationRounds > 0) {
                 for (final SubsidyAllocationCompensationBasis basis : bases) {
@@ -344,12 +350,12 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
                 sheetWrapper
                         .appendCurrencyCell(ZERO_MONETARY_AMOUNT)
                         .appendEmptyCell(1)
-                        .appendCurrencyCell(summary.calculateTotalSubsidyForCurrentYearBeforeFinalRounding())
-                        .appendCurrencyCell(new BigDecimal(summary.getRemainderEurosGivenInStage4()));
+                        .appendCurrencyCell(stage4Rounding.getSubsidyBeforeRounding())
+                        .appendCurrencyCell(new BigDecimal(stage4Rounding.getGivenRemainderEuros()));
             } else {
                 sheetWrapper
                         .appendCurrencyCell(ZERO_MONETARY_AMOUNT)
-                        .appendCurrencyCell(subsidyBatchInfo.getSubsidyCalculatedForSecondBatchBeforeCompensation());
+                        .appendCurrencyCell(subsidyComparison.getSubsidyCalculatedBasedOnStatistics());
             }
         } else {
             sheetWrapper.appendEmptyCell(2);
@@ -357,20 +363,21 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
             if (numCompensationRounds > 0) {
                 sheetWrapper
                         .appendEmptyCell(3 * numCompensationRounds)
-                        .appendCurrencyCell(summary.calculateTotalSubsidyForCurrentYearBeforeFinalRounding())
-                        .appendCurrencyCell(new BigDecimal(summary.getRemainderEurosGivenInStage4()));
+                        .appendCurrencyCell(stage4Rounding.getSubsidyBeforeRounding())
+                        .appendCurrencyCell(new BigDecimal(stage4Rounding.getGivenRemainderEuros()));
             }
         }
 
         sheetWrapper
-                .appendCurrencyCell(summary.calculateTotalSubsidyForCurrentYearAfterFinalRounding())
-                .appendCurrencyCell(summary.getCalculatedSubsidyAfterFinalRounding());
+                .appendCurrencyCell(stage4Rounding.getSubsidyAfterRounding())
+                .appendCurrencyCell(summary.getSubsidyOfBatch1())
+                .appendCurrencyCell(summary.getSubsidyOfBatch2());
     }
 
-    private void appendCommonSubsidyAllocationData(final ExcelHelper sheetWrapper,
-                                                   final SubsidyAllocationStage4DTO allocation) {
+    private static void appendSubsidyCalcucationData(final ExcelHelper sheetWrapper,
+                                                     final SubsidyCalculationStage5DTO calculation) {
 
-        final StatisticsBasedSubsidyShareDTO shares = allocation.getCalculatedShares();
+        final StatisticsBasedSubsidyShareDTO shares = calculation.getCalculatedShares();
 
         appendSubsidyProportion(sheetWrapper, shares.getRhyMembers());
         appendSubsidyProportion(sheetWrapper, shares.getHunterExamTrainingEvents());
@@ -386,21 +393,15 @@ public class RhySubsidyExcelView extends AbstractXlsxView {
 
         sheetWrapper
                 .appendCurrencyCell(shares.countSumOfAllShares())
-                .appendCurrencyCell(getPositiveBigDecimalOrNull(allocation.getRemainderEurosGivenInStage2()));
+                .appendCurrencyCell(getPositiveBigDecimalOrNull(calculation.getRemainderEurosGivenInStage2()));
 
-        final SubsidyBatchInfoDTO subsidyBatchInfo = allocation.getSubsidyBatchInfo();
-
-        if (isFirstSubsidyBatchAlreadyGranted) {
-            sheetWrapper
-                    .appendCurrencyCell(subsidyBatchInfo.getSubsidyCalculatedForSecondBatchBeforeCompensation())
-                    .appendCurrencyCell(subsidyBatchInfo.getSubsidyGrantedInFirstBatch());
-        }
+        final SubsidyComparisonToLastYearDTO subsidyComparison = calculation.getSubsidyComparisonToLastYear();
 
         sheetWrapper
-                .appendCurrencyCell(subsidyBatchInfo.calculateTotalSubsidyForCurrentYearBeforeCompensation())
-                .appendCurrencyCell(subsidyBatchInfo.getSubsidyGrantedLastYear())
-                .appendCurrencyCell(subsidyBatchInfo.getSubsidyLowerLimitBasedOnLastYear())
-                .appendCurrencyCell(subsidyBatchInfo.calculateDifferenceOfTotalSubsidyBeforeCompensationToLowerLimit());
+                .appendCurrencyCell(subsidyComparison.getSubsidyCalculatedBasedOnStatistics())
+                .appendCurrencyCell(subsidyComparison.getSubsidyGrantedLastYear())
+                .appendCurrencyCell(subsidyComparison.getSubsidyLowerLimitBasedOnLastYear())
+                .appendCurrencyCell(subsidyComparison.computeDifferenceOfCalculatedStatisticsToLowerLimit());
     }
 
     private static void appendSubsidyProportion(final ExcelHelper sheetWrapper, final SubsidyProportionDTO dto) {

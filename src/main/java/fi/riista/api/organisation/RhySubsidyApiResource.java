@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -30,6 +31,10 @@ public class RhySubsidyApiResource {
         final SubsidyAllocationInputDTO allocationInput =
                 new SubsidyAllocationInputDTO(subsidyYear, totalSubsidyAmount);
 
-        return new ModelAndView(subsidyAllocationFeature.exportSubsidyAllocations(allocationInput, locale));
+        final AbstractXlsxView excelView = subsidyYear == 2019
+                ? subsidyAllocationFeature.exportSubsidyAllocationsForYear2019(allocationInput, locale)
+                : subsidyAllocationFeature.exportSubsidyAllocations(allocationInput, locale);
+
+        return new ModelAndView(excelView);
     }
 }

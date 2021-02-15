@@ -28,7 +28,7 @@ public class MooselikePermitApplicationSpeciesAmountDTO {
         Objects.requireNonNull(species, "species must not be null");
 
         this.gameSpeciesCode = species.getOfficialCode();
-        this.amount = speciesAmount.getAmount();
+        this.amount = speciesAmount.getSpecimenAmount();
         this.description = speciesAmount.getMooselikeDescription();
     }
 

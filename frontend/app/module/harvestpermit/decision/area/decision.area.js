@@ -83,7 +83,7 @@ angular.module('app.harvestpermit.decision.area', [])
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                $ctrl.mapDefaults = MapDefaults.create();
+                $ctrl.mapDefaults = MapDefaults.create({fullscreen: true});
                 $ctrl.mapEvents = MapDefaults.getMapBroadcastEvents();
                 $ctrl.mapState = MapState.get();
                 $ctrl.vectorLayer = null;

@@ -12,7 +12,10 @@
                         <td num-pieces="::$ctrl.otherHuntingRelated.harvestPermitApplicationPartners"></td>
                     </tr>
                     <tr>
-                        <td class="col-xs-9" translate="rhy.annualStats.misc.otherHuntingRelated.mooselikeTaxationPlanningEvents"></td>
+                        <td class="col-xs-9" ng-switch="$ctrl.otherHuntingRelated.mooselikeTaxationPlanningEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.misc.otherHuntingRelated.mooselikeTaxationPlanningEvents"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.misc.otherHuntingRelated.mooselikeTaxationPlanningEvents"></div>
+                        </td>
                         <td num-pieces="::$ctrl.otherHuntingRelated.mooselikeTaxationPlanningEvents"></td>
                     </tr>
                     <tr>

@@ -1,0 +1,28 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.dogunleash.eventDetails.instructionsTitle"></p>
+        <p translate="harvestpermit.wizard.dogunleash.eventDetails.instruction"></p>
+    </div>
+</div>
+
+<r-dog-event-list event-list="$ctrl.eventList"
+                  on-copy="$ctrl.onCopy(event)"
+                  on-delete="$ctrl.onDelete(event)"
+                  on-edit="$ctrl.onEdit(event)"
+                  is-amending="$ctrl.isAmending"></r-dog-event-list>
+
+<hr>
+
+<button class="btn btn-primary" style="width: 100%;"
+        translate="harvestpermit.wizard.dogunleash.eventDetails.addNewEventButton"
+        ng-click="$ctrl.add(event)"></button>
+
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit()"
+        previous="$ctrl.previous()"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.isNextDisabled()">
+</permit-application-wizard-navigation>

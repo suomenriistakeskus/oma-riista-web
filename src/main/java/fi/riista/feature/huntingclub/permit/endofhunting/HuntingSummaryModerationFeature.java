@@ -244,7 +244,7 @@ public class HuntingSummaryModerationFeature {
     private Boolean isCreatedByModerator(final BasicClubHuntingSummary s) {
         return Optional
                 .ofNullable(s.getAuditFields().getCreatedByUserId())
-                .map(userRepository::findOne)
+                .flatMap(userRepository::findById)
                 .map(SystemUser::isModeratorOrAdmin)
                 .orElse(false);
     }

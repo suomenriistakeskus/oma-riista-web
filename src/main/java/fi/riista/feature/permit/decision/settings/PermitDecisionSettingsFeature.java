@@ -2,11 +2,12 @@ package fi.riista.feature.permit.decision.settings;
 
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.common.decision.DecisionStatus;
+import fi.riista.feature.permit.decision.DecisionAppealSettingsDTO;
+import fi.riista.feature.permit.decision.DecisionPublishSettingsDTO;
 import fi.riista.feature.permit.decision.PermitDecision;
-import fi.riista.feature.permit.decision.PermitDecisionAppealSettingsDTO;
 import fi.riista.feature.permit.decision.PermitDecisionDocumentSettingsDTO;
 import fi.riista.feature.permit.decision.PermitDecisionPaymentAmount;
-import fi.riista.feature.permit.decision.PermitDecisionPublishSettingsDTO;
 import fi.riista.feature.permit.decision.document.PermitDecisionTextService;
 import fi.riista.security.EntityPermission;
 import org.springframework.stereotype.Component;
@@ -34,7 +35,6 @@ public class PermitDecisionSettingsFeature {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.UPDATE);
         final PermitDecisionDocumentSettingsDTO dto = new PermitDecisionDocumentSettingsDTO();
         dto.setLocale(decision.getLocale());
-        dto.setAppealStatus(decision.getAppealStatus());
         dto.setDecisionType(decision.getDecisionType());
 
         return dto;
@@ -43,16 +43,13 @@ public class PermitDecisionSettingsFeature {
     @Transactional
     public void updateDocumentSettings(final PermitDecisionDocumentSettingsDTO dto) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(dto.getDecisionId(), EntityPermission.UPDATE);
-        decision.assertStatus(PermitDecision.Status.DRAFT);
-        decision.assertHandler(activeUserService.requireActiveUser());
+        decision.assertEditableBy(activeUserService.requireActiveUser());
         
         final boolean localeChanged = !Objects.equals(decision.getLocale(), dto.getLocale());
         final boolean decisionTypeChanged = !Objects.equals(decision.getDecisionType(), dto.getDecisionType());
 
         decision.setLocale(dto.getLocale());
         decision.setDecisionType(dto.getDecisionType());
-
-        updateAppealStatus(dto, decision);
 
         if (localeChanged || decisionTypeChanged) {
             if (decision.getDecisionType() != PermitDecision.DecisionType.HARVEST_PERMIT) {
@@ -63,25 +60,12 @@ public class PermitDecisionSettingsFeature {
         }
     }
 
-    private static void updateAppealStatus(final PermitDecisionDocumentSettingsDTO dto, final PermitDecision decision) {
-        // Settings UI only allows toggling appeal initiated state on/off
-        final boolean appealNotResolved = decision.getAppealStatus() == null ||
-                decision.getAppealStatus() == PermitDecision.AppealStatus.INITIATED;
-
-        if (appealNotResolved) {
-            final boolean shouldInitiateAppeal = dto.getAppealStatus() == PermitDecision.AppealStatus.INITIATED;
-
-            // Settings UI should not send other appeal states, but make sure...
-            decision.setAppealStatus(shouldInitiateAppeal ? PermitDecision.AppealStatus.INITIATED : null);
-        }
-    }
-
     // PUBLISH SETTINGS
 
     @Transactional(readOnly = true)
-    public PermitDecisionPublishSettingsDTO getPublishSettings(final long decisionId) {
+    public DecisionPublishSettingsDTO getPublishSettings(final long decisionId) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.UPDATE);
-        final PermitDecisionPublishSettingsDTO dto = new PermitDecisionPublishSettingsDTO();
+        final DecisionPublishSettingsDTO dto = new DecisionPublishSettingsDTO();
         dto.setAppealStatus(decision.getAppealStatus());
 
         if (decision.getPublishDate() != null) {
@@ -93,10 +77,9 @@ public class PermitDecisionSettingsFeature {
     }
 
     @Transactional
-    public void updatePublishSettings(final PermitDecisionPublishSettingsDTO dto) {
+    public void updatePublishSettings(final DecisionPublishSettingsDTO dto) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(dto.getDecisionId(), EntityPermission.UPDATE);
-        decision.assertStatus(PermitDecision.Status.DRAFT);
-        decision.assertHandler(activeUserService.requireActiveUser());
+        decision.assertEditableBy(activeUserService.requireActiveUser());
 
         decision.setPublishDate(dto.getPublishDate().toDateTime(dto.getPublishTime()));
 
@@ -109,16 +92,16 @@ public class PermitDecisionSettingsFeature {
     // APPEAL SETTINGS
 
     @Transactional(readOnly = true)
-    public PermitDecisionAppealSettingsDTO getAppealSettings(final long decisionId) {
+    public DecisionAppealSettingsDTO getAppealSettings(final long decisionId) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.UPDATE);
-        final PermitDecisionAppealSettingsDTO dto = new PermitDecisionAppealSettingsDTO();
+        final DecisionAppealSettingsDTO dto = new DecisionAppealSettingsDTO();
         dto.setAppealStatus(decision.getAppealStatus());
 
         return dto;
     }
 
     @Transactional
-    public void updateAppealSettings(final PermitDecisionAppealSettingsDTO dto) {
+    public void updateAppealSettings(final DecisionAppealSettingsDTO dto) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(dto.getDecisionId(), EntityPermission.UPDATE);
         decision.assertHandler(activeUserService.requireActiveUser());
         decision.setAppealStatus(dto.getAppealStatus());

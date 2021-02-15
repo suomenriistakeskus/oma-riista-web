@@ -1,9 +1,8 @@
 package fi.riista.feature.harvestregistry.quartz;
 
 import com.google.common.collect.ImmutableSet;
+import fi.riista.config.Constants;
 import fi.riista.feature.common.support.EntitySupplier;
-import fi.riista.feature.gamediary.GameAge;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.harvestpermit.season.HarvestArea;
@@ -16,13 +15,17 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.DefaultEntitySupplierProvider;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
+import static fi.riista.feature.gamediary.GameGender.FEMALE;
+import static fi.riista.feature.gamediary.GameGender.MALE;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAN_GOOSE;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_CANADIAN_BEAVER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_EUROPEAN_BEAVER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_EUROPEAN_POLECAT;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_FALLOW_DEER;
@@ -36,6 +39,8 @@ import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_SIKA_DEER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WILD_BOAR;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WILD_FOREST_REINDEER;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_FEMALE;
 import static fi.riista.util.DateUtil.today;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -43,6 +48,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class HarvestRegistryHarvest2019MapperTest implements DefaultEntitySupplierProvider {
 
@@ -66,6 +72,29 @@ public class HarvestRegistryHarvest2019MapperTest implements DefaultEntitySuppli
         shooter = model.newPerson();
         address = model.newAddress();
         shooter.setOtherAddress(address);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testTooNewHarvest(){
+        createHarvest(OFFICIAL_CODE_BEAR);
+        harvest.setPointOfTime(new LocalDate(2020, 8, 1).toDateTime(
+                new LocalTime(12, 0, 0), Constants.DEFAULT_TIMEZONE));
+        transform();
+        fail("Should throw an exception");
+    }
+
+
+    @Test
+    public void testDoesNotTransformOtherSpecies() {
+        createHarvest(OFFICIAL_CODE_CANADIAN_BEAVER);
+        final List<HarvestRegistryItem> itemList = HarvestRegistryHarvest2019Mapper.transform(
+                harvest,
+                shooter,
+                ImmutableSet.of(specimen),
+                rka.getOfficialCode(),
+                rhy.getOfficialCode())
+                .collect(toList());
+        assertThat( itemList, hasSize(0));
     }
 
     @Test
@@ -99,7 +128,7 @@ public class HarvestRegistryHarvest2019MapperTest implements DefaultEntitySuppli
     public void testGreySeal() {
         createHarvest(OFFICIAL_CODE_GREY_SEAL);
         specimen.setWeight(42.2);
-        final HarvestArea harvestArea = model.newHarvestArea(rhy);
+        final HarvestArea harvestArea = model.newHarvestArea();
         final HarvestSeason harvestSeason = model.newHarvestSeason(harvest.getSpecies(), today().minusMonths(1),
                 today().plusMonths(1),
                 today().plusMonths(2));
@@ -112,6 +141,10 @@ public class HarvestRegistryHarvest2019MapperTest implements DefaultEntitySuppli
         assertEquals(specimen.getWeight(), item.getWeight(), 0.01);
         assertEquals(harvestArea.getNameFinnish(), item.getHarvestAreaFinnish());
         assertEquals(harvestArea.getNameSwedish(), item.getHarvestAreaSwedish());
+        assertEquals(rhy.getNameFinnish(), item.getRhyFinnish());
+        assertEquals(rhy.getNameSwedish(), item.getRhySwedish());
+        assertEquals(rka.getNameFinnish(), item.getRkaFinnish());
+        assertEquals(rka.getNameSwedish(), item.getRkaSwedish());
     }
 
     @Test
@@ -125,9 +158,8 @@ public class HarvestRegistryHarvest2019MapperTest implements DefaultEntitySuppli
         createHarvest(speciesCode);
 
         harvest.setAmount(5);
-        final HarvestSpecimen specimen1 = model.newHarvestSpecimen(harvest, GameAge.ADULT, GameGender.MALE);
-        final HarvestSpecimen specimen2 = model.newHarvestSpecimen(harvest, GameAge.YOUNG,
-                GameGender.FEMALE);
+        final HarvestSpecimen specimen1 = model.newHarvestSpecimen(harvest, ADULT_MALE);
+        final HarvestSpecimen specimen2 = model.newHarvestSpecimen(harvest, YOUNG_FEMALE);
         final List<HarvestRegistryItem> items = HarvestRegistryHarvest2019Mapper.transform(
                 harvest,
                 shooter,
@@ -140,9 +172,9 @@ public class HarvestRegistryHarvest2019MapperTest implements DefaultEntitySuppli
 
         if (shouldHaveGenderInfo) {
             final HarvestRegistryItem specimen1Item =
-                    items.stream().filter(item -> item.getGender() == GameGender.MALE).findFirst().get();
+                    items.stream().filter(item -> item.getGender() == MALE).findFirst().get();
             final HarvestRegistryItem specimen2Item =
-                    items.stream().filter(item -> item.getGender() == GameGender.FEMALE).findFirst().get();
+                    items.stream().filter(item -> item.getGender() == FEMALE).findFirst().get();
             assertEquals(1, specimen1Item.getAmount().intValue());
             assertEquals(1, specimen2Item.getAmount().intValue());
 
@@ -193,7 +225,7 @@ public class HarvestRegistryHarvest2019MapperTest implements DefaultEntitySuppli
         assertEquals(specimen.getAge(), item.getAge());
     }
 
-    private void assertCommonAttributes(final Harvest harvest, final HarvestRegistryItem item) {
+    private static void assertCommonAttributes(final Harvest harvest, final HarvestRegistryItem item) {
         assertEquals(harvest.getSpecies().getOfficialCode(), item.getSpecies().getOfficialCode());
         assertEquals(harvest.getActualShooter().getFullName(), item.getShooterName());
         assertEquals(harvest.getActualShooter().getHunterNumber(), item.getShooterHunterNumber());
@@ -206,7 +238,8 @@ public class HarvestRegistryHarvest2019MapperTest implements DefaultEntitySuppli
 
     private void createHarvest(final int officialCode) {
         harvest = model.newHarvest(model.newGameSpecies(officialCode), author, shooter);
-        harvest.setPointOfTime(new LocalDate(2019, 8, 20).toDate());
-        specimen = model.newHarvestSpecimen(harvest, GameAge.ADULT, GameGender.MALE);
+        harvest.setPointOfTime(new LocalDate(2019, 8, 20).toDateTimeAtStartOfDay(Constants.DEFAULT_TIMEZONE));
+        harvest.setRhy(rhy);
+        specimen = model.newHarvestSpecimen(harvest, ADULT_MALE);
     }
 }

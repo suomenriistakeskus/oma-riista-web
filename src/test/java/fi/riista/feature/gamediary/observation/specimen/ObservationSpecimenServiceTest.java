@@ -12,14 +12,15 @@ import org.springframework.data.jpa.domain.JpaSort;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
+import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
+
 public class ObservationSpecimenServiceTest extends
         AbstractSpecimenServiceTest<Observation, ObservationSpecimen, ObservationSpecimenDTO, ObservationSpecVersion> {
-
-    private static final ObservationSpecVersion VERSION = ObservationSpecVersion.MOST_RECENT;
 
     @Resource
     private ObservationSpecimenService service;
@@ -29,7 +30,7 @@ public class ObservationSpecimenServiceTest extends
 
     @Override
     public List<ObservationSpecVersion> getTestExecutionVersions() {
-        return Collections.singletonList(VERSION);
+        return new ArrayList<>(EnumSet.allOf(ObservationSpecVersion.class));
     }
 
     @Override
@@ -39,9 +40,9 @@ public class ObservationSpecimenServiceTest extends
 
     @Override
     protected SpecimenTestOps<Observation, ObservationSpecimen, ObservationSpecimenDTO> getSpecimenTestOps(
-            final GameSpecies species, final ObservationSpecVersion version) {
+            final Observation observation, final ObservationSpecVersion version) {
 
-        return new CustomObservationSpecimenOps(species, version);
+        return new CustomObservationSpecimenOps(observation.getSpecies(), version);
     }
 
     @Override
@@ -59,7 +60,7 @@ public class ObservationSpecimenServiceTest extends
     @Override
     protected List<ObservationSpecimen> findSpecimensInInsertionOrder(final Observation observation) {
         return repository.findAll(
-                JpaSpecs.equal(ObservationSpecimen_.observation, observation), new JpaSort(ObservationSpecimen_.id));
+                JpaSpecs.equal(ObservationSpecimen_.observation, observation), JpaSort.of(ObservationSpecimen_.id));
     }
 
     private class CustomObservationSpecimenOps extends ObservationMetadata
@@ -69,7 +70,7 @@ public class ObservationSpecimenServiceTest extends
                                             @Nonnull final ObservationSpecVersion specVersion) {
 
             super(model().newObservationBaseFields(species, specVersion),
-                    model().newObservationContextSensitiveFields(species, false, ObservationType.NAKO, specVersion));
+                    model().newObservationContextSensitiveFields(species, NORMAL, ObservationType.NAKO, specVersion));
         }
 
         @Override

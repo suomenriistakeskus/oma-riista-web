@@ -6,6 +6,7 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.HarvestDTOTransformerBase;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubDTO;
@@ -35,8 +36,10 @@ public class CoordinatorClubHarvestDTOTransformer extends HarvestDTOTransformerB
 
     @Nonnull
     @Override
-    protected List<HarvestDTO> transform(@Nonnull final List<Harvest> harvests) {
-        final Function<Harvest, GameSpecies> harvestToSpecies = getGameDiaryEntryToSpeciesMapping(harvests);
+    protected List<HarvestDTO> transform(@Nonnull final List<Harvest> harvests,
+                                         @Nonnull final HarvestSpecVersion specVersion) {
+
+        final Function<Harvest, GameSpecies> harvestToSpecies = getHarvestToSpeciesMapping(harvests);
         final Map<Harvest, List<HarvestSpecimen>> groupedSpecimens = getSpecimensGroupedByHarvests(harvests);
         final Function<Harvest, HuntingClub> harvestToHuntingClubMapping = getHarvestToHuntingClubMapping(harvests);
 
@@ -45,7 +48,8 @@ public class CoordinatorClubHarvestDTOTransformer extends HarvestDTOTransformerB
                 .map(harvest -> createDTO(harvest,
                         harvestToSpecies.apply(harvest),
                         groupedSpecimens.get(harvest),
-                        harvestToHuntingClubMapping.apply(harvest)))
+                        harvestToHuntingClubMapping.apply(harvest),
+                        specVersion))
                 .collect(toList());
     }
 
@@ -64,12 +68,13 @@ public class CoordinatorClubHarvestDTOTransformer extends HarvestDTOTransformerB
     private static HarvestDTO createDTO(final Harvest harvest,
                                         final GameSpecies species,
                                         final List<HarvestSpecimen> specimens,
-                                        final HuntingClub huntingClub) {
+                                        final HuntingClub huntingClub,
+                                        final HarvestSpecVersion specVersion) {
 
-        final HarvestDTO dto = HarvestDTO.builder()
+        final HarvestDTO dto = HarvestDTO.builder(specVersion)
                 .populateWith(harvest)
-                .populateWith(species)
-                .populateSpecimensWith(specimens)
+                .withGameSpeciesCode(species.getOfficialCode())
+                .withSpecimensMappedFrom(specimens)
                 .withDescription(null)
                 .withCanEdit(false)
                 .build();

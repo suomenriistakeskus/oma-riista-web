@@ -186,13 +186,13 @@
             giltighetstid. Försäkringen täcker skador som orsakats någon annan med skjutvapen – dock inte sakskador.
             Den till försäkringen hörande jägarens privatolycksfallsförsäkring täcker skador som orsakats jägaren
             själv på grund av att vapnet brunnit av eller exploderat. Försäkringen är i kraft för dessa delar också
-            i de nordiska länderna och i EU-länder. Jägare som erlagt viltvårdsavgift och som på uppdrag av polisen
+            i de nordiska länderna, i Schweiz och i EU-länder. Jägare som erlagt viltvårdsavgift och som på uppdrag av polisen
             i Finland utför eftersök av skadat djur omfattas av försäkringen liksom dennes hund som utför
             eftersöksuppdraget. Då skada skett kontakta utan dröjsmål LokalTapiola, tel. 010 19 5105
         </p>
 
         <p class="small-print">
-            Om du vill byta jaktvårdsförening, skall du meddela detta till jägarregistret med e-post, fax eller per brev.
+            Om du vill byta jaktvårdsförening, skall du meddela detta till jägarregistret med e-post eller per brev.
         </p>
 
         <p class="small-print">

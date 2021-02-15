@@ -1,6 +1,5 @@
 package fi.riista.integration.mapexport;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.util.GISUtils;
@@ -10,11 +9,12 @@ import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.util.StringUtils;
 
-import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -56,7 +56,7 @@ public class MapPdfModel {
         private GeoJsonObject geometry;
         private GeoJsonObject overlayGeometry;
         private double[] bbox;
-        private Date modificationTime;
+        private DateTime modificationTime;
         private GISZoneSizeDTO areaSize;
 
         public Builder(final Locale locale) {
@@ -78,7 +78,7 @@ public class MapPdfModel {
             return this;
         }
 
-        public Builder withModificationTime(final Date modificationTime) {
+        public Builder withModificationTime(final DateTime modificationTime) {
             this.modificationTime = modificationTime;
             return this;
         }

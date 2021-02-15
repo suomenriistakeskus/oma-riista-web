@@ -1,8 +1,8 @@
 package fi.riista.feature.mail.bounce;
 
 import fi.riista.feature.common.entity.BaseEntity;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import org.joda.time.DateTime;
 
 import javax.persistence.Access;

@@ -21,7 +21,10 @@ CREATE TABLE import_observation_context_sensitive_fields (
   mooselike_female_3_calfs_amount   VARCHAR(255) NOT NULL,
   mooselike_female_4_calfs_amount   VARCHAR(255) NOT NULL,
   mooselike_unknown_specimen_amount VARCHAR(255) NOT NULL,
-  PRIMARY KEY (metadata_version, official_code, within_moose_hunting, observation_type)
+  observation_category              VARCHAR(255) NOT NULL,
+  deer_hunting_type                 VARCHAR(255) NOT NULL,
+  deer_hunting_type_description     VARCHAR(255) NOT NULL,
+  PRIMARY KEY (metadata_version, official_code, observation_category, observation_type)
 );
 
 \COPY import_observation_context_sensitive_fields FROM './csv/observation_context_sensitive_fields.csv' WITH CSV DELIMITER ';' NULL '' ENCODING 'UTF-8';
@@ -48,7 +51,10 @@ INSERT INTO observation_context_sensitive_fields (
   mooselike_female_2_calfs_amount,
   mooselike_female_3_calfs_amount,
   mooselike_female_4_calfs_amount,
-  mooselike_unknown_specimen_amount
+  mooselike_unknown_specimen_amount,
+  observation_category,
+  deer_hunting_type,
+  deer_hunting_type_description
 ) SELECT
     o.metadata_version,
     g.game_species_id,
@@ -71,6 +77,9 @@ INSERT INTO observation_context_sensitive_fields (
     o.mooselike_female_2_calfs_amount,
     o.mooselike_female_3_calfs_amount,
     o.mooselike_female_4_calfs_amount,
-    o.mooselike_unknown_specimen_amount
+    o.mooselike_unknown_specimen_amount,
+    o.observation_category,
+    o.deer_hunting_type,
+    o.deer_hunting_type_description
   FROM import_observation_context_sensitive_fields o
     JOIN game_species g ON (g.official_code = o.official_code);

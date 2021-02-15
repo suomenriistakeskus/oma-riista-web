@@ -4,10 +4,9 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-
-import java.util.Date;
 
 public class LeaderEmailDTO {
 
@@ -18,19 +17,19 @@ public class LeaderEmailDTO {
     private final Integer order;
     private final long huntingGroupId;
     private final String date;
-    private final Date dateForTests;
+    private final DateTime dateForTests;
 
     public LeaderEmailDTO(final String name,
                           final String hunterNumber,
                           final Integer order,
                           final long huntingGroupId,
-                          final Date date) {
+                          final DateTime date) {
 
         this.name = name;
         this.hunterNumber = hunterNumber;
         this.order = order;
         this.huntingGroupId = huntingGroupId;
-        this.date = DATE_FORMAT.print(date.getTime());
+        this.date = DATE_FORMAT.print(date);
         this.dateForTests = date;
     }
 
@@ -99,7 +98,7 @@ public class LeaderEmailDTO {
         return date;
     }
 
-    public Date getDateForTests() {
+    public DateTime getDateForTests() {
         return dateForTests;
     }
 }

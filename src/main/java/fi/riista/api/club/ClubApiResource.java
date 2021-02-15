@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(value = "/api/v1/club", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/club", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ClubApiResource {
 
     @Resource
@@ -119,7 +119,7 @@ public class ClubApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/moderator/huntingclubmetrics", method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HuntingClubStatisticsRow> huntingClubMetrics(
             @RequestParam(required = false) final Long rkaId,
             @RequestParam(required = false, defaultValue = "false") final boolean includePermitHolders) {

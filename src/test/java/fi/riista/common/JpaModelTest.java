@@ -5,8 +5,8 @@ import fi.riista.ClassInventory;
 import fi.riista.util.ClassUtils;
 import fi.riista.util.jpa.EagerFetch;
 import fi.riista.validation.HasLengthConstrainedByValidator;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import org.junit.Test;
 import org.springframework.core.annotation.AnnotationUtils;
 

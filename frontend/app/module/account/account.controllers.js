@@ -6,7 +6,9 @@ angular.module('app.account.controllers', ['ui.router', 'app.account.services'])
         alterInvoicePayment: 'ALTER_INVOICE_PAYMENT',
         moderateRhyAnnualStatistics: 'MODERATE_RHY_ANNUAL_STATISTICS',
         harvestRegistry: 'HARVEST_REGISTRY',
-        habides: 'EXPORT_HABIDES_REPORTS'
+        habides: 'EXPORT_HABIDES_REPORTS',
+        saveHarvestWithIncompleteData: "SAVE_INCOMPLETE_HARVEST_DATA",
+        moderateDisabilityPermitApplication: 'MODERATE_DISABILITY_PERMIT_APPLICATION'
     })
     .config(function ($stateProvider) {
         $stateProvider
@@ -16,14 +18,9 @@ angular.module('app.account.controllers', ['ui.router', 'app.account.services'])
                 url: '/profile/{id:[0-9a-zA-Z]{1,8}}',
                 controllerAs: '$navCtrl',
                 controller: function ($scope, $state, $stateParams,
-                                      AuthenticationService, ActiveRoleService, LocalStorageService,
+                                      AuthenticationService, ActiveRoleService,
                                       AvailableRoleService, ModeratorPrivileges) {
                     var $navCtrl = this;
-
-                    $navCtrl.$onInit = function () {
-                        $navCtrl.harvestRegistryInfoVisible =
-                            LocalStorageService.getKey('2019-07-30-harvestRegistryInfoVisibility') !== 'hide';
-                    };
 
                     function routePersonId() {
                         return ActiveRoleService.isModerator() ? $stateParams.id : 'me';
@@ -51,11 +48,6 @@ angular.module('app.account.controllers', ['ui.router', 'app.account.services'])
 
                     $navCtrl.openHarvestRegistry = function () {
                         $state.go('profile.harvestRegistry', {id: routePersonId()});
-                    };
-
-                    $navCtrl.hideHarvestRegistryInfoDialog = function () {
-                        LocalStorageService.setKey('2019-07-30-harvestRegistryInfoVisibility', 'hide');
-                        $navCtrl.harvestRegistryInfoVisible = false;
                     };
 
                     $navCtrl.isAuthorizedForHarvestRegistry = function () {

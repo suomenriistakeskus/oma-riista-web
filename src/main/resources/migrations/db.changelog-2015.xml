@@ -3,7 +3,7 @@
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd"
         logicalFilePath="migrations/db.changelog.xml">
 
     <changeSet id="2015-01-19-harvest-report-state-uniq-to-harvest" author="vincit-terova">
@@ -464,6 +464,7 @@ AND h.amount = 1;
     </changeSet>
 
     <changeSet id="2015-01-05-map-zone" author="vincit-kyostihe">
+        <validCheckSum>8:f1a12e06fd4f2e477bf0d215cf585aea</validCheckSum>
         <createTable tableName="zone">
             <column autoIncrement="true" name="zone_id" type="BIGSERIAL">
                 <constraints primaryKey="true" primaryKeyName="zone_pkey"/>
@@ -555,7 +556,7 @@ AND h.amount = 1;
                                  referencedColumnNames="zone_id"/>
 
         <createTable tableName="zone_feature">
-            <column name="zone_feature_id" type="BIGSERIAL">
+            <column autoIncrement="true" name="zone_feature_id" type="BIGSERIAL">
                 <constraints primaryKey="true" primaryKeyName="zone_feature_pkey"/>
             </column>
             <column name="zone_id" type="BIGINT">
@@ -1841,7 +1842,7 @@ FOR EACH ROW EXECUTE PROCEDURE harvest_report_state_check();
     <changeSet id="2015-08-18-alter-fields-of-observation_specimen" author="vincit-jarkkoka">
         <!-- These fields not needed at the moment. -->
         <dropColumn tableName="observation_specimen" columnName="paw_width"/>
-        <dropColumn tableName="observation_specimen" columnName="paw_length "/>
+        <dropColumn tableName="observation_specimen" columnName="paw_length"/>
 
         <createTable tableName="observed_game_state">
             <column name="name" type="VARCHAR(255)">
@@ -2386,7 +2387,7 @@ FOR EACH ROW EXECUTE PROCEDURE harvest_report_state_check();
     </changeSet>
 
     <changeSet id="2015-10-01-remove-observation-type-bitset" author="vincit-jarkkoka">
-        <dropPrimaryKey tableName="observation_type" constraintName="pk_observation_type"/>
+        <validCheckSum>8:4f8f863ac5f3bd6b971723bb2e765f5d</validCheckSum>
         <dropColumn tableName="observation_type" columnName="id"/>
         <addPrimaryKey tableName="observation_type" columnNames="name" constraintName="observation_type_pkey"/>
 

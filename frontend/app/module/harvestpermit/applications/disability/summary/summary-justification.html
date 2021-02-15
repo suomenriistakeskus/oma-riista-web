@@ -1,0 +1,45 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th style="width: 30%" translate="harvestpermit.wizard.vehicle.title"></th>
+        <th style="width: 70%" translate="harvestpermit.wizard.vehicle.description"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr style="border-bottom-style: hidden" ng-repeat-start="vehicle in $ctrl.justification.vehicles track by $index">
+        <td translate="harvestpermit.wizard.vehicle.type.{{vehicle.type}}"></td>
+        <td ng-bind="vehicle.description"></td>
+    </tr>
+    <tr ng-repeat-end>
+        <td colspan="2" ng-bind="vehicle.justification"></td>
+    </tr>
+    </tbody>
+</table>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th style="width: 30%" translate="harvestpermit.wizard.disability.justification.huntingTypeTitle"></th>
+        <th style="width: 70%" translate="harvestpermit.wizard.disability.justification.huntingTypeDescription"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="huntingTypeInfo in $ctrl.justification.huntingTypeInfos track by $index">
+        <td translate="harvestpermit.wizard.disability.justification.huntingType.{{huntingTypeInfo.huntingType}}"></td>
+        <td ng-bind="huntingTypeInfo.huntingTypeDescription"></td>
+    </tr>
+    </tbody>
+</table>
+
+<table class="table">
+    <thead>
+    <tr>
+        <th translate="harvestpermit.wizard.disability.justification.justification"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td ng-bind="$ctrl.justification.justification"></td>
+    </tr>
+    </tbody>
+</table>

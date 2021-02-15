@@ -1,0 +1,49 @@
+<form role="srvaCallringForm" class="form" name="srvaCallringForm">
+    <div class="row">
+        <div class="form-group col-lg-6 col-lg-offset-3 col-md-8 col-md-offset-2 col-xs-10 col-xs-offset-1">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" ng-model="$ctrl.rotationInUse">
+                    <span translate="rhy.edit.form.srvaRotation"></span>
+                </label>
+            </div>
+        </div>
+
+    </div>
+    <div class="row" ng-if="$ctrl.rotationInUse">
+
+        <div class="form-group col-lg-2 col-lg-offset-3 col-md-3 col-md-offset-2 col-xs-4 col-xs-offset-1">
+            <label for="rotationMode" translate="rhy.edit.form.srvaRotationMode"></label>
+            <select ng-options="('rhy.edit.form.' + o | translate) for o in $ctrl.rotationOptions"
+                    name="rotationMode" id="rotationMode"
+                    ng-model="$ctrl.rotation.srvaRotation"
+                    class="form-control"
+                    required></select>
+        </div>
+        <div class="form-group col-lg-4 col-md-5 col-xs-6" show-errors>
+            <label for="rotationBeginDate" translate="rhy.edit.form.rotationStart"></label>
+            <div class="input-group" ng-controller="DatePickerController">
+                <input type="text" name="rotationBeginDate" id="rotationBeginDate"
+                       class="form-control"
+                       uib-datepicker-popup is-open="isDatePickerOpen"
+                       ng-model="$ctrl.rotation.startDate"
+                       required/>
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row text-right">
+        <div class="col-lg-6 col-lg-offset-3 col-md-8 col-md-offset-2 col-xs-10 col-xs-offset-1">
+            <button type="submit" ng-disabled="(srvaCallringForm.$invalid || srvaCallringForm.$pristine)"
+                    class="btn btn-primary" ng-click="$ctrl.save()"
+                    translate="global.button.save"></button>
+        </div>
+    </div>
+
+</form>

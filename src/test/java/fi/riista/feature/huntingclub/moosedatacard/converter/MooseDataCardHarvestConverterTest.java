@@ -59,8 +59,8 @@ public abstract class MooseDataCardHarvestConverterTest<T extends MooseDataCardH
         testConversion(source, harvest -> {
 
             assertEquals(
-                    source.getDate().toLocalDateTime(MooseDataCardHarvestConverter.DEFAULT_ENTRY_TIME).toDate(),
-                    harvest.getPointOfTime());
+                    source.getDate().toLocalDateTime(MooseDataCardHarvestConverter.DEFAULT_ENTRY_TIME),
+                    harvest.getPointOfTime().toLocalDateTime());
             assertEquals(source.getGeoLocation(), harvest.getGeoLocation());
 
         }, specimen -> {

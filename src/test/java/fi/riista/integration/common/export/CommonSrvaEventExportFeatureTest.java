@@ -5,6 +5,7 @@ import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
+import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
@@ -12,6 +13,7 @@ import fi.riista.integration.common.export.srva.CEV_SRVAEvent;
 import fi.riista.integration.common.export.srva.CEV_SrvaEvents;
 import fi.riista.test.Asserts;
 import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Before;
@@ -22,6 +24,8 @@ import javax.annotation.Resource;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static fi.riista.feature.gamediary.srva.SrvaEventStateEnum.REJECTED;
+import static fi.riista.feature.gamediary.srva.SrvaEventStateEnum.UNFINISHED;
 import static org.junit.Assert.assertTrue;
 
 public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
@@ -33,6 +37,7 @@ public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
     private GameSpecies mooseSpecies;
     private RiistakeskuksenAlue rka;
     private Riistanhoitoyhdistys rhy;
+    private SystemUser moderator;
 
     @Before
     public void setUp() {
@@ -40,6 +45,7 @@ public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
         mooseSpecies = model().newGameSpeciesMoose();
         rka = model().newRiistakeskuksenAlue();
         rhy = model().newRiistanhoitoyhdistys(rka);
+        moderator = createNewModerator();
     }
 
     @Test(expected = AccessDeniedException.class)
@@ -65,7 +71,25 @@ public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
             final CEV_SrvaEvents result = feature.exportSrvaEvents(2018, 1);
             Assert.assertEquals(2, result.getSrvaEvent().size());
             result.getSrvaEvent()
-                  .forEach(event -> Assert.assertEquals(1, event.getPointOfTime().monthOfYear().get()));
+                    .forEach(event -> Assert.assertEquals(1, event.getPointOfTime().monthOfYear().get()));
+        });
+
+    }
+
+    @Test
+    public void testSendsOnlyApprovedEvents() {
+        final SrvaEvent approvedEvent = createEvent(2018, 01, 01);
+        final SrvaEvent incompleteEvent = createEvent(2018, 01, 02);
+        incompleteEvent.setState(UNFINISHED);
+        incompleteEvent.setApproverAsUser(null);
+        final SrvaEvent rejectedEvent = createEvent(2018, 01, 03);
+        rejectedEvent.setState(REJECTED);
+
+        onSavedAndAuthenticated(apiUser, () -> {
+            final CEV_SrvaEvents result = feature.exportSrvaEvents(2018, 1);
+            Assert.assertEquals(1, result.getSrvaEvent().size());
+            Assert.assertEquals(DateUtil.toLocalDateTimeNullSafe(approvedEvent.getPointOfTime()),
+                    result.getSrvaEvent().get(0).getPointOfTime());
         });
 
     }
@@ -85,7 +109,7 @@ public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
                     result.getSrvaEvent().stream().map(e -> e.getSrvaEventId()).collect(Collectors.toSet());
 
             result.getSrvaSpecimen()
-                  .forEach(specimen -> assertTrue(ids.contains(specimen.getSRVAEventId())));
+                    .forEach(specimen -> assertTrue(ids.contains(specimen.getSRVAEventId())));
         });
     }
 
@@ -113,10 +137,11 @@ public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
         final DateTime pointOfTime = new DateTime(year, month, day, 0, 0, 0, 1, Constants.DEFAULT_TIMEZONE);
 
         final SrvaEvent event = model().newSrvaEvent();
-        event.setPointOfTime(pointOfTime.toDate());
+        event.setPointOfTime(pointOfTime);
         event.setRhy(rhy);
         event.setSpecies(mooseSpecies);
-
+        event.setState(SrvaEventStateEnum.APPROVED);
+        event.setApproverAsUser(moderator);
         model().newSrvaSpecimen(event);
 
         return event;

@@ -130,8 +130,6 @@
                     <th class="col-xs-2" translate="harvestreport.admin.pointOfTime"></th>
                     <th class="col-xs-2" translate="harvestreport.admin.gameInfo"></th>
                     <th class="col-xs-2" translate="harvestreport.admin.area"></th>
-                    <th class="col-xs-2" translate="harvestreport.form.author"></th>
-                    <th class="col-xs-2" translate="harvestreport.form.hunter"></th>
                     <th class="col-xs-1"></th>
                 </tr>
                 </thead>
@@ -164,14 +162,6 @@
                         <span ng-bind="::(getHarvestAreaName(harvest))"></span><br/>
                         <span ng-bind="::(getAreaName(harvest))"></span><br/>
                         <span ng-bind="::(getRhyName(harvest))"></span>
-                    </td>
-                    <td>
-                        <span ng-bind="::harvest.authorInfo.byName"></span>
-                        <span ng-bind="::harvest.authorInfo.lastName"></span>
-                    </td>
-                    <td>
-                        <span ng-bind="::harvest.actorInfo.byName"></span>
-                        <span ng-bind="::harvest.actorInfo.lastName"></span>
                     </td>
                     <td>
                         <a ng-click="$ctrl.show(harvest)" class="btn btn-default pull-right">

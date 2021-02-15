@@ -3,7 +3,7 @@ package fi.riista.feature.organization.calendar;
 import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.util.DtoUtil;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.Valid;

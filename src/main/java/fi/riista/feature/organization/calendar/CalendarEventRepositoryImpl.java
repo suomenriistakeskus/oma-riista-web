@@ -1,5 +1,6 @@
 package fi.riista.feature.organization.calendar;
 
+import com.google.common.collect.ImmutableSet;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.group.GroupBy;
@@ -19,10 +20,12 @@ import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.SQLQueryFactory;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.QOrganisation;
 import fi.riista.sql.SQAdditionalCalendarEvent;
 import fi.riista.sql.SQCalendarEvent;
 import fi.riista.sql.SQOrganisation;
 import fi.riista.util.DateUtil;
+import fi.riista.util.F;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 import org.springframework.stereotype.Repository;
@@ -31,10 +34,13 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Repository
 public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCustom {
@@ -151,12 +157,24 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
                 .join(SQORGANISATION).on(SQEVENT.organisationId.eq(SQORGANISATION.organisationId))
                 .leftJoin(SQPARENTORGANISATION).on(SQORGANISATION.parentOrganisationId.eq(SQPARENTORGANISATION.organisationId));
 
+        final QOrganisation ORGANISATION = QOrganisation.organisation;
+        final List<String> rkaOfficialCodes = params.getRhyIds().isEmpty() ?
+                Collections.emptyList() :
+                jpaQueryFactory.select(ORGANISATION.parentOrganisation.officialCode)
+                .from(ORGANISATION)
+                .where(ORGANISATION.officialCode.in(params.getRhyIds()))
+                .fetch();
+
+        final BooleanExpression organisationPredicate = params.getRhyIds().isEmpty() ?
+                null :
+                rhyPredicate(params.getRhyIds()).or(rkaPredicate(rkaOfficialCodes));
+
         final Predicate predicate = new BooleanBuilder()
                 .and(betweenPredicate(params))
-                .and(rhyPredicate(params.getRhyId()))
-                .and(areaPredicate(params.getAreaId(), params.getRhyId()))
+                .and(areaPredicate(params.getAreaId(), params.getRhyIds()))
+                .and(organisationPredicate)
                 .and(onlyPublicOrganisationsPredicate(params.getOnlyPublicEvents()))
-                .and(typePredicate(params.getCalendarEventType()))
+                .and(typePredicate(params.getCalendarEventTypes()))
                 .and(onlyPubliclyVisiblePredicate(params.getOnlyPubliclyVisible()));
 
         final SQLQuery<Tuple> query = sqlQueryFactory
@@ -176,9 +194,12 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
                         additionalCalendarEventIdPath)
                 .from(SQLExpressions.union(calendarEventQuery, additionalCalendarEventQuery).as("u"))
                 .where(predicate)
-                .orderBy(datePath.asc(), beginTimePath.asc(), namePath.asc(), calendarEventIdPath.asc())
-                .limit(params.getLimit())
-                .offset(params.getOffset());
+                .orderBy(datePath.asc(), beginTimePath.asc(), namePath.asc(), calendarEventIdPath.asc());
+
+        final Integer limit = params.getLimit();
+        if (limit != null) {
+            query.limit(limit).offset(params.getOffset());
+        }
 
         return query.fetch().stream()
                 .map(t -> {
@@ -208,7 +229,7 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
                             endTime,
                             organisationId,
                             venueId);
-        }).collect(Collectors.toList());
+        }).collect(toList());
     }
 
     private static BooleanExpression betweenPredicate(final CalendarEventSearchParamsDTO parameters) {
@@ -226,8 +247,8 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
         return datePath.between(beginTimestamp, endTimestamp);
     }
 
-    private static BooleanExpression areaPredicate(final String areaId, final String rhyId) {
-        if (rhyId == null && areaId != null) {
+    private static BooleanExpression areaPredicate(final String areaId, final Collection<String> rhyIds) {
+        if (rhyIds.isEmpty() && areaId != null) {
             // If only rka is selected as search criteria, match events for rhys that have
             // the specified rka as their parent organisation.
             BooleanExpression eventUnderRhy = organisationTypePath.eq(OrganisationType.RHY.name())
@@ -239,15 +260,21 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
 
             return eventUnderRhy.or(eventUnderRka);
         }
-
         return null;
     }
 
-    private static BooleanExpression rhyPredicate(final String rhyId) {
-        return rhyId == null
+    private static BooleanExpression rhyPredicate(final Collection<String> rhyOfficialCodes) {
+        return rhyOfficialCodes.isEmpty()
                 ? null
                 : organisationTypePath.eq(OrganisationType.RHY.name())
-                .and(organisationOfficialCodePath.eq(rhyId));
+                .and(organisationOfficialCodePath.in(rhyOfficialCodes));
+    }
+
+    private static BooleanExpression rkaPredicate(final Collection<String> rkaOfficialCodes) {
+        return rkaOfficialCodes.isEmpty()
+                ? null
+                : organisationTypePath.eq(OrganisationType.RKA.name())
+                .and(organisationOfficialCodePath.in(rkaOfficialCodes));
     }
 
     private static BooleanExpression onlyPublicOrganisationsPredicate(boolean onlyPubliclyVisible) {
@@ -261,10 +288,9 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
             : null;
     }
 
-    private static BooleanExpression typePredicate(final CalendarEventType calendarEventType) {
-        return calendarEventType == null
-                ? null
-                : calendarEventTypePath.eq(calendarEventType.name());
+    private static BooleanExpression typePredicate(final ImmutableSet<CalendarEventType> calendarEventTypes) {
+        return calendarEventTypes.isEmpty() ? null :
+                calendarEventTypePath.in(F.mapNonNullsToList(calendarEventTypes, eventType -> eventType.name()));
     }
 
     private static BooleanExpression onlyPubliclyVisiblePredicate(boolean onlyPubliclyVisible) {

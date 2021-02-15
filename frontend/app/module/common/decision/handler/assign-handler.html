@@ -1,0 +1,15 @@
+<button type="button" class="btn btn-primary btn-block"
+        ng-if="!$ctrl.decision.userIsHandler"
+        ng-confirm-click
+        ng-confirm-click-action="$ctrl.assignDecision()">
+    <span class="fa fa-fw fa-check"></span>
+    <span translate="decision.summary.status.assignToMe"></span>
+</button>
+
+<button type="button" class="btn btn-primary btn-block"
+        ng-if="$ctrl.decision.userIsHandler && !$ctrl.lockedAssignment"
+        ng-confirm-click
+        ng-confirm-click-action="$ctrl.unassignDecision()">
+    <span class="fa fa-fw fa-check"></span>
+    <span translate="decision.summary.status.unassign"></span>
+</button>

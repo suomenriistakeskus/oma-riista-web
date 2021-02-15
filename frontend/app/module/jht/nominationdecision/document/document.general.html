@@ -1,0 +1,32 @@
+<p class="decision-section-title"
+   translate="decision.document.general"></p>
+
+<table class="table" style="table-layout: fixed; margin-top: 15px">
+    <tbody>
+    <tr>
+        <th translate="decision.settings.document.locale"></th>
+        <td ng-switch="$ctrl.decision.locale">
+            <span ng-switch-when="sv_FI">{{'global.language.sv' | translate | lowercase}}</span>
+            <span ng-switch-default >{{'global.language.fi' | translate | lowercase}}</span>
+        </td>
+    </tr>
+    <tr>
+        <th translate="harvestpermit.admin.application.appealStatus"></th>
+        <td>
+            <span ng-if="$ctrl.decision.appealStatus === null"
+                  translate="decision.settings.appeal.noAppeal"></span>
+            <span ng-if="$ctrl.decision.appealStatus !== null"
+                  translate="decision.appealStatus.{{$ctrl.decision.appealStatus}}"></span>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="row" ng-if="::($ctrl.decision.status === 'DRAFT' && $ctrl.isHandler())">
+    <div class="col-xs-4 col-xs-offset-8">
+        <a class="btn btn-primary btn-block" ng-click="$ctrl.editDocumentSettings()">
+            <span class="fa fa-fw fa-cog"></span>
+            <span translate="decision.settings.document.title"></span>
+        </a>
+    </div>
+</div>

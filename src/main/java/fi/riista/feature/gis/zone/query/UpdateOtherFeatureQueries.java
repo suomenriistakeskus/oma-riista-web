@@ -1,11 +1,11 @@
 package fi.riista.feature.gis.zone.query;
 
-import com.vividsolutions.jts.io.WKBWriter;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
 import fi.riista.util.GISUtils;
 import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.locationtech.jts.io.WKBWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -58,7 +58,7 @@ public class UpdateOtherFeatureQueries {
                 .filter(UpdateOtherFeatureQueries::isOtherFeature)
                 .map(f -> PolygonConversionUtil.geoJsonToJava(f.getGeometry(), srid))
                 .map(geometry -> {
-                    if (geometry instanceof com.vividsolutions.jts.geom.MultiPolygon && geometry.getNumGeometries() > 1) {
+                    if (geometry instanceof org.locationtech.jts.geom.MultiPolygon && geometry.getNumGeometries() > 1) {
                         LOG.warn("Converting multi-polygon to single polygon geometry");
                         return geometry.getGeometryN(0);
                     }

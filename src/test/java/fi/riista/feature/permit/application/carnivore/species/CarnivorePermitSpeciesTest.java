@@ -104,7 +104,7 @@ public class CarnivorePermitSpeciesTest implements DefaultEntitySupplierProvider
         assertAllOtherThrows(LARGE_CARNIVORE_WOLF, GameSpecies.OFFICIAL_CODE_WOLF);
     }
 
-    private void assertAllOtherThrows(final HarvestPermitCategory category, final int officialCode) {
+    private static void assertAllOtherThrows(final HarvestPermitCategory category, final int officialCode) {
         Arrays.stream(GameSpecies.ALL_GAME_SPECIES_CODES)
                 .filter(code -> code != officialCode)
                 .forEach(code -> {

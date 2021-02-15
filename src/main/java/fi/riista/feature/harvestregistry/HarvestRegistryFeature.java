@@ -84,9 +84,8 @@ public class HarvestRegistryFeature {
         return transformToSlice(slice.getContent(), slice.hasNext(), pageRequest(dto), locale);
     }
 
-    private PageRequest pageRequest(final HarvestRegistryRequestDTO dto) {
-        return new PageRequest(dto.getPage(), dto.getPageSize());
+    private static PageRequest pageRequest(final HarvestRegistryRequestDTO dto) {
+        return PageRequest.of(dto.getPage(), dto.getPageSize());
     }
-
 
 }

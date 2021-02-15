@@ -5,7 +5,6 @@ import fi.riista.feature.gamediary.GameSpeciesNotFoundException;
 import fi.riista.feature.gamediary.OutOfBoundsSpecimenAmountException;
 import fi.riista.feature.gamediary.harvest.mutation.exception.HarvestChangeReasonRequiredException;
 import fi.riista.feature.gamediary.harvest.mutation.exception.HarvestHuntingDayChangeForbiddenException;
-import fi.riista.feature.gamediary.harvest.mutation.exception.HarvestLocationSourceRequiredException;
 import fi.riista.feature.gamediary.harvest.mutation.exception.HarvestPermitChangeForbiddenException;
 import fi.riista.feature.gamediary.harvest.mutation.exception.HarvestReportingTypeChangeForbiddenException;
 import fi.riista.feature.gamediary.harvest.mutation.exception.HarvestSeasonChangeForbiddenException;
@@ -130,12 +129,6 @@ public class HarvestExceptionMapper {
                     "Lupaa ei voi vaihtaa",
                     "Licens kan inte ändras",
                     "Harvest permit can not be changed")));
-
-        } else if (e instanceof HarvestLocationSourceRequiredException) {
-            return badRequest(singleErrorMessage(LocalisedString.of(
-                    "Sijainnin lähdetieto puuttuu",
-                    "Platskällainformationen saknas",
-                    "Location source is missing")));
 
         } else if (e instanceof HarvestHuntingDayChangeForbiddenException) {
             return badRequest(singleErrorMessage(LocalisedString.of(

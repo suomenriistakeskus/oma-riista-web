@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/luke/export/deerharvests/2020/03"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/luke/export/deerharvests/2020/03"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xs:element name="permits">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="permits" type="Permit" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="Permit">
+        <xs:sequence>
+            <xs:element name="permitNumber" type="xs:string"/>
+            <xs:element name="rhyOfficialCode" type="xs:string"/>
+            <xs:element name="contactPerson" type="Person" minOccurs="0"/>
+            <xs:element name="amount" type="Amount"/>
+            <xs:element name="amendmentPermits" type="Amount" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="huntingClubs" type="Club" nillable="true" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Amount">
+        <xs:sequence>
+            <xs:element name="amount" type="xs:float"/>
+            <xs:element name="restriction" type="restrictionType" minOccurs="0"/>
+            <xs:element name="restrictedAmount" type="xs:float" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Person">
+        <xs:sequence>
+            <xs:element name="firstName" type="xs:string"/>
+            <xs:element name="lastName" type="xs:string"/>
+            <xs:element name="email" type="xs:string" minOccurs="0"/>
+            <xs:element name="phoneNumber" type="xs:string" minOccurs="0"/>
+            <xs:element name="address" type="Address" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Address">
+        <xs:sequence>
+            <xs:element name="streetAddress" type="xs:string"/>
+            <xs:element name="postalCode" type="xs:string"/>
+            <xs:element name="city" type="xs:string"/>
+            <xs:element name="country" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Club">
+        <xs:sequence>
+            <xs:element name="clubOfficialCode" type="xs:string"/>
+            <xs:element name="nameFinnish" type="xs:string"/>
+            <xs:element name="geoLocation" type="geoLocation" minOccurs="0"/>
+            <xs:element name="contactPerson" type="Person" minOccurs="0"/>
+            <xs:element name="rhyOfficialCode" type="xs:string"/>
+            <xs:element name="groups" type="Group" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="huntingSummary" type="HuntingSummary" minOccurs="0"/>
+            <xs:element name="overrides" type="Overrides" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="geoLocation">
+        <xs:sequence>
+            <xs:element name="latitude" type="xs:int"/>
+            <xs:element name="longitude" type="xs:int"/>
+            <xs:element name="source" type="source"/>
+            <xs:element name="accuracy" type="xs:double" minOccurs="0"/>
+            <xs:element name="altitude" type="xs:double" minOccurs="0"/>
+            <xs:element name="altitudeAccuracy" type="xs:double" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Overrides">
+        <xs:sequence>
+            <xs:element name="adultMales" type="xs:int" minOccurs="0"/>
+            <xs:element name="adultFemales" type="xs:int" minOccurs="0"/>
+            <xs:element name="youngMales" type="xs:int" minOccurs="0"/>
+            <xs:element name="youngFemales" type="xs:int" minOccurs="0"/>
+            <xs:element name="nonEdibleAdults" type="xs:int" minOccurs="0"/>
+            <xs:element name="nonEdibleYoung" type="xs:int" minOccurs="0"/>
+            <xs:element name="totalHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="effectiveHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="remainingPopulationInTotalArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="remainingPopulationInEffectiveArea" type="xs:int" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Group">
+        <xs:sequence>
+            <xs:element name="dataSource" type="dataSource"/>
+            <xs:element name="nameFinnish" type="xs:string"/>
+            <xs:element name="harvests" type="Harvest" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="observations" type="Observation" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Harvest">
+        <xs:sequence>
+            <xs:element name="geoLocation" type="geoLocation"/>
+            <xs:element name="pointOfTime" type="xs:dateTime"/>
+            <xs:element name="huntingType" type="DeerHuntingType" minOccurs="0"/>
+            <xs:element name="gender" type="gameGender"/>
+            <xs:element name="age" type="gameAge"/>
+            <xs:element name="weightEstimated" type="xs:double" minOccurs="0"/>
+            <xs:element name="weightMeasured" type="xs:double" minOccurs="0"/>
+            <xs:element name="antlersType" type="gameAntlersType" minOccurs="0"/>
+            <xs:element name="antlersWidth" type="xs:int" minOccurs="0"/>
+            <xs:element name="antlerPointsLeft" type="xs:int" minOccurs="0"/>
+            <xs:element name="antlerPointsRight" type="xs:int" minOccurs="0"/>
+            <xs:element name="notEdible" type="xs:boolean" minOccurs="0"/>
+            <xs:element name="additionalInfo" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Observation">
+        <xs:sequence>
+            <xs:element name="geoLocation" type="geoLocation"/>
+            <xs:element name="pointOfTime" type="xs:dateTime"/>
+            <xs:element name="huntingType" type="DeerHuntingType" minOccurs="0"/>
+            <xs:element name="observationType" type="observationType"/>
+            <xs:element name="gameSpeciesCode" type="xs:int"/>
+            <xs:element name="gameSpeciesNameFinnish" type="xs:string"/>
+            <xs:element name="mooselikeMaleAmount" type="xs:int" minOccurs="0"/>
+            <xs:element name="mooseLikeFemaleAndCalfs" type="FemaleAndCalfs" nillable="true" minOccurs="0"  maxOccurs="5"/>
+            <xs:element name="mooselikeSolitaryCalfAmount" type="xs:int" minOccurs="0"/>
+            <xs:element name="mooselikeUnknownSpecimenAmount" type="xs:int" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FemaleAndCalfs">
+        <xs:sequence>
+            <xs:element name="calfs" type="xs:int"/>
+            <xs:element name="amount" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="HuntingSummary">
+        <xs:sequence>
+            <xs:element name="huntingEndDate" type="xs:date"/>
+            <xs:element name="huntingFinished" type="xs:boolean"/>
+
+            <xs:element name="totalHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="effectiveHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="populationRemainingInTotalHuntingArea" type="xs:int" minOccurs="0"/>
+            <xs:element name="populationRemainingInEffectiveHuntingArea" type="xs:int" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="DeerHuntingType">
+        <xs:sequence>
+            <xs:element name="huntingType" type="HuntingMethod"/>
+            <xs:element name="huntingTypeDescription" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="restrictionType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="AE"/>
+            <xs:enumeration value="AU"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="source">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="GPS_DEVICE"/>
+            <xs:enumeration value="MANUAL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="dataSource">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="WEB"/>
+            <xs:enumeration value="MOOSE_DATA_CARD"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameAge">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ADULT"/>
+            <xs:enumeration value="YOUNG"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameAntlersType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="HANKO"/>
+            <xs:enumeration value="LAPIO"/>
+            <xs:enumeration value="SEKA"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameGender">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="FEMALE"/>
+            <xs:enumeration value="MALE"/>
+            <xs:enumeration value="UNKNOWN"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="observationType">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="NAKO"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="HuntingMethod">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="STAND_HUNTING"/>
+            <xs:enumeration value="DOG_HUNTING"/>
+            <xs:enumeration value="MUU"/>
+        </xs:restriction>
+    </xs:simpleType>
+</xs:schema>

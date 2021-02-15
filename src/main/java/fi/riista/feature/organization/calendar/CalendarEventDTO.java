@@ -16,6 +16,7 @@ import org.joda.time.LocalTime;
 
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import java.util.Collections;
 import java.util.List;
@@ -90,6 +91,7 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
 
     private boolean excludedFromStatistics;
 
+    @Min(0)
     private Integer participants;
 
     private Boolean lockedAsPastStatistics;

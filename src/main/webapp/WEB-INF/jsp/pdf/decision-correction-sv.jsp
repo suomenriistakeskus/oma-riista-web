@@ -5,8 +5,8 @@
     <p>
         Den betalningsskyldig, som anser att det har gjorts fel vid fastställande av den avgift som bestäms enligt 6 § i
         lagen om grunderna för avgifter till staten (150/1992) samt enligt 1 § i jord- och skogsbruksministeriets
-        förordning om avgifterna 2017–2019 för Finlands viltcentrals och jaktvårdsföreningarnas offentliga
-        förvaltningsuppgifter (1463/2016), kan med stöd av 11 b § i lagen om grunderna för avgifter till staten yrka på
+        förordning om avgifterna 2020–2021 för Finlands viltcentrals och jaktvårdsföreningarnas offentliga
+        förvaltningsuppgifter (1319/2019), kan med stöd av 11 b § i lagen om grunderna för avgifter till staten yrka på
         rättelse av felet. Rättelseyrkandet ska framställas skriftligen.
     </p>
 

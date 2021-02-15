@@ -88,7 +88,7 @@ public class HarvestReportSearchRepository {
         final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
         final JPQLQuery<Harvest> query = jpqlQueryFactory.selectFrom(HARVEST);
 
-        if (params.getPermitNumber() != null) {
+        if (StringUtils.isNotBlank(params.getPermitNumber())) {
             query.innerJoin(HARVEST.harvestPermit, PERMIT);
         } else if (params.isCoordinatorSearch()) {
             query.leftJoin(HARVEST.harvestPermit, PERMIT);
@@ -111,12 +111,12 @@ public class HarvestReportSearchRepository {
         if (params.hasBeginAndEndDate()) {
             final Interval dateInterval = DateUtil.createDateInterval(params.getBeginDate(), params.getEndDate());
             builder.and(HARVEST.pointOfTime.between(
-                    dateInterval.getStart().toDate(),
-                    dateInterval.getEnd().toDate()));
+                    dateInterval.getStart(),
+                    dateInterval.getEnd()));
         } else if (params.hasBeginDate()) {
-            builder.and(HARVEST.pointOfTime.goe(DateUtil.toDateNullSafe(params.getBeginDate())));
+            builder.and(HARVEST.pointOfTime.goe(DateUtil.toDateTimeNullSafe(params.getBeginDate())));
         } else if (params.hasEndDate()) {
-            builder.and(HARVEST.pointOfTime.loe(DateUtil.toDateNullSafe(params.getEndDate())));
+            builder.and(HARVEST.pointOfTime.loe(DateUtil.toDateTimeNullSafe(params.getEndDate())));
         }
 
         if (params.getSeasonId() != null) {

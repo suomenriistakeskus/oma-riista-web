@@ -2,17 +2,22 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.organization.rhy.MergedRhyMapping;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.feature.organization.rhy.annualstats.statechange.RhyAnnualStatisticsStateTransitionService;
+import fi.riista.security.EntityPermission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.function.BiConsumer;
 
+import static fi.riista.feature.organization.rhy.Riistanhoitoyhdistys.ANNUAL_STATISTICS_DEFAULT_LAST_YEAR;
+import static fi.riista.feature.organization.rhy.Riistanhoitoyhdistys.ANNUAL_STATISTICS_FIRST_YEAR;
 import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsAuthorization.Permission.MODERATOR_UPDATE;
 import static fi.riista.security.EntityPermission.READ;
 import static fi.riista.security.EntityPermission.UPDATE;
@@ -246,5 +251,13 @@ public class RhyAnnualStatisticsCrudFeature
 
     private RhyAnnualStatistics requireEntity(final long statisticsId, final Enum<?> permission) {
         return requireEntityService.requireRhyAnnualStatistics(statisticsId, permission);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Integer> listAnnualStatisticsYears(final long rhyId) {
+        final Riistanhoitoyhdistys rhy = requireEntityService.requireRiistanhoitoyhdistys(rhyId, EntityPermission.READ);
+        return MergedRhyMapping.getExistenceRangeOrDefault(rhy.getOfficialCode(),
+                ANNUAL_STATISTICS_FIRST_YEAR,
+                ANNUAL_STATISTICS_DEFAULT_LAST_YEAR);
     }
 }

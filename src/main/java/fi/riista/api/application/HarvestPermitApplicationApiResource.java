@@ -105,13 +105,13 @@ public class HarvestPermitApplicationApiResource {
     // TYPES
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/types", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HarvestPermitApplicationTypeDTO> listTypes() {
         return harvestPermitApplicationTypeFeature.listTypes();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/findtype", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/findtype", produces = MediaType.APPLICATION_JSON_VALUE)
     public HarvestPermitApplicationTypeDTO findType(@RequestParam long applicationId) {
         return harvestPermitApplicationTypeFeature.findTypeForApplication(applicationId);
     }
@@ -119,7 +119,7 @@ public class HarvestPermitApplicationApiResource {
     // PERSONAL LIST
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/myApplicationsAndDecisions", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/myApplicationsAndDecisions", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<ApplicationDecisionPermitListDTO> myApplicationsAndDecisions(
             @RequestParam(required = false) Long personId) {
         return applicationDecisionPermitListFeature.listApplicationsAndDecisionsForPerson(personId);
@@ -128,7 +128,7 @@ public class HarvestPermitApplicationApiResource {
     // RHY LIST
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<?> listApplications(
             @RequestParam String rhyOfficialCode,
             @RequestParam final int huntingYear,
@@ -139,7 +139,7 @@ public class HarvestPermitApplicationApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/years", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/years", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<Integer> listRhyHuntingYears(@RequestParam(required = false) String rhyOfficialCode) {
         if (StringUtils.hasText(rhyOfficialCode)) {
             return harvestPermitApplicationSearchFeature.listRhyYears(rhyOfficialCode);
@@ -151,7 +151,7 @@ public class HarvestPermitApplicationApiResource {
     // READ
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{applicationId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public HarvestPermitApplicationBasicDetailsDTO basicDetails(@PathVariable final long applicationId) {
         return harvestPermitApplicationsFeature.getBasicDetails(applicationId);
     }
@@ -186,14 +186,14 @@ public class HarvestPermitApplicationApiResource {
 
     // ATTACHMENTS
 
-    @GetMapping(value = "/{applicationId:\\d+}/attachment", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{applicationId:\\d+}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HarvestPermitApplicationAttachmentDTO> listAttachments(final @PathVariable long applicationId) {
         return harvestPermitApplicationAttachmentFeature.listAttachments(applicationId);
     }
 
     @PostMapping(value = "/{applicationId:\\d+}/attachment",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> addAttachment(final @PathVariable long applicationId,
                                                 final @RequestParam HarvestPermitApplicationAttachment.Type attachmentType,
                                                 final @RequestParam("file") MultipartFile file) {
@@ -237,6 +237,14 @@ public class HarvestPermitApplicationApiResource {
         } catch (Exception e) {
             return ResponseEntity.ok(ImmutableMap.of("valid", false));
         }
+    }
+
+    // ARCHIVE
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{applicationId:\\d+}/archive/generate")
+    public String createArchiveIfMissing(@PathVariable final long applicationId) throws Exception {
+        return harvestPermitApplicationAsyncFeature.createArchiveIfMissing(applicationId);
     }
 
     // SEND

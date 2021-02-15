@@ -139,7 +139,10 @@
                     <input type="number" class="form-control"
                            name="participants" id="participants"
                            ng-model="viewState.event.participants"
-                           ng-disabled="viewState.event.lockedAsPastStatistics"/>
+                           ng-disabled="viewState.event.lockedAsPastStatistics"
+                           min="0"
+                           max="99999"
+                           step="1"/>
                 </div>
             </div>
         </div>

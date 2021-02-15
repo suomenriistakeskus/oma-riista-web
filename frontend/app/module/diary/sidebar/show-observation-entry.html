@@ -1,0 +1,65 @@
+<div class="content r-gamediary-entry-show">
+
+    <r-show-diary-species-title entry="$ctrl.entry"></r-show-diary-species-title>
+
+    <div class="alert alert-info" ng-show="$ctrl.entry.moderatorOverride">
+        <p translate="gamediary.moderatorOverride"></p>
+    </div>
+
+    <div>
+        <h5 translate="gamediary.observation"></h5>
+        <p ng-bind="$ctrl.entry.pointOfTime | date:'d.M.yyyy HH:mm'"></p>
+        <h5 translate="gamediary.form.location"></h5>
+        <p translate="global.geoLocation.coordinatesText" translate-values="$ctrl.entry.geoLocation"></p>
+    </div>
+
+    <div>
+        <h5 translate="gamediary.author"></h5>
+        <span ng-bind="$ctrl.entry.authorInfo.byName"></span>
+        <span ng-bind="$ctrl.entry.authorInfo.lastName"></span>
+        <span ng-if="$ctrl.entry.authorInfo.hunterNumber"></span>
+    </div>
+
+    <div ng-if="$ctrl.carnivoreObserverPresent()">
+        <h5 translate="gamediary.carnivoreObserver"></h5>
+        <span ng-bind="$ctrl.entry.observerName"></span>
+        <span ng-bind="$ctrl.entry.observerPhoneNumber"></span>
+    </div>
+
+    <div ng-if="!$ctrl.carnivoreObserverPresent()">
+        <h5 translate="gamediary.observer"></h5>
+        <span ng-bind="$ctrl.entry.actorInfo.byName"></span>
+        <span ng-bind="$ctrl.entry.actorInfo.lastName"></span>
+    </div>
+
+    <h5 translate="gamediary.form.observationType"></h5>
+    <span translate="observation.type.{{$ctrl.entry.observationType}}"></span>
+
+    <div ng-if="$ctrl.isWithinMooseHunting()">
+        <h5 translate="gamediary.form.withinMooseHunting"></h5>
+        <span translate="global.yes"></span>
+    </div>
+
+    <div ng-if="$ctrl.isWithinDeerHunting()">
+        <h5 translate="gamediary.form.withinDeerHunting"></h5>
+        <span translate="global.yes"></span>
+
+        <h5 translate="gamediary.form.deerHuntingType"></h5>
+        <span translate="{{ 'gamediary.deerHuntingType.' + $ctrl.entry.deerHuntingType }}"></span><!--
+        html comments are for preventing whitespace between span elements
+        --><span ng-if="$ctrl.entry.deerHuntingType === 'OTHER'">:
+            <span ng-if="$ctrl.entry.deerHuntingTypeDescription" ng-bind="$ctrl.entry.deerHuntingTypeDescription"></span>
+            <span ng-if="!$ctrl.entry.deerHuntingTypeDescription" translate="gamediary.deerHuntingType.NOT_GIVEN"></span>
+        </span>
+    </div>
+
+    <div ng-if="$ctrl.isDefined('verifiedByCarnivoreAuthority')">
+        <h5 translate="gamediary.form.verifiedByCarnivoreAuthority"></h5>
+        <span translate="{{ $ctrl.entry.verifiedByCarnivoreAuthority ? 'global.yes' : 'global.no' }}"></span>
+    </div>
+
+    <r-show-observation-specimens entry="$ctrl.entry"></r-show-observation-specimens>
+
+    <r-show-diary-description-and-pictures entry="$ctrl.entry"></r-show-diary-description-and-pictures>
+
+</div>

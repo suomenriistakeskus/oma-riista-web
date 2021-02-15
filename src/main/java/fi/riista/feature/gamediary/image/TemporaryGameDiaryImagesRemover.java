@@ -13,11 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.data.jpa.domain.Specifications.where;
+import static org.springframework.data.jpa.domain.Specification.where;
 
 @Component
 public class TemporaryGameDiaryImagesRemover {
@@ -47,7 +46,7 @@ public class TemporaryGameDiaryImagesRemover {
 
     @Transactional
     public void removeExpiredTemporaryImages(final ReadablePeriod expirationTime) {
-        final Date olderThan = DateTime.now().minus(expirationTime).toDate();
+        final DateTime olderThan = DateTime.now().minus(expirationTime);
 
         final List<GameDiaryImage> expired = gameDiaryImageRepository.findAll(
                 where(SPEC_FOR_IMAGE_NOT_RELATED_TO_ANY_GAME_DIARY_ENTRY)

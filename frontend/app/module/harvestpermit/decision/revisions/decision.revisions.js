@@ -18,54 +18,57 @@ angular.module('app.harvestpermit.decision.revisions', [])
                 },
                 diaryParameters: function (GameDiaryParameters) {
                     return GameDiaryParameters.query().$promise;
+                },
+                decisionAttachments: function (PermitDecision, decisionId) {
+                    return PermitDecision.getAttachments({id: decisionId}).$promise;
                 }
 
             },
-            controller: function ($state, $filter, $translate, PermitDecision, NotificationService,
-                                  FormPostService, GameSpeciesCodes,
-                                  decisionId, decision, revisions, decisionSpeciesAmounts, diaryParameters) {
+            controller: function ($state, PermitDecision, NotificationService,
+                                  FormPostService, GameSpeciesCodes, PermitDecisionAdditionalAttachmentsModal,
+                                  decisionId, decision, revisions, decisionSpeciesAmounts, diaryParameters, decisionAttachments) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
                     $ctrl.decision = decision;
                     $ctrl.revisions = _.orderBy(revisions, ['id'], ['desc']);
+                    $ctrl.permits = decision.permits || [];
+                    $ctrl.reversePermits = decision.permitTypeCode === '346'; // Reverse permits for annually renewed
                     $ctrl.mooselikeSpeciesCodes = _.chain(decisionSpeciesAmounts)
                         .map('gameSpeciesCode')
                         .filter(GameSpeciesCodes.isPermitBasedMooselike)
                         .value();
                     $ctrl.showHarvestReports =
-                        decision.harvestPermitCategory === 'BIRD' &&
+                        (decision.harvestPermitCategory === 'BIRD' || decision.harvestPermitCategory === 'MAMMAL') &&
                         decision.status === 'PUBLISHED' &&
                         decision.decisionType === 'HARVEST_PERMIT' &&
                         decision.grantStatus !== 'REJECTED';
                     $ctrl.contactPersonReceivers = [];
                     $ctrl.otherReceivers = [];
                     $ctrl.activeRevision = null;
-                    $ctrl.activeTab = 1;
 
-                    if (_.size($ctrl.revisions) > 0) {
-                        $ctrl.revisions[0].latest = true;
-                        $ctrl.activeRevision = $ctrl.revisions[0];
-                        $ctrl.onActiveRevisionChanged($ctrl.activeRevision);
-                    }
+                    $ctrl.attachments = decisionAttachments;
+                    $ctrl.attachmentDownloadUrl = '/api/v1/decision/' + decisionId + '/attachment/';
                 };
 
                 $ctrl.onActiveRevisionChanged = function (revision) {
-                    $ctrl.contactPersonReceivers = filterReceivers(revision, 'CONTACT_PERSON');
-                    $ctrl.otherReceivers = filterReceivers(revision, 'OTHER');
+                    $ctrl.activeRevision = revision;
+                    $ctrl.contactPersonReceivers = filterReceivers($ctrl.activeRevision, 'CONTACT_PERSON');
+                    $ctrl.otherReceivers = filterReceivers($ctrl.activeRevision, 'OTHER');
+                    $ctrl.allowEditOfAdditionalAttachments =
+                        $ctrl.activeRevision.latest === true &&
+                        $ctrl.decision.status === 'PUBLISHED';
+                };
+
+                $ctrl.openAttachmentEditor = function () {
+                    PermitDecisionAdditionalAttachmentsModal.open(decisionId).then(function () {
+                        $state.reload();
+                    });
                 };
 
                 function filterReceivers(revision, type) {
                     return _.filter(revision.receivers, _.matchesProperty('receiverType', type));
                 }
-
-                var dateFilter = $filter('date');
-
-                $ctrl.getRevisionName = function (rev) {
-                    return dateFilter(rev.lockedDate, 'd.M.yyyy HH:mm')
-                        + (rev.externalId ? ' - ' + rev.externalId : '')
-                        + (rev.latest ? ' - ' + $translate.instant('harvestpermit.decision.revision.latest') : '');
-                };
 
                 $ctrl.togglePosted = function (posted) {
                     var m = posted ? PermitDecision.updatePosted : PermitDecision.updateNotPosted;
@@ -84,14 +87,11 @@ angular.module('app.harvestpermit.decision.revisions', [])
                         : gameSpeciesCode;
                 };
 
-                $ctrl.downloadPdf = function (id) {
-                    FormPostService.submitFormUsingBlankTarget(
-                        '/api/v1/decision/' + decisionId + '/revisions/' + id + '/pdf');
-                };
-
-                $ctrl.downloadAttachment = function (attachment) {
-                    FormPostService.submitFormUsingBlankTarget(
-                        '/api/v1/decision/' + decisionId + '/revisions/attachment' + '/' + attachment.id);
+                $ctrl.downloadPdf = function () {
+                    if ($ctrl.activeRevision) {
+                        FormPostService.submitFormUsingBlankTarget(
+                            '/api/v1/decision/' + decisionId + '/revisions/' + $ctrl.activeRevision.id + '/pdf');
+                    }
                 };
 
                 // Allow invoice downloading only for published decisions since decision status can change
@@ -123,16 +123,22 @@ angular.module('app.harvestpermit.decision.revisions', [])
                     window.open('/api/v1/decision/' + decisionId + '/invoice/harvest/' + gameSpeciesCode);
                 };
 
-                $ctrl.downloadBirdHarvestReport = function () {
-                    window.open('/api/v1/decision/' + decisionId + '/bird-harvest-report');
+                $ctrl.downloadPermitHarvestReport = function () {
+                    window.open('/api/v1/decision/' + decisionId + '/permit-harvest-report');
                 };
 
                 $ctrl.moveToInvoices = function () {
                     $state.go('jht.invoice.search', {applicationNumber: decision.applicationNumber});
                 };
 
-                $ctrl.moveToPermit = function () {
-                    $state.go('permitmanagement.dashboard', {permitId: decision.harvestPermitId});
+                $ctrl.moveToOnlyPermit = function () {
+                    if ($ctrl.permits.length === 1) {
+                        $ctrl.moveToPermit($ctrl.permits[0].id);
+                    }
+                };
+
+                $ctrl.moveToPermit = function (id) {
+                    $state.go('permitmanagement.dashboard', {permitId: id});
                 };
             }
         });
@@ -150,5 +156,112 @@ angular.module('app.harvestpermit.decision.revisions', [])
                 $ctrl.iconClasses = {};
                 $ctrl.iconClasses['fa-' + $ctrl.iconType] = true;
             };
+        }
+    })
+
+    .service('PermitDecisionAdditionalAttachmentsModal', function ($uibModal) {
+        this.open = function (decisionId) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/decision/revisions/additional-attachments.html',
+                controllerAs: '$ctrl',
+                controller: ModalController,
+                size: 'lg',
+                resolve: {
+                    decisionId: _.constant(decisionId),
+                    additionalAttachments: function (PermitDecisionAttachmentService) {
+                        return PermitDecisionAttachmentService.loadAdditionalAttachments(decisionId);
+                    }
+                }
+            }).result;
+        };
+
+        function ModalController($uibModalInstance, $scope, $timeout,
+                                 PermitDecision, PermitDecisionAttachmentService,
+                                 decisionId, additionalAttachments) {
+            var $ctrl = this;
+
+            $ctrl.dropzone = null;
+
+            $ctrl.$onInit = function () {
+                $ctrl.activeTabIndex = 0;
+                $ctrl.decisionAttachments = additionalAttachments;
+                $ctrl.attachmentDescription = '';
+                $ctrl.attachmentChanged = false;
+
+                $ctrl.dropzoneConfig = {
+                    autoProcessQueue: false,
+                    addRemoveLinks: true,
+                    maxFiles: 1,
+                    maxFilesize: 50, // MiB
+                    uploadMultiple: false,
+                    url: PermitDecisionAttachmentService.getAdditionalAttachmentUri(decisionId, ''),
+                    paramName: 'file'
+                };
+
+                $ctrl.dropzoneEventHandlers = {
+                    addedfile: function (file) {
+                        $timeout(function () {
+                            // trigger digest cycle
+                            $ctrl.errors = {};
+                        });
+                    },
+                    success: function (file) {
+                        $ctrl.dropzone.removeFile(file);
+
+                        $timeout(function () {
+                            $ctrl.errors = {};
+                            $ctrl.attachmentDescription = '';
+                            reloadAttachments();
+                        });
+                    },
+                    error: function (file, response, xhr) {
+                        $ctrl.dropzone.removeFile(file);
+                        $timeout(function () {
+                            $ctrl.errors = {
+                                incompatibleFileType: true
+                            };
+                        });
+                    }
+                };
+
+                $ctrl.errors = {
+                    incompatibleFileType: false
+                };
+            };
+
+            $ctrl.save = function () {
+                $uibModalInstance.close();
+            };
+
+            // UPLOAD
+
+            $ctrl.uploadDisabled = function (form) {
+                return form.$invalid || !$ctrl.dropzone || $ctrl.dropzone.getAcceptedFiles().length < 1;
+            };
+
+            $ctrl.uploadAttachment = function () {
+                $ctrl.dropzone.processQueue();
+                $timeout(function () {
+                    reloadAttachments();
+                });
+            };
+
+            $ctrl.downloadAttachment = function (id) {
+                PermitDecisionAttachmentService.downloadAttachment(decisionId, id);
+            };
+
+            $ctrl.deleteAttachment = function (id) {
+                PermitDecisionAttachmentService.deleteAttachment(decisionId, id).then(function () {
+                    reloadAttachments();
+                });
+            };
+
+            function reloadAttachments() {
+                PermitDecisionAttachmentService.loadAdditionalAttachments(decisionId).then(function (res) {
+                    $ctrl.decisionAttachments = res;
+                    $ctrl.attachmentChanged = false;
+                    $ctrl.activeTabIndex = 0;
+                });
+            }
         }
     });

@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Date;
-import java.util.Optional;
 
 @Component
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
@@ -25,47 +24,13 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
     private static final String CLIENT_PARAM = "client";
 
-    public enum ClientType {
-        WEB("web", AccountApiResource.ACCOUNT_RESOURCE_URL),
-        MOBILE_V1("mobilegamediary", MobileAccountApiResource.ACCOUNT_V1_RESOURCE_URL),
-        MOBILE_V2("mobileapiv2", MobileAccountApiResource.ACCOUNT_V2_RESOURCE_URL);
-
-        private final String id;
-
-        private final String accountResourceUrl;
-
-        ClientType(final String id, final String accountResourceUrl) {
-            this.id = id;
-            this.accountResourceUrl = accountResourceUrl;
-        }
-
-        public static Optional<ClientType> fromId(final String id) {
-            if (id != null) {
-                for (final ClientType type : values()) {
-                    if (type.getId().equalsIgnoreCase(id)) {
-                        return Optional.of(type);
-                    }
-                }
-            }
-            return Optional.empty();
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getAccountResourceUrl() {
-            return accountResourceUrl;
-        }
-    }
-
     @Resource
     private SQLQueryFactory sqlQueryFactory;
 
     @Override
-    public void onAuthenticationSuccess(
-            HttpServletRequest request, HttpServletResponse response, Authentication authentication)
-            throws IOException {
+    public void onAuthenticationSuccess(final HttpServletRequest request,
+                                        final HttpServletResponse response,
+                                        final Authentication authentication) throws IOException {
 
         if (authentication != null && authentication.isAuthenticated()) {
             // Always create session
@@ -73,6 +38,7 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
             final UserInfo userInfo = UserInfo.extractFrom(authentication);
             logMobileLoginInfo(userInfo.getUsername(), request);
+
             // Redirect to Account API after sending new session cookie and optional remember-me cookie
             response.sendRedirect(getRedirectUrl(request));
         } else {
@@ -80,10 +46,10 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         }
     }
 
-    private void logMobileLoginInfo(String username, HttpServletRequest request) {
-        String version = request.getHeader("mobileClientVersion");
-        String platform = request.getHeader("platform");
-        String device = request.getHeader("device");
+    private void logMobileLoginInfo(final String username, final HttpServletRequest request) {
+        final String version = request.getHeader("mobileClientVersion");
+        final String platform = request.getHeader("platform");
+        final String device = request.getHeader("device");
 
         if (version != null || platform != null || device != null) {
             LOG.info("MobileLogin version:{} platform:{} device:{} username:{}", version, platform, device, username);
@@ -97,8 +63,22 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         }
     }
 
-    private static String getRedirectUrl(HttpServletRequest request) {
-        String clientParam = request.getParameter(CLIENT_PARAM);
-        return ClientType.fromId(clientParam).orElse(ClientType.WEB).getAccountResourceUrl();
+    private static String getRedirectUrl(final HttpServletRequest request) {
+        final String clientParam = request.getParameter(CLIENT_PARAM);
+
+        if (clientParam == null) {
+            return AccountApiResource.ACCOUNT_RESOURCE_URL;
+        }
+
+        switch (clientParam) {
+            case "web":
+                return AccountApiResource.ACCOUNT_RESOURCE_URL;
+            case "mobileapiv2":
+                return MobileAccountApiResource.ACCOUNT_RESOURCE_URL;
+            default:
+                return clientParam.startsWith("mobile")
+                        ? MobileAccountApiResource.ACCOUNT_RESOURCE_URL
+                        : AccountApiResource.ACCOUNT_RESOURCE_URL;
+        }
     }
 }

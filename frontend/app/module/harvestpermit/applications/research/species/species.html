@@ -1,0 +1,88 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.research.species.instructionsTitle"></p>
+        <p translate="harvestpermit.wizard.research.species.instructions"></p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12 col-md-6">
+        <form name="addSpeciesForm">
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="form-group">
+                        <select class="form-control"
+                                name="selectedSpeciesCode"
+                                id="selectedSpeciesCode"
+                                ng-model="$ctrl.selectedSpeciesCode"
+                                ng-options="g.code as g.name group by g.category for g in $ctrl.availableSpeciesOptions | orderBy:'sortOrder'"
+                                ie10-optgroup-fix>
+                            <option disabled value="" translate="global.selectSpecies"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-xs-6">
+                    <button type="button" class="btn btn-primary btn-block"
+                            ng-disabled="!$ctrl.selectedSpeciesCode"
+                            ng-click="$ctrl.addSpecies($ctrl.selectedSpeciesCode)">
+                        <span class="fa fa-fw fa-plus"></span>
+                        <span translate="harvestpermit.wizard.species.addSpecies"></span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<hr>
+
+<form name="speciesAmountForm" r-force-show-errors-check-validity>
+    <div class="row" ng-repeat="s in $ctrl.speciesAmountList track by s.gameSpeciesCode">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label class="control-label" translate="harvestpermit.wizard.species.species"></label>
+
+                <input type="text" disabled class="form-control"
+                       ng-value="s.gameSpeciesCode | translateSpeciesCode">
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="form-group" show-errors>
+                <label class="control-label" for="amount-{{::s.gameSpeciesCode}}"
+                       translate="harvestpermit.wizard.research.species.speciesAmount"></label>
+
+                <div class="input-group">
+                    <input type="number" class="form-control no-spinner"
+                           name="amount-{{::s.gameSpeciesCode}}"
+                           id="amount-{{::s.gameSpeciesCode}}"
+                           ng-model="s.amount"
+                           required
+                           min="1" max="99999" step="1"
+                           r-click-select>
+                    <div class="input-group-addon">
+                        <span translate="harvestpermit.wizard.species.amountPerYear"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-2" style="padding-top: 24px">
+            <a class="btn btn-link"
+               ng-click="$ctrl.removeSpecies(s)">
+                <span class="fa fa-fw fa-remove text-danger"></span>
+                <span class="text-danger" translate="harvestpermit.wizard.species.removeSpecies"></span>
+            </a>
+        </div>
+    </div>
+</form>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(speciesAmountForm)"
+        previous="$ctrl.previous(speciesAmountForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(speciesAmountForm)">
+</permit-application-wizard-navigation>

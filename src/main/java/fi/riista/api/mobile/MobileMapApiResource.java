@@ -48,12 +48,12 @@ public class MobileMapApiResource {
 
     @GetMapping("/mh/hirvi")
     public List<MetsahallitusHirviDTO> listMetsahallitusHirvi() {
-        return metsahallitusGeometryLookupFeature.listHirvi(metsahallitusMaterialYear.getLatestHirviYear());
+        return metsahallitusGeometryLookupFeature.listHirviPublic(metsahallitusMaterialYear.getLatestHirviYear());
     }
 
     @GetMapping("/mh/hirvi/{year}")
     public List<MetsahallitusHirviDTO> listMetsahallitusHirvi(final @PathVariable int year) {
-        return metsahallitusGeometryLookupFeature.listHirvi(year);
+        return metsahallitusGeometryLookupFeature.listHirviPublic(year);
     }
 
     @GetMapping("/mh/pienriista")

@@ -2,6 +2,26 @@
 
 angular.module('app.harvestpermit.decision.document', [])
 
+    .constant('PermitDecisionSection', {
+        APPLICATION: 'APPLICATION',
+        APPLICATION_REASONING: 'APPLICATION_REASONING',
+        PROCESSING: 'PROCESSING',
+        DECISION: 'DECISION',
+        DECISION_EXTRA: 'DECISION_EXTRA',
+        RESTRICTION: 'RESTRICTION',
+        RESTRICTION_EXTRA: 'RESTRICTION_EXTRA',
+        DECISION_REASONING: 'DECISION_REASONING',
+        EXECUTION: 'EXECUTION',
+        LEGAL_ADVICE: 'LEGAL_ADVICE',
+        NOTIFICATION_OBLIGATION: 'NOTIFICATION_OBLIGATION',
+        APPEAL: 'APPEAL',
+        ADDITIONAL_INFO: 'ADDITIONAL_INFO',
+        DELIVERY: 'DELIVERY',
+        PAYMENT: 'PAYMENT',
+        ADMINISTRATIVE_COURT: 'ADMINISTRATIVE_COURT',
+        ATTACHMENTS: 'ATTACHMENTS'
+    })
+
     .config(function ($stateProvider) {
         $stateProvider.state('jht.decision.document', {
             url: '/document',
@@ -23,60 +43,61 @@ angular.module('app.harvestpermit.decision.document', [])
         });
     })
 
-    .constant('PermitDecisionSectionList', [
-        'application', 'applicationReasoning', 'processing', 'decision', 'restriction',
-        'decisionReasoning', 'execution', 'legalAdvice', 'notificationObligation', 'appeal', 'additionalInfo',
-        'delivery', 'payment', 'administrativeCourt', 'attachments'
-    ])
-
     .service('RefreshDecisionStateService', function ($state) {
         this.refresh = function () {
             $state.reload('jht.decision.document');
         };
     })
 
-    .service('PermitDecisionUtils', function (LocalStorageService, PermitDecision, PermitDecisionSectionList) {
-        this.isHandler = function (decision) {
+    .service('PermitDecisionUtils', function (LocalStorageService, PermitDecision, PermitDecisionSection) {
+        var self = this;
+
+        self.isHandler = function (decision) {
             return decision && decision.userIsHandler;
         };
 
-        this.canEditContent = function (decision, sectionId) {
-            if (sectionId === 'decisionExtra') {
-                sectionId = 'decision';
-            } else if (sectionId === 'restrictionExtra') {
-                sectionId = 'restriction';
+        self.canEditContent = function (decision, sectionId) {
+            if (sectionId === PermitDecisionSection.DECISION_EXTRA) {
+                sectionId = PermitDecisionSection.DECISION;
+            } else if (sectionId === PermitDecisionSection.RESTRICTION_EXTRA) {
+                sectionId = PermitDecisionSection.RESTRICTION;
             }
 
-            return this.isHandler(decision) && decision.status === 'DRAFT' &&
-                decision.completeStatus[sectionId] === false;
+            return self.isHandler(decision) && decision.status === 'DRAFT' &&
+                decision.completeStatus[documentFieldForSection(sectionId)] === false;
         };
 
-        this.getSectionContent = function (decision, sectionId) {
+        self.getSectionContent = function (decision, sectionId) {
             var doc = decision.document;
-            if (sectionId === 'restriction') {
+            if (sectionId === PermitDecisionSection.RESTRICTION) {
                 return _([doc.restriction, doc.restrictionExtra]).filter().join('\n');
-            } else if (sectionId === 'decision') {
+            } else if (sectionId === PermitDecisionSection.DECISION) {
                 return _([doc.decision, doc.decisionExtra]).filter().join('\n');
             }
-            return doc[sectionId];
+            return doc[documentFieldForSection(sectionId)];
         };
 
-        this.canBeCompleted = function (decision, sectionId) {
-            if (this.sectionIsNotApplicable(decision, sectionId)) {
+        self.canBeCompleted = function (decision, sectionId) {
+            if (self.sectionIsNotApplicable(decision, sectionId)) {
                 return true;
             }
 
             var isSwedish = decision.locale === 'sv_FI';
             var byMail = decision.deliveryByMail;
 
-            var realSectionKey = sectionId === 'restriction' ? 'restrictionExtra' : sectionId;
-            var sectionTextLength = _.size(decision.document[realSectionKey]) || 0;
+            var realSectionKey = sectionId === PermitDecisionSection.RESTRICTION
+                ? PermitDecisionSection.RESTRICTION_EXTRA
+                : sectionId;
+
+            var documentField = documentFieldForSection(realSectionKey);
+            var sectionTextLength = _.size(decision.document[documentField]) || 0;
 
             return sectionTextLength >= getMinimumLengthToCompleteSection(sectionId, isSwedish, byMail);
         };
 
-        var notBlankRequired = ['decision', 'decisionReasoning', 'restriction', 'execution', 'appeal',
-            'administrativeCourt'
+        var notBlankRequired = [PermitDecisionSection.DECISION, PermitDecisionSection.DECISION_REASONING,
+            PermitDecisionSection.RESTRICTION, PermitDecisionSection.EXECUTION, PermitDecisionSection.APPEAL,
+            PermitDecisionSection.ADMINISTRATIVE_COURT
         ];
 
         function getMinimumLengthToCompleteSection(sectionId, isSwedish, byMail) {
@@ -85,85 +106,109 @@ angular.module('app.harvestpermit.decision.document', [])
             }
 
             switch (sectionId) {
-                case 'legalAdvice':
+                case PermitDecisionSection.LEGAL_ADVICE:
                     return (isSwedish ? 67 : 66);
-                case 'additionalInfo':
+                case PermitDecisionSection.ADDITIONAL_INFO:
                     return (isSwedish ? (byMail ? 288 : 302) : (byMail ? 265 : 282));
-                case 'delivery':
+                case PermitDecisionSection.DELIVERY:
                     return (isSwedish ? 24 : 18);
             }
 
             return 0;
         }
 
-        this.sectionIsNotApplicable = function (decision, sectionId) {
+        function documentFieldForSection(sectionId){
+            return _.camelCase(sectionId);
+        }
+
+        self.sectionIsNotApplicable = function (decision, sectionId) {
             var amendmentPermit = decision.permitTypeCode === '190';
             var notPermitDecision = decision.decisionType !== 'HARVEST_PERMIT';
+            var disabilityPermit = decision.permitTypeCode === '710';
 
             switch (sectionId) {
-                case 'restriction':
+                case PermitDecisionSection.RESTRICTION:
                     return amendmentPermit || notPermitDecision;
-                case 'execution':
+                case PermitDecisionSection.EXECUTION:
                     return notPermitDecision;
+                case PermitDecisionSection.DELIVERY:
+                    return disabilityPermit;
             }
 
             return false;
         };
 
-        this.reloadSectionContent = function (sectionId, decisionId) {
+        self.reloadSectionContent = function (sectionId, decisionId) {
             return PermitDecision.getDocument({id: decisionId}).$promise.then(function (doc) {
-                return doc[sectionId] || '';
+                return doc[documentFieldForSection(sectionId)] || '';
             });
         };
 
-        this.getReferenceContent = function (reference, sectionId) {
+        self.getReferenceContent = function (reference, sectionId) {
             return reference && reference.document
-                ? (reference.document[sectionId] || '')
+                ? (reference.document[documentFieldForSection(sectionId)] || '')
                 : null;
         };
 
-        this.canLockDecision = function (decision) {
-            return this.isHandler(decision) &&
+        self.canLockDecision = function (decision) {
+            return self.isHandler(decision) &&
                 decision.applicationStatus !== 'AMENDING' &&
-                this.allEditableFieldsComplete(decision);
+                self.allEditableFieldsComplete(decision);
         };
 
-        this.canUnlockDecision = function (decision) {
+        self.canUnlockDecision = function (decision) {
             return this.isHandler(decision) && (decision.status === 'LOCKED' ||
                 decision.status === 'PUBLISHED');
         };
 
-        this.hideSectionForRejected = function (decision, sectionId) {
+        self.hideSectionForRejected = function (decision, sectionId) {
             return decision.grantStatus === 'REJECTED' &&
-                (sectionId === 'restriction' ||
-                    sectionId === 'execution');
+                (sectionId === PermitDecisionSection.RESTRICTION ||
+                    sectionId === PermitDecisionSection.EXECUTION);
         };
 
-        this.allEditableFieldsComplete = function (decision) {
-            var self = this;
-
-            return _.every(PermitDecisionSectionList, function (sectionId) {
-                return sectionId === 'application' ||
-                    self.hideSectionForRejected(decision, sectionId) ||
-                    decision.completeStatus[sectionId];
+        self.allEditableFieldsComplete = function (decision) {
+            return _.every(PermitDecisionSection, function (sectionId) {
+                return self.hideSectionForRejected(decision, sectionId)
+                    || _.endsWith(sectionId, "_EXTRA")
+                    || self.hideDeliveryForDisability(decision.permitTypeCode, sectionId)
+                    || self.isSectionComplete(decision, sectionId);
             });
         };
 
-        this.toggleComplete = function (decision, sectionId) {
+        self.isSectionComplete = function(decision, sectionId){
+            return sectionId === PermitDecisionSection.APPLICATION ||
+                _.get(decision.completeStatus, documentFieldForSection(sectionId), false);
+        };
+
+        self.toggleComplete = function (decision, sectionId, value) {
             var completeStatus = decision.completeStatus;
-            var completeValue = completeStatus[sectionId];
+            var documentField = documentFieldForSection(sectionId);
 
             PermitDecision.updateCompleteStatus({id: decision.id}, {
                 sectionId: sectionId,
-                complete: completeValue
+                complete: value
             }).$promise.then(function () {
-                completeStatus[sectionId] = completeValue;
+                completeStatus[documentField] = value;
             });
+        };
+
+        self.updateGrantStatus = function(decision, grantStatus) {
+            PermitDecision.updateGrantStatus({id: decision.id}, {
+                grantStatus: grantStatus
+            }).$promise.then(function () {
+                decision.grantStatus = grantStatus;
+            });
+        };
+
+        this.hideDeliveryForDisability = function (permitTypeCode, sectionId) {
+            // 710 = disability permit
+            return permitTypeCode === '710' && sectionId === PermitDecisionSection.DELIVERY;
         };
     })
 
     .controller('PermitDecisionDocumentController',
-        function (PermitDecisionSectionList, PermitDecision,
+        function (PermitDecisionSection, PermitDecision,
                   PermitDecisionUtils, RefreshDecisionStateService,
                   PermitDecisionChangeReferenceModal,
                   PermitDecisionPublishSettingsModal,
@@ -173,7 +218,7 @@ angular.module('app.harvestpermit.decision.document', [])
 
             $ctrl.$onInit = function () {
                 $ctrl.previewEnabled = decision.status !== 'DRAFT';
-                $ctrl.sectionIds = PermitDecisionSectionList;
+                $ctrl.sectionIds = _.values(PermitDecisionSection);
                 $ctrl.decision = decision;
                 $ctrl.reference = reference;
             };
@@ -206,8 +251,8 @@ angular.module('app.harvestpermit.decision.document', [])
 
             $ctrl.unlockDecision = function () {
                 ReasonAsker.openModal({
-                    titleKey: 'harvestpermit.decision.unlockConfirm.title',
-                    messageKey: 'harvestpermit.decision.unlockConfirm.message'
+                    titleKey: 'decision.unlockConfirm.title',
+                    messageKey: 'decision.unlockConfirm.message'
                 }).then(function (reason) {
                     PermitDecision.unlock({id: decisionId, unlockReason: reason}).$promise.then(function () {
                         NotificationService.showDefaultSuccess();
@@ -243,7 +288,7 @@ angular.module('app.harvestpermit.decision.document', [])
             function convertStateNameToSectionId() {
                 var currentStateName = $state.current.name;
 
-                return _.chain(PermitDecisionSectionList).filter(function (sectionId) {
+                return _.chain(_.values(PermitDecisionSection)).filter(function (sectionId) {
                     return _.endsWith(currentStateName, _.kebabCase(sectionId));
                 }).head().value();
             }
@@ -253,15 +298,18 @@ angular.module('app.harvestpermit.decision.document', [])
     .component('permitDecisionDocumentNav', {
         templateUrl: 'harvestpermit/decision/document/document-nav.html',
         bindings: {
-            completeStatus: '<',
+            decision: '<',
             publishDate: '<',
             grantStatus: '<'
         },
-        controller: function ($state, PermitDecisionSectionList) {
+        controller: function ($state, PermitDecisionSection, PermitDecisionUtils) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                $ctrl.sectionIds = PermitDecisionSectionList;
+                $ctrl.sectionIds = _.filter(_.values(PermitDecisionSection), function (value) {
+                    // No separate navigation for section extra fields
+                    return !_.endsWith(value, "_EXTRA");
+                });
             };
 
             $ctrl.focus = function (sectionId) {
@@ -269,11 +317,12 @@ angular.module('app.harvestpermit.decision.document', [])
             };
 
             $ctrl.isComplete = function (sectionId) {
-                return sectionId === 'application' || _.get($ctrl.completeStatus, sectionId, false);
+                return PermitDecisionUtils.isSectionComplete($ctrl.decision, sectionId);
             };
 
             $ctrl.isSectionVisible = function (sectionId) {
-                return !($ctrl.grantStatus === 'REJECTED' && (sectionId === 'restriction' || sectionId === 'execution'));
+                return !PermitDecisionUtils.hideSectionForRejected($ctrl.decision, sectionId) &&
+                    !PermitDecisionUtils.hideDeliveryForDisability($ctrl.decision.permitTypeCode, sectionId);
             };
 
             $ctrl.getStateName = function (sectionId) {
@@ -289,16 +338,31 @@ angular.module('app.harvestpermit.decision.document', [])
             sectionId: '<',
             denyComplete: '&'
         },
+        controllerAs: '$ctrl'
+    })
+
+    .component('permitDecisionSectionHeaderButtons', {
+        templateUrl: 'harvestpermit/decision/document/section-header-buttons.html',
+        bindings: {
+            decision: '<',
+            sectionId: '<',
+            denyComplete: '&'
+        },
         controllerAs: '$ctrl',
-        controller: function (PermitDecisionUtils) {
+        controller: function (PermitDecisionUtils, PermitDecisionSection) {
             var $ctrl = this;
 
+            $ctrl.$onInit = function () {
+                $ctrl.approved = $ctrl.decision.grantStatus === 'UNCHANGED';
+                $ctrl.fieldValue = $ctrl.isComplete();
+            };
+
             $ctrl.isComplete = function () {
-                return _.get($ctrl.decision.completeStatus, $ctrl.sectionId, false);
+                return PermitDecisionUtils.isSectionComplete($ctrl.decision, $ctrl.sectionId);
             };
 
             $ctrl.toggleComplete = function () {
-                PermitDecisionUtils.toggleComplete($ctrl.decision, $ctrl.sectionId);
+                PermitDecisionUtils.toggleComplete($ctrl.decision, $ctrl.sectionId, $ctrl.fieldValue);
             };
 
             $ctrl.canBeCompleted = function () {
@@ -308,6 +372,41 @@ angular.module('app.harvestpermit.decision.document', [])
 
             $ctrl.isHandler = function () {
                 return PermitDecisionUtils.isHandler($ctrl.decision);
+            };
+
+            $ctrl.showButtons = function () {
+                return $ctrl.isHandler() && $ctrl.sectionId !== PermitDecisionSection.APPLICATION;
+            };
+
+        }
+    })
+
+    .component('permitDecisionSectionHeaderWithGrantStatus', {
+        templateUrl: 'harvestpermit/decision/document/decision-section-header-with-grant-status.html',
+        bindings: {
+            decision: '<',
+            sectionId: '<',
+            denyComplete: '&'
+        },
+        controllerAs: '$ctrl',
+        controller: function (PermitDecisionUtils) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.approved = $ctrl.decision.grantStatus === 'UNCHANGED';
+            };
+
+            $ctrl.isHandler = function () {
+                return PermitDecisionUtils.isHandler($ctrl.decision);
+            };
+
+            $ctrl.isComplete = function () {
+                return PermitDecisionUtils.isSectionComplete($ctrl.decision, $ctrl.sectionId);
+            };
+
+            $ctrl.toggleGrantStatus = function () {
+                var status = $ctrl.approved ? 'UNCHANGED' : 'REJECTED';
+                PermitDecisionUtils.updateGrantStatus($ctrl.decision, status);
             };
         }
     });

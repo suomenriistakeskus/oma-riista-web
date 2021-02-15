@@ -4,7 +4,6 @@ import fi.riista.feature.common.entity.DateTestEntity;
 import fi.riista.feature.common.repository.DateTestEntityRepository;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
-import fi.riista.util.jpa.JpaPreds;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.joda.time.DateTime;

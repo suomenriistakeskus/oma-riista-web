@@ -61,7 +61,7 @@ public class SubsidyCompensationPartition {
                 currencySum(needingCompensation, SubsidyCompensationInputDTO::countAmountOfCompensationNeed);
 
         final BigDecimal sumOfSubsidiesAboveLowerLimit =
-                currencySum(downscaled, SubsidyCompensationInputDTO::getTotalSubsidyCalculatedForCurrentYear);
+                currencySum(downscaled, SubsidyCompensationInputDTO::getCalculatedSubsidy);
 
         final BigDecimal decrementCoefficient =
                 SubsidyCalculation.divide(totalCompensationNeed, sumOfSubsidiesAboveLowerLimit);

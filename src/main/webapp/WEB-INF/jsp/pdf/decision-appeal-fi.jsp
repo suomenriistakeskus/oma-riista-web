@@ -3,89 +3,100 @@
     <h1>VALITUSOSOITUS</h1>
 
     <h2>(Riistahallintolaki 31.1 §)</h2>
-    <p>Tähän päätökseen tyytymätön voi hakea siihen muutosta valittamalla hallinto-oikeuteen kirjallisella
-        valituksella.</p>
+    <p>Tähän päätökseen saa hakea muutosta valittamalla hallinto-oikeuteen.</p>
 
-    <h2>Valituskirjelmän sisältö ja allekirjoittaminen</h2>
-    <p>Valituskirjelmässä, joka osoitetaan hallinto-oikeudelle, on ilmoitettava seuraavat asiat:</p>
+    <h2>Valituksen sisältö</h2>
+    <p>Valituksessa on ilmoitettava</p>
     <ul>
-        <li>
-            valittajan nimi ja kotikunta
-        </li>
         <li>
             päätös, johon haetaan muutosta
         </li>
         <li>
-            miltä kohdin päätökseen haetaan muutosta ja mitä muutoksia siihen vaaditaan tehtäväksi sekä perusteet,
-            joilla muutosta vaaditaan
+            miltä kohdin päätökseen haetaan muutosta ja mitä muutoksia siihen vaaditaan tehtäväksi
         </li>
         <li>
-            postiosoite ja puhelinnumero, joihin asiaa koskevat ilmoitukset valittajalle voidaan toimittaa.
+            vaatimusten perustelut
+        </li>
+        <li>
+            mihin valitusoikeus perustuu, jos valituksen kohteena oleva päätös ei kohdistu valittajaan
         </li>
     </ul>
-    <p>Jos valittajan puhevaltaa käyttää hänen laillinen edustajansa tai asiamiehensä tai jos valituksen laatijana on
-        joku muu henkilö, valituskirjelmässä on ilmoitettava myös tämän nimi ja kotikunta.</p>
-    <p>Valittajan, laillisen edustajan tai asiamiehen on allekirjoitettava valituskirjelmä, ellei valituskirjelmää
-        ole lähetetty sähköisesti (faksi tai sähköposti).</p>
+    <p>
+        Valituksessa on lisäksi ilmoitettava valittajan nimi ja yhteystiedot.
+        Jos puhevaltaa käyttää valittajan laillinen edustaja tai asiamies, myös tämän yhteystiedot on ilmoitettava.
+    </p>
+    <p>
+        Valituksessa on ilmoitettava myös se postiosoite ja mahdollinen muu osoite, johon oikeudenkäyntiin liittyvät
+        asiakirjat voidaan lähettää (<i>prosessiosoite</i>).
+    </p>
 
-    <h2>Valituskirjelmän liitteet</h2>
-    <p>Valituskirjelmään on liitettävä:</p>
+    <h2>Valituksen liitteet</h2>
+    <p>Valitukseen on liitettävä:</p>
     <ul>
         <li>
-            päätös, johon haetaan muutosta valittamalla, alkuperäisenä tai jäljennöksenä
+            valituksen kohteena oleva päätös valitusosoituksineen
         </li>
         <li>
-            todistus siitä, minä päivänä päätös on annettu tiedoksi, tai muu selvitys valitusajan alkamisen ajankohdasta
+            selvitys siitä, milloin valittaja on saanut päätöksen tiedoksi, tai muu selvitys valitusajan alkamisen
+            ajankohdasta
         </li>
         <li>
             asiakirjat, joihin valittaja vetoaa vaatimuksensa tueksi, jollei niitä ole jo aikaisemmin toimitettu
-            viranomaiselle
+            viranomaiselle.
         </li>
         <li>
-            asiamiehen valtakirja, jollei asiamiehenä toimi asianajaja tai yleinen oikeusavustaja.
+            asiamiehen valtakirja, jollei oikeudenkäynnistä hallintoasioissa annetussa laissa toisin säädetä
         </li>
     </ul>
-    <h2>Valitusaika</h2>
-    <p>Valitus on tehtävä 30 päivän kuluessa päätöksen tiedoksisaannista. Valitusaikaa laskettaessa tiedoksisaantipäivää
-        ei oteta lukuun.</p>
+
+    <h2>Valituksen tekeminen ja valitusaika</h2>
+
+    <p>Valituksen saa tehdä sillä perusteella, että päätös on lainvastainen.</p>
+    <p>
+        Valitus on tehtävä kirjallisesti 30 päivän kuluessa päätöksen tiedoksisaannista. Valitusajan laskeminen alkaa
+        tiedoksisaantipäivää seuraavasta päivästä.
+    </p>
+
     <p>Tiedoksisaantipäivä lasketaan seuraavasti:</p>
     <ul>
         <li>
-            Jos päätös on luovutettu asianomaiselle, asianomaisen asiamiehelle tai lähetille, tiedoksisaantipäivä
-            ilmenee päätöksessä olevasta leimasta.
+            jos päätös on postitettu tavallisena kirjeenä, sen katsotaan annetun tiedoksi seitsemäntenä päivänä
+            postituspäivästä, jollei muuta ilmene
         </li>
         <li>
-            Jos päätös on lähetetty postitse saantitodistusta vastaan, tiedoksisaantipäivä ilmenee saantitodistuksesta.
+            jos päätös on annettu tiedoksi sähköisenä viestinä, sen katsotaan annetun tiedoksi kolmantena päivänä
+            viestin lähettämisestä, jollei muuta näytetä
         </li>
         <li>
-            Jos päätös on postitettu tavallisena kirjeenä sen katsotaan tulleen tiedoksi seitsemäntenä päivänä
-            postituspäivästä, jollei muuta ilmene.
+            jos päätös on lähetetty postitse saantitodistusta vastaan, tiedoksisaantipäivä ilmenee saantitodistuksesta
         </li>
         <li>
-            Jos päätös on toimitettu tiedoksi muulla tavalla jollekin muulle henkilölle kuin päätöksen saajalle
+            jos päätös on luovutettu asianomaiselle, asianomaisen asiamiehelle tai lähetille, tiedoksisaantipäivä
+            ilmenee päätöksessä olevasta leimasta
+        </li>
+        <li>
+            jos päätös on toimitettu tiedoksi muulla tavalla jollekin muulle henkilölle kuin päätöksen saajalle
             (sijaistiedoksianto), katsotaan päätöksen saajan saaneen päätöksen tiedoksi kolmantena päivänä tiedoksianto-
-            tai saantitodistuksen osoittamasta päivästä.
-        </li>
-        <li>
-            Jos päätös tai kuulutus sen nähtävänä pitämisestä on julkaistu virallisessa lehdessä tai julkisella
-            kuulutuksella ilmoitustaululla, katsotaan tiedoksisaannin tapahtuneen seitsemäntenä päivänä siitä päivästä,
-            jolloin kuulutus virallisessa lehdessä on julkaistu tai kuulutus pantu ilmoitustaululle.
+            tai saantitodistuksen osoittamasta päivästä
         </li>
     </ul>
 
-    <h2>Valituskirjelmän toimittaminen</h2>
+    <h2>Valituksen toimittaminen</h2>
     <p>
-        Valituskirjelmän voi toimittaa hallinto-oikeudelle henkilökohtaisesti, postitse maksettuna postilähetyksenä,
-        telekopiona, sähköpostilla tai asiamiestä tai lähettiä käyttäen. Postittaminen tai muu toimittaminen tapahtuu
-        lähettäjän vastuulla. Valitusasiakirjojen tulee olla perillä valitusajan viimeisenä päivänä ennen viraston
-        aukioloajan päättymistä. Jos valitusajan viimeinen päivä on pyhäpäivä, lauantai, itsenäisyyspäivä, vapunpäivä,
-        jouluaatto tai juhannusaatto, valitusaika jatkuu kuitenkin vielä seuraavan arkipäivän viraston aukioloajan
-        päättymiseen.
+        Valitus on toimitettava valitusajassa toimivaltaiselle hallintotuomioistuimelle. Valituksen voi toimittaa
+        hallinto-oikeudelle henkilökohtaisesti, lähetin tai asiamiehen välityksellä. Valituksen voi toimittaa myös
+        postitse, sähköpostitse tai telekopiona hallinto-oikeuden kirjaamoon, tai sähköisen asiointipalvelun kautta.
+        Valitusasiakirjojen on oltava perillä hallinto-oikeudessa valitusajan viimeisenä päivänä klo 16.15 mennessä.
+        Postittaminen tai muu toimittaminen tapahtuu lähettäjän vastuulla. Jos valitusajan viimeinen päivä on pyhäpäivä,
+        lauantai, itsenäisyyspäivä, vapunpäivä, jouluaatto tai juhannusaatto, valitusaika jatkuu kuitenkin vielä
+        seuraavan arkipäivän viraston aukioloajan päättymiseen.
     </p>
 
     <h2>Käsittelymaksu</h2>
-    <p>Hallinto-oikeus perii pääsääntöisesti valitusasian käsittelystä oikeudenkäyntimaksua 250 euroa
-        tuomioistuinmaksulain (1455/2015) nojalla.</p>
+    <p>Hallinto-oikeuden päätöksistä peritään oikeudenkäyntimaksu tuomioistuinmaksulain (1455/2015) mukaisesti.
+        Oikeudenkäyntimaksua ei peritä, jos hallinto-oikeus muuttaa valituksenalaista päätöstä muutoksenhakijan
+        eduksi.
+    </p>
 
     <h2>Hallinto-oikeuden osoite</h2>
     <p><c:out value="${model.document.administrativeCourt}" escapeXml="false"/></p>

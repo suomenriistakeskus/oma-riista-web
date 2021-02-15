@@ -1,16 +1,23 @@
 package fi.riista.feature.permit.application.search.excel;
 
 import com.querydsl.core.group.Group;
+import com.querydsl.core.group.GroupBy;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.account.user.QSystemUser;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.GameSpeciesDTO;
+import fi.riista.feature.gamediary.GameSpeciesRepository;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.organization.QRiistakeskuksenAlue;
 import fi.riista.feature.organization.person.QPerson;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmountDTO;
 import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
 import fi.riista.feature.permit.application.QHarvestPermitApplicationSpeciesAmount;
@@ -23,6 +30,7 @@ import fi.riista.feature.permit.decision.derogation.QPermitDecisionDerogationRea
 import fi.riista.feature.permit.decision.derogation.QPermitDecisionProtectedAreaType;
 import fi.riista.feature.permit.decision.methods.ForbiddenMethodType;
 import fi.riista.feature.permit.decision.methods.QPermitDecisionForbiddenMethod;
+import fi.riista.feature.permit.decision.species.QPermitDecisionSpeciesAmount;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
@@ -41,27 +49,34 @@ import java.util.stream.Collectors;
 
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.set;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 
 @Component
 public class HarvestPermitApplicationSearchExcelFeature {
-    private static QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
-    private static QPermitDecision DECISION = QPermitDecision.permitDecision;
-    private static QPerson CONTACT_PERSON = new QPerson("contactPerson");
-    private static QSystemUser HANDLER_USER = QSystemUser.systemUser;
-    private static QHarvestPermitApplicationSpeciesAmount APPLICATION_SPA =
+    private static final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
+    private static final QPermitDecision DECISION = QPermitDecision.permitDecision;
+    private static final QPerson CONTACT_PERSON = new QPerson("contactPerson");
+    private static final QSystemUser HANDLER_USER = QSystemUser.systemUser;
+    private static final QHarvestPermitApplicationSpeciesAmount APPLICATION_SPA =
             QHarvestPermitApplicationSpeciesAmount.harvestPermitApplicationSpeciesAmount;
-    private static QGameSpecies SPECIES = QGameSpecies.gameSpecies;
-    private static QPermitDecisionProtectedAreaType AREA_TYPE =
+    private static final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
+    private static final QPermitDecisionProtectedAreaType AREA_TYPE =
             QPermitDecisionProtectedAreaType.permitDecisionProtectedAreaType;
-    private static QPermitDecisionDerogationReason DEROGATION_REASON =
+    private static final QPermitDecisionDerogationReason DEROGATION_REASON =
             QPermitDecisionDerogationReason.permitDecisionDerogationReason;
-    private static QPermitDecisionForbiddenMethod METHOD = QPermitDecisionForbiddenMethod.permitDecisionForbiddenMethod;
-    private static QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
-    private static QRiistakeskuksenAlue RKA = QRiistakeskuksenAlue.riistakeskuksenAlue;
+    private static final QPermitDecisionForbiddenMethod METHOD =
+            QPermitDecisionForbiddenMethod.permitDecisionForbiddenMethod;
+    private static final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
+    private static final QRiistakeskuksenAlue RKA = QRiistakeskuksenAlue.riistakeskuksenAlue;
+    private static final QPermitDecisionSpeciesAmount DECISION_SPA =
+            QPermitDecisionSpeciesAmount.permitDecisionSpeciesAmount;
 
     @Resource
     private HarvestPermitApplicationRepository harvestPermitApplicationRepository;
+
+    @Resource
+    private GameSpeciesRepository gameSpeciesRepository;
 
     @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
@@ -79,15 +94,16 @@ public class HarvestPermitApplicationSearchExcelFeature {
 
         final List<HarvestPermitApplication> results = harvestPermitApplicationRepository.search(dto);
 
-        return new HarvestPermitApplicationSearchExcelView(transform(results), new EnumLocaliser(messageSource,
-                locale));
+        return new HarvestPermitApplicationSearchExcelView(
+                transform(results, dto.getGameSpeciesCode()),
+                new EnumLocaliser(messageSource, locale));
     }
 
-    private List<HarvestPermitApplicationExcelResultDTO> transform(List<HarvestPermitApplication> applications) {
+    private List<HarvestPermitApplicationExcelResultDTO> transform(final List<HarvestPermitApplication> applications,
+                                                                   final Integer gameSpeciesCode) {
         final Map<Long, String> personMap = collectContactPersonsByApplication(applications);
         final Map<Long, PermitDecision> decisionMap = collectDecisionsByApplications(applications);
         final Map<Long, String> handlerMap = collectHandlersByApplications(applications);
-        final Map<Long, Set<LocalisedString>> speciesMap = collectSpeciesByApplications(applications);
         final Map<Long, Set<ProtectedAreaType>> areaTypesMap = collectAreaTypesByDecisions(decisionMap.values());
         final Map<Long, Set<PermitDecisionDerogationReasonType>> derogationReasonsMap =
                 collectDerogationReasonsByDecisions(decisionMap.values());
@@ -95,6 +111,11 @@ public class HarvestPermitApplicationSearchExcelFeature {
                 collectForbiddenMethodsByDecisions(decisionMap.values());
         final Map<Long, OrganisationTuple> organisationMap = collectOrganisationsByApplications(applications);
 
+        final Map<Long, List<GameSpecies>> appliedGameSpecies = collectSpeciesByApplications(applications, gameSpeciesCode);
+        final Map<Long, Map<Integer, HarvestPermitApplicationSpeciesAmountDTO>> appliedAmounts =
+                collectAppliedAmountsByApplications(applications, gameSpeciesCode);
+        final Map<Long, Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>>> grantedAmounts =
+                collectGrantedAmountsByDecisions(decisionMap.values(), gameSpeciesCode);
 
         return F.mapNonNullsToList(applications, application -> {
             final HarvestPermitApplicationExcelResultDTO.Builder builder =
@@ -111,17 +132,20 @@ public class HarvestPermitApplicationSearchExcelFeature {
                     .withContactPerson(personMap.get(application.getId()))
                     .withPermitHolder(PermitHolderDTO.createFrom(application.getPermitHolder()))
                     .withHandler(handlerMap.get(application.getId()))
-                    .withStatus(application.getStatus());
+                    .withStatus(application.getStatus())
+                    .withAppliedSpeciesAmountsBySpecies(appliedAmounts.get(application.getId()));
 
             // Fields from decision
             Optional.ofNullable(decisionMap.get(application.getId())).ifPresent(decision -> {
                 builder.withDecisionStatus(decision.getStatus())
+                        .withDecisionPublishDate(DateUtil.toLocalDateTimeNullSafe(decision.getPublishDate()))
                         .withDecisionType(decision.getDecisionType())
                         .withGrantStatus(decision.getGrantStatus())
-                        .withAppealStatus(decision.getAppealStatus());
+                        .withAppealStatus(decision.getAppealStatus())
+                        .withPermitSpeciesAmountsBySpecies(grantedAmounts.get(application.getId()));
             });
 
-            builder.withGameSpeciesNames(speciesMap.getOrDefault(application.getId(), emptySet()))
+            builder.withGameSpecies(GameSpeciesDTO.transformList(appliedGameSpecies.getOrDefault(application.getId(), emptyList())))
                     .withProtectedAreaTypes(areaTypesMap.getOrDefault(application.getId(), emptySet()))
                     .withDecisionDerogationReasonTypes(derogationReasonsMap.getOrDefault(application.getId(),
                             emptySet()))
@@ -151,11 +175,45 @@ public class HarvestPermitApplicationSearchExcelFeature {
                 .transform(groupBy(DECISION.application.id).as(set(AREA_TYPE.protectedAreaType)));
     }
 
-    private Map<Long, Set<LocalisedString>> collectSpeciesByApplications(final List<HarvestPermitApplication> applications) {
+    private Map<Long, List<GameSpecies>> collectSpeciesByApplications(final List<HarvestPermitApplication> applications,
+                                                                      final Integer gameSpeciesCode) {
+        final Predicate speciesPredicate = F.mapNullable(gameSpeciesCode, code -> SPECIES.officialCode.eq(code));
         return jpqlQueryFactory.from(APPLICATION_SPA)
                 .innerJoin(APPLICATION_SPA.gameSpecies, SPECIES)
                 .where(APPLICATION_SPA.harvestPermitApplication.in(applications))
-                .transform(groupBy(APPLICATION_SPA.harvestPermitApplication.id).as(set(SPECIES.nameLocalisation())));
+                .where(speciesPredicate)
+                .transform(groupBy(APPLICATION_SPA.harvestPermitApplication.id).as(GroupBy.list(SPECIES)));
+    }
+
+    private Map<Long, Map<Integer, HarvestPermitApplicationSpeciesAmountDTO>> collectAppliedAmountsByApplications(final List<HarvestPermitApplication> applications,
+                                                                                                                  final Integer gameSpeciesCode) {
+        final Predicate speciesPredicate = F.mapNullable(gameSpeciesCode, code -> SPECIES.officialCode.eq(code));
+        return jpqlQueryFactory.from(APPLICATION_SPA)
+                .innerJoin(APPLICATION_SPA.gameSpecies, SPECIES)
+                .where(APPLICATION_SPA.harvestPermitApplication.in(applications))
+                .where(speciesPredicate)
+                .transform(groupBy(APPLICATION_SPA.harvestPermitApplication.id)
+                        .as(GroupBy.map(
+                                SPECIES.officialCode,
+                                Projections.constructor(HarvestPermitApplicationSpeciesAmountDTO.class, APPLICATION_SPA, SPECIES))));
+    }
+
+    private Map<Long, Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>>> collectGrantedAmountsByDecisions(final Collection<PermitDecision> decisions,
+                                                                                                                   final Integer gameSpeciesCode) {
+        final Predicate speciesPredicate = F.mapNullable(gameSpeciesCode, code -> SPECIES.officialCode.eq(code));
+        return jpqlQueryFactory.from(DECISION_SPA)
+                .innerJoin(DECISION_SPA.permitDecision, DECISION)
+                .innerJoin(DECISION_SPA.gameSpecies, SPECIES)
+                .innerJoin(DECISION.application, APPLICATION)
+                .where(DECISION.in(decisions))
+                .where(speciesPredicate)
+                .transform(groupBy(APPLICATION.id).as(
+                        GroupBy.map(
+                                DECISION_SPA.beginDate.year(),
+                                GroupBy.map(
+                                        SPECIES.officialCode,
+                                        Projections.constructor(ApplicationSearchDecisionSpeciesAmountDTO.class, DECISION_SPA, SPECIES)))));
+
     }
 
     private Map<Long, String> collectContactPersonsByApplication(final List<HarvestPermitApplication> applications) {

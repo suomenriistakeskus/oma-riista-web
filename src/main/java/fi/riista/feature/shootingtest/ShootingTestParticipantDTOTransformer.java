@@ -2,7 +2,6 @@ package fi.riista.feature.shootingtest;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import fi.riista.feature.organization.person.QPerson;
-import fi.riista.util.DateUtil;
 import fi.riista.util.ListTransformer;
 import org.springframework.stereotype.Component;
 
@@ -55,7 +54,7 @@ public class ShootingTestParticipantDTOTransformer
         dto.setPaidAmount(participant.getPaidAmountOrZero());
         dto.setRemainingAmount(participant.getRemainingAmount());
 
-        dto.setRegistrationTime(DateUtil.toDateTimeNullSafe(participant.getRegistrationTime()));
+        dto.setRegistrationTime(participant.getRegistrationTime());
         dto.setCompleted(participant.isCompleted());
 
         return dto;

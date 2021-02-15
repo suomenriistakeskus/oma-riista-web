@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
+import static fi.riista.feature.permit.decision.document.PermitDecisionTextUtils.escape;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 
@@ -119,10 +120,10 @@ public class PermitDecisionCarnivoreApplicationSummaryGenerator {
     }
 
     private void createArea(final StringBuilder sb) {
-        sb.append("\n\n");
-        sb.append(i18n("Hakemusalue:", "Ansökningsområde:"));
-        sb.append("\n\n");
-        sb.append("---|---:\n");
+        sb.append("\n\n")
+                .append(i18n("Hakemusalue:", "Ansökningsområde:"))
+                .append("\n\n")
+                .append("---|---:\n");
         cell2(sb, i18nKey("carnivore.application.area.size"), "" + model.getAreaSize() + " ha");
         final String areaDescription = model.getAreaDescription();
         if (isNotBlank(areaDescription)) {
@@ -131,13 +132,11 @@ public class PermitDecisionCarnivoreApplicationSummaryGenerator {
         sb.append("\n\n");
 
         for (final CarnivorePermitApplicationAttachmentDTO s : model.getAreaAttachments()) {
-            sb.append("\\- ");
-            sb.append(s.getName());
-            sb.append("\n");
+            sb.append("\\- ")
+                    .append(s.getName())
+                    .append("\n");
         }
-
         sb.append("\n\n");
-
     }
 
 
@@ -145,30 +144,30 @@ public class PermitDecisionCarnivoreApplicationSummaryGenerator {
         final CarnivorePermitApplicationJustificationDTO justification = model.getJustification();
 
         sb.append(i18nKey("carnivore.application.justification.population"));
-        sb.append(":\n");
+        sb.append("\n");
         sb.append("\\- ");
-        sb.append(justification.getPopulationAmount());
+        sb.append(escape(justification.getPopulationAmount()));
         sb.append("\n");
 
         sb.append("\n");
         sb.append(i18nKey("carnivore.application.justification.behaviour"));
-        sb.append(":\n");
+        sb.append("\n");
         sb.append("\\- ");
-        sb.append(justification.getPopulationDescription());
+        sb.append(escape(justification.getPopulationDescription()));
         sb.append("\n");
 
         sb.append("\n");
         sb.append(i18nKey("carnivore.application.justification.other"));
-        sb.append(":\n");
+        sb.append("\n");
         sb.append("\\- ");
-        sb.append(justification.getAdditionalJustificationInfo());
+        sb.append(escape(justification.getAdditionalJustificationInfo()));
         sb.append("\n");
 
         sb.append("\n");
         sb.append(i18nKey("carnivore.application.justification.alternatives"));
-        sb.append(":\n");
+        sb.append("\n");
         sb.append("\\- ");
-        sb.append(justification.getAlternativeMeasures());
+        sb.append(escape(justification.getAlternativeMeasures()));
         sb.append("\n");
         sb.append("\n");
     }
@@ -184,8 +183,8 @@ public class PermitDecisionCarnivoreApplicationSummaryGenerator {
                 sb.append("\n");
 
                 if (StringUtils.hasText(s.getAdditionalInfo())) {
-                    sb.append(s.getAdditionalInfo());
-                    sb.append("\n");
+                    sb.append(escape(s.getAdditionalInfo()))
+                            .append("\n");
                 }
             }
 

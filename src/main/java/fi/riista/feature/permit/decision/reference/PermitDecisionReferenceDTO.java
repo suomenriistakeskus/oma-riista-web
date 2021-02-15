@@ -4,6 +4,8 @@ import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.person.PersonWithNameDTO;
 import fi.riista.feature.permit.application.PermitHolderDTO;
+import fi.riista.feature.common.decision.DecisionStatus;
+import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionDocument;
 
@@ -16,8 +18,8 @@ public class PermitDecisionReferenceDTO extends BaseEntityDTO<Long> {
     private PersonWithNameDTO contactPerson;
     private PermitHolderDTO permitHolder;
     private PersonWithNameDTO handler;
-    private PermitDecision.Status decisionStatus;
-    private PermitDecision.GrantStatus grantStatus;
+    private DecisionStatus decisionStatus;
+    private GrantStatus grantStatus;
 
     private PermitDecisionDocument document;
 
@@ -99,19 +101,19 @@ public class PermitDecisionReferenceDTO extends BaseEntityDTO<Long> {
         this.handler = handler;
     }
 
-    public PermitDecision.Status getDecisionStatus() {
+    public DecisionStatus getDecisionStatus() {
         return decisionStatus;
     }
 
-    public void setDecisionStatus(final PermitDecision.Status decisionStatus) {
+    public void setDecisionStatus(final DecisionStatus decisionStatus) {
         this.decisionStatus = decisionStatus;
     }
 
-    public PermitDecision.GrantStatus getGrantStatus() {
+    public GrantStatus getGrantStatus() {
         return grantStatus;
     }
 
-    public void setGrantStatus(final PermitDecision.GrantStatus grantStatus) {
+    public void setGrantStatus(final GrantStatus grantStatus) {
         this.grantStatus = grantStatus;
     }
 

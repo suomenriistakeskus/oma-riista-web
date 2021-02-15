@@ -6,7 +6,7 @@ import fi.riista.feature.permit.decision.PermitDecision;
 
 import java.util.List;
 
-public interface HarvestPermitRepository extends BaseRepository<HarvestPermit, Long> {
+public interface HarvestPermitRepository extends BaseRepository<HarvestPermit, Long>, HarvestPermitRepositoryCustom{
 
     HarvestPermit findByPermitNumber(String permitNumber);
 

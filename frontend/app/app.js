@@ -48,6 +48,7 @@ angular.module('app', [
     'app.login',
     'app.occupation',
     'app.organisation',
+    'app.public',
     'app.reporting',
     'app.rhy',
     'app.srva',

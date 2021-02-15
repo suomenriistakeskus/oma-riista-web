@@ -7,11 +7,13 @@ import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.gis.hta.QGISHirvitalousalue;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
-import fi.riista.feature.harvestpermit.QHarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.QHuntingClub;
 import fi.riista.feature.organization.QRiistakeskuksenAlue;
 import fi.riista.feature.organization.person.QPerson;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
+import fi.riista.feature.permit.application.QHarvestPermitApplication;
+import fi.riista.feature.permit.application.QHarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.util.LocalisedString;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import static com.google.common.base.Functions.identity;
+import static fi.riista.util.Collect.indexingBy;
 
 @Service
 public class MoosePermitStatisticsListService {
@@ -58,22 +59,27 @@ public class MoosePermitStatisticsListService {
     private Map<Long, MoosePermitStatisticsPermitInfo> findPermitsInternal(final int speciesCode,
                                                                            final int huntingYear,
                                                                            final BooleanExpression extraPermitPredicate) {
-        final QHarvestPermitSpeciesAmount PERMIT_SPECIES_AMOUNT = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
         final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
         final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
         final QRiistakeskuksenAlue RKA = QRiistakeskuksenAlue.riistakeskuksenAlue;
         final QGISHirvitalousalue HTA = QGISHirvitalousalue.gISHirvitalousalue;
         final QHuntingClub CLUB = QHuntingClub.huntingClub;
         final QPerson PERSON = QPerson.person;
+        final QHarvestPermitApplicationSpeciesAmount APPLICATION_SPECIES_AMOUNT =
+                QHarvestPermitApplicationSpeciesAmount.harvestPermitApplicationSpeciesAmount;
+        final QPermitDecision DECISION = QPermitDecision.permitDecision;
+        final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
 
-        final BooleanExpression huntingYearPredicate = PERMIT_SPECIES_AMOUNT.validOnHuntingYear(huntingYear);
-        final BooleanExpression speciesPredicate = PERMIT_SPECIES_AMOUNT.gameSpecies.eq(JPAExpressions
+        final BooleanExpression huntingYearPredicate = PERMIT.permitYear.eq(huntingYear);
+        final BooleanExpression speciesPredicate = APPLICATION_SPECIES_AMOUNT.gameSpecies.eq(JPAExpressions
                 .selectFrom(SPECIES)
                 .where(SPECIES.officialCode.eq(speciesCode)));
 
         final Map<Long, Integer> partnerCountMapping = jpqlQueryFactory.select(PERMIT.id, CLUB.count().intValue())
-                .from(PERMIT_SPECIES_AMOUNT)
-                .join(PERMIT_SPECIES_AMOUNT.harvestPermit, PERMIT)
+                .from(PERMIT)
+                .join(PERMIT.permitDecision, DECISION)
+                .join(DECISION.application, APPLICATION)
+                .join(APPLICATION.speciesAmounts, APPLICATION_SPECIES_AMOUNT)
                 .join(PERMIT.permitPartners, CLUB)
                 .where(speciesPredicate, huntingYearPredicate, extraPermitPredicate)
                 .groupBy(PERMIT.id)
@@ -83,8 +89,10 @@ public class MoosePermitStatisticsListService {
                 .select(PERMIT.id, PERMIT.permitNumber, PERMIT.permitAreaSize,
                         CLUB.officialCode, CLUB.nameFinnish, CLUB.nameSwedish, PERSON.firstName, PERSON.lastName,
                         RHY.id, RKA.id, HTA.id)
-                .from(PERMIT_SPECIES_AMOUNT)
-                .join(PERMIT_SPECIES_AMOUNT.harvestPermit, PERMIT)
+                .from(PERMIT)
+                .join(PERMIT.permitDecision, DECISION)
+                .join(DECISION.application, APPLICATION)
+                .join(APPLICATION.speciesAmounts, APPLICATION_SPECIES_AMOUNT)
                 .join(PERMIT.originalContactPerson, PERSON)
                 .join(PERMIT.rhy, RHY)
                 .join(RHY.parentOrganisation, RKA._super)
@@ -124,7 +132,7 @@ public class MoosePermitStatisticsListService {
                     return new MoosePermitStatisticsPermitInfo(permitId, permitNumber, permitHolderName,
                             permitHolderOfficialCode, partnerCount, permitAreaSize, rhyId, rkaId, mooseAreaId);
 
-                }).collect(Collectors.toMap(MoosePermitStatisticsPermitInfo::getPermitId, identity()));
+                }).collect(indexingBy(MoosePermitStatisticsPermitInfo::getPermitId));
     }
 
     private static BooleanExpression permitRhyPredicate(final String orgCode) {

@@ -18,7 +18,7 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 
 @RestController
-@RequestMapping(value = "/api/v1/club/group/huntingday", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/club/group/huntingday", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ClubGroupHuntingDayApiResource {
 
     @Resource

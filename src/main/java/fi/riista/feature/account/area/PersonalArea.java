@@ -4,7 +4,7 @@ import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.RandomStringUtil;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;

@@ -1,0 +1,174 @@
+<uib-accordion close-others="false">
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.a"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.a"></span>
+                        <span translate="harvestpermit.wizard.summary.summaryTitle"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-6 text-right">
+                    <div class="panel-title"
+                         translate="harvestpermit.wizard.summary.permitCategory.{{$ctrl.application.harvestPermitCategory}}"></div>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <harvest-permit-application-summary-applicant
+                application="$ctrl.application"></harvest-permit-application-summary-applicant>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.b"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.b"></span>
+                        <span translate="harvestpermit.wizard.navigation.species"></span>
+                    </div>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <game-management-application-summary-species
+                species="$ctrl.application.speciesAmounts"></game-management-application-summary-species>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.c"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.c"></span>
+                        <span translate="harvestpermit.wizard.bird.summary.areaTitle"></span>
+                    </div>
+                </div>
+                <div class="col-xs-3 text-right">
+                    <div class="panel-title">
+                        <span ng-bind="$ctrl.application.protectedArea.name"></span>
+                    </div>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <game-management-application-summary-area application="$ctrl.application"
+                                                  attachments="$ctrl.application.areaAttachments"
+                                                  base-uri="$ctrl.attachmentBaseUri"></game-management-application-summary-area>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.d"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.d"></span>
+                        <span translate="harvestpermit.wizard.bird.summary.periodTitle"></span>
+                    </div>
+                </div>
+                <div class="col-xs-3 text-right">
+
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <game-management-application-summary-periods periods="$ctrl.application.speciesPeriods"></game-management-application-summary-periods>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.e"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.e"></span>
+                        <span translate="harvestpermit.wizard.bird.summary.methodsTitle"></span>
+                    </div>
+                </div>
+                <div class="col-xs-3 text-right">
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <derogation-application-summary-methods
+                methods="$ctrl.application.forbiddenMethods"></derogation-application-summary-methods>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.f"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.f"></span>
+                        <span translate="harvestpermit.wizard.gameManagement.summary.justification"></span>
+                    </div>
+                </div>
+                <div class="col-xs-3 text-right">
+
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <game-management-application-summary-justification
+                justification="$ctrl.application.justification"></game-management-application-summary-justification>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.g"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.g"></span>
+                        <span translate="harvestpermit.wizard.navigation.attachments"></span>
+                    </div>
+                </div>
+
+                <div class="col-xs-3 text-right">
+                    <span class="panel-title">
+                        <span ng-bind="::$ctrl.getAttachmentCount()"></span>
+                        <span translate="global.pcs"></span>
+                    </span>
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <derogation-application-summary-attachments attachments="$ctrl.application.otherAttachments"
+                                                    base-uri="$ctrl.attachmentBaseUri">
+        </derogation-application-summary-attachments>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         is-open="$ctrl.toggle.h"
+         template-url="common/accordion-group.html">
+        <uib-accordion-heading>
+            <div class="row">
+                <div class="col-xs-9">
+                    <div class="panel-title">
+                        <span panel-toggle="$ctrl.toggle.h"></span>
+                        <span translate="harvestpermit.wizard.summary.delivery.title"></span>
+                    </div>
+                </div>
+                <div class="col-xs-3 text-right">
+
+                </div>
+            </div>
+        </uib-accordion-heading>
+
+        <harvest-permit-application-decision-delivery application="$ctrl.application">
+        </harvest-permit-application-decision-delivery>
+    </div>
+</uib-accordion>

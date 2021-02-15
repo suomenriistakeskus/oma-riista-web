@@ -1,6 +1,7 @@
 package fi.riista.feature.organization.calendar;
 
 import fi.riista.util.MockTimeProvider;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.junit.After;
 import org.junit.Before;
@@ -9,17 +10,15 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Date;
-
+import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKOE;
+import static fi.riista.feature.organization.calendar.CalendarEventType.JOUSIAMPUMAKOE;
+import static fi.riista.feature.organization.calendar.CalendarEventType.VUOSIKOKOUS;
 import static fi.riista.util.DateUtil.now;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.doAnswer;
-
+import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import static fi.riista.feature.organization.calendar.CalendarEventType.VUOSIKOKOUS;
-import static fi.riista.util.DateUtil.today;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doAnswer;
 
 @RunWith(MockitoJUnitRunner.class)
 public class CalendarEventTest {
@@ -32,7 +31,7 @@ public class CalendarEventTest {
         doAnswer(invocation -> {
             CalendarEvent savedEvent = invocation.getArgument(0);
 
-            final Date now = now().toDate();
+            final DateTime now = now();
 
             savedEvent.getLifecycleFields().setCreationTime(now);
             savedEvent.getLifecycleFields().setModificationTime(now);
@@ -49,7 +48,7 @@ public class CalendarEventTest {
         MockTimeProvider.resetMock();
     }
 
-    private CalendarEvent createEvent(LocalDate eventDate) {
+    private static CalendarEvent createEvent(LocalDate eventDate) {
         CalendarEvent event = new CalendarEvent();
         event.setDate(eventDate.toDate());
         event.setCalendarEventType(VUOSIKOKOUS);
@@ -58,7 +57,17 @@ public class CalendarEventTest {
     }
 
     @Test
-    public void testIsLockedAsPastCalendarEvent_whenEventCreatedToday() {
+    public void testIsLockedAsPastCalendarEvent_whenEventInPastWithParticipants() {
+        CalendarEvent event = createEvent(today().minusDays(1));
+        event.setParticipants(1);
+
+        calendarEventRepository.save(event);
+
+        assertTrue(event.isLockedAsPastCalendarEvent());
+    }
+
+    @Test
+    public void testIsLockedAsPastCalendarEvent_whenEventInPastWithoutParticipants() {
         CalendarEvent event = createEvent(today().minusDays(1));
 
         calendarEventRepository.save(event);
@@ -67,30 +76,23 @@ public class CalendarEventTest {
     }
 
     @Test
-    public void testIsLockedAsPastCalendarEvent_whenEventCreatedYesterday() {
-        final LocalDate today = today();
-        final LocalDate eventCreateTime = today.minusDays(1);
-        MockTimeProvider.mockTime(eventCreateTime.toDate().getTime());
-        CalendarEvent event = createEvent(today);
+    public void testIsLockedAsPastCalendarEvent_whenShootingTestEvent() {
+        CalendarEvent event = createEvent(today().minusDays(1));
+        event.setCalendarEventType(AMPUMAKOE);
 
         calendarEventRepository.save(event);
 
-        MockTimeProvider.mockTime(today.toDate().getTime());
         assertFalse(event.isLockedAsPastCalendarEvent());
     }
 
     @Test
-    public void testIsLockedAsPastCalendarEvent_whenEventCreatedTwoDaysPast() {
-        final LocalDate today = today();
-        final LocalDate eventCreateTime = today.minusDays(2);
-        MockTimeProvider.mockTime(eventCreateTime.toDate().getTime());
-
-        CalendarEvent event = createEvent(today.minusDays(1));
+    public void testIsLockedAsPastCalendarEvent_whenBowShootingTestEvent() {
+        CalendarEvent event = createEvent(today().minusDays(1));
+        event.setCalendarEventType(JOUSIAMPUMAKOE);
 
         calendarEventRepository.save(event);
 
-        MockTimeProvider.mockTime(today.toDate().getTime());
-        assertTrue(event.isLockedAsPastCalendarEvent());
+        assertFalse(event.isLockedAsPastCalendarEvent());
     }
 
     @Test

@@ -60,6 +60,18 @@
             </td>
         </tr>
 
+        <tr ng-if="diaryEntry.isObservationWithinDeerHunting()">
+            <td colspan="2">
+                <h5 translate="gamediary.form.deerHuntingType"></h5>
+                <span translate="{{ 'gamediary.deerHuntingType.' + diaryEntry.deerHuntingType }}"></span><!--
+                html comments are for preventing whitespace between span elements
+                --><span ng-if="diaryEntry.deerHuntingType === 'OTHER'" ng-switch="!!diaryEntry.deerHuntingTypeDescription">:
+                    <span ng-switch-when="true" ng-bind="diaryEntry.deerHuntingTypeDescription"></span>
+                    <span ng-switch-when="false" translate="gamediary.deerHuntingType.NOT_GIVEN"></span>
+                </span>
+            </td>
+        </tr>
+
         <tr ng-if="diaryEntry.isObservation()">
             <td colspan="2">
                 <h5 translate="gamediary.form.observationType"></h5>
@@ -78,6 +90,8 @@
             </td>
         </tr>
     </table>
+
+    <r-harvest-deer-hunting-type entry="diaryEntry" ng-if="diaryEntry.isHarvest()"></r-harvest-deer-hunting-type>
 
     <div><r-show-entry-specimens entry="diaryEntry"></r-show-entry-specimens></div>
 </div>
@@ -112,4 +126,12 @@
             ng-click="edit()">
         <span translate="global.button.edit"></span>
     </button>
+
+    <button type="button" class="btn btn-primary"
+            ng-show="showAcceptDeerObservation"
+            ng-click="acceptDeerObservation()">
+        <span class="glyphicon glyphicon-ok"></span>&nbsp;
+        <span translate="global.button.ok"></span>
+    </button>
+
 </div>

@@ -19,8 +19,22 @@ angular.module('app.harvestpermit.management', [])
                             return p;
                         });
                     },
+                    nestRemovalPermitUsages: function (NestRemovalPermitUsage, permitId) {
+                        return NestRemovalPermitUsage.list({id: permitId}).$promise;
+                    },
+                    permitUsages: function (PermitUsage, permitId) {
+                        return PermitUsage.list({id: permitId}).$promise;
+                    },
                     isMooselikePermit: function (permit) {
                         return permit.permitTypeCode === '100';
+                    },
+                    isNestRemovalPermit: function (permit) {
+                        return permit.permitTypeCode === '615';
+                    },
+                    isNonHarvestPermit: function (permit, PermitTypes) {
+                        return _.includes(
+                            [PermitTypes.DEPORTATION, PermitTypes.RESEARCH, PermitTypes.IMPORTING, PermitTypes.GAME_MANAGEMENT],
+                            permit.permitTypeCode);
                     },
                     getGameSpeciesName: function (GameDiaryParameters) {
                         return GameDiaryParameters.query().$promise.then(function (parameters) {
@@ -176,17 +190,48 @@ angular.module('app.harvestpermit.management', [])
                         return GameDiaryParameters.query().$promise;
                     }
                 }
+            })
+            .state('permitmanagement.nestremoval', {
+                url: '/nestremoval',
+                templateUrl: 'harvestpermit/management/nestremoval/nestremoval-usage.html',
+                controller: 'HarvestPermitNestRemovalUsageController',
+                controllerAs: '$ctrl',
+                resolve: {
+                    permitId: function (permitId) {
+                        return permitId;
+                    },
+                    permitUsages: function (NestRemovalPermitUsage, permitId) {
+                        return NestRemovalPermitUsage.list({id: permitId}).$promise;
+                    }
+                }
+            })
+            .state('permitmanagement.permitusage', {
+                url: '/permitusage',
+                templateUrl: 'harvestpermit/management/permitusage/permit-usage.html',
+                controller: 'PermitUsageController',
+                controllerAs: '$ctrl',
+                resolve: {
+                    permitId: function (permitId) {
+                        return permitId;
+                    },
+                    permitUsages: function (PermitUsage, permitId) {
+                        return PermitUsage.list({id: permitId}).$promise;
+                    }
+                }
             });
     })
+
     .controller('HarvestPermitDashboardController', function ($state, $location, FormPostService, NotificationService,
                                                               EditHarvestPermitContactPersonsModal,
                                                               HarvestPermitPdfUrl, HarvestPermitAttachmentUrl,
                                                               MoosePermitLeadersService, ActiveRoleService,
                                                               PermitEndOfHuntingReportModal,
                                                               HarvestPermitAmendmentApplicationService,
-                                                              permit, isMooselikePermit, attachmentList, duePayment,
+                                                              permit, isMooselikePermit, isNestRemovalPermit,
+                                                              attachmentList, duePayment,
                                                               getGameSpeciesName, selectedGameSpeciesCode,
-                                                              partiallyPaidInvoiceCount) {
+                                                              partiallyPaidInvoiceCount, nestRemovalPermitUsages,
+                                                              PermitTypeCode, isNonHarvestPermit, permitUsages) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
@@ -195,14 +240,17 @@ angular.module('app.harvestpermit.management', [])
             $ctrl.attachmentList = attachmentList;
             $ctrl.duePayment = duePayment;
             $ctrl.isMooselikePermit = isMooselikePermit;
+            $ctrl.isNestRemovalPermit = isNestRemovalPermit;
+            $ctrl.isNonHarvestPermit = isNonHarvestPermit;
+            $ctrl.hasOnlySpecimenGranted = hasOnlySpecimenGranted(permit);
             $ctrl.huntingYear = _.parseInt(permit.permitNumber.substring(0, 4));
             $ctrl.getGameSpeciesName = getGameSpeciesName;
             $ctrl.selectedGameSpeciesCode = selectedGameSpeciesCode;
             $ctrl.partiallyPaidInvoiceCount = partiallyPaidInvoiceCount;
-
-            $ctrl.getSelectedSpeciesName = function () {
-                return getGameSpeciesName($ctrl.selectedGameSpeciesCode);
-            };
+            $ctrl.nestRemovalPermitUsageLastModifier =
+                nestRemovalPermitUsages && nestRemovalPermitUsages.length > 0 ? nestRemovalPermitUsages[0].lastModifier : null;
+            $ctrl.permitUsageLastModifier =
+                permitUsages && permitUsages.length > 0 ? permitUsages[0].lastModifier : null;
         };
 
         var reloadState = function () {
@@ -233,58 +281,16 @@ angular.module('app.harvestpermit.management', [])
             EditHarvestPermitContactPersonsModal.showModal($ctrl.permit.id).finally(reloadState);
         };
 
-        $ctrl.editAllocations = function () {
-            $state.go('permitmanagement.allocation', {
-                permitId: permit.id,
-                gameSpeciesCode: $ctrl.selectedGameSpeciesCode
+        $ctrl.hasSpeciesAmounts = function () {
+            return PermitTypeCode.hasSpeciesAmounts($ctrl.permit.permitTypeCode);
+        };
+
+        function hasOnlySpecimenGranted(permit) {
+            var specimenGranted = !!_.find(permit.speciesAmounts, function (spa) {
+                return spa.amount && spa.amount > 0;
             });
-        };
-
-        $ctrl.showHuntingGroupLeaders = function () {
-            MoosePermitLeadersService.showLeaders({
-                id: permit.id,
-                huntingYear: $ctrl.huntingYear,
-                gameSpeciesCode: $ctrl.selectedGameSpeciesCode
+            return specimenGranted && _.every(permit.speciesAmounts, function (spa) {
+                return spa.eggAmount === null && spa.constructionAmount === null && spa.nestAmount === null;
             });
-        };
-
-        $ctrl.showMap = function () {
-            $state.go('permitmanagement.map', {
-                permitId: permit.id,
-                gameSpeciesCode: $ctrl.selectedGameSpeciesCode,
-                huntingYear: $ctrl.huntingYear
-            });
-        };
-
-        $ctrl.showUsage = function () {
-            var currentState = $state.current;
-            $state.go('permitmanagement.usage', {
-                permitId: permit.id
-            }).catch(function () {
-                $state.go(currentState.name, currentState.params);
-                NotificationService.showDefaultFailure();
-            });
-        };
-
-        $ctrl.showTables = function () {
-            $state.go('permitmanagement.tables', {
-                permitId: permit.id,
-                gameSpeciesCode: $ctrl.selectedGameSpeciesCode
-            });
-        };
-
-        $ctrl.showEndOfHuntingReport = function () {
-            PermitEndOfHuntingReportModal.openModal(permit.id).finally(reloadState);
-        };
-
-        $ctrl.endHuntingForMooselikePermit = function () {
-            $state.go('permitmanagement.endofmooselikehunting', {
-                permitId: permit.id,
-                gameSpeciesCode: $ctrl.selectedGameSpeciesCode
-            });
-        };
-
-        $ctrl.listAmendmentApplications = function () {
-            HarvestPermitAmendmentApplicationService.openModal(permit);
-        };
+        }
     });

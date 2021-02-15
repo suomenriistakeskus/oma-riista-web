@@ -1,6 +1,7 @@
 package fi.riista.feature.gamediary.observation;
 
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.gamediary.DeerHuntingType;
 import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -12,14 +13,19 @@ import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay_;
 import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejection;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.Person_;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.jpa.CriteriaUtils;
 import fi.riista.validation.PhoneNumber;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.joda.time.LocalDateTime;
 
+import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -38,17 +44,24 @@ import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Set;
 
-import static fi.riista.util.F.coalesceAsInt;
+import static java.util.Objects.requireNonNull;
 
 @Entity
 @Table(name = "game_observation")
 @Access(AccessType.FIELD)
-public class Observation extends GameDiaryEntry {
+public class Observation extends GameDiaryEntry implements HasMooselikeObservationAmounts {
 
     public static final int MIN_AMOUNT = 1;
     public static final int MAX_AMOUNT = 9999;
 
     private Long id;
+
+    @NotNull
+    @Column(nullable = false, length = 1)
+    @Convert(converter = ObservationCategoryConverter.class)
+    private ObservationCategory observationCategory;
+
+    // TODO: Remove withing_moose_hunting column from database (still exists for possible rollback)
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -64,8 +77,13 @@ public class Observation extends GameDiaryEntry {
     @Column
     private Integer amount;
 
+    @Enumerated(EnumType.STRING)
     @Column
-    private Boolean withinMooseHunting;
+    private DeerHuntingType deerHuntingType;
+
+    @Size(max = 255)
+    @Column
+    private String deerHuntingTypeDescription;
 
     /**
      * Etäisyys asumuksesta (<= 100 m)
@@ -171,6 +189,7 @@ public class Observation extends GameDiaryEntry {
 
     public Observation() {
         super();
+        setObservationCategory(ObservationCategory.NORMAL);
     }
 
     public Observation(final Person author,
@@ -182,6 +201,7 @@ public class Observation extends GameDiaryEntry {
         super(geoLocation, pointOfTime, species, author);
 
         setObserver(author);
+        setObservationCategory(ObservationCategory.NORMAL);
         this.amount = amount;
     }
 
@@ -196,19 +216,19 @@ public class Observation extends GameDiaryEntry {
     }
 
     @Override
-    public void setActor(Person person) {
+    public void setActor(final Person person) {
         setObserver(person);
     }
 
-    public boolean observedWithinMooseHunting() {
-        return Boolean.TRUE.equals(withinMooseHunting);
+    public boolean observedWithinHunting() {
+        return observationCategory.isWithinDeerHunting() || observationCategory.isWithinMooseHunting();
     }
 
     public ObservationContext getObservationContext() {
         return new ObservationContext(
                 ObservationSpecVersion.MOST_RECENT,
                 getSpecies().getOfficialCode(),
-                observedWithinMooseHunting(),
+                observationCategory,
                 observationType);
     }
 
@@ -229,35 +249,18 @@ public class Observation extends GameDiaryEntry {
         return F.anyNonNull(verifiedByCarnivoreAuthority, observerName, observerPhoneNumber, officialAdditionalInfo);
     }
 
+    public boolean isCreatedLessThanDayAgo() {
+        return Days.daysBetween(new DateTime(getCreationTime()), DateUtil.now()).isLessThan(Days.ONE);
+    }
+
     @AssertTrue
     public boolean isMooselikeAmountPresenceConsistent() {
         return !isAnyMooselikeAmountPresent() || hasMinimumSetOfNonnullAmountsCommonToAllMooselikeSpecies();
     }
 
-    public boolean isAnyMooselikeAmountPresent() {
-        return F.anyNonNull(
-                mooselikeMaleAmount, mooselikeFemaleAmount, mooselikeCalfAmount, mooselikeFemale1CalfAmount,
-                mooselikeFemale2CalfsAmount, mooselikeFemale3CalfsAmount, mooselikeFemale4CalfsAmount,
-                mooselikeUnknownSpecimenAmount);
-    }
-
-    public boolean hasMinimumSetOfNonnullAmountsCommonToAllMooselikeSpecies() {
-        // The list below includes all mandatory amount fields for moose. Other moose-like species
-        // include these as well plus female-with4-calfs-amount.
-        return F.allNotNull(
-                mooselikeMaleAmount, mooselikeFemaleAmount, mooselikeFemale1CalfAmount, mooselikeFemale2CalfsAmount,
-                mooselikeFemale3CalfsAmount, mooselikeUnknownSpecimenAmount);
-    }
-
-    public int getSumOfMooselikeAmounts() {
-        return coalesceAsInt(mooselikeMaleAmount, 0)
-                + coalesceAsInt(mooselikeFemaleAmount, 0)
-                + coalesceAsInt(mooselikeCalfAmount, 0)
-                + 2 * coalesceAsInt(mooselikeFemale1CalfAmount, 0)
-                + 3 * coalesceAsInt(mooselikeFemale2CalfsAmount, 0)
-                + 4 * coalesceAsInt(mooselikeFemale3CalfsAmount, 0)
-                + 5 * coalesceAsInt(mooselikeFemale4CalfsAmount, 0)
-                + coalesceAsInt(mooselikeUnknownSpecimenAmount, 0);
+    @AssertTrue
+    public boolean isHuntingDayAndObservationCategoryConsistent() {
+        return huntingDayOfGroup == null || observedWithinHunting();
     }
 
     // Accessors -->
@@ -301,10 +304,6 @@ public class Observation extends GameDiaryEntry {
         this.amount = amount;
     }
 
-    public Boolean getWithinMooseHunting() {
-        return withinMooseHunting;
-    }
-
     public Integer getInYardDistanceToResidence() {
         return inYardDistanceToResidence;
     }
@@ -313,8 +312,29 @@ public class Observation extends GameDiaryEntry {
         this.inYardDistanceToResidence = inYardDistanceToResidence;
     }
 
-    public void setWithinMooseHunting(final Boolean withinMooseHunting) {
-        this.withinMooseHunting = withinMooseHunting;
+    public ObservationCategory getObservationCategory() {
+        return observationCategory;
+    }
+
+    public void setObservationCategory(@Nonnull final ObservationCategory observationCategory) {
+        requireNonNull(observationCategory);
+        this.observationCategory = observationCategory;
+    }
+
+    public DeerHuntingType getDeerHuntingType() {
+        return deerHuntingType;
+    }
+
+    public void setDeerHuntingType(final DeerHuntingType deerHuntingType) {
+        this.deerHuntingType = deerHuntingType;
+    }
+
+    public String getDeerHuntingTypeDescription() {
+        return deerHuntingTypeDescription;
+    }
+
+    public void setDeerHuntingTypeDescription(final String deerHuntingTypeDescription) {
+        this.deerHuntingTypeDescription = deerHuntingTypeDescription;
     }
 
     public Boolean getVerifiedByCarnivoreAuthority() {
@@ -349,6 +369,7 @@ public class Observation extends GameDiaryEntry {
         this.officialAdditionalInfo = officialAdditionalInfo;
     }
 
+    @Override
     public Integer getMooselikeMaleAmount() {
         return mooselikeMaleAmount;
     }
@@ -357,6 +378,7 @@ public class Observation extends GameDiaryEntry {
         this.mooselikeMaleAmount = mooselikeMaleAmount;
     }
 
+    @Override
     public Integer getMooselikeFemaleAmount() {
         return mooselikeFemaleAmount;
     }
@@ -365,6 +387,7 @@ public class Observation extends GameDiaryEntry {
         this.mooselikeFemaleAmount = mooselikeFemaleAmount;
     }
 
+    @Override
     public Integer getMooselikeCalfAmount() {
         return mooselikeCalfAmount;
     }
@@ -373,6 +396,7 @@ public class Observation extends GameDiaryEntry {
         this.mooselikeCalfAmount = mooselikeCalfAmount;
     }
 
+    @Override
     public Integer getMooselikeFemale1CalfAmount() {
         return mooselikeFemale1CalfAmount;
     }
@@ -381,6 +405,7 @@ public class Observation extends GameDiaryEntry {
         this.mooselikeFemale1CalfAmount = mooselikeFemale1CalfAmount;
     }
 
+    @Override
     public Integer getMooselikeFemale2CalfsAmount() {
         return mooselikeFemale2CalfsAmount;
     }
@@ -389,6 +414,7 @@ public class Observation extends GameDiaryEntry {
         this.mooselikeFemale2CalfsAmount = mooselikeFemale2CalfsAmount;
     }
 
+    @Override
     public Integer getMooselikeFemale3CalfsAmount() {
         return mooselikeFemale3CalfsAmount;
     }
@@ -397,6 +423,7 @@ public class Observation extends GameDiaryEntry {
         this.mooselikeFemale3CalfsAmount = mooselikeFemale3CalfsAmount;
     }
 
+    @Override
     public Integer getMooselikeFemale4CalfsAmount() {
         return mooselikeFemale4CalfsAmount;
     }
@@ -405,6 +432,7 @@ public class Observation extends GameDiaryEntry {
         this.mooselikeFemale4CalfsAmount = mooselikeFemale4CalfsAmount;
     }
 
+    @Override
     public Integer getMooselikeUnknownSpecimenAmount() {
         return mooselikeUnknownSpecimenAmount;
     }

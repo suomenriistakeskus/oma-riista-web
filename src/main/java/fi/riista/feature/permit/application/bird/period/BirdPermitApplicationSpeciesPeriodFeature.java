@@ -76,7 +76,7 @@ public class BirdPermitApplicationSpeciesPeriodFeature {
     }
 
     @Nonnull
-    private UpdaterCallback createCallback(final int validityYears) {
+    private static UpdaterCallback createCallback(final int validityYears) {
         return new UpdaterCallback() {
             @Override
             public void update(final HarvestPermitApplicationSpeciesAmount entity,

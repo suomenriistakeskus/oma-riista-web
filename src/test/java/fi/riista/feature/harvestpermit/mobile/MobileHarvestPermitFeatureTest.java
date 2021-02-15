@@ -1,6 +1,7 @@
 package fi.riista.feature.harvestpermit.mobile;
 
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.organization.person.Person;
@@ -9,16 +10,25 @@ import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 
 import javax.annotation.Resource;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Theories.class)
 public class MobileHarvestPermitFeatureTest extends EmbeddedDatabaseTest {
+
+    @DataPoints("specVersions")
+    public static final HarvestSpecVersion[] SPEC_VERSIONS =
+            EnumSet.allOf(HarvestSpecVersion.class).stream().toArray(HarvestSpecVersion[]::new);
 
     @Resource
     private MobileHarvestPermitFeature mobileHarvestPermitFeature;
@@ -26,17 +36,17 @@ public class MobileHarvestPermitFeatureTest extends EmbeddedDatabaseTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    @Test
-    public void testPreloadPermits() {
-        doTestPreloadPermits(null);
+    @Theory
+    public void testPreloadPermits(final HarvestSpecVersion specVersion) {
+        doTestPreloadPermits(null, specVersion);
     }
 
-    @Test
-    public void testPreloadPermitsWhenHarvestReportsDone() {
-        doTestPreloadPermits(HarvestReportState.APPROVED);
+    @Theory
+    public void testPreloadPermitsWhenHarvestReportsDone(final HarvestSpecVersion specVersion) {
+        doTestPreloadPermits(HarvestReportState.APPROVED, specVersion);
     }
 
-    private void doTestPreloadPermits(final HarvestReportState state) {
+    private void doTestPreloadPermits(final HarvestReportState state, final HarvestSpecVersion specVersion) {
         withPerson(person -> withRhy(rhy -> {
 
             // these 3 permits should not be preloaded
@@ -62,7 +72,8 @@ public class MobileHarvestPermitFeatureTest extends EmbeddedDatabaseTest {
             createHarvestAndReport(person, person, amendmentPermit, state);
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                final List<MobileHarvestPermitExistsDTO> permitDtos = mobileHarvestPermitFeature.preloadPermits();
+                final List<MobileHarvestPermitExistsDTO> permitDtos =
+                        mobileHarvestPermitFeature.preloadPermits(specVersion);
 
                 final Set<Long> permitIds =
                         F.getUniqueIds(permit, listPermit, permitWhereContactPerson, listPermitWhereContactPerson);
@@ -71,8 +82,10 @@ public class MobileHarvestPermitFeatureTest extends EmbeddedDatabaseTest {
         }));
     }
 
-    private void createHarvestAndReport(
-            final Person author, final Person shooter, final HarvestPermit permit, final HarvestReportState state) {
+    private void createHarvestAndReport(final Person author,
+                                        final Person shooter,
+                                        final HarvestPermit permit,
+                                        final HarvestReportState state) {
 
         final Harvest harvest = model().newHarvest(author, shooter);
         harvest.setHarvestPermit(permit);
@@ -85,5 +98,4 @@ public class MobileHarvestPermitFeatureTest extends EmbeddedDatabaseTest {
             harvest.setHarvestReportDate(DateUtil.now());
         }
     }
-
 }

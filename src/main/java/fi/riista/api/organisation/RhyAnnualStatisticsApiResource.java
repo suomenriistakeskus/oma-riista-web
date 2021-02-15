@@ -1,7 +1,6 @@
 package fi.riista.api.organisation;
 
 import fi.riista.feature.common.dto.IdRevisionDTO;
-import fi.riista.feature.organization.rhy.annualstats.AnnualShootingTestStatistics;
 import fi.riista.feature.organization.rhy.annualstats.AnnualShootingTestStatisticsDTO;
 import fi.riista.feature.organization.rhy.annualstats.CommunicationStatistics;
 import fi.riista.feature.organization.rhy.annualstats.GameDamageStatistics;
@@ -10,7 +9,6 @@ import fi.riista.feature.organization.rhy.annualstats.HunterExamStatisticsDTO;
 import fi.riista.feature.organization.rhy.annualstats.HunterExamTrainingStatistics;
 import fi.riista.feature.organization.rhy.annualstats.HunterExamTrainingStatisticsDTO;
 import fi.riista.feature.organization.rhy.annualstats.HunterTrainingStatistics;
-import fi.riista.feature.organization.rhy.annualstats.YouthTrainingStatistics;
 import fi.riista.feature.organization.rhy.annualstats.HuntingControlStatistics;
 import fi.riista.feature.organization.rhy.annualstats.JHTTrainingStatistics;
 import fi.riista.feature.organization.rhy.annualstats.LukeStatistics;
@@ -23,6 +21,7 @@ import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsCrudFea
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsDTO;
 import fi.riista.feature.organization.rhy.annualstats.RhyBasicInfoDTO;
 import fi.riista.feature.organization.rhy.annualstats.ShootingRangeStatistics;
+import fi.riista.feature.organization.rhy.annualstats.YouthTrainingStatistics;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticsExportFeature;
 import fi.riista.feature.organization.rhy.annualstats.statechange.RhyAnnualStatisticsProgressDTO;
 import fi.riista.feature.organization.rhy.annualstats.statechange.RhyAnnualStatisticsWorkflowFeature;
@@ -51,10 +50,10 @@ import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatistics
 import static fi.riista.util.MediaTypeExtras.APPLICATION_EXCEL_VALUE;
 import static fi.riista.util.MediaTypeExtras.APPLICATION_PDF_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping(value = "/api/v1/riistanhoitoyhdistys/annualstatistics", produces = APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/riistanhoitoyhdistys/annualstatistics", produces = APPLICATION_JSON_VALUE)
 public class RhyAnnualStatisticsApiResource {
 
     @Resource
@@ -66,140 +65,140 @@ public class RhyAnnualStatisticsApiResource {
     @Resource
     private AnnualStatisticsExportFeature annualStatisticsExportFeature;
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/basicinfo", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/basicinfo", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateBasicInfo(final @PathVariable long annualStatisticsId,
                                                   final @RequestBody @Valid RhyBasicInfoDTO dto) {
 
         return annualStatisticsCrudFeature.moderatorUpdateBasicInfo(annualStatisticsId, dto);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/hunterexams", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/hunterexams", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateHunterExams(final @PathVariable long annualStatisticsId,
                                                     final @RequestBody @Valid HunterExamStatistics input) {
 
         return annualStatisticsCrudFeature.updateHunterExams(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/moderatedhunterexams", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/moderatedhunterexams", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO moderatorUpdateHunterExams(final @PathVariable long annualStatisticsId,
                                                              final @RequestBody @Valid HunterExamStatisticsDTO dto) {
 
         return annualStatisticsCrudFeature.moderatorUpdateHunterExams(annualStatisticsId, dto);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/moderatedshootingtests", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/moderatedshootingtests", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO moderatorUpdateShootingTests(final @PathVariable long annualStatisticsId,
                                                                final @RequestBody @Valid AnnualShootingTestStatisticsDTO dto) {
 
         return annualStatisticsCrudFeature.moderatorUpdateShootingTests(annualStatisticsId, dto);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/huntingcontrol", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/huntingcontrol", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateHuntingControl(final @PathVariable long annualStatisticsId,
                                                        final @RequestBody @Valid HuntingControlStatistics input) {
 
         return annualStatisticsCrudFeature.updateHuntingControl(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/gamedamage", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/gamedamage", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateGameDamage(final @PathVariable long annualStatisticsId,
                                                    final @RequestBody @Valid GameDamageStatistics input) {
 
         return annualStatisticsCrudFeature.updateGameDamage(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/otherpublicadmin", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/otherpublicadmin", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateOtherPublicAdmin(final @PathVariable long annualStatisticsId,
                                                          final @RequestBody @Valid OtherPublicAdminStatistics input) {
 
         return annualStatisticsCrudFeature.updateOtherPublicAdmin(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/hunterexamtraining", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/hunterexamtraining", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateHunterExamTraining(final @PathVariable long annualStatisticsId,
                                                            final @RequestBody @Valid HunterExamTrainingStatistics input) {
 
         return annualStatisticsCrudFeature.updateHunterExamTraining(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/moderatedhunterexamtraining", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/moderatedhunterexamtraining", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO moderatorUpdateHunterExamTraining(final @PathVariable long annualStatisticsId,
                                                                     final @RequestBody @Valid HunterExamTrainingStatisticsDTO dto) {
 
         return annualStatisticsCrudFeature.moderatorUpdateHunterExamTraining(annualStatisticsId, dto);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/jhttraining", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/jhttraining", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateJhtTraining(final @PathVariable long annualStatisticsId,
                                                     final @RequestBody @Valid JHTTrainingStatistics input) {
 
         return annualStatisticsCrudFeature.updateJhtTraining(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/huntertraining", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/huntertraining", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateHunterTraining(final @PathVariable long annualStatisticsId,
                                                        final @RequestBody @Valid HunterTrainingStatistics input) {
 
         return annualStatisticsCrudFeature.updateHunterTraining(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/youthtraining", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/youthtraining", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateYouthTraining(final @PathVariable long annualStatisticsId,
-                                                       final @RequestBody @Valid YouthTrainingStatistics input) {
+                                                      final @RequestBody @Valid YouthTrainingStatistics input) {
 
         return annualStatisticsCrudFeature.updateYouthTraining(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/otherhuntertraining", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/otherhuntertraining", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateOtherHunterTraining(final @PathVariable long annualStatisticsId,
                                                             final @RequestBody @Valid OtherHunterTrainingStatistics input) {
 
         return annualStatisticsCrudFeature.updateOtherHunterTraining(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/publicevents", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/publicevents", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updatePublicEvents(final @PathVariable long annualStatisticsId,
                                                      final @RequestBody @Valid PublicEventStatistics input) {
 
         return annualStatisticsCrudFeature.updatePublicEvents(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/otherhuntingrelated", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/otherhuntingrelated", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateOtherHuntingRelated(final @PathVariable long annualStatisticsId,
                                                             final @RequestBody @Valid OtherHuntingRelatedStatistics input) {
 
         return annualStatisticsCrudFeature.updateOtherHuntingRelated(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/moderatedotherhuntingrelated", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/moderatedotherhuntingrelated", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO moderatorUpdateOtherHuntingRelated(final @PathVariable long annualStatisticsId,
                                                                      final @RequestBody @Valid OtherHuntingRelatedStatistics input) {
 
         return annualStatisticsCrudFeature.moderatorUpdateOtherHuntingRelated(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/communication", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/communication", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateCommunication(final @PathVariable long annualStatisticsId,
                                                       final @RequestBody @Valid CommunicationStatistics input) {
 
         return annualStatisticsCrudFeature.updateCommunication(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/shootingranges", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/shootingranges", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateShootingRanges(final @PathVariable long annualStatisticsId,
                                                        final @RequestBody @Valid ShootingRangeStatistics input) {
 
         return annualStatisticsCrudFeature.updateShootingRanges(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/luke", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/luke", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateLuke(final @PathVariable long annualStatisticsId,
                                              final @RequestBody @Valid LukeStatistics input) {
 
         return annualStatisticsCrudFeature.moderatorUpdateLuke(annualStatisticsId, input);
     }
 
-    @PutMapping(value = "/{annualStatisticsId:\\d+}/metsahallitus", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{annualStatisticsId:\\d+}/metsahallitus", consumes = APPLICATION_JSON_VALUE)
     public RhyAnnualStatisticsDTO updateMetsahallitus(final @PathVariable long annualStatisticsId,
                                                       final @RequestBody @Valid MetsahallitusStatistics input) {
 
@@ -213,7 +212,7 @@ public class RhyAnnualStatisticsApiResource {
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/{annualStatisticsId:\\d+}/submitforinspection", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/{annualStatisticsId:\\d+}/submitforinspection", consumes = APPLICATION_JSON_VALUE)
     public void submitForInspection(final @PathVariable long annualStatisticsId,
                                     final @RequestBody @Valid IdRevisionDTO dto) {
 
@@ -222,20 +221,20 @@ public class RhyAnnualStatisticsApiResource {
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/{annualStatisticsId:\\d+}/approve", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/{annualStatisticsId:\\d+}/approve", consumes = APPLICATION_JSON_VALUE)
     public void approve(final @PathVariable long annualStatisticsId, final @RequestBody @Valid IdRevisionDTO dto) {
         dto.setId(annualStatisticsId);
         annualStatisticsWorkflowFeature.approve(dto);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/year/{year:\\d+}/approve", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/year/{year:\\d+}/approve", consumes = APPLICATION_JSON_VALUE)
     public void approve(final @PathVariable int year, final @RequestBody List<Long> annualStatisticsIds) {
         annualStatisticsWorkflowFeature.batchApprove(year, annualStatisticsIds);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/{annualStatisticsId:\\d+}/cancelapproval", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/{annualStatisticsId:\\d+}/cancelapproval", consumes = APPLICATION_JSON_VALUE)
     public void cancelApproval(final @PathVariable long annualStatisticsId,
                                final @RequestBody @Valid IdRevisionDTO dto) {
 
@@ -273,7 +272,7 @@ public class RhyAnnualStatisticsApiResource {
             consumes = APPLICATION_FORM_URLENCODED_VALUE,
             produces = APPLICATION_EXCEL_VALUE)
     public ModelAndView exportSendersExcelUnderInspectionState(final @PathVariable int year,
-                                            final Locale locale) {
+                                                               final Locale locale) {
 
         return new ModelAndView(annualStatisticsWorkflowFeature.exportAnnualStatisticsSendersView(year, locale, UNDER_INSPECTION));
     }
@@ -282,7 +281,7 @@ public class RhyAnnualStatisticsApiResource {
             consumes = APPLICATION_FORM_URLENCODED_VALUE,
             produces = APPLICATION_EXCEL_VALUE)
     public ModelAndView exportSendersExcelApprovedState(final @PathVariable int year,
-                                           final Locale locale) {
+                                                        final Locale locale) {
 
         return new ModelAndView(annualStatisticsWorkflowFeature.exportAnnualStatisticsSendersView(year, locale, APPROVED));
     }

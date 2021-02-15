@@ -1,0 +1,105 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.damage.instruction1"></p>
+        <p translate="harvestpermit.wizard.deportation.damage.instruction1"></p>
+    </div>
+</div>
+
+<form name="speciesDamageForm" r-force-show-errors-check-validity>
+    <p translate="harvestpermit.wizard.deportation.damage.instruction2"></p>
+
+    <div ng-repeat="s in $ctrl.speciesDamageList track by s.gameSpeciesCode">
+        <p>
+            <strong ng-bind="s.gameSpeciesCode | translateSpeciesCode | uppercase"></strong>
+        </p>
+
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group" show-errors>
+                    <label class="control-label"
+                           for="causedDamageAmount-{{::s.gameSpeciesCode}}"
+                           translate="harvestpermit.wizard.damage.damageAmount">
+                    </label>
+
+                    <div class="input-group">
+                        <input type="number" class="form-control no-spinner"
+                               name="causedDamageAmount-{{::s.gameSpeciesCode}}"
+                               id="causedDamageAmount-{{::s.gameSpeciesCode}}"
+                               ng-model="s.causedDamageAmount"
+                               min="0" max="100000000"
+                               required>
+
+                        <div class="input-group-addon">
+                            &euro;
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label class="control-label"
+                   for="causedDamageDescription-{{::s.gameSpeciesCode}}"
+                   translate="harvestpermit.wizard.damage.damageDescription">
+            </label>
+
+            <textarea class="form-control" rows="4"
+                      name="causedDamageDescription-{{::s.gameSpeciesCode}}"
+                      id="causedDamageDescription-{{::s.gameSpeciesCode}}"
+                      ng-model="s.causedDamageDescription"
+                      required></textarea>
+        </div>
+    </div>
+
+    <hr class="invisible">
+    <hr class="invisible">
+
+    <p translate="harvestpermit.wizard.deportation.damage.performedMeasures"></p>
+
+    <div ng-repeat="s in $ctrl.speciesDamageList track by s.gameSpeciesCode">
+        <p><strong ng-bind="s.gameSpeciesCode | translateSpeciesCode | uppercase"></strong></p>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group" show-errors>
+                    <label class="control-label"
+                           for="evictionMeasureDescription-{{::s.gameSpeciesCode}}"
+                           translate="harvestpermit.wizard.damage.evictionMeasureDescription"></label>
+
+                    <textarea class="form-control" rows="4"
+                              name="evictionMeasureDescription-{{::s.gameSpeciesCode}}"
+                              id="evictionMeasureDescription-{{::s.gameSpeciesCode}}"
+                              ng-model="s.evictionMeasureDescription"
+                              required></textarea>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group" show-errors>
+                    <label class="control-label"
+                           for="evictionMeasureEffect-{{::s.gameSpeciesCode}}"
+                           translate="harvestpermit.wizard.damage.evictionMeasureEffect">
+                    </label>
+
+                    <textarea class="form-control" rows="4"
+                              name="evictionMeasureEffect-{{::s.gameSpeciesCode}}"
+                              id="evictionMeasureEffect-{{::s.gameSpeciesCode}}"
+                              ng-model="s.evictionMeasureEffect"
+                              required></textarea>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+    </div>
+</form>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(speciesDamageForm)"
+        previous="$ctrl.previous(speciesDamageForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(speciesDamageForm)">
+</permit-application-wizard-navigation>

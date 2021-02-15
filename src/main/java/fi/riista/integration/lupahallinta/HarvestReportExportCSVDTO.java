@@ -114,7 +114,7 @@ public class HarvestReportExportCSVDTO {
             dto.registerNumber = propertyIdentifier.getYksikkonumero();
         }
 
-        LocalDateTime huntingTimestamp = DateUtil.toLocalDateTimeNullSafe(harvest.getPointOfTime());
+        LocalDateTime huntingTimestamp = harvest.getPointOfTime().toLocalDateTime();
         dto.dateOfCatch = huntingTimestamp.toLocalDate();
         dto.timeOfCatch = huntingTimestamp.toLocalTime();
 

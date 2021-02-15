@@ -49,6 +49,7 @@ module.exports = {
             '../node_modules/leaflet-draw/dist/leaflet.draw.js',
             '../node_modules/leaflet-geometryutil/src/leaflet.geometryutil.js',
             '../node_modules/leaflet-snap/leaflet.snap.js',
+            '../node_modules/leaflet-measure-path/leaflet-measure-path.js',
             '../node_modules/proj4/dist/proj4.js',
             '../node_modules/proj4leaflet/src/proj4leaflet.js',
             './app/leaflet/leaflet-projection.js',

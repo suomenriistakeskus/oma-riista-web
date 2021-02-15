@@ -21,7 +21,6 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,7 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 
 @RestController
-@RequestMapping(value = "/api/v1/organisation", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/organisation", produces = MediaType.APPLICATION_JSON_VALUE)
 public class OccupationApiResource {
 
     @Resource
@@ -105,17 +104,11 @@ public class OccupationApiResource {
         return occupationCrudFeature.update(dto);
     }
 
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    @DeleteMapping(value = "{orgId:\\d+}/occupation/{id:\\d+}")
-    public void deleteOccupation(@PathVariable final long id) {
-        occupationCrudFeature.delete(id);
-    }
-
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/occupationTypes")
     public Map<OrganisationType, OccupationType[]> getOccupationTypes() {
         final Map<OrganisationType, OccupationType[]> map = Maps.newHashMap();
-        for (OrganisationType orgType : OrganisationType.values()) {
+        for (final OrganisationType orgType : OrganisationType.values()) {
             map.put(orgType, OccupationType.applicableValuesFor(orgType));
         }
         return map;

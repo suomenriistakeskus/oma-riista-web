@@ -34,14 +34,25 @@ public class PermitDecisionSpeciesAmountServiceTest implements DefaultEntitySupp
 
         final GameSpecies moose = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_MOOSE);
         final GameSpecies deer = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER);
+        final GameSpecies forestDeer = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_WILD_FOREST_REINDEER);
+        final GameSpecies fallowDeer = model().newGameSpecies(GameSpecies.OFFICIAL_CODE_FALLOW_DEER);
 
-        final HarvestPermitApplicationSpeciesAmount a1 = model().newHarvestPermitApplicationSpeciesAmount(application, moose);
-        final HarvestPermitApplicationSpeciesAmount a2 = model().newHarvestPermitApplicationSpeciesAmount(application, deer);
+        final HarvestPermitApplicationSpeciesAmount a1 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , moose);
+        final HarvestPermitApplicationSpeciesAmount a2 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , deer);
+        final HarvestPermitApplicationSpeciesAmount a3 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , forestDeer);
+        final HarvestPermitApplicationSpeciesAmount a4 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , fallowDeer);
+
         application.getSpeciesAmounts().add(a1);
         application.getSpeciesAmounts().add(a2);
+        application.getSpeciesAmounts().add(a3);
+        application.getSpeciesAmounts().add(a4);
 
         final List<PermitDecisionSpeciesAmount> decisionSpeciesAmounts = generator.createAllForMooselike();
-        assertEquals(2, decisionSpeciesAmounts.size());
+        assertEquals(4, decisionSpeciesAmounts.size());
 
         final PermitDecisionSpeciesAmount b1 = decisionSpeciesAmounts.stream()
                 .filter(s -> s.getGameSpecies().getOfficialCode() == a1.getGameSpecies().getOfficialCode())
@@ -51,14 +62,29 @@ public class PermitDecisionSpeciesAmountServiceTest implements DefaultEntitySupp
                 .filter(s -> s.getGameSpecies().getOfficialCode() == a2.getGameSpecies().getOfficialCode())
                 .findFirst().orElseThrow(RuntimeException::new);
 
-        assertEquals(a1.getAmount(), b1.getAmount(), 0.01);
-        assertEquals(a2.getAmount(), b2.getAmount(), 0.01);
+        final PermitDecisionSpeciesAmount b3 = decisionSpeciesAmounts.stream()
+                .filter(s -> s.getGameSpecies().getOfficialCode() == a3.getGameSpecies().getOfficialCode())
+                .findFirst().orElseThrow(RuntimeException::new);
+
+        final PermitDecisionSpeciesAmount b4 = decisionSpeciesAmounts.stream()
+                .filter(s -> s.getGameSpecies().getOfficialCode() == a4.getGameSpecies().getOfficialCode())
+                .findFirst().orElseThrow(RuntimeException::new);
+
+        assertEquals(a1.getSpecimenAmount(), b1.getSpecimenAmount(), 0.01);
+        assertEquals(a2.getSpecimenAmount(), b2.getSpecimenAmount(), 0.01);
+        assertEquals(a3.getSpecimenAmount(), b3.getSpecimenAmount(), 0.01);
+        assertEquals(a4.getSpecimenAmount(), b4.getSpecimenAmount(), 0.01);
 
         assertEquals(new LocalDate(2018, 9, 1), b1.getBeginDate());
         assertEquals(new LocalDate(2018, 9, 1), b2.getBeginDate());
+        assertEquals(new LocalDate(2018, 9, 29), b3.getBeginDate()); // last Sat of Sep
+        assertEquals(new LocalDate(2018, 9, 1), b4.getBeginDate());
 
         assertEquals(new LocalDate(2019, 1, 15), b1.getEndDate());
-        assertEquals(new LocalDate(2019, 1, 15), b2.getEndDate());
+        assertEquals(new LocalDate(2019, 2, 15), b2.getEndDate());
+        assertEquals(new LocalDate(2019, 1, 31), b3.getEndDate());
+        assertEquals(new LocalDate(2019, 1, 31), b4.getEndDate());
+
 
         assertNull(b1.getBeginDate2());
         assertNull(b2.getBeginDate2());
@@ -78,9 +104,12 @@ public class PermitDecisionSpeciesAmountServiceTest implements DefaultEntitySupp
         final GameSpecies bird2 = model().newGameSpecies(26291);
         final GameSpecies bird3 = model().newGameSpecies(26298);
 
-        final HarvestPermitApplicationSpeciesAmount a1 = model().newHarvestPermitApplicationSpeciesAmount(application, bird1);
-        final HarvestPermitApplicationSpeciesAmount a2 = model().newHarvestPermitApplicationSpeciesAmount(application, bird2);
-        final HarvestPermitApplicationSpeciesAmount a3 = model().newHarvestPermitApplicationSpeciesAmount(application, bird3);
+        final HarvestPermitApplicationSpeciesAmount a1 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , bird1);
+        final HarvestPermitApplicationSpeciesAmount a2 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , bird2);
+        final HarvestPermitApplicationSpeciesAmount a3 = model().newHarvestPermitApplicationSpeciesAmount(application
+                , bird3);
         application.getSpeciesAmounts().add(a1);
         application.getSpeciesAmounts().add(a2);
         application.getSpeciesAmounts().add(a3);
@@ -100,7 +129,7 @@ public class PermitDecisionSpeciesAmountServiceTest implements DefaultEntitySupp
         final PermitDecisionSpeciesAmountService.Generator generator =
                 PermitDecisionSpeciesAmountService.createGenerator(PermitDecision.createForApplication(application));
 
-        final List<PermitDecisionSpeciesAmount> decisionSpeciesAmounts = generator.createAllForBird();
+        final List<PermitDecisionSpeciesAmount> decisionSpeciesAmounts = generator.createForAllYears();
         assertEquals(4, decisionSpeciesAmounts.size());
 
         final PermitDecisionSpeciesAmount b1 = decisionSpeciesAmounts.stream()
@@ -121,10 +150,10 @@ public class PermitDecisionSpeciesAmountServiceTest implements DefaultEntitySupp
                 .filter(s -> s.getGameSpecies().getOfficialCode() == a3.getGameSpecies().getOfficialCode())
                 .findFirst().orElseThrow(RuntimeException::new);
 
-        assertEquals(a1.getAmount(), b1.getAmount(), 0.01);
-        assertEquals(a2.getAmount(), b2_y1.getAmount(), 0.01);
-        assertEquals(a2.getAmount(), b2_y2.getAmount(), 0.01);
-        assertEquals(a3.getAmount(), b3.getAmount(), 0.01);
+        assertEquals(a1.getSpecimenAmount(), b1.getSpecimenAmount(), 0.01);
+        assertEquals(a2.getSpecimenAmount(), b2_y1.getSpecimenAmount(), 0.01);
+        assertEquals(a2.getSpecimenAmount(), b2_y2.getSpecimenAmount(), 0.01);
+        assertEquals(a3.getSpecimenAmount(), b3.getSpecimenAmount(), 0.01);
 
         // application was sent after beginDate -> modify first validity year
         assertEquals(a1.getBeginDate(), b1.getBeginDate());

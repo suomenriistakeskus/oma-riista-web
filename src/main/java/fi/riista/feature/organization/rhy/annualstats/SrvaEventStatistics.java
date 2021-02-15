@@ -80,6 +80,7 @@ public class SrvaEventStatistics implements Serializable {
             @AttributeOverride(name = "bears", column = @Column(name = "srva_bear_accidents")),
             @AttributeOverride(name = "wolves", column = @Column(name = "srva_wolf_accidents")),
             @AttributeOverride(name = "wolverines", column = @Column(name = "srva_wolverine_accidents")),
+            @AttributeOverride(name = "otherSpecies", column = @Column(name = "srva_other_species_accidents")),
     })
     private SrvaSpeciesCountStatistics accident;
 
@@ -111,6 +112,7 @@ public class SrvaEventStatistics implements Serializable {
             @AttributeOverride(name = "bears", column = @Column(name = "srva_bear_deportations")),
             @AttributeOverride(name = "wolves", column = @Column(name = "srva_wolf_deportations")),
             @AttributeOverride(name = "wolverines", column = @Column(name = "srva_wolverine_deportations")),
+            @AttributeOverride(name = "otherSpecies", column = @Column(name = "srva_other_species_deportations")),
     })
     private SrvaSpeciesCountStatistics deportation;
 
@@ -129,6 +131,7 @@ public class SrvaEventStatistics implements Serializable {
             @AttributeOverride(name = "bears", column = @Column(name = "srva_bear_injuries")),
             @AttributeOverride(name = "wolves", column = @Column(name = "srva_wolf_injuries")),
             @AttributeOverride(name = "wolverines", column = @Column(name = "srva_wolverine_injuries")),
+            @AttributeOverride(name = "otherSpecies", column = @Column(name = "srva_other_species_injuries")),
     })
     private SrvaSpeciesCountStatistics injury;
 

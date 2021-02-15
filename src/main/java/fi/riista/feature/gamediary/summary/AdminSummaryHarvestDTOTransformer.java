@@ -4,6 +4,7 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.HarvestDTOTransformerBase;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import org.springframework.stereotype.Component;
 
@@ -20,24 +21,28 @@ public class AdminSummaryHarvestDTOTransformer extends HarvestDTOTransformerBase
 
     @Nonnull
     @Override
-    protected List<HarvestDTO> transform(@Nonnull final List<Harvest> harvests) {
-        final Function<Harvest, GameSpecies> harvestToSpecies = getGameDiaryEntryToSpeciesMapping(harvests);
+    protected List<HarvestDTO> transform(@Nonnull final List<Harvest> harvests,
+                                         @Nonnull final HarvestSpecVersion specVersion) {
+
+        final Function<Harvest, GameSpecies> harvestToSpecies = getHarvestToSpeciesMapping(harvests);
         final Map<Harvest, List<HarvestSpecimen>> groupedSpecimens = getSpecimensGroupedByHarvests(harvests);
 
         return harvests.stream()
                 .filter(Objects::nonNull)
-                .map(harvest -> createDTO(harvest, harvestToSpecies.apply(harvest), groupedSpecimens.get(harvest)))
+                .map(harvest -> createDTO(
+                        harvest, harvestToSpecies.apply(harvest), groupedSpecimens.get(harvest), specVersion))
                 .collect(toList());
     }
 
     private static HarvestDTO createDTO(final Harvest harvest,
                                         final GameSpecies species,
-                                        final List<HarvestSpecimen> specimens) {
+                                        final List<HarvestSpecimen> specimens,
+                                        final HarvestSpecVersion specVersion) {
 
-        return HarvestDTO.builder()
+        return HarvestDTO.builder(specVersion)
                 .populateWith(harvest)
-                .populateWith(species)
-                .populateSpecimensWith(specimens)
+                .withGameSpeciesCode(species.getOfficialCode())
+                .withSpecimensMappedFrom(specimens)
                 .withDescription(null)
                 .withCanEdit(false)
                 .build();

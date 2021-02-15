@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class HuntingControlStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<HuntingControlStatistics>,
+        AnnualStatisticsManuallyEditableFields<HuntingControlStatistics>,
         Serializable {
 
     public static final HuntingControlStatistics reduce(@Nullable final HuntingControlStatistics a,
@@ -56,15 +57,24 @@ public class HuntingControlStatistics
     @Column(name = "hunting_control_events")
     private Integer huntingControlEvents;
 
+    @Column(name = "hunting_control_events_overridden", nullable = false)
+    private boolean huntingControlEventsOverridden;
+
     // Metsästävien asiakkaiden määrä
     @Min(0)
     @Column(name = "hunting_control_customers")
     private Integer huntingControlCustomers;
 
+    @Column(name = "hunting_control_customers_overridden", nullable = false)
+    private boolean huntingControlCustomersOverridden;
+
     // Kirjattujen näyttömääräysten määrä
     @Min(0)
     @Column(name = "proof_orders")
     private Integer proofOrders;
+
+    @Column(name = "proof_orders_overridden", nullable = false)
+    private boolean proofOrdersOverridden;
 
     // Metsästyksenvalvojien määrä
     @Min(0)
@@ -72,6 +82,7 @@ public class HuntingControlStatistics
     private Integer huntingControllers;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "hunting_control_last_modified")
     private DateTime lastModified;
 
@@ -82,8 +93,11 @@ public class HuntingControlStatistics
         requireNonNull(that);
 
         this.huntingControlEvents = that.huntingControlEvents;
+        this.huntingControlEventsOverridden = that.huntingControlEventsOverridden;
         this.huntingControlCustomers = that.huntingControlCustomers;
+        this.huntingControlCustomersOverridden = that.huntingControlCustomersOverridden;
         this.proofOrders = that.proofOrders;
+        this.proofOrdersOverridden = that.proofOrdersOverridden;
         this.huntingControllers = that.huntingControllers;
         this.lastModified = that.lastModified;
     }
@@ -106,8 +120,19 @@ public class HuntingControlStatistics
     public void assignFrom(@Nonnull final HuntingControlStatistics that) {
         // Includes manually updateable fields only.
 
+        if (!Objects.equals(this.huntingControlEvents, that.huntingControlEvents)) {
+            huntingControlEventsOverridden = true;
+        }
         this.huntingControlEvents = that.huntingControlEvents;
+
+        if (!Objects.equals(this.huntingControlCustomers, that.huntingControlCustomers)) {
+            huntingControlCustomersOverridden = true;
+        }
         this.huntingControlCustomers = that.huntingControlCustomers;
+
+        if (!Objects.equals(this.proofOrders, that.proofOrders)) {
+            proofOrdersOverridden = true;
+        }
         this.proofOrders = that.proofOrders;
     }
 
@@ -131,6 +156,14 @@ public class HuntingControlStatistics
         this.huntingControlEvents = huntingControlEvents;
     }
 
+    public boolean isHuntingControlEventsOverridden() {
+        return huntingControlEventsOverridden;
+    }
+
+    public void setHuntingControlEventsOverridden(final boolean huntingControlEventsOverridden) {
+        this.huntingControlEventsOverridden = huntingControlEventsOverridden;
+    }
+
     public Integer getHuntingControlCustomers() {
         return huntingControlCustomers;
     }
@@ -139,12 +172,28 @@ public class HuntingControlStatistics
         this.huntingControlCustomers = huntingControlCustomers;
     }
 
+    public boolean isHuntingControlCustomersOverridden() {
+        return huntingControlCustomersOverridden;
+    }
+
+    public void setHuntingControlCustomersOverridden(final boolean huntingControlCustomersOverridden) {
+        this.huntingControlCustomersOverridden = huntingControlCustomersOverridden;
+    }
+
     public Integer getProofOrders() {
         return proofOrders;
     }
 
     public void setProofOrders(final Integer proofOrders) {
         this.proofOrders = proofOrders;
+    }
+
+    public boolean isProofOrdersOverridden() {
+        return proofOrdersOverridden;
+    }
+
+    public void setProofOrdersOverridden(final boolean proofOrdersOverridden) {
+        this.proofOrdersOverridden = proofOrdersOverridden;
     }
 
     public Integer getHuntingControllers() {

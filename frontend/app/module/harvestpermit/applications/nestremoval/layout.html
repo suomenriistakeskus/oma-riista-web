@@ -1,0 +1,36 @@
+<ul class="nav nav-pills nav-justified">
+    <li class="disabled" active-if-state-includes="**.applicant">
+        <a translate="harvestpermit.wizard.navigation.applicant"></a>
+    </li>
+    <li class="disabled" active-if-state-includes="**.species">
+        <a translate="harvestpermit.wizard.navigation.species"></a>
+    </li>
+
+    <li class="disabled" active-if-state-includes="**.map,**.mapdetails">
+        <a translate="harvestpermit.wizard.navigation.map"></a>
+    </li>
+
+    <li class="disabled" active-if-state-includes="**.reasons">
+        <a translate="harvestpermit.wizard.navigation.deviation"></a>
+    </li>
+    <li class="disabled" active-if-state-includes="**.period">
+        <a translate="harvestpermit.wizard.navigation.period"></a>
+    </li>
+    <li class="disabled" active-if-state-includes="**.damage">
+        <a translate="harvestpermit.wizard.navigation.damage"></a>
+    </li>
+    <li class="disabled" active-if-state-includes="**.population">
+        <a translate="harvestpermit.wizard.navigation.population"></a>
+    </li>
+    <li class="disabled" active-if-state-includes="**.attachments">
+        <a translate="harvestpermit.wizard.navigation.attachments"></a>
+    </li>
+    <li class="disabled" active-if-state-includes="**.summary">
+        <a translate="harvestpermit.wizard.navigation.summary"></a>
+    </li>
+</ul>
+
+<div class="col-md-offset-1 col-md-10">
+    <h2 ng-bind="$ctrl.applicationBasicDetails.applicationName"></h2>
+    <div ui-view autoscroll="false" class="permit-application-wizard-container"></div>
+</div>

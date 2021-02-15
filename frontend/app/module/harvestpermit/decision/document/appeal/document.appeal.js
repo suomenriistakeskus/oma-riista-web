@@ -6,11 +6,11 @@ angular.module('app.harvestpermit.decision.document.appeal', [])
             url: '/appeal',
             templateUrl: 'harvestpermit/decision/document/appeal/document.appeal.html',
             controllerAs: '$ctrl',
-            controller: function (decision, reference) {
+            controller: function (PermitDecisionSection, decision, reference) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.sectionId = 'appeal';
+                    $ctrl.sectionId = PermitDecisionSection.APPEAL;
                     $ctrl.decision = decision;
                     $ctrl.reference = reference;
                 };

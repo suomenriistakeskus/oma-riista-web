@@ -14,14 +14,14 @@
                                        editable="::($ctrl.isModerator && $ctrl.isEditable)"
                                        open-edit-dialog="$ctrl.editMetsahallitusData()">
         </show-metsahallitus-statistics>
-    </div>
 
-    <div class="col-sm-6">
         <show-communication-statistics communication="::$ctrl.statistics.communication"
                                        editable="::$ctrl.isEditable"
                                        open-edit-dialog="$ctrl.editCommunication()">
         </show-communication-statistics>
+    </div>
 
+    <div class="col-sm-6">
         <show-game-calculation-statistics luke="::$ctrl.statistics.luke"
                                           editable="::($ctrl.isModerator && $ctrl.isEditable)"
                                           open-edit-dialog="$ctrl.editGameCalculations()">

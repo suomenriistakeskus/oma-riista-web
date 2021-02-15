@@ -43,7 +43,8 @@ public enum CalendarEventType implements LocalisedEnum {
     AMPUMAKOULUTUS,
     JALJESTAJAKOULUTUS,
     MUU_TAPAHTUMA,
-    RHY_HALLITUKSEN_KOKOUS;
+    RHY_HALLITUKSEN_KOKOUS,
+    HIRVIELAINTEN_VEROTUSSUUNNITTELU;
 
     private static final ImmutableSet<CalendarEventType> JHT_TYPES = immutableEnumSet(
             AMPUMAKOE, JOUSIAMPUMAKOE, METSASTAJAKURSSI, METSASTAJATUTKINTO);

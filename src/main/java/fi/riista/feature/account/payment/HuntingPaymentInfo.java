@@ -16,10 +16,14 @@ import static java.util.stream.Collectors.joining;
 
 public final class HuntingPaymentInfo {
 
-    private static final List<FinnishBankAccount> ACCOUNT_DETAILS = ImmutableList.of(
+    private static final List<FinnishBankAccount> ACCOUNT_DETAILS_OLD = ImmutableList.of(
             FinnishBankAccount.GAME_MANAGEMENT_FEE_OP_POHJOLA,
             FinnishBankAccount.GAME_MANAGEMENT_FEE_NORDEA,
             FinnishBankAccount.GAME_MANAGEMENT_FEE_DANSKE_BANK);
+
+    private static final List<FinnishBankAccount> ACCOUNT_DETAILS = ImmutableList.of(
+            FinnishBankAccount.GAME_MANAGEMENT_FEE_DANSKE_BANK,
+            FinnishBankAccount.GAME_MANAGEMENT_FEE_NORDEA);
 
     private static final String PAYMENT_RECEIVER = "RIISTANHOITOMAKSUJEN KERÄILYTILI\nSAMLINGSKONTO FÖR JAKTVÅRDSAVGIFTER";
 
@@ -32,10 +36,6 @@ public final class HuntingPaymentInfo {
             "OBS! När du betalar utomlands, måste du betala\n" +
             "också mottagarbankens omkostnader.";
 
-    static boolean isPaymentInfoAvailable(final int huntingYear) {
-        return huntingYear == 2018 || huntingYear == 2019;
-    }
-
     public static HuntingPaymentInfo create(final int huntingYear,
                                             final @Nonnull LocalDate dateOfBirth,
                                             final @Nonnull String invoiceReference) {
@@ -44,18 +44,24 @@ public final class HuntingPaymentInfo {
 
         switch (huntingYear) {
             case 2018:
-                return new HuntingPaymentInfo(39, 0, invoiceReference, ACCOUNT_DETAILS);
+                return new HuntingPaymentInfo(39, 0, invoiceReference, ACCOUNT_DETAILS_OLD);
 
-            case 2019:
+            case 2019: {
                 // 31.7.2001 jälkeen syntyneet saavat 20 € laskun
                 // 31.7.2001 ja sitä aiemmin syntyneet 39 € laskun
                 final LocalDate dateBoundary = new LocalDate(2001, 7, 31);
                 final int euros = dateOfBirth.isAfter(dateBoundary) ? 20 : 39;
 
-                return new HuntingPaymentInfo(euros, 0, invoiceReference, ACCOUNT_DETAILS);
+                return new HuntingPaymentInfo(euros, 0, invoiceReference, ACCOUNT_DETAILS_OLD);
+            }
 
-            default:
-                return null;
+            default: {
+                // Minors (after 31.7.huntingYear), reduced payment
+                final LocalDate dateBoundary = new LocalDate(huntingYear - 18, 7, 31);
+                final int euros = dateOfBirth.isAfter(dateBoundary) ? 20 : 39;
+
+                return new HuntingPaymentInfo(euros, 0, invoiceReference, ACCOUNT_DETAILS);
+            }
         }
     }
 

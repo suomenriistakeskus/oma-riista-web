@@ -42,7 +42,7 @@ public class SubsidyAllocationCompensationRoundTest {
         final List<SubsidyCompensationOutputDTO> compensatedOrKeptUnchanged = partitionByDownscaling.get(false);
 
         assertRhyCodes(asList("001", "002"), downscaled);
-        assertRhyCodes(asList("004", "005", "007", "008"), compensatedOrKeptUnchanged);
+        assertRhyCodes(asList("004", "005", "006"), compensatedOrKeptUnchanged);
 
         assertDecrement(compensatedOrKeptUnchanged, output -> null);
 
@@ -53,7 +53,7 @@ public class SubsidyAllocationCompensationRoundTest {
 
             final String rhyCode = output.getRhyCode();
             final SubsidyCompensationInputDTO input = inputIndex.get(rhyCode);
-            final BigDecimal totalSubsidyBeforeCompensation = input.getTotalSubsidyCalculatedForCurrentYear();
+            final BigDecimal totalSubsidyBeforeCompensation = input.getCalculatedSubsidy();
 
             return calculateDecrement(totalSubsidyBeforeCompensation, basis.getDecrementCoefficient());
         });
@@ -91,7 +91,6 @@ public class SubsidyAllocationCompensationRoundTest {
                 SubsidyCompensationInputs.TOTAL_SUBSIDY_ABOVE_LOWER_LIMIT_2,
                 SubsidyCompensationInputs.TOTAL_SUBSIDY_EQUALS_TO_LOWER_LIMIT,
                 SubsidyCompensationInputs.TOTAL_SUBSIDY_BELOW_LOWER_LIMIT,
-                SubsidyCompensationInputs.NEGATIVE_SECOND_BATCH,
-                SubsidyCompensationInputs.NEGATIVE_SECOND_BATCH_AND_TOTAL_SUBSIDY_BELOW_LOWER_LIMIT);
+                SubsidyCompensationInputs.TOTAL_SUBSIDY_BELOW_LOWER_LIMIT_2);
     }
 }

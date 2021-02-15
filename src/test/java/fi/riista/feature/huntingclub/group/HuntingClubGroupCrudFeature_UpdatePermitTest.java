@@ -8,10 +8,10 @@ import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 import javax.annotation.Resource;
-import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -97,8 +97,8 @@ public class HuntingClubGroupCrudFeature_UpdatePermitTest extends EmbeddedDataba
             group.updateHarvestPermit(originalPermit);
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                final Date originalPermitUpdateTime = group.getHarvestPermitModificationTime();
-                huntingClubGroupCrudFeature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), newPermit));
+                final DateTime originalPermitUpdateTime = group.getHarvestPermitModificationTime();
+                huntingClubGroupCrudFeature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), newPermit, false));
 
                 runInTransaction(() -> {
                     final HuntingClubGroup updatedGroup = huntingClubGroupRepository.getOne(group.getId());

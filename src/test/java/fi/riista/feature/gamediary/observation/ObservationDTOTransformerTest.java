@@ -1,5 +1,6 @@
 package fi.riista.feature.gamediary.observation;
 
+import fi.riista.feature.gamediary.DeerHuntingType;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.image.GameDiaryImage;
@@ -7,9 +8,10 @@ import fi.riista.feature.gamediary.observation.specimen.GameMarking;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
 import fi.riista.feature.gamediary.observation.specimen.ObservedGameAge;
 import fi.riista.feature.gamediary.observation.specimen.ObservedGameState;
+import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -20,15 +22,20 @@ import javax.annotation.Resource;
 import java.util.List;
 
 import static fi.riista.feature.gamediary.image.GameDiaryImage.getUniqueImageIds;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.DEER_HUNTING;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.MOOSE_HUNTING;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
 import static fi.riista.test.Asserts.assertEmpty;
 import static fi.riista.test.TestUtils.createList;
+import static fi.riista.util.DateUtil.today;
 import static fi.riista.util.EqualityHelper.equalIdAndContent;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
 
@@ -48,7 +55,7 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
 
             final List<Observation> observations = createList(5, () -> {
                 final Observation obs = model().newObservation(person);
-                obs.setWithinMooseHunting(true);
+                obs.setObservationCategory(someOtherThan(NORMAL, ObservationCategory.class)); // MOOSE_HUNTING, DEER_HUNTING
                 obs.setMooselikeMaleAmount(1);
                 obs.setMooselikeFemaleAmount(2);
                 obs.setMooselikeCalfAmount(3);
@@ -58,6 +65,10 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
                 obs.setMooselikeFemale4CalfsAmount(7);
                 obs.setMooselikeUnknownSpecimenAmount(8);
                 obs.setAmount(obs.getSumOfMooselikeAmounts());
+                // Although these are specific for observations within deer hunting, these are tested at the same time
+                // as all others
+                obs.setDeerHuntingType(some(DeerHuntingType.class));
+                obs.setDeerHuntingTypeDescription("Description");
                 return obs;
             });
 
@@ -222,6 +233,58 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
         });
     }
 
+    @Test
+    public void testHuntingDayFieldsAreSet_withinMooseHuntingObservation() {
+        testHuntingDayFieldsAreSet_withObservation(MOOSE_HUNTING, false);
+    }
+
+    @Test
+    public void testHuntingDayFieldsAreSet_withinDeerHuntingObservation() {
+        testHuntingDayFieldsAreSet_withObservation(DEER_HUNTING, false);
+    }
+
+    @Test
+    public void testHuntingDayFieldsAreSet_normalObservation() {
+        testHuntingDayFieldsAreSet_withObservation(NORMAL, true);
+    }
+
+    private void testHuntingDayFieldsAreSet_withObservation(final ObservationCategory category,
+                                                            final boolean persistenceShouldFail) {
+        withPerson(observer -> {
+            final HuntingClubGroup group = model().newHuntingClubGroup();
+            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, today());
+            final Observation observation = model().newObservation(observer);
+            observation.setObservationCategory(category);
+            observation.updateHuntingDayOfGroup(huntingDay, observer);
+
+            try {
+                onSavedAndAuthenticated(createUser(observer), () -> {
+                    final ObservationDTO dto = transformer.apply(observation);
+                    assertNotNull(dto.getHuntingDayId());
+                    assertEquals(observer.getId(), dto.getApproverToHuntingDay().getId());
+                });
+            } catch (final javax.validation.ConstraintViolationException e) {
+                if (!persistenceShouldFail) {
+                    fail("Expecting successful persistence.");
+                }
+            }
+        });
+    }
+
+
+    @Test
+    public void testHuntingDayFieldsAreNotSet() {
+        withPerson(observer -> {
+            final Observation observation = model().newObservation(observer);
+
+            onSavedAndAuthenticated(createUser(observer), () -> {
+                final ObservationDTO dto = transformer.apply(observation);
+                assertNull(dto.getHuntingDayId());
+                assertNull(dto.getApproverToHuntingDay());
+            });
+        });
+    }
+
     private static void assertFieldsExcludePluralAssociations(final Observation observation, final ObservationDTO dto) {
         // To verify integrity of test fixture.
         assertNotNull(observation.getId());
@@ -232,8 +295,8 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
         Assert.assertEquals(GameDiaryEntryType.OBSERVATION, dto.getType());
         assertEquals(observation.getSpecies().getOfficialCode(), dto.getGameSpeciesCode());
         assertEquals(observation.getGeoLocation(), dto.getGeoLocation());
-        assertEquals(DateUtil.toLocalDateTimeNullSafe(observation.getPointOfTime()), dto.getPointOfTime());
-        assertEquals(observation.getWithinMooseHunting(), dto.getWithinMooseHunting());
+        assertEquals(observation.getPointOfTime().toLocalDateTime(), dto.getPointOfTime());
+        assertEquals(observation.getObservationCategory(), dto.getObservationCategory());
         assertEquals(observation.getDescription(), dto.getDescription());
 
         assertEquals(observation.getAmount(), dto.getAmount());
@@ -250,6 +313,9 @@ public class ObservationDTOTransformerTest extends EmbeddedDatabaseTest {
         assertEquals(observation.getObserverName(), dto.getObserverName());
         assertEquals(observation.getObserverPhoneNumber(), dto.getObserverPhoneNumber());
         assertEquals(observation.getOfficialAdditionalInfo(), dto.getOfficialAdditionalInfo());
+
+        assertEquals(observation.getDeerHuntingType(), dto.getDeerHuntingType());
+        assertEquals(observation.getDeerHuntingTypeDescription(), dto.getDeerHuntingTypeDescription());
     }
 
     private Tuple2<Observation, List<GameDiaryImage>> newObservationWithImages(final int numImages,

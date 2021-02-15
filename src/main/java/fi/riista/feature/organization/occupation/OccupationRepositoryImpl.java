@@ -129,7 +129,6 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
         requireNonNull(dto, "dto is null");
         requireNonNull(dto.getOrganisationId(), "organisationId is null");
         requireNonNull(dto.getPersonId(), "personId is null");
-        requireNonNull(dto.getOccupationType(), "occupationType is null");
 
         final QOccupation occupation = QOccupation.occupation;
 
@@ -137,7 +136,6 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
                 .select(occupation.id.count())
                 .where(occupation.organisation.id.eq(dto.getOrganisationId()),
                         occupation.person.id.eq(dto.getPersonId()),
-                        occupation.occupationType.eq(dto.getOccupationType()),
                         occupation.validAndNotDeleted())
                 .fetchCount();
     }

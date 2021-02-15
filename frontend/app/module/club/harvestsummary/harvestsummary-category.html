@@ -1,0 +1,37 @@
+<div class="club-harvest-summary-section" ng-switch="$ctrl.showAll">
+    <div ng-switch-when="false">
+        <div ng-switch="{{$ctrl.items.length > 0}}">
+            <div ng-switch-when="true" class="row" >
+                <div ng-repeat="item in $ctrl.items | orderBy: '-count' | limitTo: 6">
+                    <div class="col-xs-4">
+                        <club-harvest-summary-species species-code="item.species.code"
+                                                      amount="item.count"></club-harvest-summary-species>
+
+                    </div>
+                </div>
+                <hr class="invisible"/>
+
+            </div>
+            <div ng-switch-default>
+                <div class="alert alert-info">
+                    <span translate="club.harvestsummary.noHarvests"></span>
+                </div>
+            </div>
+        </div>
+        <div class="text-center club-harvest-summary-toggle-panel">
+            <a ng-click="$ctrl.toggleShowAll()">
+                <span class="text-uppercase" translate="club.harvestsummary.showMore"></span>
+                <span class="fa fa-chevron-down"></span>
+            </a>
+        </div>
+    </div>
+    <div ng-switch-when="true">
+        <club-harvest-summary-table items="$ctrl.items"></club-harvest-summary-table>
+        <div class="col-xs-12 text-center club-harvest-summary-toggle-panel">
+            <a ng-click="$ctrl.toggleShowAll()">
+                <span class="text-uppercase" translate="club.harvestsummary.showLess"></span>
+                <span class="fa fa-chevron-up"></span>
+            </a>
+        </div>
+    </div>
+</div>

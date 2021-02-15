@@ -22,44 +22,48 @@ import static java.util.stream.Collectors.toList;
 
 public class HarvestReportExcelDTO {
 
-    public static HarvestReportExcelDTO create(final Harvest harvest, final EnumLocaliser i18n) {
+    public static HarvestReportExcelDTO create(final Harvest harvest, final EnumLocaliser i18n,
+                                               final boolean includeDetails) {
         final HarvestReportExcelDTO dto = new HarvestReportExcelDTO();
 
         dto.harvestReportDate = harvest.getHarvestReportDate().withZone(Constants.DEFAULT_TIMEZONE).toLocalDateTime();
         dto.harvestReportState = i18n.getTranslation(harvest.getHarvestReportState());
 
-        if (harvest.getHarvestReportAuthor() != null) {
-            final Person author = harvest.getHarvestReportAuthor();
-            dto.harvestReportAuthorFirstName = author.getByName();
-            dto.harvestReportAuthorLastName = author.getLastName();
+        if (includeDetails) {
+            if (harvest.getHarvestReportAuthor() != null) {
+                final Person author = harvest.getHarvestReportAuthor();
+                dto.harvestReportAuthorFirstName = author.getByName();
+                dto.harvestReportAuthorLastName = author.getLastName();
 
-            final Address address = author.getAddress();
-            if (address != null) {
-                dto.harvestReportAuthorAddress = address.getStreetAddress();
-                dto.harvestReportAuthorPostalCode = address.getPostalCode();
-                dto.harvestReportAuthorPostalResidence = address.getCity();
+                final Address address = author.getAddress();
+                if (address != null) {
+                    dto.harvestReportAuthorAddress = address.getStreetAddress();
+                    dto.harvestReportAuthorPostalCode = address.getPostalCode();
+                    dto.harvestReportAuthorPostalResidence = address.getCity();
+                }
+
+                dto.harvestReportAuthorPhone = author.getPhoneNumber();
+                dto.harvestReportAuthorEmail = author.getEmail();
             }
 
-            dto.harvestReportAuthorPhone = author.getPhoneNumber();
-            dto.harvestReportAuthorEmail = author.getEmail();
-        }
+            if (harvest.getActualShooter() != null) {
+                final Person hunter = harvest.getActualShooter();
+                dto.hunterFirstName = hunter.getByName();
+                dto.hunterLastName = hunter.getLastName();
 
-        if (harvest.getActualShooter() != null) {
-            final Person hunter = harvest.getActualShooter();
-            dto.hunterFirstName = hunter.getByName();
-            dto.hunterLastName = hunter.getLastName();
+                final Address address = hunter.getAddress();
 
-            final Address address = hunter.getAddress();
+                if (address != null) {
+                    dto.hunterAddress = address.getStreetAddress();
+                    dto.hunterPostalCode = address.getPostalCode();
+                    dto.hunterPostalResidence = address.getCity();
+                }
 
-            if (address != null) {
-                dto.hunterAddress = address.getStreetAddress();
-                dto.hunterPostalCode = address.getPostalCode();
-                dto.hunterPostalResidence = address.getCity();
+                dto.hunterPhone = hunter.getPhoneNumber();
+                dto.hunterEmail = hunter.getEmail();
+                dto.hunterHuntingCard = hunter.getHunterNumber();
             }
 
-            dto.hunterPhone = hunter.getPhoneNumber();
-            dto.hunterEmail = hunter.getEmail();
-            dto.hunterHuntingCard = hunter.getHunterNumber();
         }
 
         if (harvest.getHarvestPermit() != null) {
@@ -97,7 +101,7 @@ public class HarvestReportExcelDTO {
             dto.propertyIdentifier = harvest.getPropertyIdentifier().getDelimitedValue();
         }
 
-        dto.pointOfTime = harvest.getPointOfTime();
+        dto.pointOfTime = harvest.getPointOfTime().toDate();
         dto.speciesName = i18n.getTranslation(harvest.getSpecies().getNameLocalisation());
 
         final List<HarvestSpecimen> sortedSpecimens = harvest.getSortedSpecimens();

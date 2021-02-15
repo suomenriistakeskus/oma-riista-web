@@ -1,11 +1,13 @@
 package fi.riista.feature.gamediary.search;
 
+import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.gamediary.GameDiaryEntryDTO;
 import fi.riista.feature.gamediary.GameDiaryEntry_;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.Harvest_;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationDTOTransformer;
@@ -18,14 +20,12 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.util.F;
 import fi.riista.util.jpa.JpaSpecs;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Objects;
 
 import static fi.riista.feature.gamediary.GameDiarySpecs.authorButNotObserver;
 import static fi.riista.feature.gamediary.GameDiarySpecs.authorButNotShooter;
@@ -34,12 +34,10 @@ import static fi.riista.feature.gamediary.GameDiarySpecs.shooter;
 import static fi.riista.util.jpa.JpaSpecs.and;
 import static fi.riista.util.jpa.JpaSpecs.withinInterval;
 import static java.util.Collections.emptyList;
+import static java.util.Objects.requireNonNull;
 
-@Component
+@Service
 public class GameDiarySearchFeature {
-
-    @Resource
-    private ActiveUserService activeUserService;
 
     @Resource
     private HarvestRepository harvestRepository;
@@ -49,6 +47,12 @@ public class GameDiarySearchFeature {
 
     @Resource
     private SrvaEventRepository srvaEventRepository;
+
+    @Resource
+    private ActiveUserService activeUserService;
+
+    @Resource
+    private DeerPilotService deerPilotService;
 
     @Resource
     private HarvestDTOTransformer harvestDtoTransformer;
@@ -61,7 +65,7 @@ public class GameDiarySearchFeature {
 
     @Transactional(readOnly = true)
     public List<GameDiaryEntryDTO> listDiaryEntriesForActiveUser(@Nonnull final GameDiarySearchDTO dto) {
-        Objects.requireNonNull(dto);
+        requireNonNull(dto);
 
         final Person activePerson = activeUserService.requireActivePerson();
 
@@ -77,8 +81,12 @@ public class GameDiarySearchFeature {
                 ? srvaEventRepository.findAll(srvaSpecification(dto, activePerson))
                 : emptyList();
 
+        final HarvestSpecVersion harvestSpecVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED
+                // TODO Remove this when deer pilot 2020 is over.
+                .revertIfNotOnDeerPilot(deerPilotService.isPilotUser(activePerson));
+
         return F.concat(
-                harvestDtoTransformer.apply(harvests),
+                harvestDtoTransformer.apply(harvests, harvestSpecVersion),
                 observationDtoTransformer.apply(observations),
                 srvaEventDTOTransformer.apply(srvaEvents));
     }
@@ -116,10 +124,9 @@ public class GameDiarySearchFeature {
         return and(authorSpec, pointOfTimeSpec);
     }
 
-    @Nonnull
-    private static Specifications<SrvaEvent> srvaSpecification(final @Nonnull GameDiarySearchDTO dto,
+    private static Specification<SrvaEvent> srvaSpecification(final @Nonnull GameDiarySearchDTO dto,
                                                                final Person person) {
-        return Specifications.where(SrvaSpecs.author(person))
+        return Specification.where(SrvaSpecs.author(person))
                 .and(SrvaSpecs.withinInterval(dto.getInterval()));
     }
 }

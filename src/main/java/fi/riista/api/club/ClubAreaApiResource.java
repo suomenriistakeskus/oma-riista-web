@@ -82,7 +82,7 @@ public class ClubAreaApiResource {
     @Resource
     private CustomJacksonObjectMapper objectMapper;
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<HuntingClubAreaDTO> list(@RequestParam long clubId,
                                          @RequestParam(required = false) Integer year,
@@ -91,28 +91,28 @@ public class ClubAreaApiResource {
         return huntingClubAreaListFeature.listByClubAndYear(clubId, year, activeOnly, includeEmpty);
     }
 
-    @GetMapping(value = "/huntingyears", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/huntingyears", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<Integer> listHuntingYears(@RequestParam long clubId) {
         return huntingClubAreaListFeature.listHuntingYears(clubId);
     }
 
-    @GetMapping(value = "/{id:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{id:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public HuntingClubAreaDTO read(@PathVariable Long id) {
         return huntingClubAreaCrudFeature.read(id);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public HuntingClubAreaDTO createArea(@RequestBody @Validated HuntingClubAreaDTO dto) {
         return huntingClubAreaCrudFeature.create(dto);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping(value = "/{id:\\d+}",
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public HuntingClubAreaDTO updateArea(@PathVariable Long id, @RequestBody @Validated HuntingClubAreaDTO dto) {
         dto.setId(id);
         return huntingClubAreaCrudFeature.update(dto);
@@ -132,12 +132,21 @@ public class ClubAreaApiResource {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/{id:\\d+}/copy",
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public HuntingClubAreaDTO copyArea(@PathVariable Long id,
                                        @RequestBody @Valid HuntingClubAreaCopyDTO dto) {
         dto.setId(id);
         return huntingClubAreaCopyFeature.copy(dto);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(value = "/{id:\\d+}/import-personal/{personalAreaId:\\d+}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public HuntingClubAreaDTO copyArea(@PathVariable Long id,
+                                       @PathVariable Long personalAreaId) {
+        return huntingClubAreaCopyFeature.importFromPersonalArea(id, personalAreaId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -149,8 +158,8 @@ public class ClubAreaApiResource {
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping(value = "/{id:\\d+}/features", produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
     public void updateGeoJSON(@PathVariable long id, @RequestBody @Valid FeatureCollection featureCollection) {
-        final long zoneId = huntingClubAreaZoneFeature.updateGeoJSON(id, featureCollection);
-        huntingClubAreaZoneFeature.updateAreaSize(zoneId);
+        huntingClubAreaZoneFeature.updateGeoJSON(id, featureCollection);
+        huntingClubAreaZoneFeature.updateAreaSize(id);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -204,6 +213,7 @@ public class ClubAreaApiResource {
     @PostMapping(value = "/{id:\\d+}/print", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<?> print(@PathVariable final long id, final Locale locale,
                                    @ModelAttribute @Valid final MapPdfParameters dto) {
-        return mapPdfRemoteService.renderPdf(dto, () -> huntingClubAreaPrintFeature.getModel(id, dto.getOverlay(), locale));
+        return mapPdfRemoteService.renderPdf(dto,
+                () -> huntingClubAreaPrintFeature.getModel(id, dto.getOverlay(), locale));
     }
 }

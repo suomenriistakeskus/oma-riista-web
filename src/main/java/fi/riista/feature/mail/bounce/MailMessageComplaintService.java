@@ -43,6 +43,6 @@ public class MailMessageComplaintService {
             result.add(entity);
         }
 
-        mailMessageComplaintRepository.save(result);
+        mailMessageComplaintRepository.saveAll(result);
     }
 }

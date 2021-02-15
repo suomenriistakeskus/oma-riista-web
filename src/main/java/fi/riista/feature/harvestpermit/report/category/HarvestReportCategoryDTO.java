@@ -3,7 +3,7 @@ package fi.riista.feature.harvestpermit.report.category;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
-import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsDTO;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestReportFieldsDTO;
 import fi.riista.feature.harvestpermit.season.HarvestAreaDTO;
 import fi.riista.feature.harvestpermit.season.HarvestQuota;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
@@ -117,7 +117,7 @@ public class HarvestReportCategoryDTO {
 
     @Nonnull
     public static HarvestReportCategoryDTO createForSeason(final @Nonnull HarvestSeason season,
-                                                           final RequiredHarvestFieldsDTO fields) {
+                                                           final RequiredHarvestReportFieldsDTO fields) {
         final HarvestReportCategoryDTO dto = new HarvestReportCategoryDTO();
 
         dto.setType(CategoryType.SEASON);
@@ -132,7 +132,7 @@ public class HarvestReportCategoryDTO {
 
     @Nonnull
     public static HarvestReportCategoryDTO createForPermit(final @Nonnull GameSpecies species,
-                                                           final RequiredHarvestFieldsDTO fields) {
+                                                           final RequiredHarvestReportFieldsDTO fields) {
         final HarvestReportCategoryDTO dto = new HarvestReportCategoryDTO();
 
         dto.setType(CategoryType.PERMIT);
@@ -147,7 +147,7 @@ public class HarvestReportCategoryDTO {
     private GameSpeciesDTO species;
     private SeasonDTO season;
     private List<HarvestAreaDTO> harvestAreas;
-    private RequiredHarvestFieldsDTO fields;
+    private RequiredHarvestReportFieldsDTO fields;
 
     public CategoryType getType() {
         return type;
@@ -181,11 +181,11 @@ public class HarvestReportCategoryDTO {
         this.harvestAreas = harvestAreas;
     }
 
-    public RequiredHarvestFieldsDTO getFields() {
+    public RequiredHarvestReportFieldsDTO getFields() {
         return fields;
     }
 
-    public void setFields(final RequiredHarvestFieldsDTO fields) {
+    public void setFields(final RequiredHarvestReportFieldsDTO fields) {
         this.fields = fields;
     }
 }

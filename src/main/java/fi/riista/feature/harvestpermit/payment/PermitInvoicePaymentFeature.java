@@ -17,7 +17,7 @@ import fi.riista.util.BigDecimalMoney;
 import fi.riista.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 
@@ -30,8 +30,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-@Component
+import static java.lang.String.format;
+
+@Service
 public class PermitInvoicePaymentFeature {
+
     private static final Logger LOG = LoggerFactory.getLogger(PermitInvoicePaymentFeature.class);
 
     @Resource
@@ -47,21 +50,19 @@ public class PermitInvoicePaymentFeature {
     private PaytrailService paytrailService;
 
     @Transactional(readOnly = true)
-    public Map<String, String> getPaymentForm(final long permitId,
-                                              final long invoiceId) {
+    public Map<String, String> getPaymentForm(final long permitId, final long invoiceId) {
         final HarvestPermit harvestPermit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
         final Invoice invoice = invoiceRepository.getOne(invoiceId);
         permitDecisionInvoiceService.assertInvoiceAttachedToPermit(harvestPermit, invoice);
 
         checkStartPaymentPreconditions(harvestPermit, invoice);
 
-        LOG.info(String.format("Payment form generated for permitNumber=%s invoiceNumber=%s permitId=%d invoiceId=%d",
+        LOG.info(format("Payment form generated for permitNumber=%s invoiceNumber=%s permitId=%d invoiceId=%d",
                 harvestPermit.getPermitNumber(), invoice.getInvoiceNumber(), permitId, invoiceId));
 
         final Locale locale = harvestPermit.getPermitDecision().getLocale();
         final String invoiceTypeName = invoice.getType().getName(locale);
-        final String productTitle = String.format("%s - %s",
-                invoiceTypeName, harvestPermit.getPermitNumber());
+        final String productTitle = format("%s - %s", invoiceTypeName, harvestPermit.getPermitNumber());
 
         final Payment payment = new Payment();
         payment.setCallbacks(createCallbackUrls(harvestPermit));
@@ -91,24 +92,24 @@ public class PermitInvoicePaymentFeature {
         final long invoiceId = invoice.getId();
 
         if (harvestPermit.isAmendmentPermit()) {
-            throw new IllegalArgumentException(String.format("Payment not supported for permit id=%d", permitId));
+            throw new IllegalArgumentException(format("Payment not supported for permit id=%d", permitId));
         }
 
         if (harvestPermit.getPermitDecision() == null) {
-            throw new IllegalArgumentException(String.format("Decision is missing for permit id=%d", permitId));
+            throw new IllegalArgumentException(format("Decision is missing for permit id=%d", permitId));
         }
 
         if (harvestPermit.getPermitDecision().getApplication() == null) {
-            throw new IllegalArgumentException(String.format("Application is missing for permit id=%d", permitId));
+            throw new IllegalArgumentException(format("Application is missing for permit id=%d", permitId));
         }
 
         if (!invoice.isElectronicInvoicingEnabled()) {
-            throw new IllegalArgumentException(String.format("Electronic invoicing not enabled for invoice id=%d", invoiceId));
+            throw new IllegalArgumentException(format("Electronic invoicing not enabled for invoice id=%d", invoiceId));
         }
 
         if (invoice.getState() != InvoiceState.DELIVERED) {
-            throw new IllegalStateException(String.format("Invoice id=%d state is not incorrect: %s",
-                    invoiceId, invoice.getState()));
+            throw new IllegalStateException(
+                    format("Invoice id=%d state is incorrect: %s", invoiceId, invoice.getState()));
         }
     }
 
@@ -124,16 +125,18 @@ public class PermitInvoicePaymentFeature {
             invoiceConsumer.accept(optionalInvoice.get());
             return optionalInvoice.get().getId();
         } else {
-            LOG.error(String.format("Could not find invoice by invoiceNumber=%d", invoiceNumber));
+            LOG.error(format("Could not find invoice by invoiceNumber=%d", invoiceNumber));
             return null;
         }
     }
 
     @Transactional
-    public Long storePaymentSuccess(final PaytrailOrderNumber paytrailOrderNumber, final String paymentId,
+    public Long storePaymentSuccess(final PaytrailOrderNumber paytrailOrderNumber,
+                                    final String paymentId,
                                     final String settlementReferenceNumber) {
+
         return requireInvoice(paytrailOrderNumber.getInvoiceNumber(), invoice -> {
-            LOG.info(String.format("Payment successful for invoiceNumber=%s invoiceId=%d",
+            LOG.info(format("Payment successful for invoiceNumber=%s invoiceId=%d",
                     invoice.getInvoiceNumber(), invoice.getId()));
 
             if (invoice.getState() != InvoiceState.PAID) {
@@ -142,18 +145,20 @@ public class PermitInvoicePaymentFeature {
                 invoice.setPaytrailSettlementReferenceNumber(settlementReferenceNumber);
 
             } else {
-                LOG.warn(String.format("Invoice was already marked as PAID invoiceNumber=%s invoiceId=%d",
+                LOG.warn(format("Invoice was already marked as PAID invoiceNumber=%s invoiceId=%d",
                         invoice.getInvoiceNumber(), invoice.getId()));
             }
         });
     }
 
     @Transactional
-    public void storePaymentNotify(final PaytrailOrderNumber paytrailOrderNumber, final String paymentId,
+    public void storePaymentNotify(final PaytrailOrderNumber paytrailOrderNumber,
+                                   final String paymentId,
                                    final String settlementReferenceNumber) {
+
         requireInvoice(paytrailOrderNumber.getInvoiceNumber(), invoice -> {
             if (invoice.getState() != InvoiceState.PAID) {
-                LOG.warn(String.format("Invoice was not marked as PAID during notify invoiceNumber=%s invoiceId=%d",
+                LOG.warn(format("Invoice was not marked as PAID during notify invoiceNumber=%s invoiceId=%d",
                         invoice.getInvoiceNumber(), invoice.getId()));
 
                 invoice.setPaid(DateUtil.today());
@@ -176,7 +181,7 @@ public class PermitInvoicePaymentFeature {
                 invoice.setState(InvoiceState.UNKNOWN);
 
             } else {
-                LOG.warn(String.format("Could not handle payment error for invoiceNumber=%s invoiceId=%d state=%s",
+                LOG.warn(format("Could not handle payment error for invoiceNumber=%s invoiceId=%d state=%s",
                         invoice.getInvoiceNumber(), invoice.getId(), invoice.getState()));
             }
         });

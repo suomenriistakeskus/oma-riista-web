@@ -1,66 +1,50 @@
 package fi.riista.feature.gamediary.harvest.mutation.basic;
 
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.common.entity.GeoLocationInvalidException;
+import fi.riista.feature.common.entity.InvalidGeoLocationException;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.mutation.HarvestMutation;
 import fi.riista.feature.gamediary.harvest.mutation.exception.HarvestLocationSourceRequiredException;
 import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class HarvestLocationMutation implements HarvestMutation {
 
     public static HarvestLocationMutation createForMobile(final MobileHarvestDTO dto, final GeoLocation previousLocation) {
-        return new HarvestLocationMutation(dto.getGeoLocation(), previousLocation,
-                dto.getHarvestSpecVersion(), GeoLocation.Source.GPS_DEVICE);
+        return new HarvestLocationMutation(dto.getGeoLocation(), previousLocation);
     }
 
     public static HarvestLocationMutation createForWeb(final HarvestDTO dto, final GeoLocation previousLocation) {
-        return new HarvestLocationMutation(dto.getGeoLocation(), previousLocation,
-                HarvestSpecVersion.MOST_RECENT, GeoLocation.Source.MANUAL);
+        final GeoLocation geoLocation = dto.getGeoLocation();
+        final GeoLocation geoLocationWithSource = geoLocation.getSource() != null
+                ? geoLocation
+                : geoLocation.withSource(GeoLocation.Source.MANUAL);
+        return new HarvestLocationMutation(geoLocationWithSource, previousLocation);
     }
 
     private final GeoLocation updatedLocation;
     private final boolean latLngModified;
 
-    private HarvestLocationMutation(@Nonnull final GeoLocation dtoLocation,
-                                    final GeoLocation currentLocation,
-                                    @Nonnull final HarvestSpecVersion harvestSpecVersion,
-                                    @Nonnull final GeoLocation.Source defaultLocationSource) {
-        Objects.requireNonNull(dtoLocation);
-        Objects.requireNonNull(harvestSpecVersion);
-        Objects.requireNonNull(defaultLocationSource);
+    private HarvestLocationMutation(@Nonnull final GeoLocation dtoLocation, final GeoLocation previousLocation) {
+        requireNonNull(dtoLocation);
+        requireNonNull(dtoLocation.getSource());
 
         if (dtoLocation.getLatitude() == 0 || dtoLocation.getLongitude() == 0) {
-            // Check for default value for non-null field
-            throw new GeoLocationInvalidException(dtoLocation);
+            // Check for default value for non-null field.
+            throw new InvalidGeoLocationException(dtoLocation);
         }
 
-        if (currentLocation == null) {
-            if (dtoLocation.getSource() == null) {
-                // Use default GeoLocation.Source if not provided
-                dtoLocation.setSource(defaultLocationSource);
-            }
-            this.updatedLocation = dtoLocation;
-
-        } else if (dtoLocation.getSource() != null) {
-            // Null-checking of geolocation source done for backwards-compatibility.
-            this.updatedLocation = dtoLocation;
-
-        } else {
-            if (harvestSpecVersion.requiresGeolocationSource()) {
-                throw new HarvestLocationSourceRequiredException();
-            } else {
-                // Keep original location within updates if source is missing from DTO.
-                this.updatedLocation = currentLocation;
-            }
+        // Ensure invariant holds because some historical mobile app versions did not support geolocation source.
+        if (dtoLocation.getSource() == null) {
+            throw new HarvestLocationSourceRequiredException();
         }
 
-        this.latLngModified = updatedLocation.hasSameLatLng(currentLocation);
+        this.updatedLocation = dtoLocation;
+        this.latLngModified = updatedLocation.hasSameLatLng(previousLocation);
     }
 
     @Override

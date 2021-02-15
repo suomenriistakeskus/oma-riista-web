@@ -12,7 +12,6 @@ import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.jpa.JpaSubQuery;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,8 +57,8 @@ public class GroupPermitFeature {
         return HuntingClubGroupDTO.PermitDTO.create(permits);
     }
 
-    private static Specifications<HarvestPermit> spec(final HuntingClub club, final int huntingYear, int speciesCode) {
-        return Specifications.where(clubIsPartnerPredicate(club))
+    private static Specification<HarvestPermit> spec(final HuntingClub club, final int huntingYear, int speciesCode) {
+        return Specification.where(clubIsPartnerPredicate(club))
                 .and(HarvestPermitSpecs.validWithinHuntingYear(huntingYear))
                 .and(HarvestPermitSpecs.IS_MOOSELIKE_PERMIT)
                 .and(HarvestPermitSpecs.withSpeciesCode(speciesCode));

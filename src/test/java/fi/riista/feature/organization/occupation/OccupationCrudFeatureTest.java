@@ -3,6 +3,7 @@ package fi.riista.feature.organization.occupation;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.feature.organization.person.PersonIsDeceasedException;
@@ -15,16 +16,23 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static fi.riista.feature.organization.occupation.OccupationType.HALLITUKSEN_JASEN;
 import static fi.riista.feature.organization.occupation.OccupationType.PETOYHDYSHENKILO;
+import static fi.riista.feature.organization.occupation.OccupationType.PUHEENJOHTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.SRVA_YHTEYSHENKILO;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
+import static fi.riista.feature.organization.occupation.OccupationType.VARAPUHEENJOHTAJA;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
     private OccupationCrudFeature occupationCrudFeature;
+
+    @Resource
+    private PersonRepository personRepository;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -261,5 +269,74 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
             thrown.expectMessage("Cannot list occupations for organisationType CLUB");
             occupationCrudFeature.listCandidatesForNewOccupation(club.getId());
         });
+    }
+
+    @Test
+    public void testCreateBoardMemberOccupation() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            Person person = model().newPerson();
+            Person substitute = model().newPerson();
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+                final OccupationDTO boardMemberDTO = createOccupationDTO(rhy, person, PUHEENJOHTAJA);
+                final PersonContactInfoDTO substituteDTO = PersonContactInfoDTO.create(substitute);
+                boardMemberDTO.setSubstitute(substituteDTO);
+
+                final OccupationDTO outputDTO = occupationCrudFeature.create(boardMemberDTO);
+                runInTransaction(() -> {
+                    final Person created = personRepository.getOne(outputDTO.getSubstitute().getId());
+                    assertNotNull(created);
+                    assertEquals(substitute.getSsn(), created.getSsn());
+                });
+            });
+        });
+    }
+
+    @Test
+    public void testListRhyBoardMemberOccupations() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            final Person chair = model().newPerson();
+            final Person chairSubstitute = model().newPerson();
+            final Occupation chairOccupation = model().newOccupation(rhy, chair, PUHEENJOHTAJA);
+            chairOccupation.setSubstitute(chairSubstitute);
+
+            final Person viceChair = model().newPerson();
+            final Person viceChairSubstitute = model().newPerson();
+            final Occupation viceChairOccupation = model().newOccupation(rhy, viceChair, VARAPUHEENJOHTAJA);
+            viceChairOccupation.setSubstitute(viceChairSubstitute);
+
+            final Person member = model().newPerson();
+            final Person memberSubstitute = model().newPerson();
+            final Occupation memberOccupation = model().newOccupation(rhy, member, HALLITUKSEN_JASEN);
+            memberOccupation.setSubstitute(memberSubstitute);
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+                final List<OccupationDTO> occupations = occupationCrudFeature.listOccupations(rhy.getId());
+                final OccupationDTO chairOccupationDTO = getAndAssertType(occupations, PUHEENJOHTAJA, 1).get(0);
+                final OccupationDTO viceChairOccupationDTO = getAndAssertType(occupations, VARAPUHEENJOHTAJA, 1).get(0);
+                final OccupationDTO memberOccupationDTO = getAndAssertType(occupations, HALLITUKSEN_JASEN, 1).get(0);
+
+                final PersonContactInfoDTO chairSubstituteDTO = chairOccupationDTO.getSubstitute();
+                assertEquals(chairSubstitute.getId(), chairSubstituteDTO.getId());
+
+                final PersonContactInfoDTO viceChairSubstituteDTO = viceChairOccupationDTO.getSubstitute();
+                assertEquals(viceChairSubstitute.getId(), viceChairSubstituteDTO.getId());
+
+                final PersonContactInfoDTO memberSubstituteDTO = memberOccupationDTO.getSubstitute();
+                assertEquals(memberSubstitute.getId(), memberSubstituteDTO.getId());
+            });
+
+        });
+    }
+
+    private static List<OccupationDTO> getAndAssertType(final List<OccupationDTO> occupations,
+                                                        final OccupationType type,
+                                                        final long expected) {
+        final List<OccupationDTO> occupationsByType = occupations.stream()
+                .filter(occ -> occ.getOccupationType() == type)
+                .collect(Collectors.toList());
+        assertEquals(expected, occupationsByType.size());
+
+        return occupationsByType;
     }
 }

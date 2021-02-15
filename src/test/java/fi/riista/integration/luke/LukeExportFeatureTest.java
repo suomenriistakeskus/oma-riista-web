@@ -8,6 +8,8 @@ import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
@@ -16,6 +18,8 @@ import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Address;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Amount;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Club;
+import fi.riista.integration.luke_export.mooselikeharvests.LEM_Group;
+import fi.riista.integration.luke_export.mooselikeharvests.LEM_HuntingDay;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Permit;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Person;
 import fi.riista.test.Asserts;
@@ -34,10 +38,12 @@ import java.util.Set;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.toList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
+public class LukeExportFeatureTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
     private static final int YEAR = 2015;
 
@@ -105,6 +111,39 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
+    @Test
+    public void test_huntingDaysCreatedBySystemAreNotExported() {
+        withHuntingGroupFixture(mooseSpecies, fixture -> {
+            final GroupHuntingDay automaticallyCreatedDay =
+                    model().newGroupHuntingDay(fixture.group, fixture.speciesAmount.getBeginDate());
+            automaticallyCreatedDay.setCreatedBySystem(true);
+
+            final GroupHuntingDay groupHuntingDay = model().newGroupHuntingDay(fixture.group,
+                    fixture.speciesAmount.getBeginDate().plusDays(1));
+
+
+            onSavedAndAuthenticated(apiUser, () -> {
+                List<LEM_Permit> exportDtos = feature.exportMoose(fixture.permit.getPermitYear()).getPermits();
+                assertThat(exportDtos, hasSize(1));
+
+                final LEM_Permit permit = exportDtos.get(0);
+                assertThat(permit.getHuntingClubs(), hasSize(1));
+
+                final LEM_Club club = permit.getHuntingClubs().get(0);
+                assertEquals(fixture.club.getOfficialCode(), club.getClubOfficialCode());
+                assertThat(club.getGroups(), hasSize(1));
+
+                final LEM_Group group = club.getGroups().get(0);
+                assertThat(group.getHuntingDays(), hasSize(1));
+
+                final LEM_HuntingDay huntingDay = group.getHuntingDays().get(0);
+                assertEquals(groupHuntingDay.getStartDate(), huntingDay.getStartDate());
+            });
+        });
+
+
+    }
+
     private HarvestPermit reload(HarvestPermit permit) {
         return harvestPermitRepository.getOne(permit.getId());
     }
@@ -156,7 +195,7 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest {
                 .findAny()
                 .get();
 
-        assertEquals(entity.getAmount(), dto.getAmount(), 0.01f);
+        assertEquals(entity.getSpecimenAmount(), dto.getAmount(), 0.01f);
         assertEquals(entity.getRestrictionAmount(), dto.getRestrictedAmount());
         assertEqualNames(entity.getRestrictionType(), dto.getRestriction());
     }

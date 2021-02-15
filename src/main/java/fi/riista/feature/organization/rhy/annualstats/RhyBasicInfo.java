@@ -3,6 +3,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 import fi.riista.feature.common.entity.IbanConverter;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.iban4j.Iban;
 import org.joda.time.DateTime;
 import org.springframework.util.StringUtils;
@@ -28,7 +29,7 @@ import static java.util.Objects.requireNonNull;
 @Embeddable
 @Access(AccessType.FIELD)
 public class RhyBasicInfo
-        implements AnnualStatisticsFieldsetReadiness, AnnualStatisticsNonComputedFields<RhyBasicInfo>, Serializable {
+        implements AnnualStatisticsFieldsetReadiness, AnnualStatisticsManuallyEditableFields<RhyBasicInfo>, Serializable {
 
     public static final RhyBasicInfo reduce(@Nullable final RhyBasicInfo first, @Nullable final RhyBasicInfo second) {
         final RhyBasicInfo result = new RhyBasicInfo();
@@ -64,6 +65,7 @@ public class RhyBasicInfo
     private Integer rhyMembers;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "basic_info_last_modified")
     private DateTime lastModified;
 

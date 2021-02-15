@@ -58,7 +58,6 @@ import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -556,7 +555,7 @@ public class MooseDataCardImportHelper {
                                                                    final int huntingYear,
                                                                    final Person contactPerson) {
 
-        final Specifications<HuntingClubGroup> baseCriteria = Specifications
+        final Specification<HuntingClubGroup> baseCriteria = Specification
                 .where(equal(HuntingClubGroup_.huntingYear, huntingYear))
                 .and(equal(HuntingClubGroup_.species, mooseSpecies))
                 .and(equal(Organisation_.parentOrganisation, club));
@@ -669,7 +668,7 @@ public class MooseDataCardImportHelper {
 
         final MooseDataCardImport imp = new MooseDataCardImport();
         imp.setGroup(group);
-        imp.setFilenameTimestamp(filenameTimestamp.toDate());
+        imp.setFilenameTimestamp(filenameTimestamp);
         imp.getMessages().addAll(messages);
 
         final UUID xmlUuid = UUID.randomUUID();

@@ -23,7 +23,7 @@ public interface TransactionalVersionedTestExecutionSupport<T extends GameDiaryE
     }
 
     @Override
-    default void onAfterVersionedTestExecution() {
+    default void onAfterVersionedTestExecution(final T version) {
         reset();
     }
 

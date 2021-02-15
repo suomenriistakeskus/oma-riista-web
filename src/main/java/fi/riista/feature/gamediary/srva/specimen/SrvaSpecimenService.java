@@ -62,7 +62,7 @@ public class SrvaSpecimenService {
                     return srvaSpecimen;
                 }).collect(Collectors.toList());
 
-        final List<SrvaSpecimen> savedSpecimens = srvaSpecimenRepository.save(specimenEntities);
+        final List<SrvaSpecimen> savedSpecimens = srvaSpecimenRepository.saveAll(specimenEntities);
         srvaSpecimenRepository.flush();
 
         return savedSpecimens;

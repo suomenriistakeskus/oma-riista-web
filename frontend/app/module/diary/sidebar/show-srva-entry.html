@@ -1,0 +1,78 @@
+<div class="content r-gamediary-entry-show">
+
+    <r-show-diary-species-title entry="$ctrl.entry"></r-show-diary-species-title>
+
+    <div ng-if="::($ctrl.entry.state !== 'UNFINISHED')">
+        <div class="r-harvestreport-state-text"
+             harvest-report-state-to-class="'{{$ctrl.entry.state}}'">
+            <span translate="srva.state.{{::$ctrl.entry.state}}"></span>
+        </div>
+    </div>
+
+    <div>
+        <h5 translate="srva.form.srvaEvent"></h5>
+
+        <p ng-bind="::$ctrl.entry.pointOfTime | date:'d.M.yyyy HH:mm'"></p>
+
+        <h5 translate="gamediary.form.location"></h5>
+
+        <p translate="global.geoLocation.coordinatesText" translate-values="$ctrl.entry.geoLocation"></p>
+    </div>
+
+    <div>
+        <h5 translate="gamediary.author"></h5>
+        <span ng-bind="::$ctrl.entry.authorInfo.byName"></span>
+        <span ng-bind="::$ctrl.entry.authorInfo.lastName"></span>
+        <span ng-if="::$ctrl.entry.authorInfo.hunterNumber">({{::$ctrl.entry.authorInfo.hunterNumber}})</span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.approverInfo">
+        <h5 translate="srva.form.approverOrRejecter"></h5>
+
+        <span ng-bind="::$ctrl.entry.approverInfo.byName"></span>
+        <span ng-bind="::$ctrl.entry.approverInfo.lastName"></span>
+    </div>
+
+    <div>
+        <h5 translate="srva.form.event"></h5>
+        <span translate="{{ 'srva.event.' + $ctrl.entry.eventName }}"></span>
+    </div>
+
+    <div>
+        <h5 translate="srva.form.type"></h5>
+        <span translate="{{ 'srva.type.' + $ctrl.entry.eventType }}"></span>
+        <br ng-if="::$ctrl.entry.otherTypeDescription">
+        <span ng-if="::$ctrl.entry.otherTypeDescription"
+              ng-bind="::$ctrl.entry.otherTypeDescription"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.eventResult">
+        <h5 translate="global.result"></h5>
+        <span translate="srva.result.{{::$ctrl.entry.eventResult}}"></span>
+    </div>
+
+    <div ng-if="::$ctrl.showSrvaMethodsInSidebar($ctrl.entry.methods)">
+        <h5 translate="srva.form.method"></h5>
+        <div ng-repeat="method in $ctrl.getSrvaMethodsForSidebar($ctrl.entry.methods)">
+            <span translate="srva.method.{{::method}}"></span>
+        </div>
+        <div ng-if="::$ctrl.entry.otherMethodDescription">
+            <span ng-bind="::$ctrl.entry.otherMethodDescription"></span>
+        </div>
+    </div>
+
+    <div ng-if="::$ctrl.entry.personCount">
+        <h5 translate="srva.form.personsInvolved"></h5>
+        <span ng-bind="::$ctrl.entry.personCount"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.timeSpent">
+        <h5 translate="srva.form.combinedHours"></h5>
+        <span ng-bind="::$ctrl.entry.timeSpent"></span>
+    </div>
+
+    <r-show-srva-specimens entry="$ctrl.entry"></r-show-srva-specimens>
+
+    <r-show-diary-description-and-pictures entry="$ctrl.entry"></r-show-diary-description-and-pictures>
+
+</div>

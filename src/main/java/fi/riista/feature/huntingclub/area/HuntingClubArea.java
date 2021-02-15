@@ -7,7 +7,7 @@ import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.RandomStringUtil;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

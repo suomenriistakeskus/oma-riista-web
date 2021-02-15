@@ -12,6 +12,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
 
+import static fi.riista.feature.gamediary.observation.ObservationCategory.MOOSE_HUNTING;
 import static fi.riista.feature.gamediary.observation.ObservationType.NAKO;
 import static fi.riista.feature.huntingclub.hunting.rejection.RejectClubDiaryEntryDTO.createForHarvest;
 import static fi.riista.feature.huntingclub.hunting.rejection.RejectClubDiaryEntryDTO.createForObservation;
@@ -90,7 +91,7 @@ public class GroupHuntingDiaryFeature_RejectTest extends EmbeddedDatabaseTest
 
     @Test(expected = ClubHuntingFinishedException.class)
     public void testRejectObservationFromHuntingGroup_whenHuntingFinished() {
-        createObservationMetaF(true, NAKO).consumeBy(m -> withHuntingGroupFixture(m.getSpecies(), fixture -> {
+        createObservationMetaF(MOOSE_HUNTING, NAKO).consumeBy(m -> withHuntingGroupFixture(m.getSpecies(), fixture -> {
 
             final GroupHuntingDay huntingDay = model().newGroupHuntingDay(fixture.group, today());
             final Observation observation = model().newObservation(fixture.species, fixture.clubContact, huntingDay);

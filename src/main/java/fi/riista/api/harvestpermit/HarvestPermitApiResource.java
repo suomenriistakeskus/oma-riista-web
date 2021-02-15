@@ -55,9 +55,10 @@ import javax.validation.Valid;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
-@RequestMapping(value = "/api/v1/harvestpermit", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/harvestpermit", produces = MediaType.APPLICATION_JSON_VALUE)
 public class HarvestPermitApiResource {
 
     @Resource
@@ -101,7 +102,7 @@ public class HarvestPermitApiResource {
 
     @PostMapping("/checkPermitNumber")
     public HarvestPermitExistsDTO checkPermitNumber(@RequestParam String permitNumber) {
-        return harvestPermitSearchFeature.findPermitNumber(permitNumber);
+        return harvestPermitSearchFeature.checkHarvestPermitExists(permitNumber);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -117,7 +118,7 @@ public class HarvestPermitApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/metsahallitus", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/metsahallitus", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MetsahallitusPermitListDTO> listMetsahallitusPermits(@RequestParam(required = false) Long personId) {
         return metsahallitusPermitListFeature.listAll(personId);
     }
@@ -163,7 +164,7 @@ public class HarvestPermitApiResource {
         final EnumLocaliser localiser = new EnumLocaliser(messageSource, LocaleContextHolder.getLocale());
         final List<HarvestReportExcelDTO> data = harvestReportSearchFeature.listByPermitForExcel(id);
 
-        return new ModelAndView(HarvestReportListExcelView.create(localiser, data));
+        return new ModelAndView(HarvestReportListExcelView.create(localiser, data, true));
     }
 
     @GetMapping("/{id:\\d+}/contactpersons")
@@ -198,9 +199,15 @@ public class HarvestPermitApiResource {
         return harvestPermitSearchFeature.searchForCoordinator(dto);
     }
 
+    @PostMapping("/admin/export")
+    public ModelAndView exportToExcel(final @RequestBody @Valid HarvestPermitSearchDTO dto,
+                                      final Locale locale) {
+        return new ModelAndView(harvestPermitSearchFeature.export(dto, locale));
+    }
+
     // ATTACHMENTS
 
-    @GetMapping(value = "/{id:\\d+}/attachment", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{id:\\d+}/attachment", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<PermitDecisionAttachmentDTO> listAttachments(final @PathVariable long id) {
         return harvestPermitAttachmentFeature.listAttachments(id);
     }

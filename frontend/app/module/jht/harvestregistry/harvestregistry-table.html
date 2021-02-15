@@ -30,27 +30,28 @@
             <td ng-bind="::item.shooterHunterNumber">
             </td>
             <td>
-                <label ng-if="item.shooterAddress">
+                <label ng-if="::item.shooterAddress">
                     <span ng-bind="::item.shooterAddress.streetAddress"></span><br/>
                     <span ng-bind="::item.shooterAddress.postalCode"></span>
                     <span ng-bind="::item.shooterAddress.city"></span><br/>
                     <span ng-bind="::item.shooterAddress.country"></span><br/>
                 </label>
             </td>
-            <td ng-bind="::(item.pointOfTime | date: 'd.M.yyyy')"></td>
-            <td ng-bind="::(item.pointOfTime | date: 'HH.mm')"></td>
+            <td ng-bind="::(item.date | date: 'd.M.yyyy')"></td>
+            <td ng-bind="::(item.time)"></td>
             <td>
-                <span ng-if="item.age">{{::('gamediary.age.' + item.age | translate)}}</span>
+                <span ng-if="::item.age">{{::('gamediary.age.' + item.age | translate)}}</span>
             </td>
             <td>
-                <span ng-if="item.gender">{{::('gamediary.gender.' + item.gender | translate)}}</span>
+                <span ng-if="::item.gender">{{::('gamediary.gender.' + item.gender | translate)}}</span>
             </td>
             <td>
-                <span ng-if="item.weight">{{::item.weight}} kg</span>
+                <span ng-if="::item.weight">{{::item.weight}} kg</span>
             </td>
             <td>
-                <label style="width: 150px" translate="global.geoLocation.plainCoordinatesText"
-                       translate-values="item.geoLocation"></label>
+                <label ng-if="::item.geoLocation" style="width: 150px"
+                       translate="global.geoLocation.plainCoordinatesText"
+                       translate-values="::item.geoLocation"></label>
             </td>
             <td>
                 <span ng-bind="::item.harvestArea| rI18nNameFilter"></span>

@@ -5,12 +5,14 @@
         </account-profile-person>
 
         <account-profile-address
+                ng-if="!$ctrl.profile.foreignPerson"
                 address="$ctrl.profile.address"
                 address-source="$ctrl.profile.addressSource"
                 on-save="$ctrl.saveAddress(address)">
         </account-profile-address>
 
         <account-profile-other
+                ng-if="!$ctrl.profile.foreignPerson"
                 profile="$ctrl.profile"
                 on-save="$ctrl.saveOtherInfo(otherInfo)">
         </account-profile-other>
@@ -25,32 +27,33 @@
     </div>
 
     <div class="col-md-7">
-        <account-profile-hunter
+        <account-profile-hunter ng-if="::!$ctrl.profile.foreignPerson"
                 profile="$ctrl.profile"></account-profile-hunter>
-
+        <account-profile-foreign-hunter ng-if="::$ctrl.profile.foreignPerson"
+                                profile="$ctrl.profile"></account-profile-foreign-hunter>
         <account-profile-shooting-tests
                 shooting-tests="$ctrl.shootingTests"></account-profile-shooting-tests>
 
-        <account-profile-invitation ng-if="!$ctrl.profile.foreignPerson"
+        <account-profile-invitation ng-if="::!$ctrl.profile.foreignPerson"
                                     club-invitations="$ctrl.clubInvitations"
                                     is-user-own-profile="$ctrl.isUserOwnProfile">
         </account-profile-invitation>
 
-        <account-profile-clubs ng-if="!$ctrl.profile.foreignPerson"
+        <account-profile-clubs ng-if="::!$ctrl.profile.foreignPerson"
                                club-occupations="$ctrl.profile.clubOccupations"
                                is-user-own-profile="$ctrl.isUserOwnProfile"
                                person-id="$ctrl.personId">
         </account-profile-clubs>
 
-        <account-profile-occupations ng-if="!$ctrl.profile.foreignPerson"
+        <account-profile-occupations ng-if="::!$ctrl.profile.foreignPerson"
                                      occupations="$ctrl.profile.occupations">
         </account-profile-occupations>
 
-        <account-profile-jht ng-if="!$ctrl.profile.foreignPerson"
+        <account-profile-jht ng-if="::!$ctrl.profile.foreignPerson"
                              jht-trainings="$ctrl.jhtTrainings">
         </account-profile-jht>
 
-        <account-profile-feature-activation ng-if="!$ctrl.profile.foreignPerson"
+        <account-profile-feature-activation ng-if="::!$ctrl.profile.foreignPerson"
                                             profile="$ctrl.profile">
         </account-profile-feature-activation>
     </div>

@@ -103,7 +103,7 @@ public class HarvestPermitUpdateService {
                 F.index(targetAmounts, HarvestPermitSpeciesAmount::getGameSpecies);
 
         for (final PermitDecisionSpeciesAmount source : sourceAmounts) {
-            if (hasGrantedSpecies(source)) {
+            if (source.hasGrantedSpecies()) {
                 final HarvestPermitSpeciesAmount target = targetIndex.get(source.getGameSpecies());
 
                 if (target != null) {
@@ -121,16 +121,12 @@ public class HarvestPermitUpdateService {
         for (final HarvestPermitSpeciesAmount target : targetAmounts) {
             final PermitDecisionSpeciesAmount source = sourceIndex.get(target.getGameSpecies());
 
-            if (source == null || !(hasGrantedSpecies(source))) {
+            if (source == null || !(source.hasGrantedSpecies())) {
                 // delete
                 result.addDeleted(target);
             }
         }
 
         return result;
-    }
-
-    private static boolean hasGrantedSpecies(final PermitDecisionSpeciesAmount speciesAmount) {
-        return speciesAmount.getAmount() > 0;
     }
 }

@@ -101,7 +101,7 @@ public class HuntingClubMemberCrudFeature extends AbstractCrudFeature<Long, Occu
                 JpaSpecs.equal(Occupation_.organisation, club),
                 JpaSpecs.equal(Occupation_.occupationType, OccupationType.SEURAN_YHDYSHENKILO),
                 JpaSpecs.notSoftDeleted()
-        ), new JpaSort(Sort.Direction.ASC, Occupation_.callOrder)
+        ), JpaSort.of(Sort.Direction.ASC, Occupation_.callOrder)
                 .and(Sort.Direction.ASC, Occupation_.id));
 
         int callOrderCounter = 0;

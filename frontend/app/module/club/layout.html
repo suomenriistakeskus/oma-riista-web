@@ -28,12 +28,15 @@
                 <a ui-sref="club.hunting({ id: club.id })" translate="club.menu.hunting"></a>
             </li>
 
-            <li active-if-state-includes="club.permit">
-                <a ui-sref="club.permit" translate="club.menu.permits"></a>
+            <li active-if-state-includes="club.moosepermit">
+                <a ui-sref="club.moosepermit" translate="club.menu.permits"></a>
             </li>
 
             <li active-if-state-includes="club.harvestsummary">
                 <a ui-sref="club.harvestsummary({ id: club.id })" translate="club.menu.harvestsummary"></a>
+            </li>
+            <li active-if-state-includes="club.reports">
+                <a ui-sref="club.reports({ id: club.id })" translate="club.menu.reports"></a>
             </li>
         </ul>
     </div>

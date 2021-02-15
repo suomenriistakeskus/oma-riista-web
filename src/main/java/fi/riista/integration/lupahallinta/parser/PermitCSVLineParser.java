@@ -1,7 +1,6 @@
 package fi.riista.integration.lupahallinta.parser;
 
 import com.google.common.base.Splitter;
-import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.validation.Validators;
 import org.apache.commons.lang.StringUtils;
@@ -48,7 +47,7 @@ public class PermitCSVLineParser {
         return csvLine;
     }
 
-    private String parseSsn(String ssn) {
+    private String parseSsn(final String ssn) {
         if (StringUtils.isBlank(ssn)) {
             errors.add("Puuttuva HETU");
             return null;
@@ -62,7 +61,7 @@ public class PermitCSVLineParser {
         return ssn;
     }
 
-    private String parsePermitNumber(String permitNumber) {
+    private String parsePermitNumber(final String permitNumber) {
         if (StringUtils.isBlank(permitNumber)) {
             errors.add("Puuttuva lupanumero");
             return null;

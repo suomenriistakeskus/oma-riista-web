@@ -6,13 +6,13 @@ angular.module('app.harvestpermit.decision.document.processing', [])
             url: '/processing',
             templateUrl: 'harvestpermit/decision/document/processing/document.processing.html',
             controllerAs: '$ctrl',
-            controller: function (PermitDecisionUtils, PermitDecisionActionListModal,
-                                  PermitDecisionAdjustedAreaSize, NotificationService, $state,
-                                  RefreshDecisionStateService, decision, decisionId) {
+            controller: function ($state, PermitDecisionUtils, PermitDecisionActionListModal,
+                                  PermitDecisionAdjustedAreaSize, PermitDecisionSection,
+                                  NotificationService, RefreshDecisionStateService, decision, decisionId) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.sectionId = 'processing';
+                    $ctrl.sectionId = PermitDecisionSection.PROCESSING;
                     $ctrl.decision = decision;
                     $ctrl.sectionContent = PermitDecisionUtils.getSectionContent(decision, $ctrl.sectionId);
                     $ctrl.mooseLike = $ctrl.decision.permitTypeCode === '100';
@@ -20,6 +20,8 @@ angular.module('app.harvestpermit.decision.document.processing', [])
 
                 $ctrl.editSection = function () {
                     PermitDecisionActionListModal.open(decisionId).then(function () {
+                        RefreshDecisionStateService.refresh();
+                    }, function () {
                         RefreshDecisionStateService.refresh();
                     });
                 };
@@ -46,11 +48,7 @@ angular.module('app.harvestpermit.decision.document.processing', [])
     .service('PermitDecisionAdjustedAreaSize', function ($q, dialogs, Helpers, NotificationService,
                                                          PermitDecisionAction, PermitDecision) {
         this.create = function (decisionId) {
-            return PermitDecision.generateText({
-                id: decisionId,
-                sectionId: 'adjustedAreaSizeAction'
-
-            }).$promise.then(function (res) {
+            return PermitDecision.generateAdjustedAreaSizeAction({id: decisionId}).$promise.then(function (res) {
                 if (!res.content) {
                     NotificationService.showMessage('Korjattua pinta-alaa ei ole saatavilla', 'warn');
                     return $q.reject();

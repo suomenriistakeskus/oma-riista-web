@@ -30,7 +30,7 @@
                             ng-disabled="!$ctrl.selectedSpeciesCode"
                             ng-click="$ctrl.addSpecies($ctrl.selectedSpeciesCode)">
                         <span class="fa fa-fw fa-plus"></span>
-                        <span translate="harvestpermit.wizard.bird.species.addSpecies"></span>
+                        <span translate="harvestpermit.wizard.species.addSpecies"></span>
                     </button>
                 </div>
             </div>
@@ -44,7 +44,7 @@
     <div class="row" ng-repeat="s in $ctrl.speciesAmountList">
         <div class="col-md-3">
             <div class="form-group">
-                <label class="control-label" translate="harvestpermit.wizard.bird.species.species"></label>
+                <label class="control-label" translate="harvestpermit.wizard.species.species"></label>
 
                 <input type="text" disabled class="form-control"
                        ng-value="s.gameSpeciesCode | translateSpeciesCode">
@@ -54,7 +54,7 @@
         <div class="col-md-3">
             <div class="form-group" show-errors>
                 <label class="control-label" for="amount-{{::s.gameSpeciesCode}}"
-                       translate="harvestpermit.wizard.bird.species.speciesAmount"></label>
+                       translate="harvestpermit.wizard.species.speciesAmount"></label>
 
                 <div class="input-group">
                     <input type="number" class="form-control no-spinner"
@@ -65,7 +65,7 @@
                            min="1" max="99999" step="1"
                            r-click-select>
                     <div class="input-group-addon">
-                        <span translate="harvestpermit.wizard.bird.species.amountPerYear"></span>
+                        <span translate="harvestpermit.wizard.species.amountPerYear"></span>
                     </div>
                 </div>
             </div>
@@ -75,7 +75,7 @@
             <a class="btn btn-link"
                ng-click="$ctrl.removeSpecies(s)">
                 <span class="fa fa-fw fa-remove text-danger"></span>
-                <span class="text-danger" translate="harvestpermit.wizard.bird.species.removeSpecies"></span>
+                <span class="text-danger" translate="harvestpermit.wizard.species.removeSpecies"></span>
             </a>
         </div>
 

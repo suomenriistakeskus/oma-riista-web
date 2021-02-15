@@ -1,0 +1,150 @@
+<div class="content r-gamediary-entry-show">
+
+    <r-show-diary-species-title entry="$ctrl.entry"></r-show-diary-species-title>
+
+    <div class="r-harvestreport-state-text"
+         ng-if="::$ctrl.entry.harvestReportState"
+         harvest-report-state-to-class="$ctrl.entry.harvestReportState">
+        <span translate="harvestreport.button.currentState.{{::$ctrl.entry.harvestReportState}}"></span>
+    </div>
+
+    <div class="r-harvestreport-state-text"
+         ng-if="!$ctrl.entry.harvestReportState && $ctrl.entry.stateAcceptedToHarvestPermit"
+         harvest-report-state-to-class="$ctrl.entry.stateAcceptedToHarvestPermit">
+        <span translate="gamediary.stateVerbose.{{::$ctrl.entry.stateAcceptedToHarvestPermit}}"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.permitNumber" class="alert alert-info">
+        <h4 translate="gamediary.form.withPermit"></h4>
+
+        <p>
+            <span ng-bind="::$ctrl.entry.permitType"></span>
+            <br/>
+            <span ng-bind="::$ctrl.entry.permitNumber"></span>
+        </p>
+
+        <div ng-if="::$ctrl.entry.permittedMethod">
+            <span translate="gamediary.form.withPermittedMethod"></span>
+
+            <ul>
+                <li ng-if="::$ctrl.entry.permittedMethod.tapeRecorders">
+                    <span translate="permittedMethod.TAPE_RECORDERS"></span>
+                </li>
+                <li ng-if="::$ctrl.entry.permittedMethod.traps">
+                    <span translate="permittedMethod.TRAPS"></span>
+                </li>
+                <li ng-if="::$ctrl.entry.permittedMethod.other">
+                    <span translate="permittedMethod.OTHER"></span>:
+                    <span ng-bind="::$ctrl.entry.permittedMethod.description"></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="alert alert-info" ng-show="$ctrl.entry.moderatorOverride">
+        <p translate="gamediary.moderatorOverride"></p>
+    </div>
+
+    <div>
+        <h5 translate="gamediary.harvest"></h5>
+        <p ng-bind="::$ctrl.entry.pointOfTime | date:'d.M.yyyy HH:mm'"></p>
+
+        <h5 translate="gamediary.form.location"></h5>
+        <p translate="global.geoLocation.coordinatesText" translate-values="$ctrl.entry.geoLocation"></p>
+    </div>
+
+    <r-harvest-deer-hunting-type entry="$ctrl.entry"></r-harvest-deer-hunting-type>
+
+    <div ng-if="::$ctrl.entry.authorInfo">
+        <h5 translate="gamediary.author"></h5>
+
+        <span ng-bind="::$ctrl.entry.authorInfo.byName"></span>
+        <span ng-bind="::$ctrl.entry.authorInfo.lastName"></span>
+        <span ng-if="::$ctrl.entry.authorInfo.hunterNumber"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.actorInfo">
+        <h5 translate="gamediary.actualShooter"></h5>
+
+        <span ng-bind="::$ctrl.entry.actorInfo.byName"></span>
+        <span ng-bind="::$ctrl.entry.actorInfo.lastName"></span>
+    </div>
+
+    <div ng-if="::$ctrl.computedFields.season">
+        <h5 translate="gamediary.form.season"></h5>
+        <span ng-bind="::$ctrl.computedFields.season.name | rI18nNameFilter"></span>
+    </div>
+
+    <div ng-if="::$ctrl.computedFields.harvestArea">
+        <h5 translate="gamediary.form.harvestarea"></h5>
+        <span ng-bind="::$ctrl.computedFields.harvestArea | rI18nNameFilter"></span>
+    </div>
+
+    <div ng-if="::$ctrl.computedFields.rhy">
+        <h5 translate="gamediary.form.rhy"></h5>
+        <span ng-bind="::$ctrl.computedFields.rhy | rI18nNameFilter"></span>
+    </div>
+
+    <div ng-if="::$ctrl.computedFields.municipalityName">
+        <h5 translate="gamediary.form.municipality"></h5>
+        <span ng-bind="::$ctrl.computedFields.municipalityName | rI18nNameFilter"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.propertyIdentifier">
+        <h5 translate="gamediary.form.propertyIdentifier"></h5>
+        <span ng-bind="::$ctrl.entry.propertyIdentifier | formatPropertyIdentifier"></span>
+    </div>
+
+    <h4 ng-show="::$ctrl.hasExtraFields()" translate="gamediary.form.extraFields"></h4>
+
+    <div ng-if="::$ctrl.entry.huntingMethod">
+        <h5 translate="gamediary.form.huntingMethod"></h5>
+        <span translate="gamediary.huntingMethod.{{::$ctrl.entry.huntingMethod}}"></span>
+    </div>
+
+    <div ng-if="::$ctrl.isDefined('reportedWithPhoneCall')">
+        <h5 translate="gamediary.form.reportedWithPhoneCall"></h5>
+        <span translate="{{::$ctrl.entry.reportedWithPhoneCall ? 'global.yes' : 'global.no'}}"></span>
+    </div>
+
+    <div ng-if="::$ctrl.isDefined('feedingPlace')">
+        <h5 translate="gamediary.form.feedingPlace"></h5>
+        <span translate="{{::$ctrl.entry.feedingPlace ? 'global.yes' : 'global.no'}}"></span>
+    </div>
+
+
+    <div ng-if="::$ctrl.isDefined('taigaBeanGoose')">
+        <h5 translate="gamediary.form.taigaBeanGoose"></h5>
+        <span translate="{{::$ctrl.entry.taigaBeanGoose ? 'global.yes' : 'global.no'}}"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.huntingAreaType">
+        <h5 translate="gamediary.form.huntingAreaType"></h5>
+        <span translate="gamediary.huntingAreaType.{{::$ctrl.entry.huntingAreaType}}"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.huntingParty">
+        <h5 translate="gamediary.form.huntingParty"></h5>
+        <span ng-bind="::$ctrl.entry.huntingParty"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.huntingAreaSize">
+        <h5 translate="gamediary.form.huntingAreaSize"></h5>
+        <span ng-bind="::$ctrl.entry.huntingAreaSize"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.lukeStatus">
+        <h5 translate="gamediary.form.lukeStatus"></h5>
+        <span translate="harvestreport.lukeStatus.{{::$ctrl.entry.lukeStatus}}"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.harvestReportMemo">
+        <h5 translate="gamediary.form.moderatorDescription"></h5>
+        <span ng-bind="::$ctrl.entry.harvestReportMemo"></span>
+    </div>
+
+    <r-show-harvest-specimens entry="$ctrl.entry"></r-show-harvest-specimens>
+
+    <r-show-diary-description-and-pictures entry="$ctrl.entry"></r-show-diary-description-and-pictures>
+
+</div>

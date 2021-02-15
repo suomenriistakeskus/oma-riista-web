@@ -13,6 +13,12 @@
             </a>
         </li>
         <li ng-show="$ctrl.isAreaWithGeometry()">
+            <a ng-click="$ctrl.copyArea()">
+                <span class="fa fa-clone"></span> &nbsp;
+                <span translate="club.area.button.copy"/>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
             <a ng-click="$ctrl.exportExcel('all')">
                 <span class="glyphicon glyphicon-export"></span> &nbsp;
                 <span translate="club.area.button.toExcel"></span>

@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.HUNTING_CONTROL_EVENTS;
-import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.LUKE_CARNIVORE_CONTACT_PERSONS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.MOOSELIKE_TAXATION_PLANNING_EVENTS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.RHY_MEMBERS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SMALL_GAME_LICENSES_SOLD_BY_METSAHALLITUS;
@@ -17,7 +16,11 @@ import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriter
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUBSIDIZABLE_OTHER_TRAINING_EVENTS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUBSIDIZABLE_STUDENT_AND_YOUTH_TRAINING_EVENTS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUM_OF_LUKE_CALCULATIONS;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUM_OF_LUKE_CALCULATIONS_PRE_2021;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.TOTAL_LUKE_CARNIVORE_PERSONS;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.TOTAL_LUKE_CARNIVORE_PERSONS_PRE_2021;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.WOLF_TERRITORY_WORKGROUPS;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.WOLF_TERRITORY_WORKGROUPS_PRE_2021;
 import static java.util.Objects.requireNonNull;
 
 public class StatisticsBasedSubsidyShareCalculator {
@@ -28,7 +31,8 @@ public class StatisticsBasedSubsidyShareCalculator {
         this.unitAmountIndex = requireNonNull(unitAmounts);
     }
 
-    public StatisticsBasedSubsidyShareDTO calculateSubsidyShare(@Nonnull final AnnualStatisticsExportDTO statistics) {
+    public StatisticsBasedSubsidyShareDTO calculateSubsidyShare(final int subsidyYear,
+                                                                @Nonnull final AnnualStatisticsExportDTO statistics) {
         requireNonNull(statistics);
 
         return StatisticsBasedSubsidyShareDTO
@@ -45,13 +49,19 @@ public class StatisticsBasedSubsidyShareCalculator {
 
                 .withHuntingControlEvents(calculateShare(HUNTING_CONTROL_EVENTS, statistics))
 
-                .withSumOfLukeCalculations(calculateShare(SUM_OF_LUKE_CALCULATIONS, statistics))
+                .withSumOfLukeCalculations(subsidyYear >= 2021
+                        ? calculateShare(SUM_OF_LUKE_CALCULATIONS, statistics)
+                        : calculateShare(SUM_OF_LUKE_CALCULATIONS_PRE_2021, statistics))
 
-                .withLukeCarnivoreContactPersons(calculateShare(LUKE_CARNIVORE_CONTACT_PERSONS, statistics))
+                .withLukeCarnivoreContactPersons(subsidyYear >= 2021
+                        ? calculateShare(TOTAL_LUKE_CARNIVORE_PERSONS, statistics)
+                        : calculateShare(TOTAL_LUKE_CARNIVORE_PERSONS_PRE_2021, statistics))
 
                 .withMooselikeTaxationPlanningEvents(calculateShare(MOOSELIKE_TAXATION_PLANNING_EVENTS, statistics))
 
-                .withWolfTerritoryWorkgroups(calculateShare(WOLF_TERRITORY_WORKGROUPS, statistics))
+                .withWolfTerritoryWorkgroups(subsidyYear >= 2021
+                        ? calculateShare(WOLF_TERRITORY_WORKGROUPS, statistics)
+                        : calculateShare(WOLF_TERRITORY_WORKGROUPS_PRE_2021, statistics))
 
                 .withSrvaMooselikeEvents(calculateShare(SRVA_ALL_MOOSELIKE_EVENTS, statistics))
 

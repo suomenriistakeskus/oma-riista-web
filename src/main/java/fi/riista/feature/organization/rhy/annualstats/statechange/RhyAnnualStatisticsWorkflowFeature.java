@@ -14,11 +14,11 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.MergedRhyMapping;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsLockedException;
+import fi.riista.feature.organization.rhy.annualstats.QRhyAnnualStatistics;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatistics;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsRepository;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState;
 import fi.riista.feature.organization.rhy.annualstats.audit.RhyAnnualStatisticsNotificationService;
-import fi.riista.feature.organization.rhy.annualstats.QRhyAnnualStatistics;
 import fi.riista.util.Collect;
 import fi.riista.util.DtoUtil;
 import org.springframework.context.MessageSource;
@@ -28,13 +28,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static fi.riista.feature.organization.RiistakeskusAuthorization.Permission.BATCH_APPROVE_ANNUAL_STATISTICS;
@@ -179,7 +177,7 @@ public class RhyAnnualStatisticsWorkflowFeature {
         validateYear(year);
 
         final List<RhyAnnualStatistics> annualStats = annualStatsRepo
-                .findAll(annualStatisticsIds)
+                .findAllById(annualStatisticsIds)
                 .stream()
                 .filter(stats -> {
                     if (stats.getYear() != year) {

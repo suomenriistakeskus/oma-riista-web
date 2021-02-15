@@ -3,6 +3,7 @@ package fi.riista.feature.huntingclub.statistics.luke;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.integration.common.HttpProxyService;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.config.RequestConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,13 @@ public class LukeReportFeature {
     private final LukeReportUriBuilderFactory lukeReportUriBuilderFactory;
     private final UsernamePasswordCredentials credentials;
 
+    private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
+            .setConnectTimeout(3000)
+            .setSocketTimeout(5000)
+            // Do not follow redirects and treat anything else than 200 as 404 Not Found.
+            .setRedirectsEnabled(false)
+            .build();
+
     @Autowired
     public LukeReportFeature(final ActiveUserService activeUserService,
                              final HttpProxyService httpProxyService,
@@ -44,23 +52,25 @@ public class LukeReportFeature {
 
     public void getReport(final LukeReportUriBuilder uriBuilder,
                           final HttpServletResponse httpServletResponse,
-                          final LukeReportParams.Organisation org,
+                          final LukeReportParams.LukeArea area,
                           final LukeReportParams.Presentation presentation,
                           final String fileName) {
-        final URI lukeReportUrl = uriBuilder.getReportUri(org, presentation, fileName);
+        final URI lukeReportUrl = uriBuilder.getReportUri(area, presentation, fileName);
 
         LOG.info("userId:{} permitId:{} clubId:{} url:{}", activeUserService.requireActiveUserId(),
                 uriBuilder.getPermitId(), uriBuilder.getClubId(), lukeReportUrl.getPath());
 
         httpProxyService.downloadFile(httpServletResponse, lukeReportUrl, credentials,
-                null, presentation.getContentType());
+                null, presentation.getContentType(), REQUEST_CONFIG);
     }
 
-    public LukeReportParamsDTO getReportParameters(final LukeReportUriBuilder uriBuilder) {
+    public LukeReportParamsDTO getReportParameters(final LukeReportUriBuilder uriBuilder, final int species) {
         final URI checkClubReportExistsUri = uriBuilder.getCheckClubReportExistsUri();
+        final int huntingYear = uriBuilder.getHuntingYear();
+        final boolean isInPilot = uriBuilder.isInPilot();
         final List<Map<String, Object>> parameters = checkClubReportExistsUri != null
-                ? LukeReportParams.Organisation.allValues()
-                : LukeReportParams.Organisation.valuesWithoutClub();
+                ? LukeReportParams.Organisation.allValues(species, huntingYear, isInPilot)
+                : LukeReportParams.Organisation.valuesWithoutClub(species, huntingYear, isInPilot);
 
         return new LukeReportParamsDTO(parameters, checkClubReportExistsUri != null &&
                 httpProxyService.checkHeadResponseOk(checkClubReportExistsUri, credentials));

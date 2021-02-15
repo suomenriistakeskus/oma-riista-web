@@ -5,7 +5,7 @@ import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.util.DateUtil;
 import fi.riista.util.LocalisedString;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.joda.time.LocalDate;
 
 import javax.persistence.Access;

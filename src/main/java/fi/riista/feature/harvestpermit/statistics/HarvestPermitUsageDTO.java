@@ -34,7 +34,7 @@ public final class HarvestPermitUsageDTO extends HarvestPermitSpeciesAmountDTO {
         super(speciesAmount, species);
 
         this.reportedAmount = reportedAmount;
-        this.remainingAmount = speciesAmount.getAmount() - reportedAmount;
+        this.remainingAmount = speciesAmount.getSpecimenAmount() - reportedAmount;
     }
 
     public float getReportedAmount() {

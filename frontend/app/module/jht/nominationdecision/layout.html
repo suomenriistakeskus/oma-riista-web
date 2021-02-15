@@ -1,0 +1,33 @@
+<ul class="nav nav-pills">
+    <li class="">
+        <a ui-sref="jht.nominationdecisions">
+            <span class="fa fa-fw fa-arrow-left"></span>
+            <span translate="decision.menu.back"></span>
+        </a>
+    </li>
+
+    <li active-if-state-includes="jht.nominationdecision.overview">
+        <a ui-sref="jht.nominationdecision.overview">
+            <span class="fa fa-fw fa-sticky-note"></span>
+            <span translate="decision.menu.summary"></span>
+        </a>
+    </li>
+
+    <li active-if-state-includes="jht.nominationdecision.document">
+        <a ui-sref="jht.nominationdecision.document.general">
+            <span class="fa fa-fw fa-legal"></span>
+            <span translate="decision.menu.decision"></span>
+        </a>
+    </li>
+
+    <li active-if-state-includes="jht.nominationdecision.revisions">
+        <a ui-sref="jht.nominationdecision.revisions">
+            <span class="fa fa-fw fa-paper-plane"></span>
+            <span translate="decision.menu.revision"></span>
+        </a>
+    </li>
+</ul>
+
+<hr class="invisible" style="margin: 15px 0"/>
+
+<div ui-view autoscroll="false"></div>

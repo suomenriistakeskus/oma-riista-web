@@ -1,0 +1,103 @@
+<div class="panel panel-default"
+     ng-if="::($ctrl.profile && $ctrl.profile.hunterNumber)">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="account.profile.title.hunterRegistry"></h3>
+    </div>
+
+    <div class="panel-body">
+        <div class="panel-group">
+            <span class="fa fa-flag text-primary"></span><span>&nbsp;&nbsp;</span>
+            <span class="panel-title" translate="account.profile.foreignPerson"></span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-condensed"
+                   ng-show="::$ctrl.profile.huntingBanActive">
+                <tbody>
+                <tr>
+                    <th class="col-xs-6" translate="account.profile.mr.huntingBan"></th>
+                    <td class="text-danger">
+                        {{::($ctrl.profile.huntingBanStart | date:'d.M.yyyy')}}
+                        &minus;
+                        {{::($ctrl.profile.huntingBanEnd | date:'d.M.yyyy')}}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <table class="table table-condensed"
+                   ng-show="::(!$ctrl.profile.huntingBanActive)">
+                <tbody>
+                <tr>
+                    <th class="col-xs-6" translate="global.person.hunterNumber"></th>
+                    <td>{{::$ctrl.profile.hunterNumber}}</td>
+                </tr>
+                <tr>
+                    <th class="col-xs-6">
+                        <span translate="account.profile.mr.paymentInfo"></span>
+                    </th>
+                    <td>
+                        <span ng-hide="::$ctrl.profile.huntingPaymentPending">
+                            <span translate="account.profile.mr.lastPayment"></span>
+
+                            <span ng-show="::$ctrl.profile.huntingCardStart">
+                                {{::($ctrl.profile.huntingCardStart | date:'d.M.yyyy')}} -
+                                {{::($ctrl.profile.huntingCardEnd | date:'d.M.yyyy')}}
+                            </span>
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="col-xs-6">
+                        <span translate="account.profile.mr.paymentDate"></span>
+                    </th>
+                    <td>
+                        <span ng-show="::$ctrl.profile.huntingPaymentDate">
+                            {{::($ctrl.profile.huntingPaymentDate | date:'d.M.yyyy')}}
+                        </span>
+                    </td>
+                </tr>
+                <tr ng-show="::$ctrl.profile.hunterExamDate">
+                    <th class="col-xs-6" translate="account.profile.mr.examDate"></th>
+                    <td ng-bind="::($ctrl.profile.hunterExamDate | date:'d.M.yyyy')"></td>
+                </tr>
+                <tr>
+                    <th class="col-xs-6" translate="account.profile.mr.rhyMembership"></th>
+                    <td>
+                        <span ng-hide="::$ctrl.profile.rhyMembership"
+                              translate="account.profile.mr.noMembership"></span>
+
+                        <span ng-show="::$ctrl.profile.rhyMembership"
+                              ng-bind="::($ctrl.profile.rhyMembership | rI18nNameFilter)"></span>
+
+                        <span ng-show="::$ctrl.profile.rhyMembership"
+                              ng-bind="::$ctrl.profile.rhyMembership.officialCode"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div ng-if="::$ctrl.profile.mrSyncTime">
+            <p class="info text-right">
+                <span translate="account.profile.mr.syncTime"></span>
+                {{::($ctrl.profile.mrSyncTime | date:'d.M.yyyy')}}
+            </p>
+        </div>
+
+        <div ng-show="::($ctrl.pdfOptions && $ctrl.pdfOptions.length)">
+            <h4 translate="account.profile.pdf.download"></h4>
+
+            <div class="input-group">
+                <select name="pdfSelection" id="pdfSelection"
+                        class="form-control"
+                        ng-model="$ctrl.pdfSelection"
+                        ng-options="c.title for c in ::$ctrl.pdfOptions"></select>
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-primary btn-large"
+                            ng-click="$ctrl.printPdf()"
+                            translate="account.profile.pdf.button"></button>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

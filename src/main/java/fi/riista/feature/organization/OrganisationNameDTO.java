@@ -6,6 +6,9 @@ import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
+
+import static java.lang.String.format;
 
 public class OrganisationNameDTO extends BaseEntityDTO<Long> {
 
@@ -43,6 +46,33 @@ public class OrganisationNameDTO extends BaseEntityDTO<Long> {
         setRev(organisation.getConsistencyVersion());
         setNameFI(organisation.getNameFinnish());
         setNameSV(organisation.getNameSwedish());
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == this) {
+            return true;
+        } else if (!(o instanceof OrganisationNameDTO)) {
+            return false;
+        } else {
+            final OrganisationNameDTO that = (OrganisationNameDTO) o;
+
+            return Objects.equals(this.id, that.id)
+                    && Objects.equals(this.rev, that.rev)
+                    && Objects.equals(this.officialCode, that.officialCode)
+                    && Objects.equals(this.nameFI, that.nameFI)
+                    && Objects.equals(this.nameSV, that.nameSV);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, rev, officialCode, nameFI, nameSV);
+    }
+
+    @Override
+    public String toString() {
+        return format("{ id: %s, rev: %s, officialCode: %s, name: %s }", id, rev, officialCode, getNameLocalisation());
     }
 
     public LocalisedString getNameLocalisation() {

@@ -58,7 +58,7 @@ import java.util.Locale;
 
 import static fi.riista.util.MediaTypeExtras.APPLICATION_EXCEL_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(value = "/api/v1/moosepermit")
@@ -103,36 +103,37 @@ public class MoosePermitApiResource {
     @Resource
     private MessageSource messageSource;
 
-    @GetMapping(value = "/lukereportparams", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/lukereportparams", produces = MediaType.APPLICATION_JSON_VALUE)
     public LukeReportParamsDTO getLukeReportParams(final HttpSession httpSession,
                                                    final @RequestParam Long permitId,
+                                                   final @RequestParam int species,
                                                    final @RequestParam(required = false) Long clubId) {
         final LukeReportUriBuilder uriBuilder = lukeReportFeature.getUriBuilder(permitId, clubId, httpSession);
-        return lukeReportFeature.getReportParameters(uriBuilder);
+        return lukeReportFeature.getReportParameters(uriBuilder, species);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{permitId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{permitId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public HuntingClubPermitDTO get(final @PathVariable long permitId,
                                     final @RequestParam int species) {
         return harvestPermitDetailsFeature.getClubPermit(permitId, species);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{permitId:\\d+}/rhy", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{permitId:\\d+}/rhy", produces = MediaType.APPLICATION_JSON_VALUE)
     public OrganisationNameDTO getRhyCode(final @PathVariable long permitId) {
         return harvestPermitDetailsFeature.getRhyCode(permitId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{permitId:\\d+}/leaders", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{permitId:\\d+}/leaders", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HuntingClubContactDetailDTO> leaders(final @PathVariable long permitId,
                                                      final @RequestParam int huntingYear,
                                                      final @RequestParam int gameSpeciesCode) {
         return huntingClubContactFeature.listClubHuntingLeaders(permitId, huntingYear, gameSpeciesCode);
     }
 
-    @GetMapping(value = "/{permitId:\\d+}/harvest", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{permitId:\\d+}/harvest", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HarvestDTO> listHarvest(final @PathVariable long permitId,
                                         final @RequestParam int huntingYear,
                                         final @RequestParam int gameSpeciesCode) {
@@ -155,7 +156,7 @@ public class MoosePermitApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @PostMapping(value = "/{permitId:\\d+}/allocation/{gameSpeciesCode:\\d+}",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public void updateAllocations(final @PathVariable long permitId,
                                   final @PathVariable int gameSpeciesCode,
                                   final @RequestBody @Valid List<MoosePermitAllocationDTO> allocations) {
@@ -168,7 +169,7 @@ public class MoosePermitApiResource {
     public void getLukeReports(final HttpSession httpSession,
                                final @PathVariable long permitId,
                                final @RequestParam(required = false) Long clubId,
-                               final @RequestParam LukeReportParams.Organisation org,
+                               final @RequestParam LukeReportParams.LukeArea org,
                                final @RequestParam LukeReportParams.Presentation presentation,
                                final @RequestParam String fileName,
                                final HttpServletResponse httpServletResponse) {
@@ -200,7 +201,7 @@ public class MoosePermitApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(
             value = "/{permitId:\\d+}/override/{gameSpeciesCode:\\d+}",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public List<BasicClubHuntingSummaryDTO> getHuntingSummariesForModeration(final @PathVariable long permitId,
                                                                              final @PathVariable int gameSpeciesCode) {
 
@@ -237,7 +238,7 @@ public class MoosePermitApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/{permitId:\\d+}/rhystatistics/{speciesCode:\\d+}",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MoosePermitStatisticsDTO> getRhyStats(final @PathVariable long permitId,
                                                       final @PathVariable int speciesCode,
                                                       final Locale locale) {
@@ -245,7 +246,7 @@ public class MoosePermitApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/statistics", produces = APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/statistics", produces = APPLICATION_JSON_VALUE)
     public List<MoosePermitStatisticsDTO> listRhyMooseStatistics(final @RequestParam int year,
                                                                  final @RequestParam int species,
                                                                  final @RequestParam String orgCode,

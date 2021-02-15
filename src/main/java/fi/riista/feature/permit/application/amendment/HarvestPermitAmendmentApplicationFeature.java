@@ -1,6 +1,7 @@
 package fi.riista.feature.permit.application.amendment;
 
 import com.google.common.collect.Sets;
+import fi.riista.config.Constants;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.gamediary.GameAge;
@@ -29,7 +30,6 @@ import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmoun
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmountRepository;
 import fi.riista.feature.permit.decision.PermitDecisionName;
 import fi.riista.security.EntityPermission;
-import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.Locales;
 import org.springframework.stereotype.Component;
@@ -110,7 +110,7 @@ public class HarvestPermitAmendmentApplicationFeature {
         data.setNonEdibleHarvest(nonEdibleHarvest);
 
         final GameSpecies gameSpecies = nonEdibleHarvest != null ? nonEdibleHarvest.getSpecies() : requireSpecies(dto.getGameSpeciesCode());
-        final HarvestPermitApplicationSpeciesAmount spa = new HarvestPermitApplicationSpeciesAmount(application, gameSpecies, 0f);
+        final HarvestPermitApplicationSpeciesAmount spa = HarvestPermitApplicationSpeciesAmount.createForHarvest(application, gameSpecies, 0f);
 
         if (nonEdibleHarvest != null) {
             data.setPointOfTime(nonEdibleHarvest.getPointOfTime());
@@ -126,7 +126,7 @@ public class HarvestPermitAmendmentApplicationFeature {
 
             final HarvestSpecimen specimen = harvestSpecimenRepository.findByHarvest(nonEdibleHarvest).get(0);
 
-            spa.setAmount(resolveAmount(specimen.getAge()));
+            spa.setSpecimenAmount(resolveAmount(specimen.getAge()));
             data.setAge(specimen.getAge());
             data.setGender(specimen.getGender());
         }
@@ -157,11 +157,11 @@ public class HarvestPermitAmendmentApplicationFeature {
 
         final HarvestPermitApplicationSpeciesAmount spa = application.getSpeciesAmounts().get(0);
         spa.setGameSpecies(requireSpecies(dto.getGameSpeciesCode()));
-        spa.setAmount(resolveAmount(dto.getAge()));
+        spa.setSpecimenAmount(resolveAmount(dto.getAge()));
         spa.setMooselikeDescription(dto.getDescription());
 
         final AmendmentApplicationData data = amendmentApplicationDataRepository.getByApplication(application);
-        data.setPointOfTime(DateUtil.toDateNullSafe(dto.getPointOfTime()));
+        data.setPointOfTime(dto.getPointOfTime().toDateTime(Constants.DEFAULT_TIMEZONE));
         data.setAge(dto.getAge());
         data.setGender(dto.getGender());
         data.setGeoLocation(dto.getGeoLocation());
@@ -175,7 +175,7 @@ public class HarvestPermitAmendmentApplicationFeature {
         return gameSpeciesService.requireByOfficialCode(gameSpeciesCode);
     }
 
-    private float resolveAmount(final GameAge age) {
+    private static float resolveAmount(final GameAge age) {
         if (age == null) {
             return 0f;
         }

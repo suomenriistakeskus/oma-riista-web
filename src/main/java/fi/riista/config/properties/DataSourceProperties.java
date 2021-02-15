@@ -1,6 +1,6 @@
 package fi.riista.config.properties;
 
-import com.amazonaws.services.rds.AmazonRDSClient;
+import com.amazonaws.services.rds.AmazonRDS;
 import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.DBInstanceNotFoundException;
 import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
@@ -71,7 +71,7 @@ public class DataSourceProperties {
         return hikariConfig;
     }
 
-    public HikariConfig buildAmazonPoolConfig(final AmazonRDSClient amazonRds) {
+    public HikariConfig buildAmazonPoolConfig(final AmazonRDS amazonRds) {
         final DBInstance dbInstance = getDbInstance(amazonRds, rdsInstanceId);
         final HikariConfig hikariConfig = getCommonConfig();
 
@@ -85,7 +85,7 @@ public class DataSourceProperties {
         return hikariConfig;
     }
 
-    private static DBInstance getDbInstance(final AmazonRDSClient amazonRds, final String rdsInstanceId) {
+    private static DBInstance getDbInstance(final AmazonRDS amazonRds, final String rdsInstanceId) {
         try {
             final DescribeDBInstancesRequest request = new DescribeDBInstancesRequest()
                     .withDBInstanceIdentifier(rdsInstanceId);

@@ -32,7 +32,7 @@ public class BirdHarvestReportPdfTest {
         createDummyPdf();
     }
 
-    private static BirdHarvestReportPdf createDummyPdf() throws IOException {
+    private static PermitHarvestReportPdf createDummyPdf() throws IOException {
         final PermitHolder permitHolder = PermitHolder.create("Yritys Oy", "1234567",
                 PermitHolder.PermitHolderType.BUSINESS);
 
@@ -69,23 +69,23 @@ public class BirdHarvestReportPdfTest {
         spa1.setGameSpecies(new GameSpecies(41423, GameCategory.FOWL, "", "", ""));
         spa1.setBeginDate(new LocalDate(2015, 1, 1));
         spa1.setEndDate(new LocalDate(2015, 12, 31));
-        spa1.setAmount(1);
+        spa1.setSpecimenAmount(1f);
 
         final PermitDecisionSpeciesAmount spa2 = new PermitDecisionSpeciesAmount();
         spa2.setPermitDecision(permitDecision);
         spa2.setGameSpecies(new GameSpecies(41423, GameCategory.FOWL, "", "", ""));
         spa2.setBeginDate(new LocalDate(2016, 1, 1));
         spa2.setEndDate(new LocalDate(2016, 12, 31));
-        spa2.setAmount(1);
+        spa2.setSpecimenAmount(1f);
 
         final List<PermitDecisionSpeciesAmount> speciesAmountList = Arrays.asList(spa1, spa2);
 
-        final BirdHarvestReportModel model = BirdHarvestReportModel.create(permitDecision, speciesAmountList);
+        final PermitHarvestReportModel model = PermitHarvestReportModel.create(permitDecision, speciesAmountList);
         final Map<Integer, LocalisedString> speciesNameIndex = Collections
                 .singletonMap(41423, new LocalisedString("Varis", "Varis"));
-        final BirdHarvestReportI18n i18n = new BirdHarvestReportI18n(speciesNameIndex, permitDecision.getLocale());
+        final PermitHarvestReportI18n i18n = new PermitHarvestReportI18n(speciesNameIndex, permitDecision.getLocale());
 
-        return BirdHarvestReportPdf.create(model, i18n);
+        return PermitHarvestReportPdf.create(BirdHarvestReportPdfBuilder.getPdf(model, i18n));
     }
 
     public static void main(final String[] args) {

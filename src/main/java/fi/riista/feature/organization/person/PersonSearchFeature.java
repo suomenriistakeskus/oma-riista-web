@@ -88,7 +88,7 @@ public class PersonSearchFeature {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
     public List<PersonWithHunterNumberDTO> findNameAndHunterNumberOfAllByNameMatch(final String name) {
-        final List<Person> persons = personRepository.findAllPersonsByFuzzyFullNameMatch(name, new PageRequest(0,
+        final List<Person> persons = personRepository.findAllPersonsByFuzzyFullNameMatch(name, PageRequest.of(0,
                 20));
 
         final PersonSearchResultMapper personMapper = PersonSearchResultMapper.create(LocaleContextHolder.getLocale());

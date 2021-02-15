@@ -8,15 +8,14 @@ import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
-import fi.riista.util.DateUtil;
-import fi.riista.util.F;
 import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndActor, HasHuntingDayId {
 
@@ -44,8 +43,8 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
     private boolean updateableOnlyByCarnivoreAuthority;
 
     @AssertTrue
-    public boolean isHuntingDayIdConsistentWithWithinMooseHunting() {
-        return huntingDayId == null || observedWithinMooseHunting();
+    public boolean isHuntingDayIdConsistentWithHuntingState() {
+        return huntingDayId == null || observedWithinHunting();
     }
 
     // Accessors -->
@@ -143,13 +142,13 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
             extends ObservationDTOBase.Builder<ObservationDTO, SELF> {
 
         public SELF withAuthorInfo(@Nonnull final Person person) {
-            Objects.requireNonNull(person);
+            requireNonNull(person);
             dto.setAuthorInfo(PersonWithHunterNumberDTO.create(person));
             return self();
         }
 
         public SELF withActorInfo(@Nonnull final Person person) {
-            Objects.requireNonNull(person);
+            requireNonNull(person);
             dto.setActorInfo(PersonWithHunterNumberDTO.create(person));
             return self();
         }
@@ -166,21 +165,6 @@ public class ObservationDTO extends ObservationDTOBase implements HasAuthorAndAc
                 dto.setApproverToHuntingDay(PersonWithHunterNumberDTO.create(person));
             }
             return self();
-        }
-
-        // ASSOCIATIONS MUST NOT BE TRAVERSED IN THIS METHOD (except for identifiers that are
-        // part of Observation itself).
-        @Override
-        public SELF populateWith(@Nonnull final Observation observation, final boolean populateLargeCarnivoreFields) {
-            return super.populateWith(observation, populateLargeCarnivoreFields)
-                    .chain(self -> {
-                        dto.setRhyId(F.getId(observation.getRhy()));
-                        dto.setModeratorOverride(observation.isModeratorOverride());
-                        dto.setHuntingDayId(F.getId(observation.getHuntingDayOfGroup()));
-                        dto.setPointOfTimeApprovedToHuntingDay(
-                                DateUtil.toLocalDateTimeNullSafe(observation.getPointOfTimeApprovedToHuntingDay()));
-                        dto.setUpdateableOnlyByCarnivoreAuthority(observation.isAnyLargeCarnivoreFieldPresent());
-                    });
         }
 
         @Override

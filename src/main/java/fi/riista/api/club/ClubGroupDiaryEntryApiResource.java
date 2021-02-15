@@ -4,10 +4,12 @@ import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.GameDiaryMetadataFeature;
 import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsDTO;
 import fi.riista.feature.huntingclub.hunting.GroupHuntingDiaryFeature;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayCrudFeature;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayDTO;
+import fi.riista.feature.huntingclub.hunting.rejection.AcceptClubDiaryObservationDTO;
 import fi.riista.feature.huntingclub.hunting.rejection.RejectClubDiaryEntryDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
@@ -42,13 +44,13 @@ public class ClubGroupDiaryEntryApiResource {
     private GameDiaryMetadataFeature gameDiaryMetadataFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{groupId:\\d+}/diary", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{groupId:\\d+}/diary", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HuntingDiaryEntryDTO> getDiaryOfMembers(@PathVariable final long groupId) {
         return diaryFeature.getDiaryOfGroupMembers(groupId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{groupId:\\d+}/rejected", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{groupId:\\d+}/rejected", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<GameDiaryEntryType, List<Long>> listRejected(@PathVariable final long groupId) {
         return diaryFeature.listRejected(groupId);
     }
@@ -61,15 +63,32 @@ public class ClubGroupDiaryEntryApiResource {
         diaryFeature.rejectDiaryEntryFromHuntingGroup(dto);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping(value = "/{groupId:\\d+}/acceptobservationwithindeerhunting")
+    public void acceptObservationFromHuntingGroup(@PathVariable final long groupId,
+                                                  @RequestBody @Validated final AcceptClubDiaryObservationDTO dto) {
+        dto.setGroupId(groupId);
+        groupHuntingDayCrudFeature.acceptClubDiaryObservationToHuntingDay(dto);
+    }
+
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{groupId:\\d+}/huntingdays", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{groupId:\\d+}/huntingdays", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<GroupHuntingDayDTO> getHuntingDays(@PathVariable final long groupId) {
         return groupHuntingDayCrudFeature.findByClubGroup(groupId);
     }
 
-    @GetMapping(value = "/harvest/fields", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public RequiredHarvestFieldsDTO getMooselikeFields(@RequestParam int gameSpeciesCode) {
-        return gameDiaryMetadataFeature.getMooselikeHarvestFields(gameSpeciesCode);
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/harvest/fields", produces = MediaType.APPLICATION_JSON_VALUE)
+    public RequiredHarvestFieldsDTO getRequiredHarvestFieldsForHuntingGroup(@RequestParam final long huntingGroupId) {
+        return gameDiaryMetadataFeature
+                .getRequiredHarvestFieldsForHuntingGroup(huntingGroupId, HarvestSpecVersion.CURRENTLY_SUPPORTED);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/harvest/legally-mandatory-fields", produces = MediaType.APPLICATION_JSON_VALUE)
+    public RequiredHarvestFieldsDTO getLegallyMandatoryHarvestFieldsForHuntingGroup(@RequestParam final long huntingGroupId) {
+        return gameDiaryMetadataFeature
+                .getLegallyMandatoryHarvestFieldsForHuntingGroup(huntingGroupId, HarvestSpecVersion.CURRENTLY_SUPPORTED);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

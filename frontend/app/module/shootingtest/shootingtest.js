@@ -44,8 +44,23 @@
                     controller: 'ShootingTestEventListController',
                     controllerAs: '$ctrl',
                     resolve: {
-                        events: function (ShootingTestCalendarEvents, rhyId) {
-                            return ShootingTestCalendarEvents.query({rhyId: rhyId}).$promise;
+                        availableYears: function(ActiveRoleService, rhyId, RhyExistenceYears) {
+                            if (ActiveRoleService.isCoordinator() || ActiveRoleService.isModerator()) {
+                                return RhyExistenceYears.get({rhyId: rhyId}).$promise;
+                            } else {
+                                return [moment().year()];
+                            }
+                        },
+                        calendarYear: function(availableYears) {
+                            var currentYear = moment().year();
+                            return Math.min(_.last(availableYears), currentYear);
+                        },
+                        events: function (ShootingTestCalendarEvents, rhyId, ActiveRoleService, calendarYear) {
+                            if (ActiveRoleService.isCoordinator() || ActiveRoleService.isModerator()) {
+                                return ShootingTestCalendarEvents.queryByYear({rhyId: rhyId, year: calendarYear}).$promise;
+                            } else {
+                                return ShootingTestCalendarEvents.query({rhyId: rhyId}).$promise;
+                            }
                         }
                     }
                 })
@@ -174,6 +189,15 @@
                     method: 'GET',
                     url: '/api/v1/shootingtest/rhy/:rhyId/calendarevents',
                     params: {rhyId: '@rhyId'},
+                    isArray: true
+                },
+                'queryByYear': {
+                    method: 'GET',
+                    url: '/api/v1/shootingtest/rhy/:rhyId/calendarevents/year/:year',
+                    params: {
+                        rhyId: '@rhyId',
+                        year: '@year'
+                    },
                     isArray: true
                 },
                 'get': {
@@ -368,10 +392,13 @@
             };
         })
 
-        .controller('ShootingTestEventListController', function ($state, events) {
+        .controller('ShootingTestEventListController', function ($state, ActiveRoleService, rhyId, ShootingTestCalendarEvents,
+                                                                 events, availableYears, calendarYear) {
             var $ctrl = this;
 
             $ctrl.events = events;
+            $ctrl.availableYears = availableYears;
+            $ctrl.calendarYear = calendarYear;
 
             $ctrl.selectEvent = function (calendarEventId) {
                 $state.go('rhy.shootingtest.event.overview', {calendarEventId: calendarEventId});
@@ -387,12 +414,28 @@
             };
 
             $ctrl.isEventUnpopulated = function (event) {
-                return isEventInPast(event)
-                    && (!event.shootingTestEventId || !!event.lockedTime && !event.numberOfAllParticipants);
+                return isEventInPast(event) && !event.shootingTestEventId;
             };
 
             $ctrl.isEventIncomplete = function (event) {
                 return $ctrl.isEventNotClosedOnTime(event) || $ctrl.isEventUnpopulated(event);
+            };
+
+            $ctrl.onSelectedYearChanged = function () {
+                ShootingTestCalendarEvents.queryByYear({rhyId: rhyId, year: $ctrl.calendarYear}).$promise
+                    .then(function (results) {
+                        $ctrl.events = results;
+                    });
+            };
+
+            $ctrl.isCoordinatorOrModerator = function () {
+                return ActiveRoleService.isCoordinator() || ActiveRoleService.isModerator();
+            };
+
+            $ctrl.isEventUpdateable = function (event) {
+                // Events updateable for coordinator until 15th of January the next year
+                return ActiveRoleService.isModerator() ||
+                    ActiveRoleService.isCoordinator && moment(event.date).year() >= moment().subtract('days', 15).year();
             };
         })
 
@@ -494,7 +537,7 @@
                 openOfficialAssignDialog: '&',
                 reload: '&'
             },
-            controller: function (Helpers, NotificationService, ShootingTestEvent) {
+            controller: function ($filter, Helpers, NotificationService, ShootingTestEvent) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
@@ -510,6 +553,25 @@
                     $ctrl.canReopenEvent = $ctrl.hasUpdatePermission && $ctrl.event.isClosed();
 
                     $ctrl.isAnyLifecycleButtonVisible = $ctrl.canOpenEvent || $ctrl.canCloseEvent || $ctrl.canReopenEvent;
+
+                    var $translate = $filter('translate');
+                    $ctrl.confirmMessage = $translate('DIALOGS_CONFIRMATION_MSG');
+                    $ctrl.confirmUnpopulatedWarning = $translate('shootingTest.overview.unpopulatedEventWarningMsg');
+                };
+
+                $ctrl.getCloseConfirmationMsg = function () {
+                    if ($ctrl.event.numberOfAllParticipants > 0) {
+                        return $ctrl.confirmMessage;
+                    }
+
+                    return "<p class='shooting-test-event-alert-box'>" +
+                        "<span class='fa fa-fw fa-exclamation-triangle'></span> " +
+                        "<span>" +
+                        $ctrl.confirmUnpopulatedWarning +
+                        "</span>" +
+                        "</p><span>" +
+                        $ctrl.confirmMessage +
+                        "</span>";
                 };
 
                 $ctrl.closeEvent = function () {

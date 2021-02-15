@@ -1,7 +1,7 @@
 <table class="table r-decision-species-table">
     <thead>
     <tr>
-        <th colspan="4" translate="harvestpermit.decision.species.title"></th>
+        <th colspan="4" translate="decision.species.title"></th>
     </tr>
     </thead>
     <tbody>
@@ -30,7 +30,7 @@
         </td>
         <td>
             <a class="edit-link"
-               ng-if="$ctrl.canEditContent"
+               ng-if="$ctrl.canEditContent && $ctrl.showForbiddenMethods"
                ng-click="$ctrl.editForbiddenMethods(s.code)">
                 <div class="logo">
                     <span ng-hide="s.forbiddenMethodComplete" class="fa fa-fw fa-2x fa-edit"></span>

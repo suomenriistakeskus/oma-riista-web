@@ -30,10 +30,10 @@ import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.Jyvitys
  */
 public class JyvitysExcelSummaryPostProcessing {
 
-    private static CellAddress FIRST_POST_PROCESSING_COLUMN = new CellAddress("Q5");
-    private static CellAddress FIRST_LOHKO_NAME_CELL = new CellAddress("Q6");
+    private static CellAddress FIRST_POST_PROCESSING_COLUMN = new CellAddress("R5");
+    private static CellAddress FIRST_LOHKO_NAME_CELL = new CellAddress("R6");
     // First cell containing application spesific post processing data
-    private static CellAddress FIRST_APPLICATION_DATA_CELL = new CellAddress("Q8");
+    private static CellAddress FIRST_APPLICATION_DATA_CELL = new CellAddress("R8");
     private final CellStyle percentageStyle;
     private final CellStyle decisionTotalCellStyle;
     private final CellStyle decisionAdultsCellStyle;
@@ -147,18 +147,18 @@ public class JyvitysExcelSummaryPostProcessing {
         calfs.setCellValue(0.0);
     }
 
-    private String getPermitsInLohkoFormula(final String suggestionForLohkoTotalCellAddress,
-                                            final String suggestionForApplicationTotalCellAddress,
-                                            final String lohkoSheetName) {
+    private static String getPermitsInLohkoFormula(final String suggestionForLohkoTotalCellAddress,
+                                                   final String suggestionForApplicationTotalCellAddress,
+                                                   final String lohkoSheetName) {
         return String.format("'%s'!%s / %s",
                 lohkoSheetName,
                 suggestionForLohkoTotalCellAddress,
                 suggestionForApplicationTotalCellAddress);
     }
 
-    private String getExcessPermitSuggestionFormula(final String suggestionTotalCellAddress,
-                                                    final String appliedAmountCellAddress,
-                                                    final String percentageCellAddress) {
+    private static String getExcessPermitSuggestionFormula(final String suggestionTotalCellAddress,
+                                                           final String appliedAmountCellAddress,
+                                                           final String percentageCellAddress) {
         return String.format("ROUND(IF((%s-%s)*%s>0,(%s-%s)*%s, 0),0)",
                 suggestionTotalCellAddress, appliedAmountCellAddress, percentageCellAddress,
                 suggestionTotalCellAddress, appliedAmountCellAddress, percentageCellAddress);

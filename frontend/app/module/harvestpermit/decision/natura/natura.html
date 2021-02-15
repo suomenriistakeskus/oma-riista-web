@@ -1,0 +1,72 @@
+<div class="row">
+    <div class="col-xs-5">
+        <permit-decision-nav-header decision="$ctrl.decision" ng-show="!!$ctrl.decision"></permit-decision-nav-header>
+
+        <r-natura-property-selection map-state="$ctrl.mapState"></r-natura-property-selection>
+
+        <r-natura-area-list
+                title="decision.natura.selectedAreasTitle"
+                area-list="$ctrl.selectedAreas"
+                application-id="$ctrl.applicationId"
+                selected-area-id="$ctrl.selectedAreaId"
+                on-remove="$ctrl.removeArea(naturaId)"
+                on-select="$ctrl.selectArea(naturaId)">
+        </r-natura-area-list>
+    </div>
+
+    <div class="col-xs-7">
+
+            <div class="map-overlay-button-container">
+                <div class="leaflet-tooltip-pane" style="margin-left: 10px">
+
+                    <button type="button" style="margin-left: 10px"
+                            class="btn btn-default"
+                            ng-class="$ctrl.buttonStyle('measureDistance')"
+                            ng-click="$ctrl.selectTool('measureDistance')">
+                        <span class="fa fa-fw fa-arrows-h"></span>
+                        <span translate="decision.natura.buttons.measureDistance"></span>
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-default"
+                            ng-class="$ctrl.buttonStyle('measureArea')"
+                            ng-click="$ctrl.selectTool('measureArea')">
+                        <span class="fa fa-fw fa-arrows"></span>
+                        <span translate="decision.natura.buttons.measureArea"></span>
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-default"
+                            ng-click="$ctrl.clearMeasurements()">
+                        <span class="fa fa-fw fa-trash"></span>
+                        <span translate="decision.natura.buttons.clearMeasurements"></span>
+                    </button>
+
+                    <button type="button"
+                            class="btn btn-default"
+                            ng-class="$ctrl.buttonStyle('measureDistanceForArea')"
+                            ng-disabled="$ctrl.selectedAreaId===''"
+                            ng-click="$ctrl.selectTool('measureDistanceForArea')">
+                        <span class="fa fa-fw fa-map-marker"></span>
+                        <span translate="decision.natura.buttons.measureDistanceForArea"></span>
+                    </button>
+
+                </div>
+            </div>
+
+            <leaflet class="r-cursor-arrow"
+                     id="naturaAreaMap" name="naturaAreaMap"
+                     defaults="$ctrl.mapDefaults"
+                     layers="$ctrl.mapDefaults.mmlLayers"
+                     controls="$ctrl.mapDefaults.controls"
+                     event-broadcast="$ctrl.mapEvents"
+                     lf-center="$ctrl.mapState.center"
+                     bounds="$ctrl.mapState.viewBounds"
+                     r-geolocation-editable="true"
+                     r-geolocation-marker-force-finland="true"
+                     r-viewport-height>
+                <marker-cluster id="naturaAreaMarkers" leaflet-markers="$ctrl.markers"></marker-cluster>
+            </leaflet>
+
+    </div>
+</div>

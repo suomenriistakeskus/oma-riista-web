@@ -105,15 +105,16 @@ public class OmaRiistaAreaZipBuilder {
 
     private byte[] buildData() throws IOException {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        final ZipOutputStream zip = new ZipOutputStream(bos, StandardCharsets.UTF_8);
-        zip.setComment("Exported from oma.riista.fi on " + DTF.print(DateUtil.now()));
-        zip.setLevel(9);
 
-        appendMetadata(zip);
-        appendGeoJson(zip);
-
-        zip.flush();
-        zip.close();
+        try (final ZipOutputStream zip = new ZipOutputStream(bos, StandardCharsets.UTF_8)) {
+            zip.setComment("Exported from oma.riista.fi on " + DTF.print(DateUtil.now()));
+            zip.setLevel(9);
+    
+            appendMetadata(zip);
+            appendGeoJson(zip);
+    
+            zip.flush();
+        }
 
         return bos.toByteArray();
     }

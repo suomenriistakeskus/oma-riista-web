@@ -1,11 +1,6 @@
 
 package fi.riista.integration.common.export.srva;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.lang.Equals2;
 import org.jvnet.jaxb2_commons.lang.EqualsStrategy2;
 import org.jvnet.jaxb2_commons.lang.HashCode2;
@@ -18,27 +13,33 @@ import org.jvnet.jaxb2_commons.lang.ToStringStrategy2;
 import org.jvnet.jaxb2_commons.locator.ObjectLocator;
 import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
+
 
 /**
  * <p>Java class for SRVASpecimen complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="SRVASpecimen"&gt;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
  *         &lt;element name="SRVAEventId" type="{http://www.w3.org/2001/XMLSchema}long"/&gt;
- *         &lt;element name="gender" type="{http://riista.fi/integration/common/export/2018/10}gameGender"/&gt;
- *         &lt;element name="age" type="{http://riista.fi/integration/common/export/2018/10}gameAge"/&gt;
+ *         &lt;element name="gender" type="{http://riista.fi/integration/common/export/2018/10}gameGender" minOccurs="0"/&gt;
+ *         &lt;element name="age" type="{http://riista.fi/integration/common/export/2018/10}gameAge" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SRVASpecimen", propOrder = {
@@ -51,10 +52,8 @@ public class CEV_SRVASpecimen implements Equals2, HashCode2, ToString2
 
     @XmlElement(name = "SRVAEventId")
     protected long srvaEventId;
-    @XmlElement(required = true)
     @XmlSchemaType(name = "token")
     protected CEV_GameGender gender;
-    @XmlElement(required = true)
     @XmlSchemaType(name = "token")
     protected CEV_GameAge age;
 

@@ -46,7 +46,7 @@ public class MoosePermitAllocationFeature {
 
         final Map<Long, HuntingClub> clubIndex = F.indexById(permit.getPermitPartners());
 
-        allocationRepository.save(allocations.stream().map(dto -> {
+        allocationRepository.saveAll(allocations.stream().map(dto -> {
             Preconditions.checkArgument(clubIndex.containsKey(dto.getHuntingClubId()),
                     "Club " + dto.getHuntingClubId() + " is not associated with permitId " + permit.getId());
 

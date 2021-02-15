@@ -1,0 +1,27 @@
+<form name="form" role="form" class="form form-horizontal r-event-form" ng-submit="$ctrl.save()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="harvestpermit.management.dashboard.permitUsage.addLocation"></h3>
+    </div>
+
+    <div class="modal-body">
+        <leaflet class="r-cursor-pointer"
+                 id="permit-usage-map"
+                 defaults="$ctrl.mapDefaults"
+                 layers="$ctrl.mapDefaults.mmlLayers"
+                 controls="$ctrl.mapDefaults.controls"
+                 event-broadcast="$ctrl.mapEvents"
+                 lf-center="$ctrl.mapState.center"
+                 r-geolocation-marker="$ctrl.location.geoLocation"
+                 r-geolocation-editable="true"
+                 r-geolocation-marker-force-finland="true"
+                 height="400px">
+        </leaflet>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()" translate="global.button.cancel"></button>
+        <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid" translate="global.button.save"></button>
+    </div>
+</form>

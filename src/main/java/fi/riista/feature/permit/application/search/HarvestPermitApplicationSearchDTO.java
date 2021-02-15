@@ -2,6 +2,8 @@ package fi.riista.feature.permit.application.search;
 
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.bird.ProtectedAreaType;
+import fi.riista.feature.common.decision.AppealStatus;
+import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonType;
 import fi.riista.feature.permit.decision.methods.ForbiddenMethodType;
@@ -9,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import java.util.Set;
@@ -40,6 +43,11 @@ public class HarvestPermitApplicationSearchDTO {
     @Min(2017)
     private Integer huntingYear;
 
+    // Zero for annually renewed permits
+    @Min(0)
+    @Max(5)
+    private Integer validityYears;
+
     private HarvestPermitCategory harvestPermitCategory;
 
     private Integer gameSpeciesCode;
@@ -50,9 +58,9 @@ public class HarvestPermitApplicationSearchDTO {
 
     private Set<PermitDecision.DecisionType> decisionType;
 
-    private Set<PermitDecision.AppealStatus> appealStatus;
+    private Set<AppealStatus> appealStatus;
 
-    private Set<PermitDecision.GrantStatus> grantStatus;
+    private Set<GrantStatus> grantStatus;
 
     private Set<PermitDecisionDerogationReasonType> derogationReason;
 
@@ -65,7 +73,7 @@ public class HarvestPermitApplicationSearchDTO {
     @Nullable
     public PageRequest asPageRequest() {
         return page != null && size != null
-                ? new PageRequest(page, size)
+                ? PageRequest.of(page, size)
                 : null;
     }
 
@@ -118,6 +126,14 @@ public class HarvestPermitApplicationSearchDTO {
         this.huntingYear = huntingYear;
     }
 
+    public Integer getValidityYears() {
+        return validityYears;
+    }
+
+    public void setValidityYears(final Integer validityYears) {
+        this.validityYears = validityYears;
+    }
+
     public HarvestPermitCategory getHarvestPermitCategory() {
         return harvestPermitCategory;
     }
@@ -158,19 +174,19 @@ public class HarvestPermitApplicationSearchDTO {
         this.decisionType = decisionType;
     }
 
-    public Set<PermitDecision.AppealStatus> getAppealStatus() {
+    public Set<AppealStatus> getAppealStatus() {
         return appealStatus;
     }
 
-    public void setAppealStatus(final Set<PermitDecision.AppealStatus> appealStatus) {
+    public void setAppealStatus(final Set<AppealStatus> appealStatus) {
         this.appealStatus = appealStatus;
     }
 
-    public Set<PermitDecision.GrantStatus> getGrantStatus() {
+    public Set<GrantStatus> getGrantStatus() {
         return grantStatus;
     }
 
-    public void setGrantStatus(final Set<PermitDecision.GrantStatus> grantStatus) {
+    public void setGrantStatus(final Set<GrantStatus> grantStatus) {
         this.grantStatus = grantStatus;
     }
 

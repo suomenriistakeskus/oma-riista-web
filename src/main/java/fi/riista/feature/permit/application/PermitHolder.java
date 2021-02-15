@@ -3,6 +3,7 @@ package fi.riista.feature.permit.application;
 import com.google.common.base.Preconditions;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.util.LocalisedEnum;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -19,7 +20,7 @@ import java.util.Optional;
 @Access(value = AccessType.FIELD)
 public class PermitHolder implements Serializable {
 
-    public enum PermitHolderType {
+    public enum PermitHolderType implements LocalisedEnum {
         PERSON,
         RY,
         BUSINESS,
@@ -87,8 +88,12 @@ public class PermitHolder implements Serializable {
 
     @Override
     public boolean equals(final Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         final PermitHolder that = (PermitHolder) o;
         return type == that.type &&
                 Objects.equals(name, that.name) &&

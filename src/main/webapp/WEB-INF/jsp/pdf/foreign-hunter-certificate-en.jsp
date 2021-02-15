@@ -52,7 +52,7 @@
         <strong>${model.lastName}&nbsp;${model.firstName}</strong>
         (born <strong> <joda:format value="${model.dateOfBirth}" pattern="dd.MM.yyyy" /></strong>,
          register number of the hunter: <strong>${model.hunterNumber}</strong>)
-        has passed The Finnish Hunters’ examination and he has a valid hunting card for hunting season
+        has passed The Finnish Hunters’ examination and he/she has a valid hunting card for hunting season
 
         <strong><joda:format value="${model.huntingCardStart}" pattern="dd.MM.yyyy" /></strong> &dash;
         <strong><joda:format value="${model.huntingCardEnd}" pattern="dd.MM.yyyy" /></strong>.
@@ -136,7 +136,7 @@
             –
             31<sup>st</sup>, July <joda:format value="${model.huntingCardEnd}" pattern="yyyy" /><br/>
             Certified hunters who hold a valid hunting card<br/>
-            Nordic Countries and EU member states up to 60 days hunting trips<br/>
+            Nordic Countries, EU member states and Switzerland up to 60 days hunting trips<br/>
         </div>
     </div>
 

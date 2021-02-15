@@ -50,7 +50,7 @@ import java.util.function.Function;
 import static fi.riista.util.Collect.idSet;
 import static fi.riista.util.Functions.forMap;
 import static fi.riista.util.jpa.JpaSpecs.withIds;
-import static org.springframework.data.jpa.domain.Specifications.where;
+import static org.springframework.data.jpa.domain.Specification.where;
 
 public final class CriteriaUtils {
 
@@ -250,7 +250,7 @@ public final class CriteriaUtils {
 
         final List<U> relations = relationConstraintOption.isPresent()
                 ? repository.findAll(where(relationConstraintOption.get()).and(withIds(relationIds)))
-                : repository.findAll(relationIds);
+                : repository.findAllById(relationIds);
 
         final Map<ID, U> indexedRelations = F.indexById(relations);
 

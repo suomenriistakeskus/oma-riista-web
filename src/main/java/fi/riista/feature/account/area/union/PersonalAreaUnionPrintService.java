@@ -2,7 +2,6 @@ package fi.riista.feature.account.area.union;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gis.GISBounds;
@@ -20,6 +19,7 @@ import fi.riista.util.PdfWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;

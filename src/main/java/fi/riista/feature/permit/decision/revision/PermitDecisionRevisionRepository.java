@@ -5,7 +5,7 @@ import fi.riista.feature.permit.decision.PermitDecision;
 
 import java.util.List;
 
-public interface PermitDecisionRevisionRepository extends BaseRepository<PermitDecisionRevision, Long> {
+public interface PermitDecisionRevisionRepository extends BaseRepository<PermitDecisionRevision, Long>, PermitDecisionRevisionRepositoryCustom {
 
     List<PermitDecisionRevision> findByPermitDecision(final PermitDecision decision);
 }

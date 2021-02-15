@@ -68,8 +68,10 @@
     <logger name="org.hibernate.engine.internal.StatefulPersistenceContext" level="ERROR" />
 
     <logger name="org.quartz" level="INFO"/>
-    <logger name="liquibase" level="INFO"/>
+    <logger name="liquibase" level="WARN"/>
     <logger name="LiquibaseSchemaResolver" level="INFO"/>
+
+    <logger name="org.docx4j" level="WARN"/>
 
     <root level="DEBUG">
         <appender-ref ref="STDOUT" />

@@ -43,8 +43,10 @@ public class PermitDecisionAmendUpdater {
     public void updateDecision(final PermitDecision decision) {
         PermitDecision.amendFromApplication(decision);
 
-        synchronizeSpeciesAmounts(decision);
-        removeInvalidForbiddenSpeciesAmounts(decision);
+        if (decision.getApplication().getHarvestPermitCategory().hasSpeciesAmount()) {
+            synchronizeSpeciesAmounts(decision);
+            removeInvalidForbiddenSpeciesAmounts(decision);
+        }
 
         permitDecisionTextService.generateDefaultTextSections(decision, true);
     }
@@ -52,7 +54,7 @@ public class PermitDecisionAmendUpdater {
     private void synchronizeSpeciesAmounts(final PermitDecision decision) {
         // Recreate all decision species amounts, because they only contain amount and dates
         permitDecisionSpeciesAmountRepository.deleteByPermitDecision(decision);
-        permitDecisionSpeciesAmountRepository.save(permitDecisionSpeciesAmountService.createSpecies(decision));
+        permitDecisionSpeciesAmountRepository.saveAll(permitDecisionSpeciesAmountService.createSpecies(decision));
         permitDecisionGrantStatusService.updateGrantStatus(decision);
     }
 
@@ -71,6 +73,6 @@ public class PermitDecisionAmendUpdater {
             }
         }
 
-        permitDecisionForbiddenMethodRepository.delete(toDelete);
+        permitDecisionForbiddenMethodRepository.deleteAll(toDelete);
     }
 }

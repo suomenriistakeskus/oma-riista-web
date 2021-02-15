@@ -25,6 +25,22 @@
             </div>
         </div>
 
+        <div class="form-group" ng-if="isBoardType()">
+            <label class="col-xs-4 control-label">
+                <span translate="occupation.boardRepresentations"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <select class="form-control"
+                        name="boardRepresentation" id="boardRepresentation"
+                        ng-model="occupation.boardRepresentation"
+                        ng-options="('occupation.boardRepresentation.' + o | translate) disable when isBoardRoleDisabled(o) for o in boardRepresentationRoles"
+                        ie10-optgroup-fix>
+                    <option value="" translate="occupation.boardRepresentation.nothing"></option>
+                </select>
+            </div>
+        </div>
+
         <div class="form-group" show-errors ng-if="callOrderConfig.isCallOrderType(occupation.occupationType)">
             <label for="callOrder" class="col-xs-4 control-label">
                 <span translate="occupation.callOrder"></span>
@@ -375,6 +391,153 @@
                            ng-model="occupation.person.address.country"
                            ng-disabled="!canEditAddress"
                            ng-maxlength="255">
+                </div>
+            </div>
+        </div>
+
+        <!-- --------------------- -->
+        <!--    ADD SUBSTITUTE     -->
+        <!-- --------------------- -->
+        <div ng-if="isSubstituteRequired()">
+            <hr/>
+
+            <div class="form-group">
+                <label class="col-xs-4 control-label">
+                    <span translate="occupation.form.selectSubstitute"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+                <div class="col-xs-8">
+                    <span class="radio-inline">
+                        <label>
+                            <input type="radio" ng-model="addSubstituteBy.value" value="existing" ng-change="onAddSubstituteChanged()">
+                            <span translate="occupation.form.selectFromList"></span>
+                        </label>
+                    </span>
+                    <span class="radio-inline">
+                        <label>
+                            <input type="radio" ng-model="addSubstituteBy.value" value="HETU" ng-change="onAddSubstituteChanged()">
+                            <span translate="occupation.form.selectBySSN"></span>
+                        </label>
+                    </span>
+                    <span class="radio-inline">
+                        <label>
+                            <input type="radio" ng-model="addSubstituteBy.value" value="hunterNumber" ng-change="onAddSubstituteChanged()">
+                            <span translate="occupation.form.selectByHunterNumber"></span>
+                        </label>
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="addSubstituteBy.value == 'existing'">
+                <label for="selectExistingSubstitute" class="col-xs-4 control-label">
+                    <span translate="occupation.form.person"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+                <div class="col-xs-8">
+                    <select name="selectExistingSubstitute" id="selectExistingSubstitute"
+                            class="form-control"
+                            ng-model="substitute.person"
+                            ng-options="p as personDisplayName(p) for p in existingPersons"
+                            ng-required>
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="addSubstituteBy.value == 'HETU'">
+                <label for="searchSubstituteSsn" class="col-xs-4 control-label">
+                    <span translate="occupation.form.ssn"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-3">
+                    <input type="text" name="searchSubstituteSsn" id="searchSubstituteSsn"
+                           class="form-control"
+                           maxlength="11"
+                           ng-model="searchSubstitute.ssn"
+                           valid-ssn
+                           ng-required>
+                </div>
+
+                <div class="col-xs-5">
+                    <button type="button" class="btn btn-primary"
+                            ng-click="findSubstituteBySsn()"
+                            translate="occupation.form.button.search_person"></button>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors ng-if="addSubstituteBy.value == 'hunterNumber'">
+                <label for="searchSubstituteHunterNumber" class="col-xs-4 control-label">
+                    <span translate="global.person.hunterNumber"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-3">
+                    <input type="text" name="searchSubstituteHunterNumber" id="searchSubstituteHunterNumber"
+                           class="form-control"
+                           maxlength="8"
+                           ng-model="searchSubstitute.hunterNumber"
+                           valid-hunter-number
+                           ng-required>
+                </div>
+
+                <div class="col-xs-5">
+                    <button type="button" class="btn btn-primary"
+                            ng-click="findSubstituteByHunterNumber()"
+                            ng-disabled="!searchSubstitute.hunterNumber"
+                            translate="occupation.form.button.search_person"></button>
+                </div>
+            </div>
+
+
+            <div class="form-group" ng-show="searchSubstitute.error">
+                <div class="col-xs-9 col-xs-offset-3 text-danger">
+                    <span translate="occupation.form.error.person_not_found"></span>
+                </div>
+            </div>
+
+            <!-- SUBSTITUTE Person info -->
+            <div class="form-group" ng-if="substitute.person">
+                <div class="col-xs-offset-4 col-xs-8">
+                    <div class="well well-sm">
+                        <div class="r-contact-name">
+                            {{substitute.person.lastName}} {{substitute.person.firstName}}
+                        </div>
+
+                        <div class="r-contact-phone">
+                            <span class="glyphicon glyphicon glyphicon-earphone">&nbsp;</span>
+
+                            <span ng-if="substitute.person.phoneNumber">{{substitute.person.phoneNumber}}</span>
+                            <span ng-if="!substitute.person.phoneNumber" translate="occupation.no_phonenumber"></span>
+                        </div>
+
+                        <div class="r-contact-email">
+                            <span class="glyphicon glyphicon-envelope">&nbsp;</span>
+
+                            <a ng-if="substitute.person.email" href="mailto:{{substitute.person.email}}">{{substitute.person.email}}</a>
+                            <span ng-if="!substitute.person.email" translate="occupation.no_email"></span>
+                        </div>
+
+                        <div class="r-contact-byname">
+                            <span class="glyphicon glyphicon-user">&nbsp;</span>
+                            <span translate="global.person.byName"></span>: {{substitute.person.byName}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" ng-if="substitute.person">
+                <label class="col-xs-4 control-label" translate="global.person.address"></label>
+
+                <div class="col-xs-8">
+                    <div class="well well-sm">
+                        <span>{{substitute.person.address.streetAddress}}</span>
+                        <br/>
+                        <span>{{substitute.person.address.postalCode}}</span>
+                        <span class="r-city">{{substitute.person.address.city}}</span>
+                        <br/>
+                        <span>{{substitute.person.address.country}}</span>
+                    </div>
                 </div>
             </div>
         </div>

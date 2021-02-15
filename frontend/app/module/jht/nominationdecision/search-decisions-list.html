@@ -1,0 +1,51 @@
+<div ng-if="$ctrl.results.length === 0" class="alert alert-info"
+     translate="harvestpermit.admin.application.noResults"></div>
+
+<table ng-if="$ctrl.results.length > 0" class="table table-condensed table-striped">
+    <thead>
+    <tr>
+        <th translate="jht.nomination.decision.decisionNumber"></th>
+        <th class="col-xs-1" translate="occupation.nomination.field.nominationDate"></th>
+        <th class="col-xs-2" translate="jht.nomination.decision.decisionName"></th>
+        <th class="col-xs-2" translate="jht.nomination.decision.occupationType"></th>
+        <th class="col-xs-2" translate="organisation.organisationType.RHY"></th>
+        <th class="col-xs-2" translate="harvestpermit.admin.application.handler"></th>
+        <th class="col-xs-1" translate="jht.nomination.decision.decisionStatus"></th>
+        <th class="col-xs-1"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr ng-repeat="decision in $ctrl.results track by decision.decisionNumber">
+        <td>
+            <span ng-bind="::decision.decisionNumber"></span>
+        </td>
+        <td>
+            <span ng-bind="::decision.proposalDate | date:'HH:mm'"></span>
+        </td>
+        <td>
+            <span translate="jht.nomination.decision.decisionType.{{::decision.decisionType}}"></span>
+        </td>
+        <td>
+            <span translate="occupation.type.{{::decision.occupationType}}"></span>
+        </td>
+        <td>
+            <span ng-bind="::decision.rhy | rI18nNameFilter"></span>
+        </td>
+        <td>
+            <span ng-show="decision.handler" ng-bind="::decision.handler.lastName"></span>
+            <span ng-show="decision.handler" ng-bind="::decision.handler.firstName"></span>
+        </td>
+        <td>
+            <span translate="jht.nomination.decision.status.{{::decision.status}}"></span>
+        </td>
+        <td class="text-right">
+            <button type="button"
+                    class="btn btn-sm btn-primary"
+                    ng-click="$ctrl.openDecision(decision)">
+                <span class="fa fa-lg fa-chevron-right"></span>
+            </button>
+        </td>
+    </tr>
+    </tbody>
+</table>

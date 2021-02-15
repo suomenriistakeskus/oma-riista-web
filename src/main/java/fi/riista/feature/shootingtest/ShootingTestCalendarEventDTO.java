@@ -9,7 +9,6 @@ import fi.riista.feature.organization.calendar.CalendarEventType;
 import fi.riista.feature.organization.calendar.VenueDTO;
 import fi.riista.feature.shootingtest.ShootingTestParticipantRepositoryCustom.ParticipantSummary;
 import fi.riista.feature.shootingtest.official.ShootingTestOfficialDTO;
-import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -207,7 +206,7 @@ public class ShootingTestCalendarEventDTO {
                         "eventLastModifier must not be null when shootingTestEvent is present");
 
                 dto.shootingTestEventId = shootingTestEvent.getId();
-                dto.lockedTime = DateUtil.toDateTimeNullSafe(shootingTestEvent.getLockedTime());
+                dto.lockedTime = shootingTestEvent.getLockedTime();
 
                 dto.officials = ImmutableList.copyOf(officials);
                 dto.lastModifier = eventLastModifier;

@@ -1,5 +1,6 @@
 package fi.riista.feature.common.money;
 
+import com.google.common.base.Objects;
 import org.iban4j.Bic;
 import org.iban4j.Iban;
 
@@ -37,5 +38,24 @@ public class BankAccount {
 
     public String getBankName() {
         return bankName;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final BankAccount that = (BankAccount) o;
+        return Objects.equal(iban, that.iban) &&
+                Objects.equal(bic, that.bic) &&
+                Objects.equal(bankName, that.bankName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(iban, bic, bankName);
     }
 }

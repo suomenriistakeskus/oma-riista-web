@@ -11,15 +11,15 @@ import static java.util.Objects.requireNonNull;
 
 public class SubsidyAllocationStage4ResultDTO {
 
+    private final List<RhySubsidyStage4DTO> rhyAllocations;
+
     private final SubsidyAllocationCompensationResultDTO compensationResult;
 
-    private final List<SubsidyAllocationStage4DTO> rhyAllocations;
+    public SubsidyAllocationStage4ResultDTO(@Nonnull final List<RhySubsidyStage4DTO> rhyAllocations,
+                                            @Nonnull final SubsidyAllocationCompensationResultDTO compensationResult) {
 
-    public SubsidyAllocationStage4ResultDTO(@Nonnull final SubsidyAllocationCompensationResultDTO compensationResult,
-                                            @Nonnull final List<SubsidyAllocationStage4DTO> rhyAllocations) {
-
-        this.compensationResult = requireNonNull(compensationResult);
         this.rhyAllocations = requireNonNull(rhyAllocations);
+        this.compensationResult = requireNonNull(compensationResult);
 
         final int numRhyAllocations = rhyAllocations.size();
 
@@ -28,11 +28,11 @@ public class SubsidyAllocationStage4ResultDTO {
         }
     }
 
-    public SubsidyAllocationCompensationResultDTO getCompensationResult() {
-        return compensationResult;
+    public List<RhySubsidyStage4DTO> getRhyAllocations() {
+        return rhyAllocations;
     }
 
-    public List<SubsidyAllocationStage4DTO> getRhyAllocations() {
-        return rhyAllocations;
+    public SubsidyAllocationCompensationResultDTO getCompensationResult() {
+        return compensationResult;
     }
 }

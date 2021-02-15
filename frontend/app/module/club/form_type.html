@@ -34,24 +34,24 @@
         <div class="row">
             <div class="col-xs-4">
                 <p class="text-muted"
-                   ng-show="$ctrl.club.subtype == 'PERSON'"
+                   ng-show="$ctrl.club.subtype === 'PERSON'"
                    translate="club.subtype.form.person.info"></p>
             </div>
             <div class="col-xs-4">
                 <p class="text-muted"
-                   ng-show="$ctrl.club.subtype == 'RY'"
+                   ng-show="$ctrl.club.subtype === 'RY'"
                    translate="club.subtype.form.ry.info"></p>
             </div>
             <div class="col-xs-4">
                 <p class="text-muted"
-                   ng-show="$ctrl.club.subtype == 'BUSINESS'"
+                   ng-show="$ctrl.club.subtype === 'BUSINESS'"
                    translate="club.subtype.form.business.info"></p>
             </div>
         </div>
 
         <div class="row" ng-if="$ctrl.club.subtype">
             <div class="col-xs-4">
-                <div class="form-group" ng-show="$ctrl.club.subtype == 'PERSON'">
+                <div class="form-group" ng-show="$ctrl.club.subtype === 'PERSON'">
                     <label for="clubPerson" class="control-label"
                            ng-if="$ctrl.moderator"
                            translate="club.subtype.person.link"></label>
@@ -80,22 +80,32 @@
             </div>
 
             <div class="col-xs-4">
-                <div class="form-group" ng-show="$ctrl.club.subtype == 'RY'">
+                <div class="form-group" ng-show="$ctrl.club.subtype === 'RY'">
+                    <label class="control-label" for="businessIdentity"
+                           translate="club.subtype.business.link"></label>
+
+                    <input type="text" name="businessIdentity" id="businessIdentity"
+                           class="form-control"
+                           ng-model="$ctrl.club.businessId"
+                           valid-finnish-business-id
+                           minlength="9" maxlength="9">
+
+                    <p class="help-block" ng-show="form.businessIdentity.$invalid"
+                       translate="club.subtype.form.business.invalid"></p>
+                </div>
+                <div class="form-group" ng-show="($ctrl.club.subtype === 'RY' && !!$ctrl.club.associationRegistryNumber)">
                     <label class="control-label" for="associationRegistryNumber"
                            translate="club.subtype.ry.link"></label>
 
                     <input type="text" name="associationRegistryNumber" id="associationRegistryNumber"
                            class="form-control"
-                           ng-model="$ctrl.club.associationRegistryNumber"
-                           maxlength="7">
-
-                    <p class="help-block" ng-show="form.associationRegistryNumber.$invalid"
-                       translate="club.subtype.form.ry.invalid"></p>
+                           disabled
+                           ng-model="$ctrl.club.associationRegistryNumber"></input>
                 </div>
             </div>
 
             <div class="col-xs-4">
-                <div class="form-group" ng-show="$ctrl.club.subtype == 'BUSINESS'">
+                <div class="form-group" ng-show="$ctrl.club.subtype === 'BUSINESS'">
                     <label for="businessId" class="control-label"
                            translate="club.subtype.business.link"></label>
 

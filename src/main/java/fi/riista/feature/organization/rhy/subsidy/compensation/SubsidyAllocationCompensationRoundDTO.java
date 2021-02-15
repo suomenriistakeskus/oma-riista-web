@@ -41,4 +41,5 @@ public class SubsidyAllocationCompensationRoundDTO {
     public List<SubsidyCompensationOutputDTO> getResultingSubsidies() {
         return resultingSubsidies;
     }
+
 }

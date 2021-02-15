@@ -8,6 +8,8 @@ import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.jpa.JPQLQueryFactory;
+import fi.riista.feature.common.entity.Municipality;
+import fi.riista.feature.common.repository.MunicipalityRepository;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.QHarvest;
@@ -23,6 +25,8 @@ import fi.riista.integration.common.entity.Integration;
 import fi.riista.integration.common.repository.IntegrationRepository;
 import fi.riista.util.Collect;
 import fi.riista.util.DateUtil;
+import fi.riista.util.F;
+import fi.riista.util.LocalisedString;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.Weeks;
@@ -32,9 +36,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_AMERICAN_MINK;
@@ -49,8 +54,11 @@ import static java.util.stream.Collectors.toList;
 
 @Service
 public class HarvestRegistrySynchronizerService {
-
     private static final Logger LOG = LoggerFactory.getLogger(HarvestRegistrySynchronizerService.class);
+
+    /*package*/ static final LocalDate REGISTRY_START_TIME_STAMP = new LocalDate(2017, 8, 1);
+    private static final int PAGE_SIZE = 4096;
+    private static final Weeks MAX_INTERVAL = Weeks.weeks(1);
 
     private static final QHarvest HARVEST = QHarvest.harvest;
     private static final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
@@ -64,10 +72,6 @@ public class HarvestRegistrySynchronizerService {
             .when(PERMIT.permitTypeCode.in(DEROGATION_PERMIT_CODES))
             .then(true)
             .otherwise(false);
-
-    private static final int PAGE_SIZE = 4096;
-    /*package*/ static final LocalDate REGISTRY_START_TIME_STAMP = new LocalDate(2017, 8, 1);
-    private static final Weeks MAX_INTERVAL = Weeks.weeks(1);
 
     private static final BooleanExpression isOfficialHarvest() {
         return HARVEST.harvestReportState.eq(APPROVED).or(HARVEST.pointOfTimeApprovedToHuntingDay.isNotNull());
@@ -87,6 +91,9 @@ public class HarvestRegistrySynchronizerService {
 
     @Resource
     private HarvestRegistryItemRepository harvestRegistryItemRepository;
+
+    @Resource
+    MunicipalityRepository municipalityRepository;
 
     @Resource
     private IntegrationRepository integrationRepository;
@@ -109,7 +116,7 @@ public class HarvestRegistrySynchronizerService {
     }
 
     private Integration getOrCreateIntegration() {
-        return Optional.ofNullable(integrationRepository.findOne(Integration.HARVEST_REGISTRY_SYNC_ID))
+        return integrationRepository.findById(Integration.HARVEST_REGISTRY_SYNC_ID)
                 .orElseGet(() -> {
                     final Integration createdIntegration = new Integration();
                     createdIntegration.setId(Integration.HARVEST_REGISTRY_SYNC_ID);
@@ -130,15 +137,21 @@ public class HarvestRegistrySynchronizerService {
 
         final Map<Long, Set<HarvestSpecimen>> specimenMap = fetchSpecimens(harvestInfoMap.keySet());
 
-        final List<HarvestRegistryItem> items = mapToRegistryItems(harvestInfoMap, specimenMap);
+        final Map<String, LocalisedString> municipalities =
+                fetchMunicipalities(
+                        F.mapNonNullsToList(harvestInfoMap.values(),
+                        group -> group.getOne(HARVEST).getMunicipalityCode()));
 
-        harvestRegistryItemRepository.save(items);
+        final List<HarvestRegistryItem> items = mapToRegistryItems(harvestInfoMap, specimenMap, municipalities);
+
+        harvestRegistryItemRepository.saveAll(items);
 
         LOG.info("Persisted {} items between {} - {}", items.size(), start, end);
     }
 
-    private List<HarvestRegistryItem> mapToRegistryItems(final Map<Long, Group> harvestInfoMap,
-                                                         final Map<Long, Set<HarvestSpecimen>> specimenMap) {
+    private static List<HarvestRegistryItem> mapToRegistryItems(final Map<Long, Group> harvestInfoMap,
+                                                                final Map<Long, Set<HarvestSpecimen>> specimenMap,
+                                                                final Map<String, LocalisedString> municipalities) {
         return harvestInfoMap.entrySet()
                 .stream()
                 .flatMap(
@@ -150,9 +163,16 @@ public class HarvestRegistrySynchronizerService {
                                     specimenMap.getOrDefault(entry.getKey(), ImmutableSet.of()),
                                     group.getOne(DEROGATION),
                                     group.getOne(RKA_ORG.officialCode),
-                                    group.getOne(RHY.officialCode));
+                                    group.getOne(RHY.officialCode),
+                                    municipalities);
                         })
                 .collect(toList());
+    }
+
+    private Map<String, LocalisedString> fetchMunicipalities(Collection<String> municipalityCodes) {
+        return municipalityRepository.findAllById(municipalityCodes)
+                .stream()
+                .collect(Collect.toMap(Municipality::getOfficialCode, Municipality::getNameLocalisation, HashMap::new));
     }
 
     private Map<Long, Group> fetchHarvests(final DateTime start, final DateTime end) {
@@ -165,9 +185,9 @@ public class HarvestRegistrySynchronizerService {
                 .innerJoin(HARVEST.rhy, RHY)
                 .innerJoin(RHY.parentOrganisation, RKA_ORG)
                 .where(SPECIES.officialCode.notIn(OMITTED_SPECIES_CODES))
-                .where(HARVEST.lifecycleFields.modificationTime.between(start.toDate(), end.toDate()))
+                .where(HARVEST.lifecycleFields.modificationTime.between(start, end))
                 .where(isOfficialHarvest())
-                .where(HARVEST.pointOfTime.after(REGISTRY_START_TIME_STAMP.toDate()))
+                .where(HARVEST.pointOfTime.after(DateUtil.toDateTimeNullSafe(REGISTRY_START_TIME_STAMP)))
                 .transform(GroupBy.groupBy(HARVEST.id).as(HARVEST, PERSON, DEROGATION, SPECIES, RKA_ORG.officialCode,
                         RHY.officialCode));
     }
@@ -185,14 +205,12 @@ public class HarvestRegistrySynchronizerService {
     }
 
     private void removeItemsWithHarvestModifiedAfter(final DateTime start, final DateTime end) {
-        LOG.info("Removing items");
         final List<Harvest> unofficialHarvests = queryFactory
                 .selectFrom(HARVEST)
-                .where(HARVEST.lifecycleFields.modificationTime.between(start.toDate(), end.toDate()))
+                .where(HARVEST.lifecycleFields.modificationTime.between(start, end))
                 .fetch();
         Lists.partition(unofficialHarvests, PAGE_SIZE).forEach(partition ->
                 harvestRegistryItemRepository.deleteByHarvestId(partition));
-        LOG.info("Removed items");
     }
 
 }

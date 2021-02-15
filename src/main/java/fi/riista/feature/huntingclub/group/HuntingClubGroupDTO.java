@@ -7,7 +7,7 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
 import fi.riista.validation.DoNotValidate;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.util.StringUtils;
 
@@ -61,7 +61,8 @@ public class HuntingClubGroupDTO extends BaseEntityDTO<Long> {
 
     public static HuntingClubGroupDTO create(@Nonnull final HuntingClubGroup group,
                                              @Nullable final GameSpecies gameSpecies,
-                                             @Nullable final HarvestPermit harvestPermit) {
+                                             @Nullable final HarvestPermit harvestPermit,
+                                             final boolean deerPilotGroup) {
 
         Objects.requireNonNull(group, "group is null");
 
@@ -85,7 +86,7 @@ public class HuntingClubGroupDTO extends BaseEntityDTO<Long> {
         if (harvestPermit != null) {
             dto.setPermit(PermitDTO.create(harvestPermit));
         }
-
+        dto.setDeerPilotGroup(deerPilotGroup);
         return dto;
     }
 
@@ -123,6 +124,7 @@ public class HuntingClubGroupDTO extends BaseEntityDTO<Long> {
     private boolean huntingFinished;
     private boolean fromMooseDataCard;
     private Long memberCount;
+    private Boolean deerPilotGroup;
 
     public HuntingClubGroupDTO() {
     }
@@ -265,5 +267,13 @@ public class HuntingClubGroupDTO extends BaseEntityDTO<Long> {
 
     public void setMemberCount(final Long memberCount) {
         this.memberCount = memberCount;
+    }
+
+    public Boolean getDeerPilotGroup() {
+        return deerPilotGroup;
+    }
+
+    public void setDeerPilotGroup(final Boolean deerPilotGroup) {
+        this.deerPilotGroup = deerPilotGroup;
     }
 }

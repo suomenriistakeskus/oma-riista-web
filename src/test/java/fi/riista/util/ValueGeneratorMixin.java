@@ -4,12 +4,14 @@ import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.money.FinnishBank;
 import fi.riista.feature.common.money.FinnishBankAccount;
+import fi.riista.feature.gamediary.fixture.HarvestSpecimenType;
 import org.iban4j.Bic;
 import org.iban4j.Iban;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.EnumSet;
+import java.util.function.Predicate;
 
 @FunctionalInterface
 public interface ValueGeneratorMixin {
@@ -49,11 +51,11 @@ public interface ValueGeneratorMixin {
     }
 
     default boolean someBoolean() {
-        return nextPositiveInt() % 2 == 0 ? true : false;
+        return nextPositiveInt() % 2 == 0;
     }
 
     default Boolean someOtherThan(@Nullable final Boolean value) {
-        return Boolean.TRUE.equals(value) ? false : true;
+        return !Boolean.TRUE.equals(value);
     }
 
     default <E extends Enum<E>> E some(@Nonnull final Class<E> enumClass) {
@@ -156,4 +158,16 @@ public interface ValueGeneratorMixin {
         return ValueGenerator.htaNumber(getNumberGenerator());
     }
 
+    default String email(@Nullable final String firstName,
+                         @Nullable final String lastName) {
+        return ValueGenerator.email(getNumberGenerator(), firstName, lastName);
+    }
+
+    default EnumSet<HarvestSpecimenType> harvestSpecimenTypes(final Predicate<HarvestSpecimenType> condition) {
+        return F.filterToEnumSet(HarvestSpecimenType.class, condition);
+    }
+
+    default HarvestSpecimenType harvestSpecimenType(final Predicate<HarvestSpecimenType> condition) {
+        return some(harvestSpecimenTypes(condition));
+    }
 }

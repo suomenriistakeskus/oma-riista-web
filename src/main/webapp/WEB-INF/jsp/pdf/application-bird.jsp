@@ -218,14 +218,22 @@
 
             <hr>
 
-            <h2><fmt:message key="bird.application.area.map"/>:</h2>
+            <c:if test="${fn:length(model.areaAttachments) > 0}">
+                <h2><fmt:message key="bird.application.area.map"/>:</h2>
 
-            <ul>
-                <c:forEach var="a" items="${model.areaAttachments}" varStatus="s">
-                    <li><c:out value="${a.name}"/></li>
-                </c:forEach>
-            </ul>
+                <ul>
+                    <c:forEach var="a" items="${model.areaAttachments}" varStatus="s">
+                        <li><c:out value="${a.name}"/></li>
+                    </c:forEach>
+                </ul>
+            </c:if>
 
+            <c:if test="${model.areaDescription != null}">
+                <p>
+                    <h2><fmt:message key="bird.application.area.areaDescription"/>:</h2>
+                    <c:out value="${model.areaDescription}"></c:out>
+                </p>
+            </c:if>
             <hr>
 
             <h2>
@@ -577,7 +585,7 @@
                 </p>
             </c:if>
             <c:if test="${model.deliveryByMail == true}">
-                    <p><fmt:message key="pdf.application.delivery.letter"/></p>
+                <p><fmt:message key="pdf.application.delivery.letter"/></p>
             </c:if>
 
             <c:if test="${model.deliveryByMail == false}">

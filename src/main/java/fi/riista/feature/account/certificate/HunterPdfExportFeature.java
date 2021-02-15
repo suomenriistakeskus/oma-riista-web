@@ -116,7 +116,7 @@ public class HunterPdfExportFeature {
     }
 
     private Person requireHunter(final String hunterNumber) {
-        return personRepository.findFinnishPersonByHunterNumber(hunterNumber).map(person -> {
+        return personRepository.findByHunterNumber(hunterNumber).map(person -> {
             activeUserService.assertHasPermission(person, EntityPermission.READ);
 
             if (!person.canPrintCertificate()) {

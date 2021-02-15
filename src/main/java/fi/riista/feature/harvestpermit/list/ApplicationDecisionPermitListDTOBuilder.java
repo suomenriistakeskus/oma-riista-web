@@ -2,7 +2,7 @@ package fi.riista.feature.harvestpermit.list;
 
 import com.google.common.collect.ImmutableList;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.decision.PermitDecision;
 
@@ -23,7 +23,7 @@ public class ApplicationDecisionPermitListDTOBuilder {
 
     public void addApplication(final @Nonnull HarvestPermitApplication a) {
         final String permitNumber = Optional.ofNullable(a.getApplicationNumber())
-                .map(applicationNumber -> PermitNumberUtil.createPermitNumber(a.getApplicationYear(), 1, applicationNumber))
+                .map(applicationNumber -> DocumentNumberUtil.createDocumentNumber(a.getApplicationYear(), 1, applicationNumber))
                 .orElseGet(() -> createDraftApplicationNumber(a));
         final ApplicationDecisionPermitListDTO existingDto = findByApplication(a);
 
@@ -67,7 +67,7 @@ public class ApplicationDecisionPermitListDTOBuilder {
         final int huntingYear = a.getApplicationYear();
         final int applicationNumber = draftApplicationNumberSequence.getAndDecrement();
 
-        return PermitNumberUtil.createPermitNumber(huntingYear, 1, applicationNumber);
+        return DocumentNumberUtil.createDocumentNumber(huntingYear, 1, applicationNumber);
     }
 
     private ApplicationDecisionPermitListDTO findByApplication(final @Nonnull HarvestPermitApplication application) {

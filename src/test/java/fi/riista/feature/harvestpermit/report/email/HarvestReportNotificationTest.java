@@ -33,7 +33,7 @@ import javax.annotation.Resource;
 import static fi.riista.test.matchers.PatternMatcher.pattern;
 import static java.util.Collections.singleton;
 import static org.hamcrest.Matchers.containsString;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HarvestReportNotificationTest extends EmbeddedDatabaseTest {
 
@@ -130,7 +130,7 @@ public class HarvestReportNotificationTest extends EmbeddedDatabaseTest {
         harvest.setAuthor(author);
         harvest.setActualShooter(hunter);
         harvest.setPropertyIdentifier("00200200019999");
-        harvest.setPointOfTime(new DateTime(2012, 6, 30, 14, 39, Constants.DEFAULT_TIMEZONE).toDate());
+        harvest.setPointOfTime(new DateTime(2012, 6, 30, 14, 39, Constants.DEFAULT_TIMEZONE));
         harvest.setGeoLocation(new GeoLocation(502512, 941235, GeoLocation.Source.GPS_DEVICE));
         harvest.setHuntingAreaType(HuntingAreaType.HUNTING_SOCIETY);
         harvest.setHuntingParty("Kuusamon Eräjermut");

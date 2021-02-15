@@ -8,6 +8,8 @@ import fi.riista.feature.huntingclub.hunting.overview.CoordinatorClubHarvestFeat
 import fi.riista.feature.huntingclub.members.HuntingClubContactFeature;
 import fi.riista.feature.huntingclub.members.rhy.RhyClubOccupationDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
+import fi.riista.feature.organization.rhy.RhySrvaCallRingRotationFeature;
+import fi.riista.feature.organization.rhy.RhySrvaRotationDTO;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysCrudFeature;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysDTO;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsCrudFeature;
@@ -33,19 +35,23 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Locale;
 
 import static fi.riista.util.MediaTypeExtras.APPLICATION_EXCEL_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
-@RequestMapping(value = "/api/v1/riistanhoitoyhdistys", produces = APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/riistanhoitoyhdistys", produces = APPLICATION_JSON_VALUE)
 public class RiistanhoitoyhdistysApiResource {
 
     @Resource
     private RiistanhoitoyhdistysCrudFeature crudFeature;
+
+    @Resource
+    private RhySrvaCallRingRotationFeature rhySrvaCallRingRotationFeature;
 
     @Resource
     private CoordinatorClubHarvestFeature coordinatorClubHarvestFeature;
@@ -75,13 +81,13 @@ public class RiistanhoitoyhdistysApiResource {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public RiistanhoitoyhdistysDTO create(final @RequestBody @Validated RiistanhoitoyhdistysDTO dto) {
         return crudFeature.create(dto);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PutMapping(value = "{id:\\d+}", consumes = APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "{id:\\d+}", consumes = APPLICATION_JSON_VALUE)
     public void update(final @PathVariable Long id,
                        final @RequestBody @Validated RiistanhoitoyhdistysDTO dto) {
 
@@ -141,6 +147,19 @@ public class RiistanhoitoyhdistysApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "{id:\\d+}/srva-rotation")
+    public RhySrvaRotationDTO getSrvaRotation(final @PathVariable long id) {
+        return rhySrvaCallRingRotationFeature.getRotation(id);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping(value = "{id:\\d+}/srva-rotation")
+    public void updateSrvaRotation(final @PathVariable long id,
+                                   final @Valid @RequestBody RhySrvaRotationDTO dto) {
+        rhySrvaCallRingRotationFeature.updateRotation(id, dto);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "{id:\\d+}/moosepermit/huntingyears")
     public List<MooselikeHuntingYearDTO> listHuntingYears(final @PathVariable long id) {
         return harvestPermitListFeature.listRhyMooselikeHuntingYears(id);
@@ -162,4 +181,17 @@ public class RiistanhoitoyhdistysApiResource {
 
         return annualStatisticsCrudFeature.getOrCreate(rhyId, calendarYear);
     }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{rhyId:\\d+}/annualstatisticsyears")
+    public List<Integer> listAnnualStatisticsYears(final @PathVariable long rhyId) {
+        return annualStatisticsCrudFeature.listAnnualStatisticsYears(rhyId);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{rhyId:\\d+}/yearsofexistence")
+    public List<Integer> listYearsOfExistence(final @PathVariable long rhyId) {
+        return crudFeature.getYearsOfExistence(rhyId);
+    }
+
 }

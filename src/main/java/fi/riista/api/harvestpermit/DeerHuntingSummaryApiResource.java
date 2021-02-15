@@ -19,7 +19,7 @@ import javax.annotation.Resource;
 import java.util.Map;
 
 @RestController
-@RequestMapping(value = "/api/v1/deersummary", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/deersummary", produces = MediaType.APPLICATION_JSON_VALUE)
 public class DeerHuntingSummaryApiResource {
 
     @Resource

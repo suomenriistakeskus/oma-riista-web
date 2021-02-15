@@ -1,16 +1,13 @@
 package fi.riista.feature.huntingclub.copy;
 
-import com.google.common.base.Preconditions;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.huntingclub.group.HuntingClubGroupAuthorization;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
-import fi.riista.security.EntityPermission;
 import fi.riista.util.Locales;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Service;
@@ -20,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -41,19 +37,7 @@ public class CopyClubGroupService {
     private MessageSource messageSource;
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public HuntingClubGroup copy(Long originalGroupId, HuntingClubGroupCopyDTO dto) {
-        final HuntingClubGroup originalGroup = requireEntityService.requireHuntingGroup(originalGroupId,
-                HuntingClubGroupAuthorization.Permission.COPY);
-        final HuntingClubArea huntingArea = requireEntityService.requireHuntingClubArea(dto.getHuntingAreaId(),
-                EntityPermission.READ);
-
-        Preconditions.checkState(Objects.equals(huntingArea.getHuntingYear(), dto.getHuntingYear()),
-                "hunting area year must match with selected year");
-
-        return copyGroup(originalGroup, huntingArea);
-    }
-
-    private HuntingClubGroup copyGroup(final HuntingClubGroup originalGroup,
+    public HuntingClubGroup copyGroup(final HuntingClubGroup originalGroup,
                                        final HuntingClubArea huntingArea) {
         final HuntingClubGroup group = new HuntingClubGroup();
         group.setParentOrganisation(originalGroup.getParentOrganisation());
@@ -68,10 +52,13 @@ public class CopyClubGroupService {
 
         huntingClubGroupRepository.save(group);
 
-        final List<Occupation> newOccupations = occupationRepository.findNotDeletedByOrganisation(originalGroup).stream()
-                .map(o -> new Occupation(o.getPerson(), group, o.getOccupationType(), o.getContactInfoShare(), o.getCallOrder()))
+        final List<Occupation> newOccupations =
+                occupationRepository.findNotDeletedByOrganisation(originalGroup).stream()
+                .filter(o -> !o.getPerson().isDeceased())
+                .map(o -> new Occupation(
+                        o.getPerson(), group, o.getOccupationType(), o.getContactInfoShare(), o.getCallOrder()))
                 .collect(toList());
-        occupationRepository.save(newOccupations);
+        occupationRepository.saveAll(newOccupations);
         return group;
     }
 

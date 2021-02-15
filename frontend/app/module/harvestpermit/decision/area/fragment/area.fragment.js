@@ -2,42 +2,225 @@
 
 angular.module('app.harvestpermit.decision.area.fragment', [])
 
-    .component('decisionApplicationFragmentMap', {
-        templateUrl: 'harvestpermit/decision/area/fragment/fragment-map.html',
+    .component('decisionApplicationFragments', {
+        templateUrl: 'harvestpermit/decision/area/fragment/fragment-list.html',
         bindings: {
             applicationId: '<',
             featureCollection: '<'
         },
-        controller: function ($q, $filter, $translate, FormPostService, TranslatedBlockUI,
-                              WGS84, MapDefaults, MapState, MapBounds, leafletData, PermitAreaFragmentStatus,
-                              MooselikePermitApplication, MoosePermitMapService, PermitAreaFragmentInfoModal) {
+        controller: function ($state, $q, $filter, $translate, dialogs, FormPostService, TranslatedBlockUI,
+                              PermitAreaFragmentStatus, FetchAndSaveBlob,
+                              MooselikePermitApplication, MoosePermitMapService, PermitAreaFragmentInfoModal,
+                              PermitAreaFragmentLoadingService, MapPdfModal, LocalStorageService,
+                              WGS84, MapDefaults, MapState, MapBounds, leafletData) {
             var $ctrl = this;
 
+            $ctrl.mooseFragmentSizeLimitHa = 1000;
+            $ctrl.deerFragmentSizeLimitHa = 500;
+            $ctrl.fragmentSizeLimitHa = $ctrl.mooseFragmentSizeLimitHa;
+            $ctrl.fragmentList = [];
+            $ctrl.shownFragments = [];
+            $ctrl.fragmentStatus = null;
+            $ctrl.filterModes = ['ALL', 'UNCONFIRMED', 'CONFIRMED'];
+            $ctrl.filterMode = 'ALL';
             $ctrl.mapId = 'harvest-permit-application-fragment-map';
             $ctrl.mapDefaults = MapDefaults.create({fullscreen: true, doubleClickZoom: false, hideOverlays: true});
             $ctrl.mapEvents = MapDefaults.getMapBroadcastEvents();
             $ctrl.mapState = MapState.get();
-            $ctrl.mooseFragmentSizeLimitHa = 1000;
-            $ctrl.deerFragmentSizeLimitHa = 500;
-            $ctrl.fragmentSizeLimitHa = $ctrl.mooseFragmentSizeLimitHa;
+
+            $ctrl.selectedFragment = null;
+            $ctrl.selectedFeature = null;
+            $ctrl.layers = [];
+            $ctrl.$onInit = function () {
+                updateFragmentList();
+            };
 
             $ctrl.$onChanges = function (c) {
-                if (c.featureCollection) {
+                if (c.fragmentSizeLimitHa || c.featureCollection) {
                     $ctrl.initializeMap();
                 }
+            };
+
+            $ctrl.isSelectedFragment = function (fragment) {
+                if (fragment && $ctrl.selectedFragment) {
+                    return fragment.hash === $ctrl.selectedFragment.hash;
+                }
+                return false;
+            };
+
+            $ctrl.isSelectedFeature = function (feature) {
+                if (feature && $ctrl.selectedFeature) {
+                    return feature.id === $ctrl.selectedFeature.id;
+                }
+                return false;
+            };
+
+            $ctrl.updateShownFragments = function () {
+                switch ($ctrl.filterMode) {
+                    case 'ALL': {
+                        $ctrl.shownFragments = $ctrl.fragmentList;
+                        break;
+                    }
+                    case 'UNCONFIRMED': {
+                        $ctrl.shownFragments = _.filter($ctrl.fragmentList, function (fragment) {
+                            return _.isNil($ctrl.fragmentStatus.isFragment(fragment));
+                        });
+                        break;
+                    }
+                    case 'CONFIRMED': {
+                        $ctrl.shownFragments = _.filter($ctrl.fragmentList, function (fragment) {
+                            return $ctrl.fragmentStatus.isFragment(fragment);
+                        });
+                        break;
+                    }
+                    default:
+                        throw 'Unknown filter mode ' + $ctrl.filterMode;
+                }
+            };
+
+            $ctrl.verifyFragment = function (f) {
+                $ctrl.fragmentStatus.setFragmentStatus(f, true);
+                updateFragmentFeature(f);
+            };
+
+            $ctrl.clearFragment = function (f) {
+                $ctrl.fragmentStatus.setFragmentStatus(f, false);
+                updateFragmentFeature(f);
+            };
+
+            $ctrl.fragmentSizeChanged = function () {
+                updateFragmentList();
+            };
+
+            $ctrl.selectFragment = function (fragment) {
+                if (!$ctrl.selectedFragment || (fragment && fragment.hash !== $ctrl.selectedFragment.hash)) {
+                    var oldFeature = $ctrl.selectedFeature;
+                    $ctrl.selectedFragment = fragment || null;
+                    $ctrl.selectedFeature = findFeature(fragment);
+                    highlightSelected($ctrl.selectedFeature, oldFeature);
+                }
+            };
+
+            function findFeature(fragment) {
+                if (fragment) {
+                    return _.find($ctrl.featureCollection.features, function (feature) {
+                        return feature.properties.hash && feature.properties.hash === fragment.hash;
+                    }) || null;
+                }
+                return null;
+            }
+
+            $ctrl.zoomToFragment = function (fragment) {
+                $ctrl.selectFragment(fragment);
+
+                var feature = findFeature(fragment);
+                if (feature) {
+                    var bounds = MapBounds.getBoundsFromGeoJsonBbox(feature.bbox);
+                    MapState.updateMapBounds(bounds, null, true);
+                }
+            };
+
+            $ctrl.showDialog = function (fragment) {
+                if (fragment) {
+                    var feature = _.find($ctrl.featureCollection.features, function (feature) {
+                        return feature.properties.hash && feature.properties.hash === fragment.hash;
+                    });
+
+                    var fragmentStatus = PermitAreaFragmentStatus.create($ctrl.fragmentSizeLimitHa * 10000);
+                    PermitAreaFragmentInfoModal.showPopup(
+                        $ctrl.applicationId, fragment, fragmentStatus, feature
+                    ).then(function () {
+                        $ctrl.updateShownFragments();
+                        $ctrl.initializeMap();
+                    });
+                }
+
+            };
+
+            function doShowNoFragmentsDialog() {
+                var dialogTitleNoFragments = $translate.instant('harvestpermit.application.fragment.pdfNotifyTitle');
+                var dialogMessageNoFragments = $translate.instant('harvestpermit.application.fragment.pdfNotifyNoFragments');
+                dialogs.notify(dialogTitleNoFragments, dialogMessageNoFragments);
+            }
+
+            function isSomeFragmentConfirmed() {
+                return _.findIndex($ctrl.fragmentList, function (f) {
+                    return !!$ctrl.fragmentStatus.isFragment(f);
+                }) > -1;
+            }
+
+            $ctrl.printFragments = function () {
+
+                if (!isSomeFragmentConfirmed()) {
+                    doShowNoFragmentsDialog();
+                    return;
+                }
+
+                // Check if some fragment candidate is still waiting processing
+                var nullIndex = _.findIndex($ctrl.fragmentList, function (f) {
+                    return _.isNil($ctrl.fragmentStatus.isFragment(f));
+                });
+
+                if (nullIndex !== -1) {
+                    var dialogTitle = $translate.instant('harvestpermit.application.fragment.pdfNotifyTitle');
+                    var dialogMessage = $translate.instant('harvestpermit.application.fragment.pdfUnconfirmedExistNotifyText');
+                    dialogs.confirm(dialogTitle, dialogMessage).result.then(function () {
+                        doPrintFragments();
+                    });
+                    return;
+                }
+
+                doPrintFragments();
+            };
+
+            function doPrintFragments() {
+                var uri =
+                    '/api/v1/harvestpermit/application/mooselike/' + $ctrl.applicationId + '/area/fragments/print';
+
+                var hashes = _.chain($ctrl.fragmentList)
+                    .filter(function (f) {
+                        return $ctrl.fragmentStatus.isFragment(f);
+                    })
+                    .map('hash')
+                    .value();
+
+                MapPdfModal.showModal().then(function (pdfParameters) {
+                    TranslatedBlockUI.start('global.block.wait');
+                    FetchAndSaveBlob.post(uri, {
+                        fragmentIds: hashes,
+                        pdfParameters: pdfParameters
+                    }).finally(TranslatedBlockUI.stop);
+                });
+            }
+
+            $ctrl.exportFragmentExcel = function () {
+
+                if (!isSomeFragmentConfirmed()) {
+                    doShowNoFragmentsDialog();
+                    return;
+                }
+
+                var url = '/api/v1/harvestpermit/application/mooselike/' + $ctrl.applicationId + '/area/fragments/excel';
+                var hashes = _.chain($ctrl.fragmentList)
+                    .filter(function (f) {
+                        return $ctrl.fragmentStatus.isFragment(f);
+                    })
+                    .map('hash')
+                    .value();
+
+                FetchAndSaveBlob.post(url, {
+                    fragmentSizeLimitSquareMeters: $ctrl.fragmentSizeLimitHa * 10000,
+                    fragmentIds: hashes
+                });
+            };
+
+            $ctrl.isFragment = function (fragment) {
+                return $ctrl.fragmentStatus.isFragment(fragment);
             };
 
             $ctrl.initializeMap = function () {
                 leafletData.getMap($ctrl.mapId).then(function (map) {
                     updateComponent(map, $ctrl.featureCollection, $ctrl.fragmentSizeLimitHa);
-                });
-            };
-
-            $ctrl.exportFragmentExcel = function () {
-                var url = '/api/v1/harvestpermit/application/mooselike/' + $ctrl.applicationId + '/area/fragments/excel';
-
-                FormPostService.submitFormUsingBlankTarget(url, {
-                    fragmentSizeLimit: $ctrl.fragmentSizeLimitHa * 10000
                 });
             };
 
@@ -79,6 +262,7 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
                 return L.control.simpleLegend({
                     position: 'bottomright',
                     legend: {
+                        'blue': $translate.instant('harvestpermit.application.mapLegend.fragmentProposal', i18nParams),
                         'red': $translate.instant('harvestpermit.application.mapLegend.fragment', i18nParams),
                         'green': $translate.instant('harvestpermit.application.mapLegend.notFragment', i18nParams)
                     }
@@ -88,14 +272,16 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
             function createGeoJsonLayer(featureCollection, fragmentSizeLimitHa) {
                 var fragmentSizeLimit = fragmentSizeLimitHa * 10000;
                 var fragmentStatus = PermitAreaFragmentStatus.create(fragmentSizeLimit);
+                $ctrl.layers = [];
 
                 return L.geoJSON(featureCollection, {
                     style: function (feature) {
-                        return getFeatureStyle(fragmentStatus.isFragment(feature));
+                        return getFeatureStyle(fragmentStatus.isFeatureFragment(feature), $ctrl.isSelectedFeature(feature));
                     },
                     onEachFeature: function (feature, layer) {
+                        $ctrl.layers.push({layer: layer, feature: feature});
                         layer.on('click', function (e) {
-                            getFragmentInfo({
+                            PermitAreaFragmentLoadingService.getFragmentInfo({
                                 applicationId: $ctrl.applicationId,
                                 fragmentSizeLimit: fragmentSizeLimit,
                                 location: {
@@ -104,39 +290,84 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
                                 }
 
                             }).then(function (fragmentInfo) {
-                                PermitAreaFragmentInfoModal.showPopup(
-                                    $ctrl.applicationId, fragmentInfo, fragmentStatus, feature
-                                ).then(function () {
-                                    layer.setStyle(getFeatureStyle(fragmentStatus.isFragment(feature)));
-                                });
+                                $ctrl.selectFragment(fragmentInfo);
+                            }, function (error) {
+                                // Clear selection when large feature is clicked
+                                $ctrl.selectFragment(null);
                             });
                         });
                     }
                 });
             }
 
-            function getFeatureStyle(isFragment) {
+            function updateFragmentFeature(fragment) {
+                if (geoJsonLayer) {
+                    geoJsonLayer.eachLayer(function (layer) {
+                        if (layer.feature.properties.hash === fragment.hash) {
+                            layer.setStyle(getFeatureStyle($ctrl.fragmentStatus.isFragment(fragment), $ctrl.isSelectedFeature(layer.feature)));
+                        }
+                    });
+                }
+            }
+
+            function findFeatureLayer(feature) {
+                if (feature) {
+                    var obj = _.find($ctrl.layers, ['feature.properties.hash', feature.properties.hash]);
+                    if (obj) {
+                        return obj.layer;
+                    }
+                }
+                return null;
+            }
+
+            function highlightSelected(newFeature, oldFeature) {
+                var layer = findFeatureLayer(newFeature);
+                if (layer) {
+                    layer.setStyle({
+                        fillColor: layer.options.fillColor,
+                        weight: 3,
+                        color: '#000',
+                        fillOpacity: 0.8
+                    });
+                }
+                clearHighlight(oldFeature);
+
+            }
+
+            function clearHighlight(oldFeature) {
+                var layer = findFeatureLayer(oldFeature);
+                if (layer) {
+                    layer.setStyle({
+                        fillColor: layer.options.fillColor,
+                        weight: 1,
+                        color: '#000',
+                        fillOpacity: 0.3
+                    });
+                }
+            }
+
+            function getFeatureStyle(isFragment, isHighlighted) {
                 return {
-                    fillColor: isFragment ? 'red' : 'green',
-                    weight: 1,
+                    fillColor: _.isNil(isFragment)
+                        ? 'blue'
+                        : isFragment ? 'red' : 'green',
+                    weight: isHighlighted ? 3 : 1,
                     color: '#000',
-                    fillOpacity: 0.3
+                    fillOpacity: isHighlighted ? 0.8 : 0.3
                 };
             }
 
-            function getFragmentInfo(params) {
-                TranslatedBlockUI.start("global.block.wait");
-
-                return MooselikePermitApplication.getGeometryFragmentInfo({
-                    id: params.applicationId
-
-                }, params).$promise.then(function (data) {
-                    return _.isEmpty(data) ? $q.reject() : data[0];
-
-                }).finally(function () {
-                    TranslatedBlockUI.stop();
+            function updateFragmentList() {
+                $ctrl.fragmentStatus = PermitAreaFragmentStatus.create($ctrl.fragmentSizeLimitHa * 10000);
+                PermitAreaFragmentLoadingService.getFragmentInfoes({
+                    applicationId: $ctrl.applicationId,
+                    fragmentSizeLimit: $ctrl.fragmentSizeLimitHa * 10000
+                }).then(function (fragments) {
+                    $ctrl.fragmentList = fragments;
+                    $ctrl.updateShownFragments();
                 });
             }
+
         }
     })
 
@@ -149,21 +380,42 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
 
         var proto = Service.prototype;
 
-        proto.isFragment = function (feature) {
+        proto.isFeatureFragment = function (feature) {
             var hash = this.hashGetter(feature);
 
-            if (hash && LocalStorageService.getKey('fragment-' + hash) === '0') {
-                return false;
+            if (this.areaSizeGetter(feature) < this.fragmentSizeLimit) {
+                if (hash && LocalStorageService.getKey('fragment-' + hash) === '0') {
+                    return false;
+                }
+                if (hash && LocalStorageService.getKey('fragment-' + hash) === '1') {
+                    return true;
+                }
+                return null;
             }
+            return false;
 
-            return this.areaSizeGetter(feature) < this.fragmentSizeLimit;
         };
 
-        proto.setFragmentStatus = function (feature, value) {
-            var hash = this.hashGetter(feature);
+        proto.isFragment = function (fragment) {
+            var hash = fragment.hash;
+
+            if (fragment.bothSize.total < this.fragmentSizeLimit) {
+                if (hash && LocalStorageService.getKey('fragment-' + hash) === '0') {
+                    return false;
+                }
+                if (hash && LocalStorageService.getKey('fragment-' + hash) === '1') {
+                    return true;
+                }
+                return null;
+            }
+            return false;
+        };
+
+        proto.setFragmentStatus = function (fragment, value) {
+            var hash = fragment.hash;
 
             if (hash) {
-                LocalStorageService.setKey('fragment-' + hash, value ? null : '0');
+                LocalStorageService.setKey('fragment-' + hash, value ? '1' : '0');
             }
         };
 
@@ -171,6 +423,37 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
             create: function (fragmentSizeLimit) {
                 return new Service(fragmentSizeLimit);
             }
+        };
+    })
+    .service('PermitAreaFragmentLoadingService', function ($q, TranslatedBlockUI, MooselikePermitApplication) {
+        this.getFragmentInfo = function (params) {
+
+            TranslatedBlockUI.start("global.block.wait");
+
+            return MooselikePermitApplication.getGeometryFragmentInfo({
+                id: params.applicationId
+
+            }, params).$promise.then(function (data) {
+                return _.isEmpty(data) ? $q.reject() : data[0];
+
+            }).finally(function () {
+                TranslatedBlockUI.stop();
+            });
+
+        };
+
+        this.getFragmentInfoes = function (params) {
+            TranslatedBlockUI.start("global.block.wait");
+
+            return MooselikePermitApplication.getGeometryFragmentInfo({
+                id: params.applicationId
+
+            }, params).$promise.then(function (data) {
+                return _.isEmpty(data) ? $q.reject() : data;
+
+            }).finally(function () {
+                TranslatedBlockUI.stop();
+            });
         };
     })
 
@@ -199,7 +482,7 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
 
             $ctrl.$onInit = function () {
                 $ctrl.data = fragmentInfo;
-                $ctrl.fragmentStatus = fragmentStatus.isFragment(fragmentFeature);
+                $ctrl.fragmentStatus = fragmentStatus.isFragment(fragmentInfo);
                 $ctrl.viewBounds = MapBounds.getBoundsFromGeoJsonBbox(fragmentFeature.bbox);
             };
 
@@ -208,7 +491,7 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
             };
 
             $ctrl.setFragmentStatus = function (value) {
-                fragmentStatus.setFragmentStatus(fragmentFeature, value);
+                fragmentStatus.setFragmentStatus(fragmentInfo, value);
             };
 
             $ctrl.printMapPdf = function () {

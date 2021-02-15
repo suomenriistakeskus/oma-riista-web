@@ -2,10 +2,10 @@
 
 angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
     .controller('EventListController',
-        function ($scope, $uibModal, Helpers, NotificationService, EventsByYear, EventTypes, Venues, orgId, AnnualStatisticsAvailableYears) {
+        function ($scope, $uibModal, Helpers, NotificationService, EventsByYear, EventTypes, Venues, orgId, availableYears, calendarYear) {
             $scope.events = [];
-            $scope.availableYears = AnnualStatisticsAvailableYears.get();
-            $scope.calendarYear = _.last($scope.availableYears);
+            $scope.availableYears = availableYears;
+            $scope.calendarYear = calendarYear;
             $scope.eventTypeFilter = null;
             EventTypes.then(function (result) {
                 $scope.eventTypes = result.data;
@@ -185,7 +185,7 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 SRVAKOULUTUS: true,
                 PETOYHDYSHENKILO_KOULUTUS: true,
                 VAHINKOKOULUTUS: true,
-                TILAISUUS_KOULUILLLE: true,
+                TILAISUUS_KOULUILLE: true,
                 OPPILAITOSTILAISUUS: true,
                 NUORISOTILAISUUS: true,
                 AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS: true,
@@ -200,7 +200,8 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 AMPUMAKOULUTUS: true,
                 JALJESTAJAKOULUTUS: true,
                 MUU_TAPAHTUMA: true,
-                RHY_HALLITUKSEN_KOKOUS: false
+                RHY_HALLITUKSEN_KOKOUS: false,
+                HIRVIELAINTEN_VEROTUSSUUNNITTELU: true
             };
 
             $scope.eventTypes = eventTypes.data;

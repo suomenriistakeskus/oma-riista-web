@@ -18,6 +18,8 @@ public class FinnishBankAccount extends BankAccount {
     // For payment of hunting permit
     public static final FinnishBankAccount PERMIT_DECISION_FEE_NORDEA = fromIban(BankAccountNumbers.PERMIT_DECISION_FEE_NORDEA);
     public static final FinnishBankAccount MOOSELIKE_HARVEST_FEE_OP_POHJOLA = fromIban(BankAccountNumbers.MOOSELIKE_HARVEST_FEE_OP_POHJOLA);
+    public static final FinnishBankAccount MOOSELIKE_HARVEST_FEE_DANSKE = fromIban(BankAccountNumbers.MOOSELIKE_HARVEST_FEE_DANSKE);
+    public static final FinnishBankAccount MOOSELIKE_HARVEST_FEE_NORDEA = fromIban(BankAccountNumbers.MOOSELIKE_HARVEST_FEE_NORDEA);
 
     @Nonnull
     public static FinnishBankAccount fromIban(final String iban) {

@@ -1,0 +1,56 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.deportation.population.instructionTitle"></p>
+        <p translate="harvestpermit.wizard.deportation.population.instruction"></p>
+    </div>
+</div>
+
+<form name="speciesPopulationForm" r-force-show-errors-check-validity>
+    <div ng-repeat="s in $ctrl.speciesPopulationList track by s.gameSpeciesCode">
+        <p>
+            <strong ng-bind="s.gameSpeciesCode | translateSpeciesCode | uppercase"></strong>
+        </p>
+
+        <div class="row">
+            <div class="col-xs-3">
+                <div class="form-group" show-errors>
+                    <label class="control-label"
+                           for="populationAmount-{{::s.gameSpeciesCode}}"
+                           translate="harvestpermit.wizard.deportation.population.populationAmount"></label>
+
+                    <input type="text" class="form-control"
+                           name="populationAmount-{{::s.gameSpeciesCode}}"
+                           id="populationAmount-{{::s.gameSpeciesCode}}"
+                           ng-model="s.populationAmount"
+                           maxlength="255"
+                           required>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" show-errors>
+            <label class="control-label"
+                   for="populationDescription-{{::s.gameSpeciesCode}}"
+                   translate="harvestpermit.wizard.deportation.population.populationDescription"></label>
+
+            <textarea class="form-control" rows="4"
+                      name="populationDescription-{{::s.gameSpeciesCode}}"
+                      id="populationDescription-{{::s.gameSpeciesCode}}"
+                      ng-model="s.populationDescription"
+                      required></textarea>
+        </div>
+
+        <hr class="invisible">
+        <hr class="invisible">
+    </div>
+</form>
+
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(speciesPopulationForm)"
+        previous="$ctrl.previous(speciesPopulationForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(speciesPopulationForm)">
+</permit-application-wizard-navigation>

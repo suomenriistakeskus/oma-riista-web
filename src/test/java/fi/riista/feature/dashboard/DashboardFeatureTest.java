@@ -10,6 +10,10 @@ import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.shootingtest.ShootingTestAttemptResult;
+import fi.riista.feature.shootingtest.ShootingTestEvent;
+import fi.riista.feature.shootingtest.ShootingTestParticipant;
+import fi.riista.feature.shootingtest.ShootingTestType;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.junit.Test;
@@ -146,5 +150,40 @@ public class DashboardFeatureTest extends EmbeddedDatabaseTest {
             }
         }
         throw new RuntimeException(String.format("DTO not found %s %s %s", rka1.getNameFinnish(), permitTypeCode, result));
+    }
+
+    @Test
+    public void testShootingTestMetrics() {
+        withRhy(rhy -> {
+            final ShootingTestEvent event1 = model().newShootingTestEvent(rhy);
+            final ShootingTestEvent event2 = model().newShootingTestEvent(rhy);
+
+            final ShootingTestParticipant participant1 = model().newShootingTestParticipant(event1);
+            final ShootingTestParticipant participant2 = model().newShootingTestParticipant(event1);
+            final ShootingTestParticipant participant3 = model().newShootingTestParticipant(event2);
+
+            model().newShootingTestAttempt(participant1, ShootingTestType.MOOSE, ShootingTestAttemptResult.QUALIFIED);
+            model().newShootingTestAttempt(participant1, ShootingTestType.BEAR, ShootingTestAttemptResult.UNQUALIFIED);
+            model().newShootingTestAttempt(participant2, ShootingTestType.ROE_DEER, ShootingTestAttemptResult.QUALIFIED);
+            model().newShootingTestAttempt(participant2, ShootingTestType.MOOSE, ShootingTestAttemptResult.QUALIFIED);
+            model().newShootingTestAttempt(participant3, ShootingTestType.MOOSE, ShootingTestAttemptResult.QUALIFIED);
+
+            model().newRiistanhoitoyhdistys();
+            model().newRiistanhoitoyhdistys();
+
+            event1.close();
+
+            onSavedAndAuthenticated(createNewAdmin(), () -> {
+                final DashboardShootingTestDTO metrics = dashboardFeature.getShootingTestMetrics();
+
+                assertEquals(4, metrics.getCountOfTotalAttempts());
+                assertEquals(3, metrics.getCountOfQualifiedAttempts());
+                assertEquals(2, metrics.getCountOfQualifiedParticipants());
+                assertEquals(1, metrics.getCountOfClosedEvents());
+                assertEquals(1, metrics.getCountOfActiveRhy());
+                assertEquals(3, metrics.getCountOfTotalRhy());
+            });
+        });
+
     }
 }

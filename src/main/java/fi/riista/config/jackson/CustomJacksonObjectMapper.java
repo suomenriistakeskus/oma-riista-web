@@ -21,9 +21,6 @@ public class CustomJacksonObjectMapper extends ObjectMapper {
 
         configure(SerializationFeature.INDENT_OUTPUT, developmentEnvironment);
 
-        // Skip null map properties
-        disable(SerializationFeature.WRITE_NULL_MAP_VALUES);
-
         // Export dates as strings
         disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 

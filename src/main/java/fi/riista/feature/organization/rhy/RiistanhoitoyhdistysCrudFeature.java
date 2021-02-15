@@ -7,12 +7,14 @@ import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.address.AddressRepository;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
+import fi.riista.util.DateUtil;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.List;
 
 @Component
 public class RiistanhoitoyhdistysCrudFeature
@@ -35,6 +37,15 @@ public class RiistanhoitoyhdistysCrudFeature
     @Transactional(readOnly = true)
     public OrganisationNameDTO getPublicInfo(final long id) {
         return OrganisationNameDTO.createWithOfficialCode(riistanhoitoyhdistysRepository.getOne(id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Integer> getYearsOfExistence(final long rhyId) {
+        final int DEFAULT_FIRST_YEAR = 2017;
+        final int DEFAULT_LAST_YEAR = DateUtil.currentYear();
+
+        final Riistanhoitoyhdistys rhy = requireEntity(rhyId, EntityPermission.READ);
+        return MergedRhyMapping.getExistenceRangeOrDefault(rhy.getOfficialCode(), DEFAULT_FIRST_YEAR, DEFAULT_LAST_YEAR);
     }
 
     @Override

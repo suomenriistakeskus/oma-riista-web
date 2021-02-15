@@ -50,6 +50,6 @@ public class PermitDecisionPublishingFeature {
         decision.setStatusPublished();
 
         permitDecisionInvoiceSynchronizer.synchronizeProcessingInvoice(decision);
-        permitDecisionNotificationService.emailRevisionReceivers(revisionId);
+        permitDecisionNotificationService.emailRevisionReceivers(decision, revisionId);
     }
 }

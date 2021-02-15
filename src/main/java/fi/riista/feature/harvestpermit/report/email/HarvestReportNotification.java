@@ -22,11 +22,12 @@ import fi.riista.feature.mail.MailMessageDTO;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationDTO;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
+import fi.riista.util.DateUtil;
 import fi.riista.util.Locales;
 import fi.riista.util.LocalisedString;
+import org.joda.time.DateTime;
 import org.springframework.context.MessageSource;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -47,7 +48,7 @@ public class HarvestReportNotification {
     private Long modifiedByUserId;
     private HarvestReportState state;
 
-    private Date pointOfTime;
+    private DateTime pointOfTime;
     private GameSpeciesDTO species;
     private PersonContactInfoDTO author;
     private PersonContactInfoDTO hunter;
@@ -86,7 +87,7 @@ public class HarvestReportNotification {
         final String emailSubject = messageSource.getMessage("harvest.report.email.subject", null, Locales.FI);
 
         final HashMap<String, Object> model = Maps.newHashMap();
-        model.put("timestamp", new Date());
+        model.put("timestamp", DateUtil.now());
         model.put("id", this.id);
         model.put("rev", this.rev);
         model.put("createdByUserId", this.createdByUserId);
@@ -141,9 +142,14 @@ public class HarvestReportNotification {
 
         final int gameSpeciesCode = harvest.getSpecies().getOfficialCode();
         final List<HarvestSpecimen> entitySpecimenList = harvest.getSortedSpecimens();
+
         if (!entitySpecimenList.isEmpty()) {
             final HarvestSpecimenOps specimenOps = new HarvestSpecimenOps(
-                    gameSpeciesCode, HarvestSpecVersion.MOST_RECENT);
+                    gameSpeciesCode,
+                    // TODO Update HarvestSpecVersion to the most recent supported one.
+                    HarvestSpecVersion._7,
+                    DateUtil.huntingYearContaining(this.pointOfTime.toLocalDate()));
+
             this.specimens = specimenOps.transformList(entitySpecimenList);
         }
 

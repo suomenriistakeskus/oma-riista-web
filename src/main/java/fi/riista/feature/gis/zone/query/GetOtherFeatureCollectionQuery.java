@@ -29,7 +29,7 @@ public class GetOtherFeatureCollectionQuery {
     }
 
     @Nonnull
-    private Feature mapResultToFeature(final ResultSet rs, final GISUtils.SRID srid) throws SQLException {
+    private static Feature mapResultToFeature(final ResultSet rs, final GISUtils.SRID srid) throws SQLException {
         final Feature feature = new Feature();
 
         feature.setId(GeoJSONConstants.ID_PREFIX_OTHER + rs.getLong("id"));

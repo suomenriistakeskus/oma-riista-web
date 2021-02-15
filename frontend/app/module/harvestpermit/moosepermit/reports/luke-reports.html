@@ -1,0 +1,103 @@
+<div class="r-moosepemit-reports-layout">
+
+    <div class="left-column">
+
+        <!-- year, species and permit selection -->
+        <div class="panel-default">
+            <div class="form-group">
+                <label class="control-label" for="moosepermitReportYear" translate="global.huntingYear"></label>
+                <select name="moosepermitReportYear" id="moosepermitReportYear"
+                        class="form-control"
+                        ng-model="$ctrl.selectedYearAndSpecies.huntingYear"
+                        ng-options="year.year as year.name for year in $ctrl.yearOptions"
+                        ng-change="$ctrl.onHuntingYearOrSpeciesChange()">
+                    <option disabled value="" translate="club.hunting.selectHuntingYear"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label" for="moosepermitReportSpecies" translate="global.species"></label>
+                <select name="moosepermitReportSpecies" id="moosepermitReportSpecies"
+                        class="form-control"
+                        ng-model="$ctrl.selectedYearAndSpecies.species"
+                        ng-options="s.code as (s.name | rI18nNameFilter) for s in $ctrl.speciesOptions"
+                        ng-change="$ctrl.onHuntingYearOrSpeciesChange()">
+                    <option disabled value="" translate="global.selectSpecies"></option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label" for="moosepermitReportPermit" translate="global.permit"></label>
+                <select name="moosepermitReportPermit" id="moosepermitReportPermit"
+                        class="form-control"
+                        ng-model="$ctrl.selectedPermit.permitId"
+                        ng-change="$ctrl.onPermitChange()"
+                        ng-options="p.id as $ctrl.getPermitName(p) for p in $ctrl.permits">
+                    <option disabled value="" translate="global.selectPermit"></option>
+                </select>
+            </div>
+        </div>
+
+        <!-- presentation selection -->
+        <div class="org-presentation-selection">
+            <ul class="organisation-level-selection">
+                <li ng-repeat="org in $ctrl.data">
+                    <a ng-click="$ctrl.selectOrg(org)" class="organisation-level"
+                       ng-class="{ active: $ctrl.isOrgSelected(org) }">
+                        <span translate="{{'club.permit.lukeReports.' + org.name}}"></span>
+                        <span class="pull-right text-right fa "
+                              ng-class="$ctrl.isOrgSelected(org) ? 'fa-chevron-down' : 'fa-chevron-down'"></span>
+                    </a>
+                    <div ng-if="$ctrl.isOrgSelected(org)">
+                        <ul class="presentation-selection">
+                            <li ng-repeat="reportType in org.reportTypes">
+                                <a class="presentation" ng-class="{ active: $ctrl.isReportTypeSelected(reportType)}"
+                                   ng-click="$ctrl.selectReportType(reportType)">
+                                    <span class="fa fa-sort-desc"></span>
+                                    <span translate="{{'club.permit.lukeReports.' + reportType.name}}"></span>
+                                </a>
+                                <div ng-if="$ctrl.isReportTypeSelected(reportType)">
+                                <ul ng-repeat="presentation in reportType.presentations" class="file-selection">
+                                        <li ng-if="$ctrl.addForPilotOnlySeparator(presentation)" class="file-group-title">
+                                            Pilottiraportit
+                                        </li>
+                                        <li ng-repeat="file in presentation.files">
+                                            <a ng-class="{ active: $ctrl.isFileSelected(presentation, file)}"
+                                               ng-click="$ctrl.selectFile(presentation, file)">{{ $ctrl.tocText(presentation, file) }}</a>
+                                            <a href="{{$ctrl.newTabUrl(file)}}" target="_blank"
+                                               class="fa fa-external-link"
+                                               uib-tooltip="{{'club.permit.lukeReports.newTab'|translate}}"></a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div ng-if="$ctrl.showFilesForSelectedOrg()" class="main-column">
+        <div class="moose-permit-statistics">
+            <div ng-if="$ctrl.file && $ctrl.presentation" class="luke-data">
+                <h2>{{ $ctrl.tocText($ctrl.presentation, $ctrl.file) }}</h2>
+
+                <div ng-switch="$ctrl.isPresentationTable()">
+                    <div ng-switch-when="true">
+                        <div ng-include="$ctrl.url($ctrl.file)"></div>
+                    </div>
+                    <img ng-switch-default
+                         class="img-responsive"
+                         ng-src="{{$ctrl.url($ctrl.file)}}">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div ng-if="!$ctrl.file || !$ctrl.showFilesForSelectedOrg()" class="main-column">
+        <div class="alert alert-info luke-instruction">
+            <span translate="club.permit.lukeReports.instructions"></span>
+        </div>
+    </div>
+</div>

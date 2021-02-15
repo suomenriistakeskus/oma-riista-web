@@ -1,5 +1,5 @@
 <div class="col-md-6 col-xs-12  fa-border" style="margin-bottom: 20px">
-    <img ng-src="/static/elainlajikuvat/512x512/{{$ctrl.speciesCode}}.jpg" width="192"
+    <img ng-src="/static/{{$ctrl.imagePath}}/512x512/{{$ctrl.imageFileName}}.jpg" width="192"
          height="192"/>
 </div>
 
@@ -8,14 +8,21 @@
         <strong>{{'harvestpermit.mine.applications.permitCategory.' + $ctrl.type.category| translate}}</strong>
     </p>
     <div ng-switch="$ctrl.type.begin != null && $ctrl.type.end != null">
-        <p ng-switch-when="true">
-            <span translate="harvestpermit.new.applicationPeriod"></span><br/>
-            {{$ctrl.type.begin|date:'d.M.'}} - {{$ctrl.type.end|date:'d.M.yyyy'}}
-        </p>
+        <div ng-switch-when="true" ng-switch="$ctrl.isLargeCarnivoreLynx()">
+            <div ng-switch-when="true" >
+                <span translate="harvestpermit.new.applicationPeriodEnd"></span>
+                <span>{{$ctrl.type.end|date:'d.M.yyyy'}}</span>
+            </div>
+            <div ng-switch-when="false">
+                <span translate="harvestpermit.new.applicationPeriod"></span><br/>
+                <span>{{$ctrl.type.begin|date:'d.M.'}} - {{$ctrl.type.end|date:'d.M.yyyy'}}</span>
+            </div>
+        </div>
         <hr ng-switch-when="false" class="invisible"/>
     </div>
     <hr class="invisible"/>
     <button ng-if="$ctrl.isActive()"
+            ng-disabled="!$ctrl.hasPermission()"
             class="btn btn-primary"
             ng-click="$ctrl.onSelectType()"
             translate="harvestpermit.new.selectTypeButton">

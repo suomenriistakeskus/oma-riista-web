@@ -1,5 +1,6 @@
 package fi.riista.feature.account.payment;
 
+import fi.riista.common.AcroFormPdfBuilder;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.audit.AccountActivityMessage;
 import fi.riista.feature.account.audit.AccountAuditService;
@@ -10,16 +11,12 @@ import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.MediaTypeExtras;
 import org.apache.commons.lang.StringUtils;
-import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.image.LosslessFactory;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 import org.joda.time.LocalDate;
@@ -121,13 +118,12 @@ public class HunterPaymentPdfFeature {
         return person.getFullName();
     }
 
-    static class PaymentPdfBuilder {
+    static class PaymentPdfBuilder extends AcroFormPdfBuilder {
         private final PDDocument pdfDocument;
-        private final PDAcroForm acroForm;
 
         private PaymentPdfBuilder(final PDDocument pdfDocument) {
+            super(pdfDocument);
             this.pdfDocument = Objects.requireNonNull(pdfDocument);
-            this.acroForm = Objects.requireNonNull(pdfDocument.getDocumentCatalog().getAcroForm());
         }
 
         public PaymentPdfBuilder textField(final String fieldName, final String value) throws IOException {
@@ -178,11 +174,6 @@ public class HunterPaymentPdfFeature {
                 }
             }
 
-            // Define font resources names used in PDF template
-            final PDResources dr = new PDResources();
-            dr.put(COSName.getPDFName("Helv"), PDType1Font.HELVETICA);
-            dr.put(COSName.getPDFName("HeBo"), PDType1Font.HELVETICA_BOLD);
-            this.acroForm.setDefaultResources(dr);
 
             // Convert form fields to text
             this.acroForm.flatten();

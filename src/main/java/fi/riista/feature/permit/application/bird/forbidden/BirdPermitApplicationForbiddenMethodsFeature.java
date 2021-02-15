@@ -7,6 +7,8 @@ import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmoun
 import fi.riista.feature.permit.application.bird.BirdPermitApplication;
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationRepository;
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationService;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethodsDTO;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethodsSpeciesDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,26 +31,27 @@ public class BirdPermitApplicationForbiddenMethodsFeature {
     private HarvestPermitApplicationSpeciesAmountRepository harvestPermitApplicationSpeciesAmountRepository;
 
     @Transactional(readOnly = true)
-    public BirdPermitApplicationForbiddenMethodsDTO getCurrentMethodInfo(final long applicationId) {
+    public DerogationPermitApplicationForbiddenMethodsDTO getCurrentMethodInfo(final long applicationId) {
         final BirdPermitApplication birdApplication =
                 birdPermitApplicationService.findForRead(applicationId);
 
         if (birdApplication.getForbiddenMethods() == null) {
-            return new BirdPermitApplicationForbiddenMethodsDTO();
+            return new DerogationPermitApplicationForbiddenMethodsDTO();
         }
 
-        final List<BirdPermitApplicationForbiddenMethodsSpeciesDTO> justificationList = birdApplication
+        final List<DerogationPermitApplicationForbiddenMethodsSpeciesDTO> justificationList = birdApplication
                 .getHarvestPermitApplication().getSpeciesAmounts().stream()
                 .sorted(Comparator.comparing(HarvestPermitApplicationSpeciesAmount::getId))
-                .map(BirdPermitApplicationForbiddenMethodsSpeciesDTO::new)
+                .map(DerogationPermitApplicationForbiddenMethodsSpeciesDTO::new)
                 .collect(Collectors.toList());
 
-        return BirdPermitApplicationForbiddenMethodsDTO.createFrom(birdApplication.getForbiddenMethods(), justificationList);
+        return DerogationPermitApplicationForbiddenMethodsDTO.createFrom(birdApplication.getForbiddenMethods(),
+                justificationList);
     }
 
     @Transactional
     public void updateMethodInfo(final long applicationId,
-                                 final @NotNull BirdPermitApplicationForbiddenMethodsDTO forbiddenMethods) {
+                                 final @NotNull DerogationPermitApplicationForbiddenMethodsDTO forbiddenMethods) {
         final BirdPermitApplication birdPermitApplication = birdPermitApplicationService.findOrCreateForUpdate(applicationId);
         final HarvestPermitApplication application = birdPermitApplication.getHarvestPermitApplication();
         birdPermitApplication.setForbiddenMethods(forbiddenMethods.toEntity());
@@ -63,22 +66,22 @@ public class BirdPermitApplicationForbiddenMethodsFeature {
     }
 
     static class UpdaterCallback
-            implements HarvestPermitApplicationSpeciesAmountUpdater.Callback<BirdPermitApplicationForbiddenMethodsSpeciesDTO> {
+            implements HarvestPermitApplicationSpeciesAmountUpdater.Callback<DerogationPermitApplicationForbiddenMethodsSpeciesDTO> {
         @Override
         public void update(final HarvestPermitApplicationSpeciesAmount entity,
-                           final BirdPermitApplicationForbiddenMethodsSpeciesDTO dto) {
+                           final DerogationPermitApplicationForbiddenMethodsSpeciesDTO dto) {
             entity.setForbiddenMethodJustification(dto.getJustification());
             entity.setForbiddenMethodsUsed(dto.isForbiddenMethodsUsed());
         }
 
         @Override
-        public int getSpeciesCode(final BirdPermitApplicationForbiddenMethodsSpeciesDTO dto) {
+        public int getSpeciesCode(final DerogationPermitApplicationForbiddenMethodsSpeciesDTO dto) {
             return dto.getGameSpeciesCode();
         }
     }
 
     private static class Updater
-            extends HarvestPermitApplicationSpeciesAmountUpdater<BirdPermitApplicationForbiddenMethodsSpeciesDTO> {
+            extends HarvestPermitApplicationSpeciesAmountUpdater<DerogationPermitApplicationForbiddenMethodsSpeciesDTO> {
         Updater(final List<HarvestPermitApplicationSpeciesAmount> existingList,
                 final UpdaterCallback callback) {
             super(existingList, callback);

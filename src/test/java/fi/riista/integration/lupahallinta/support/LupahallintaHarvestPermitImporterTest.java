@@ -215,7 +215,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
                 verifyNoMoreInteractions(mockMailHandler);
 
                 runInTransaction(() -> {
-                    List<HarvestPermit> all = harvestPermitRepository.findAll(new Sort(HarvestPermit_.id.getName()));
+                    List<HarvestPermit> all = harvestPermitRepository.findAll(Sort.by(HarvestPermit_.id.getName()));
                     assertEquals(2, all.size());
 
                     HarvestPermit first = all.get(0);
@@ -231,7 +231,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
                     assertEquals(1, speciesAmounts.size());
                     HarvestPermitSpeciesAmount speciesAmount = speciesAmounts.iterator().next();
                     assertEquals(species, speciesAmount.getGameSpecies());
-                    assertEquals((float)amount, speciesAmount.getAmount(), 0.01f);
+                    assertEquals((float)amount, speciesAmount.getSpecimenAmount(), 0.01f);
                 });
             });
         });
@@ -262,7 +262,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
                 assertEquals(1, captor.getValue().size());
 
                 runInTransaction(() -> {
-                    List<HarvestPermit> all = harvestPermitRepository.findAll(new Sort(HarvestPermit_.id.getName()));
+                    List<HarvestPermit> all = harvestPermitRepository.findAll(Sort.by(HarvestPermit_.id.getName()));
                     assertEquals(1, all.size());
 
                     HarvestPermit first = all.get(0);
@@ -296,7 +296,7 @@ public class LupahallintaHarvestPermitImporterTest extends EmbeddedDatabaseTest 
                 assertEquals(1, captor.getValue().size());
 
                 runInTransaction(() -> {
-                    List<HarvestPermit> all = harvestPermitRepository.findAll(new Sort(HarvestPermit_.id.getName()));
+                    List<HarvestPermit> all = harvestPermitRepository.findAll(Sort.by(HarvestPermit_.id.getName()));
                     assertEquals(1, all.size());
 
                     HarvestPermit first = all.get(0);

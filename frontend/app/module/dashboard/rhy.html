@@ -1,7 +1,7 @@
 <div class="form-group">
     <div class="col-xs-2">
         <div class="input-group" ng-controller="DatePickerController">
-            <input type="text" name="beginDate" id="beginDate2"
+            <input type="text" name="rhyEditBeginDate" id="rhyEditBeginDate"
                    class="form-control r-wider-date-input"
                    uib-datepicker-popup is-open="isDatePickerOpen"
                    datepicker-append-to-body="true"
@@ -18,7 +18,7 @@
     </div>
     <div class="col-xs-2">
         <div class="input-group" ng-controller="DatePickerController">
-            <input type="text" name="endDate" id="endDate2"
+            <input type="text" name="rhyEditEndDate" id="rhyEditEndDate"
                    class="form-control r-wider-date-input"
                    uib-datepicker-popup is-open="isDatePickerOpen"
                    datepicker-append-to-body="true"
@@ -54,22 +54,22 @@
 <table class="table table-bordered table-striped table-condensed" ng-show="$ctrl.resolvedRhyEditMetrics">
     <thead>
     <tr>
-        <th>Alue-koodi</th>
-        <th>RHY-koodi</th>
-        <th>RHY-nimi</th>
-        <th>Tehtävät toiminnanohjaajat</th>
-        <th>Tehtävät moderaattorit</th>
-        <th>Tapahtumat toiminnanohjaajat</th>
-        <th>Tapahtumat moderaattorit</th>
+        <th translate="reporting.dashboard.otherItemsTab.rhyEdits.areaCode"></th>
+        <th translate="reporting.dashboard.otherItemsTab.rhyEdits.rhyCode"></th>
+        <th translate="reporting.dashboard.otherItemsTab.rhyEdits.rhyName"></th>
+        <th translate="reporting.dashboard.otherItemsTab.rhyEdits.coordinators"></th>
+        <th translate="reporting.dashboard.otherItemsTab.rhyEdits.moderators"></th>
+        <th translate="reporting.dashboard.otherItemsTab.rhyEdits.eventsByCoordinators"></th>
+        <th translate="reporting.dashboard.otherItemsTab.rhyEdits.eventsByModerators"></th>
     </tr>
     </thead>
     <tr ng-repeat="row in $ctrl.resolvedRhyEditMetrics">
-        <td>{{row.areaCode}}</td>
-        <td>{{row.rhyCode}}</td>
-        <td>{{row.rhyName}}</td>
-        <td>{{row.occupations.coordinator.sum}}</td>
-        <td>{{row.occupations.moderator.sum}}</td>
-        <td>{{row.events.coordinator.sum}}</td>
-        <td>{{row.events.moderator.sum}}</td>
+        <td ng-bind="row.areaCode"></td>
+        <td ng-bind="row.rhyCode"></td>
+        <td ng-bind="row.rhyName"></td>
+        <td ng-bind="row.occupations.coordinator.sum"></td>
+        <td ng-bind="row.occupations.moderator.sum"></td>
+        <td ng-bind="row.events.coordinator.sum"></td>
+        <td ng-bind="row.events.moderator.sum"></td>
     </tr>
 </table>

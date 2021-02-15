@@ -1,0 +1,29 @@
+<form>
+    <h3 translate="reporting.dashboard.harvestTab.endOfHuntingReports.heading"></h3>
+    <div class="row">
+        <div class="col-xs-3">
+            <div class="form-group">
+                <select class="form-control"
+                        ng-options="(species | rI18nNameFilter: 'translated') for species in $ctrl.species track by species.code"
+                        ng-model="$ctrl.selectedSpecies"></select>
+            </div>
+        </div>
+        <div class="col-xs-3">
+            <div class="form-group">
+                <select class="form-control"
+                        ng-options="y.year as y.name for y in $ctrl.huntingYearOptions"
+                        ng-model="$ctrl.selectedHuntingYear"></select>
+            </div>
+        </div>
+        <div class="col-xs-3 col-xs-offset-3 text-center">
+            <div class="btn-group btn-group-justified">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary"
+                            ng-click="$ctrl.exportEndOfHuntingReports()">
+                        <span translate="reporting.dashboard.harvestTab.endOfHuntingReports.exportToExcel"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

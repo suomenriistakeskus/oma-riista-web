@@ -3,6 +3,7 @@ package fi.riista.feature.huntingclub.moosedatacard.converter;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.moosedatacard.DateAndLocation;
 import fi.riista.feature.organization.person.Person;
@@ -36,7 +37,7 @@ public abstract class MooseDataCardObservationConverterTest<T extends DateAndLoc
 
     protected abstract Stream<Observation> convert(T source, Person contactPerson, GeoLocation defaultCoordinates);
 
-    protected Stream<Observation> convert(T source) {
+    protected Stream<Observation> convert(final T source) {
         return convert(source, new Person(), geoLocation());
     }
 
@@ -59,8 +60,8 @@ public abstract class MooseDataCardObservationConverterTest<T extends DateAndLoc
             assertEquals(contactPerson, observation.getObserver());
 
             assertEquals(
-                    source.getDate().toLocalDateTime(MooseDataCardObservationConverter.DEFAULT_ENTRY_TIME).toDate(),
-                    observation.getPointOfTime());
+                    source.getDate().toLocalDateTime(MooseDataCardObservationConverter.DEFAULT_ENTRY_TIME),
+                    observation.getPointOfTime().toLocalDateTime());
 
             final GeoLocation location = observation.getGeoLocation();
             assertNotNull(location);
@@ -70,7 +71,7 @@ public abstract class MooseDataCardObservationConverterTest<T extends DateAndLoc
             assertNotNull(observation.getAmount());
 
             assertFalse(observation.isFromMobile());
-            assertEquals(Boolean.TRUE, observation.getWithinMooseHunting());
+            assertEquals(ObservationCategory.MOOSE_HUNTING, observation.getObservationCategory());
         });
     }
 

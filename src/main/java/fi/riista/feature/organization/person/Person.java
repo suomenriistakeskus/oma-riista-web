@@ -22,8 +22,6 @@ import io.vavr.Tuple2;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.UnresolvableObjectException;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -46,6 +44,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.Arrays;
@@ -152,6 +152,14 @@ public class Person extends LifecycleEntity<Long> {
     // Henkilö voi olla maksanut riistanhoitomaksun myös ilman RHY jäsenyyttä.
     @ManyToOne(optional = true, fetch = FetchType.LAZY)
     private Riistanhoitoyhdistys rhyMembership;
+
+    // Metsästäjärekisteri: Jäsenyys vuoden viimeisenä päivänä tilastoliitteeseen
+    @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    private Riistanhoitoyhdistys rhyMembershipForStatistics;
+
+    // Metsästäjärekisteri: Vuosi jolle jäsenyys (rhyMembershipForStatistics)
+    // on voimassa.
+    private Integer paymentYearValidForStatistics;
 
     // Metsästäjärekisteri: Mistä päivästä lähtien nykyinen maksettu riistanhoitomaksu on voimassa?
     @Column
@@ -422,7 +430,6 @@ public class Person extends LifecycleEntity<Long> {
     public boolean canPrintCertificate() {
         return hasHunterNumber() &&
                 !this.isDeleted() && this.deletionCode == null &&
-                this.rhyMembership != null &&
                 isHuntingCardValidNow() &&
                 getHuntingPaymentDateForNextOrCurrentSeason().isPresent() &&
                 !isArtificialPerson() &&
@@ -489,6 +496,13 @@ public class Person extends LifecycleEntity<Long> {
 
     public boolean isShootingTestsEnabled() {
         return Boolean.TRUE.equals(getEnableShootingTests());
+    }
+
+    public Riistanhoitoyhdistys getRhyMembershipForStatisticsForYear(final int year) {
+        if (paymentYearValidForStatistics != null && year == paymentYearValidForStatistics) {
+            return rhyMembershipForStatistics;
+        }
+        return null;
     }
 
     // Accessors -->
@@ -645,6 +659,22 @@ public class Person extends LifecycleEntity<Long> {
 
     public void setRhyMembership(final Riistanhoitoyhdistys rhyMembership) {
         this.rhyMembership = rhyMembership;
+    }
+
+    public Riistanhoitoyhdistys getRhyMembershipForStatistics() {
+        return rhyMembershipForStatistics;
+    }
+
+    public void setRhyMembershipForStatistics(final Riistanhoitoyhdistys rhyMembershipForStatistics) {
+        this.rhyMembershipForStatistics = rhyMembershipForStatistics;
+    }
+
+    public Integer getPaymentYearValidForStatistics() {
+        return paymentYearValidForStatistics;
+    }
+
+    public void setPaymentYearValidForStatistics(final Integer paymentYearValidForStatistics) {
+        this.paymentYearValidForStatistics = paymentYearValidForStatistics;
     }
 
     public LocalDate getHuntingCardStart() {

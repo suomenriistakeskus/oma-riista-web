@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class ShootingRangeStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<ShootingRangeStatistics>,
+        AnnualStatisticsManuallyEditableFields<ShootingRangeStatistics>,
         Serializable {
 
     public static final ShootingRangeStatistics reduce(@Nullable final ShootingRangeStatistics a,
@@ -72,6 +73,7 @@ public class ShootingRangeStatistics
     private Integer otherShootingRanges;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "shooting_ranges_last_modified")
     private DateTime lastModified;
 

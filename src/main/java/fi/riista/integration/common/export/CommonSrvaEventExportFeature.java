@@ -27,7 +27,6 @@ import fi.riista.util.EnumUtils;
 import fi.riista.util.F;
 import fi.riista.util.JaxbUtils;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDateTime;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -39,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static fi.riista.feature.gamediary.srva.SrvaEventStateEnum.APPROVED;
 
 @Service
 public class CommonSrvaEventExportFeature {
@@ -104,18 +105,19 @@ public class CommonSrvaEventExportFeature {
                 .join(EVENT.rhy, RHY)
                 .leftJoin(EVENT.species, SPECIES)
                 .where(EVENT.pointOfTime.between(
-                        range.lowerEndpoint().toDate(),
-                        range.upperEndpoint().toDate()))
+                        range.lowerEndpoint(),
+                        range.upperEndpoint()),
+                        EVENT.state.eq(APPROVED))
                 .fetch().stream()
                 .map(tuple -> createSrvaEventFromTuple(tuple))
                 .collect(Collectors.toMap(e -> e.getSrvaEventId(), Function.identity()));
     }
 
-    private CEV_SRVAEvent createSrvaEventFromTuple(final Tuple tuple) {
+    private static CEV_SRVAEvent createSrvaEventFromTuple(final Tuple tuple) {
         return new CEV_SRVAEvent()
                 .withSrvaEventId(tuple.get(EVENT.id))
                 .withRhyNumber(tuple.get(RHY.officialCode))
-                .withPointOfTime(new LocalDateTime(tuple.get(EVENT.pointOfTime).getTime()))
+                .withPointOfTime(tuple.get(EVENT.pointOfTime).toLocalDateTime())
                 .withGeoLocation(convertLocation(tuple.get(EVENT.geoLocation)))
                 .withGameSpeciesCode(tuple.get(SPECIES.officialCode))
                 .withOtherSpeciesDescription(tuple.get(EVENT.otherSpeciesDescription))
@@ -176,7 +178,7 @@ public class CommonSrvaEventExportFeature {
     }
 
 
-    private CEV_GeoLocation convertLocation(final GeoLocation location) {
+    private static CEV_GeoLocation convertLocation(final GeoLocation location) {
         return new CEV_GeoLocation().withLatitude(location.getLatitude()).withLongitude(location.getLongitude());
     }
 

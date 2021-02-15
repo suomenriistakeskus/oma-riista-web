@@ -1,0 +1,16 @@
+<div class="row">
+    <div class="col-xs-3">
+        <moderator-nomination-decision-search-filters
+                filters="$ctrl.filters"
+                handlers="$ctrl.handlers"
+                reset="$ctrl.reset()"
+                search="$ctrl.loadPage(0)">
+        </moderator-nomination-decision-search-filters>
+    </div>
+
+    <div class="col-xs-9">
+        <slice-pager slice="$ctrl.results" load-page="$ctrl.loadPage(page)"></slice-pager>
+
+        <moderator-nominationdecision-results-list results="$ctrl.results.content"></moderator-nominationdecision-results-list>
+    </div>
+</div>

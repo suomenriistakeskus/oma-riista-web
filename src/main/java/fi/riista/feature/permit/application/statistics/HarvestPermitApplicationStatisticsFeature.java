@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.account.user.QSystemUser;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.QOrganisation;
@@ -13,7 +14,6 @@ import fi.riista.feature.organization.QRiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
-import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.QPermitDecision;
 import io.vavr.Tuple;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +46,28 @@ public class HarvestPermitApplicationStatisticsFeature {
         final Map<String, Map<String, Integer>> bird = calculateHKV(ImmutableSet.of(HarvestPermitCategory.BIRD), year);
         final Map<String, Map<String, Integer>> carnivore =
                 calculateHKV(HarvestPermitCategory.getLargeCarnivoreCategories(), year);
+        final Map<String, Map<String, Integer>> mammal =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.MAMMAL), year);
+        final Map<String, Map<String, Integer>> nestRemoval =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.NEST_REMOVAL), year);
+        final Map<String, Map<String, Integer>> lawSectionTen =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.LAW_SECTION_TEN), year);
+        final Map<String, Map<String, Integer>> weaponTransportation =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.WEAPON_TRANSPORTATION), year);
+        final Map<String, Map<String, Integer>> disability =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.DISABILITY), year);
+        final Map<String, Map<String, Integer>> dogDisturbance =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.DOG_DISTURBANCE), year);
+        final Map<String, Map<String, Integer>> dogUnleash =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.DOG_UNLEASH), year);
+        final Map<String, Map<String, Integer>> deportation =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.DEPORTATION), year);
+        final Map<String, Map<String, Integer>> research =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.RESEARCH), year);
+        final Map<String, Map<String, Integer>> importing =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.IMPORTING), year);
+        final Map<String, Map<String, Integer>> gameManagement =
+                calculateHKV(ImmutableSet.of(HarvestPermitCategory.GAME_MANAGEMENT), year);
 
         final QRiistakeskuksenAlue RKA = QRiistakeskuksenAlue.riistakeskuksenAlue;
 
@@ -55,16 +78,55 @@ public class HarvestPermitApplicationStatisticsFeature {
                 .map(rka -> {
                     final HarvestPermitApplicationStatusTableDTO dto = new HarvestPermitApplicationStatusTableDTO();
                     dto.setRka(OrganisationNameDTO.createWithOfficialCode(rka));
+                    final List<HarvestPermitApplicationStatusItemDTO> statuses = new ArrayList<>();
+                    final String rkaOfficialCode = rka.getOfficialCode();
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.MOOSELIKE.name(),
+                                    mooselike.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.MOOSELIKE_NEW.name(),
+                                    mooselikeAmendment.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.BIRD.name(),
+                                    bird.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.LARGE_CARNIVORE_CATEGORIES,
+                                    carnivore.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.MAMMAL.name(),
+                                    mammal.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.NEST_REMOVAL.name(),
+                                    nestRemoval.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.LAW_SECTION_TEN.name(),
+                                    lawSectionTen.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.WEAPON_TRANSPORTATION.name(),
+                                    weaponTransportation.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.DISABILITY.name(),
+                                    disability.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.DOG_DISTURBANCE.name(),
+                                    dogDisturbance.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.DOG_UNLEASH.name(),
+                                    dogUnleash.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.DEPORTATION.name(),
+                                    deportation.get(rka.getOfficialCode())));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.RESEARCH.name(),
+                                    research.get(rka.getOfficialCode())));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.IMPORTING.name(),
+                                    importing.get(rkaOfficialCode)));
+                    statuses.add(
+                            HarvestPermitApplicationStatusItemDTO.create(HarvestPermitCategory.GAME_MANAGEMENT.name(),
+                                    gameManagement.get(rkaOfficialCode)));
+                    dto.setCategoryStatuses(statuses);
 
-                    final Map<String, Map<String, Integer>> permitTypeToStatus = new HashMap<>();
-                    permitTypeToStatus.put(HarvestPermitCategory.MOOSELIKE.name(),
-                            mooselike.get(rka.getOfficialCode()));
-                    permitTypeToStatus.put(HarvestPermitCategory.MOOSELIKE_NEW.name(),
-                            mooselikeAmendment.get(rka.getOfficialCode()));
-                    permitTypeToStatus.put(HarvestPermitCategory.BIRD.name(), bird.get(rka.getOfficialCode()));
-                    permitTypeToStatus.put(HarvestPermitCategory.LARGE_CARNIVORE_CATEGORIES,
-                            carnivore.get(rka.getOfficialCode()));
-                    dto.setPermitCategoryToStatus(permitTypeToStatus);
                     return dto;
                 }).collect(Collectors.toList());
     }
@@ -80,9 +142,9 @@ public class HarvestPermitApplicationStatisticsFeature {
 
         final NumberExpression<Integer> h = countingCase(HANDLER.isNull(), "H");
         final NumberExpression<Integer> k =
-                countingCase(HANDLER.isNotNull().and(DECISION.status.eq(PermitDecision.Status.DRAFT)), "K");
+                countingCase(HANDLER.isNotNull().and(DECISION.status.eq(DecisionStatus.DRAFT)), "K");
         final NumberExpression<Integer> v =
-                countingCase(HANDLER.isNotNull().and(DECISION.status.ne(PermitDecision.Status.DRAFT)), "V");
+                countingCase(HANDLER.isNotNull().and(DECISION.status.ne(DecisionStatus.DRAFT)), "V");
 
         return jpqlQueryFactory.select(RKA.officialCode, h, k, v)
                 .from(APPLICATION)

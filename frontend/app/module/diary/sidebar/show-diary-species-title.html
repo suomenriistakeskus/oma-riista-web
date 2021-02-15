@@ -1,0 +1,26 @@
+<div ng-switch="::$ctrl.entry.isOtherSpecies()">
+    <div ng-switch-when="false">
+
+        <!-- Title with an image -->
+        <img ng-src="/static/elainlajikuvat/96x96/{{$ctrl.entry.gameSpeciesCode}}.jpg"
+             class="species-logo"
+             width="96" height="96"/>
+
+        <span class="species-name">
+            <span ng-bind="::$ctrl.entry.gameSpeciesCode | translateSpeciesCode"></span>
+            <span ng-if="$ctrl.entry.totalSpecimenAmount > 1">({{::$ctrl.entry.totalSpecimenAmount}})</span>
+        </span>
+
+    </div>
+    <div ng-switch-when="true">
+
+        <!-- Title without image (replaced with a question mark) -->
+        <span class="fa fa-question fa-2x"></span>
+        <span class="species-name">
+            <span ng-bind="::$ctrl.entry.gameSpeciesCode | translateSpeciesCode"></span>
+            <span ng-if="$ctrl.entry.totalSpecimenAmount > 1">({{::$ctrl.entry.totalSpecimenAmount}})</span>
+        </span>
+        <span class="species-name">&nbsp;-&nbsp;{{::$ctrl.entry.otherSpeciesDescription}}</span>
+
+    </div>
+</div>

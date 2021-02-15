@@ -13,7 +13,7 @@ import java.util.Collections;
 
 import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MooselikePermitPriceServiceTest extends EmbeddedDatabaseTest {
 

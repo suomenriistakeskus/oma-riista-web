@@ -26,7 +26,7 @@ import static fi.riista.util.DateUtil.now;
 import static fi.riista.util.DateUtil.toDateNullSafe;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HarvestRegistrySynchronizerServiceTest extends EmbeddedDatabaseTest {
 
@@ -111,7 +111,7 @@ public class HarvestRegistrySynchronizerServiceTest extends EmbeddedDatabaseTest
         runInTransaction(service::synchronize);
 
         runInTransaction(() -> {
-            final Integration integration = integrationRepository.findOne(Integration.HARVEST_REGISTRY_SYNC_ID);
+            final Integration integration = integrationRepository.findById(Integration.HARVEST_REGISTRY_SYNC_ID).orElse(null);
             assertEquals(REGISTRY_START_TIME_STAMP.plusWeeks(1), integration.getLastRun().toLocalDate());
         });
     }

@@ -41,22 +41,36 @@ angular.module('app.clubhunting.add', [])
             });
     })
 
-    .service('ClubHuntingHarvestFields', function ($q, $http) {
-        this.get = function (gameSpeciesCode) {
+    .service('ClubHuntingHarvestFields', function ($http, RequiredHarvestFields) {
+        function responseTransformer (response) {
+            var requiredFields = response.data;
+
+            // Replace field requirements object with enhanced one having custom API.
+            return RequiredHarvestFields.create(requiredFields);
+        }
+
+        this.get = function (huntingGroupId) {
             return $http.get('/api/v1/club/group/harvest/fields', {
                 params: {
-                    gameSpeciesCode: gameSpeciesCode
+                    huntingGroupId: huntingGroupId
                 }
-            }).then(function (res) {
-                return res.data;
-            });
+            }).then(responseTransformer);
+        };
+
+        this.getLegallyMandatory = function (huntingGroupId) {
+            return $http.get('/api/v1/club/group/harvest/legally-mandatory-fields', {
+                params: {
+                    huntingGroupId: huntingGroupId
+                }
+            }).then(responseTransformer);
         };
     })
 
-    .service('ClubHuntingEntryFormService', function (Helpers, ActiveRoleService, offCanvasStack,
-                                                      GameDiaryParameters, DiaryEntrySpecimenFormService,
-                                                      ObservationFieldsMetadata, ClubHuntingHarvestFields,
-                                                      ClubGroups, ClubHuntingDayService) {
+    .service('ClubHuntingEntryFormService', function (ActiveRoleService, ClubGroups, ClubHuntingDayService,
+                                                      ClubHuntingHarvestFields, DiaryEntrySpecimenFormService,
+                                                      GameDiaryParameters, Helpers, ObservationCategory,
+                                                      ObservationFieldsMetadata, offCanvasStack) {
+
         this.openDiaryEntryForm = function (item, huntingDays, memberCandidates, huntingFinished) {
             var diaryEntry = item.diaryEntry;
             var clubId = item.clubId;
@@ -88,7 +102,7 @@ angular.module('app.clubhunting.add', [])
             diaryEntry.canEdit = true;
 
             if (diaryEntry.isObservation()) {
-                diaryEntry.withinMooseHunting = true;
+                diaryEntry.observationCategory = ObservationCategory.MOOSE_HUNTING;
             }
 
             // Initialize specimen array to match totalAmount
@@ -109,8 +123,9 @@ angular.module('app.clubhunting.add', [])
 
                 angular.extend(resolve, {
                     fields: function () {
-                        return ClubHuntingHarvestFields.get(diaryEntry.gameSpeciesCode);
-                    }
+                        return ClubHuntingHarvestFields.get(groupId);
+                    },
+                    groupId: _.constant(groupId)
                 });
             } else if (diaryEntry.isObservation()) {
                 templateUrl = 'club/hunting/add/observation-form.html';
@@ -152,10 +167,12 @@ angular.module('app.clubhunting.add', [])
         $ctrl.huntingArea = huntingArea;
 
         ClubHuntingEntryFormService.openDiaryEntryForm(
-            selectedItem, huntingDays, memberCandidates, huntingFinished).then(function (diaryEntry) {
+            selectedItem, huntingDays, memberCandidates, huntingFinished).then(function (returnValue) {
             var huntingDayPromise = $q.resolve();
+            var diaryEntry = returnValue.entry;
+            var createHuntingDay = returnValue.createDay;
 
-            if (diaryEntry.isHarvest() && diaryEntry.isPermitBasedDeer()) {
+            if (diaryEntry.isHarvest() && createHuntingDay) {
                 huntingDayPromise = ClubHuntingDayService.getOrCreate(groupId, diaryEntry.pointOfTime)
                     .then(function (huntingDay) {
                         diaryEntry.huntingDayId = huntingDay.id;
@@ -363,7 +380,7 @@ angular.module('app.clubhunting.add', [])
 
             $ctrl.isPermitValidOnDate = function () {
                 var isValid = !$ctrl.nonMooseDate || HarvestPermitSpeciesAmountService.isValidDateForSpeciesAmount(
-                        $ctrl.speciesAmount, $ctrl.nonMooseDate);
+                    $ctrl.speciesAmount, $ctrl.nonMooseDate);
                 $ctrl.parentForm.$setValidity('nonMooseDate', isValid);
                 return isValid;
             };
@@ -467,13 +484,17 @@ angular.module('app.clubhunting.add', [])
         }
     })
 
-    .controller('ClubHarvestFormController', function ($scope, $filter, Helpers, ActiveRoleService,
-                                                       Harvest, HarvestFieldsService,
-                                                       entry, parameters, fields, huntingDays,
-                                                       memberCandidates, createHuntingDayForEntry,
-                                                       huntingFinished, permitSpeciesAmount) {
+    .controller('ClubHarvestFormController', function ($filter, $scope, ActiveRoleService, ClubHuntingHarvestFields,
+                                                       HarvestFieldsService, ModeratorPrivileges,
+                                                       createHuntingDayForEntry, entry, fields, groupId, huntingDays,
+                                                       huntingFinished, memberCandidates, parameters,
+                                                       permitSpeciesAmount) {
         $scope.entry = entry;
+        $scope.fields = fields;
+
         $scope.isModerator = ActiveRoleService.isModerator();
+        $scope.canSaveWithIncompleteData =
+            ActiveRoleService.isPrivilegedModerator(ModeratorPrivileges.saveHarvestWithIncompleteData);
         $scope.parameters = parameters;
         $scope.availableSpecies = parameters.species;
         $scope.huntingDays = huntingDays;
@@ -488,69 +509,85 @@ angular.module('app.clubhunting.add', [])
         $scope.availableAges = $filter('stripUnknown')(parameters.ages);
 
         $scope.mooseGroupSelected = $scope.entry.isMoose();
+        $scope.saveWithLegalFieldsOnly = false;
 
         $scope.isValid = function () {
-            var permitBasedDeer = $scope.entry.isPermitBasedDeer();
-
             return $scope.entry.gameSpeciesCode &&
                 $scope.entry.geoLocation.latitude &&
                 $scope.entry.actorInfo && $scope.entry.actorInfo.hunterNumber &&
-                (permitBasedDeer || $scope.entry.huntingDayId) &&
+                isHuntingDayInfoValid() &&
                 $scope.entry.pointOfTime &&
-                (permitBasedDeer || $scope.entry.specimens[0].weightEstimated || $scope.entry.specimens[0].weightMeasured);
+                !$scope.isWeightInfoInadequate();
         };
 
+        function isHuntingDayInfoValid() {
+            return ($scope.saveWithLegalFieldsOnly || $scope.entry.isPermitBasedDeer() || $scope.entry.huntingDayId);
+        }
+
         $scope.save = function () {
-            HarvestFieldsService.removeForbiddenFields(fields, $scope.entry);
-            $scope.$close($scope.entry);
+            HarvestFieldsService.fixStateBeforeSaving($scope.fields, $scope.entry);
+
+            $scope.$close({
+                entry: $scope.entry,
+                createDay: $scope.saveWithLegalFieldsOnly || $scope.entry.isPermitBasedDeer()
+            });
         };
 
         $scope.cancel = function () {
             $scope.$dismiss('cancel');
         };
 
-        function _getFieldRequired(fieldName) {
-            return fields ? fields[fieldName] : 'NO';
+        function updateFieldRequirements () {
+            function updateRequiredFields (requiredFields) {
+                $scope.fields = requiredFields;
+            }
+
+            if ($scope.saveWithLegalFieldsOnly) {
+                ClubHuntingHarvestFields.getLegallyMandatory(groupId).then(updateRequiredFields);
+            } else {
+                ClubHuntingHarvestFields.get(groupId).then(updateRequiredFields);
+            }
         }
 
-        $scope.isFieldVisible = function (fieldName) {
-            return _getFieldRequired(fieldName) !== 'NO';
+        $scope.toggleLegalFieldsOnly = function () {
+            $scope.saveWithLegalFieldsOnly = !$scope.saveWithLegalFieldsOnly;
+            updateFieldRequirements();
         };
 
-        $scope.isFieldRequired = function (fieldName) {
-            return _getFieldRequired(fieldName) === 'YES';
+        $scope.isReportFieldVisible = function (fieldName) {
+            return !!$scope.fields && $scope.fields.isVisibleReportField(fieldName);
         };
 
-        $scope.isEstimatedWeightVisible = function () {
-            return $scope.isFieldVisible('weightEstimated');
+        $scope.isSpecimenFieldVisible = function (fieldName) {
+            var specimen = $scope.entry.specimens[0];
+            return !!$scope.fields && $scope.fields.isVisibleSpecimenField(fieldName, specimen);
         };
 
-        $scope.isMeasuredWeightVisible = function () {
-            return $scope.isFieldVisible('weightMeasured');
+        $scope.isSpecimenFieldRequired = function (fieldName) {
+            var specimen = $scope.entry.specimens[0];
+            return !!$scope.fields && $scope.fields.isRequiredSpecimenField(fieldName, specimen);
         };
 
-        var isEstimatedAndMeasuredWeightVisible = function () {
-            return $scope.isEstimatedWeightVisible() && $scope.isMeasuredWeightVisible();
+        $scope.dateSelectionType = function () {
+            if ($scope.saveWithLegalFieldsOnly || !$scope.mooseGroupSelected) {
+                return 'BASIC';
+            }
+            return 'MOOSE_DAY';
         };
 
-        $scope.isEstimatedWeightRequired = function () {
-            return $scope.mooseGroupSelected &&
-                isEstimatedAndMeasuredWeightVisible() &&
-                !_.get($scope.entry, 'specimens[0].weightMeasured', false);
+        $scope.isWeightInfoInadequate = function () {
+            return !$scope.saveWithLegalFieldsOnly &&
+                $scope.mooseGroupSelected &&
+                !$scope.entry.specimens[0].weightMeasured &&
+                !$scope.entry.specimens[0].weightEstimated;
         };
 
-        $scope.isMeasuredWeightRequired = function () {
-            return $scope.mooseGroupSelected &&
-                isEstimatedAndMeasuredWeightVisible() &&
-                !_.get($scope.entry, 'specimens[0].weightEstimated', false);
-        };
     })
 
-    .controller('ClubObservationFormController', function ($scope, MapUtil,
-                                                           DiaryEntrySpecimenFormService,
+    .controller('ClubObservationFormController', function ($scope, DiaryEntrySpecimenFormService, MapUtil,
                                                            ObservationFieldsMetadata, availableSpecies,
-                                                           fieldMetadataForObservationSpecies,
-                                                           createHuntingDayForEntry, entry, huntingDays,
+                                                           createHuntingDayForEntry, entry,
+                                                           fieldMetadataForObservationSpecies, huntingDays,
                                                            huntingFinished, isModerator, memberCandidates, parameters) {
         $scope.entry = entry;
         $scope.isModerator = isModerator;
@@ -570,7 +607,9 @@ angular.module('app.clubhunting.add', [])
         $scope.showSave = !huntingFinished && !isAlreadyExistingAndNotYetLinked;
 
         $scope.getAvailableObservationTypes = function () {
-            return $scope.fieldMetadata ? $scope.fieldMetadata.getAvailableObservationTypes(true) : [];
+            return $scope.fieldMetadata
+                ? $scope.fieldMetadata.getAvailableObservationTypes($scope.entry.observationCategory)
+                : [];
         };
 
         $scope.getAvailableGameGenders = function () {
@@ -637,7 +676,7 @@ angular.module('app.clubhunting.add', [])
         };
 
         $scope.save = function () {
-            $scope.$close($scope.entry);
+            $scope.$close({entry: $scope.entry, createDay: false});
         };
 
         $scope.cancel = function () {
@@ -672,7 +711,9 @@ angular.module('app.clubhunting.add', [])
         $scope.$watch('fieldMetadata', function (newValue, oldValue) {
             if (newValue) {
                 newValue.resetIllegalObservationFields($scope.entry);
-                $scope.fieldRequirements = newValue.getFieldRequirements(true, $scope.entry.observationType);
+                $scope.fieldRequirements = newValue.getFieldRequirements(
+                    $scope.entry.observationCategory,
+                    $scope.entry.observationType);
                 $scope.fieldMetadata.resetIllegalObservationFields($scope.entry);
             } else {
                 $scope.fieldRequirements = null;
@@ -682,7 +723,9 @@ angular.module('app.clubhunting.add', [])
         $scope.$watch('entry.observationType', function (newValue, oldValue) {
             if (newValue !== oldValue) {
                 if ($scope.fieldMetadata) {
-                    $scope.fieldRequirements = $scope.fieldMetadata.getFieldRequirements($scope.entry.withinMooseHunting, $scope.entry.observationType);
+                    $scope.fieldRequirements = $scope.fieldMetadata.getFieldRequirements(
+                        $scope.entry.observationCategory,
+                        $scope.entry.observationType);
                 }
             }
         });

@@ -1,7 +1,10 @@
 package fi.riista.feature.gamediary.observation.metadata;
 
+import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.common.entity.Required;
+import fi.riista.feature.common.entity.RequiredWithinDeerPilot;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.feature.gamediary.observation.metadata.GameSpeciesObservationFieldRequirementsDTO.ContextSensitiveFieldSetDTO;
 import fi.riista.feature.gamediary.observation.specimen.GameMarking;
@@ -18,6 +21,9 @@ import java.util.List;
 import static fi.riista.feature.common.entity.Required.NO;
 import static fi.riista.feature.common.entity.Required.VOLUNTARY;
 import static fi.riista.feature.common.entity.Required.YES;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.DEER_HUNTING;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.MOOSE_HUNTING;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
 import static fi.riista.feature.gamediary.observation.specimen.GameMarking.COLLAR_OR_RADIO_TRANSMITTER;
 import static fi.riista.feature.gamediary.observation.specimen.GameMarking.EARMARK;
 import static fi.riista.feature.gamediary.observation.specimen.GameMarking.LEG_RING_OR_WING_TAG;
@@ -29,6 +35,8 @@ import static fi.riista.feature.gamediary.observation.specimen.ObservedGameState
 import static fi.riista.feature.gamediary.observation.specimen.ObservedGameState.WOUNDED;
 import static fi.riista.test.Asserts.assertEmpty;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -37,6 +45,7 @@ import static org.mockito.Mockito.spy;
 public class GameSpeciesObservationFieldRequirementsDTOTest implements ValueGeneratorMixin {
 
     private static final int DEFAULT_METADATA_VERSION = 1;
+    private static final int DEER_HUNTING_METADATA_VERSION = 4;
 
     @Override
     public NumberGenerator getNumberGenerator() {
@@ -141,6 +150,61 @@ public class GameSpeciesObservationFieldRequirementsDTOTest implements ValueGene
         assertMarkingTranslationToDTO(ctxFields, LEG_RING_OR_WING_TAG, YES);
     }
 
+    @Test
+    public void testBaseFields_withPreAndPostDeerHuntingMetadata() {
+        final int[] metadataVersions = {DEFAULT_METADATA_VERSION, DEER_HUNTING_METADATA_VERSION};
+        final ImmutableMap<String, RequiredWithinDeerPilot> expectedNormal =
+                ImmutableMap.of("withinMooseHunting", RequiredWithinDeerPilot.NO, "withinDeerHunting", RequiredWithinDeerPilot.NO);
+        final ImmutableMap<String, RequiredWithinDeerPilot> expectedMooseHunting =
+                ImmutableMap.of("withinMooseHunting", RequiredWithinDeerPilot.YES, "withinDeerHunting", RequiredWithinDeerPilot.NO);
+        final ImmutableMap<String, RequiredWithinDeerPilot> expectedDeerHunting =
+                ImmutableMap.of("withinMooseHunting", RequiredWithinDeerPilot.NO, "withinDeerHunting", RequiredWithinDeerPilot.YES);
+
+        for (final int metadataVersion : metadataVersions) {
+            assertEquals(expectedNormal, createDTO(NORMAL, metadataVersion).getBaseFields());
+            assertEquals(expectedMooseHunting, createDTO(MOOSE_HUNTING, metadataVersion).getBaseFields());
+            assertEquals(expectedDeerHunting, createDTO(DEER_HUNTING, metadataVersion).getBaseFields());
+        }
+    }
+
+    @Test
+    public void testBaseFields_withUnsupportedCombination() {
+        final GameSpecies species = newGameSpeciesAssociatedWithBaseFields();
+        final ObservationContextSensitiveFields ctxFields = newContextSensitiveFields(species, NORMAL, some(ObservationType.class), DEFAULT_METADATA_VERSION);
+        final ObservationBaseFields baseFields = newBaseFields(ctxFields.getSpecies(), NORMAL, DEFAULT_METADATA_VERSION);
+        baseFields.setWithinMooseHunting(YES);
+        baseFields.setWithinDeerHunting(RequiredWithinDeerPilot.YES);
+        final ImmutableMap<String, RequiredWithinDeerPilot> expected = ImmutableMap.of("withinMooseHunting", RequiredWithinDeerPilot.YES, "withinDeerHunting", RequiredWithinDeerPilot.YES);
+        assertEquals(expected, create(baseFields, ctxFields).getBaseFields());
+    }
+
+    @Test
+    public void testContextSensitiveField_withPreDeerHuntingMetadata() {
+        final ObservationCategory[] categories = {NORMAL, MOOSE_HUNTING};
+        for (final ObservationCategory category : categories) {
+            final GameSpeciesObservationFieldRequirementsDTO dto = createDTO(category, DEFAULT_METADATA_VERSION);
+            assertEquals(category == MOOSE_HUNTING, dto.getContextSensitiveFieldSets().get(0).isWithinMooseHunting());
+            assertNull(dto.getContextSensitiveFieldSets().get(0).getCategory());
+        }
+    }
+
+    @Test
+    public void testContextSensitiveField_withUnsupportedCombination() {
+        final GameSpeciesObservationFieldRequirementsDTO dto = createDTO(DEER_HUNTING, DEFAULT_METADATA_VERSION);
+        assertFalse(dto.getContextSensitiveFieldSets().get(0).isWithinMooseHunting());
+        assertNull(dto.getContextSensitiveFieldSets().get(0).getCategory());
+    }
+
+    @Test
+    public void testContextSensitiveFields_withPostDeerHuntingMetadata() {
+        final ObservationCategory[] categories = {NORMAL, MOOSE_HUNTING, DEER_HUNTING};
+        for (final ObservationCategory category : categories) {
+            final GameSpeciesObservationFieldRequirementsDTO dto = createDTO(category, DEER_HUNTING_METADATA_VERSION);
+            assertNull(dto.getContextSensitiveFieldSets().get(0).isWithinMooseHunting());
+            assertEquals(category, dto.getContextSensitiveFieldSets().get(0).getCategory());
+        }
+    }
+
     private static void assertStateTranslationToDTO(final ObservationContextSensitiveFields ctxFields,
                                     final ObservedGameState expectedStateValue,
                                     final Required stateRequirement) {
@@ -173,30 +237,49 @@ public class GameSpeciesObservationFieldRequirementsDTOTest implements ValueGene
     }
 
     private static ContextSensitiveFieldSetDTO transformToDTO(final ObservationContextSensitiveFields ctxFields) {
-        final ObservationBaseFields baseFields =
-                newBaseFields(ctxFields.getSpecies(), ctxFields.isWithinMooseHunting() ? YES : NO);
+        final ObservationBaseFields baseFields = newBaseFields(
+                ctxFields.getSpecies(), ctxFields.getObservationCategory(), DEFAULT_METADATA_VERSION);
         final GameSpeciesObservationFieldRequirementsDTO dto = create(baseFields, ctxFields);
 
         assertEquals(1, dto.getContextSensitiveFieldSets().size());
         return dto.getContextSensitiveFieldSets().get(0);
     }
 
-    private static ObservationBaseFields newBaseFields(final GameSpecies species, final Required withinMooseHunting) {
+    private static ObservationBaseFields newBaseFields(final GameSpecies species,
+                                                       final ObservationCategory category,
+                                                       final int metadataVersion) {
+
         // Mocking needed becase JPA static metamodel is not available.
         final ObservationBaseFields baseFields = spy(new ObservationBaseFields());
 
         doReturn(species).when(baseFields).getSpecies();
         doNothing().when(baseFields).setSpecies(any(GameSpecies.class));
+        baseFields.setMetadataVersion(metadataVersion);
 
-        baseFields.setMetadataVersion(DEFAULT_METADATA_VERSION);
-        baseFields.setWithinMooseHunting(withinMooseHunting);
+        switch (category) {
+            case NORMAL:
+                baseFields.setWithinMooseHunting(NO);
+                baseFields.setWithinDeerHunting(RequiredWithinDeerPilot.NO);
+                break;
+            case MOOSE_HUNTING:
+                baseFields.setWithinMooseHunting(YES);
+                baseFields.setWithinDeerHunting(RequiredWithinDeerPilot.NO);
+                break;
+            case DEER_HUNTING:
+                baseFields.setWithinMooseHunting(NO);
+                baseFields.setWithinDeerHunting(RequiredWithinDeerPilot.YES);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid ObservationCategory");
+        }
 
         return baseFields;
     }
 
     private static ObservationContextSensitiveFields newContextSensitiveFields(final GameSpecies species,
-                                                                               final boolean withinMooseHunting,
-                                                                               final ObservationType type) {
+                                                                               final ObservationCategory category,
+                                                                               final ObservationType type,
+                                                                               final int metadataVersion) {
 
         // Mocking needed becase JPA static metamodel is not available.
         final ObservationContextSensitiveFields ctxFields = spy(new ObservationContextSensitiveFields());
@@ -204,22 +287,29 @@ public class GameSpeciesObservationFieldRequirementsDTOTest implements ValueGene
         doReturn(species).when(ctxFields).getSpecies();
         doNothing().when(ctxFields).setSpecies(any(GameSpecies.class));
 
-        ctxFields.setMetadataVersion(DEFAULT_METADATA_VERSION);
-        ctxFields.setWithinMooseHunting(withinMooseHunting);
+        ctxFields.setMetadataVersion(metadataVersion);
+        ctxFields.setObservationCategory(category);
         ctxFields.setObservationType(type);
 
         return ctxFields;
     }
 
-    private ObservationContextSensitiveFields newContextSensitiveFields() {
-        final GameSpecies species = newGameSpeciesAssociatedWithBaseFields(NO);
-        return newContextSensitiveFields(species, false, some(ObservationType.class));
+    private GameSpeciesObservationFieldRequirementsDTO createDTO(final ObservationCategory category, final int metadataVersion) {
+        final GameSpecies species = newGameSpeciesAssociatedWithBaseFields();
+        final ObservationContextSensitiveFields ctxFields = newContextSensitiveFields(species, category, some(ObservationType.class), metadataVersion);
+        final ObservationBaseFields baseFields = newBaseFields(ctxFields.getSpecies(), category, metadataVersion);
+        return create(baseFields, ctxFields);
     }
 
-    private GameSpecies newGameSpeciesAssociatedWithBaseFields(final Required withinMooseHunting) {
+    private ObservationContextSensitiveFields newContextSensitiveFields() {
+        final GameSpecies species = newGameSpeciesAssociatedWithBaseFields();
+        return newContextSensitiveFields(species, NORMAL, some(ObservationType.class), DEFAULT_METADATA_VERSION);
+    }
+
+    private GameSpecies newGameSpeciesAssociatedWithBaseFields() {
         final GameSpecies species = new GameSpecies();
         species.setOfficialCode(nextPositiveInt());
-        newBaseFields(species, withinMooseHunting);
+        newBaseFields(species, NORMAL, DEFAULT_METADATA_VERSION);
         return species;
     }
 }

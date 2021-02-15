@@ -1,0 +1,136 @@
+<nomination-decision-nav-header decision="$ctrl.decision"></nomination-decision-nav-header>
+
+<div class="alert alert-info"
+     ng-if="!$ctrl.activeRevision"
+     translate="decision.revision.notLocked"></div>
+
+<div ng-show="!!$ctrl.activeRevision">
+    <div class="row">
+        <div class="col-xs-1">
+            <h4 style="margin-top: 6px" translate="decision.revision.decision"></h4>
+        </div>
+
+        <div class="col-xs-6">
+            <decisision-revision-selection revisions="$ctrl.revisions"
+                                           on-active-revision-changed="$ctrl.onActiveRevisionChanged(revision)"
+                                           download-pdf="$ctrl.downloadPdf()">
+            </decisision-revision-selection>
+        </div>
+    </div>
+
+    <decision-revision-details active-revision="$ctrl.activeRevision"></decision-revision-details>
+
+    <hr>
+
+    <decision-revision-attachments attachments="$ctrl.attachments"
+                                   download-url="$ctrl.attachmentDownloadUrl"
+                                   allow-edit-of-additional-attachments="$ctrl.allowEditOfAdditionalAttachments"
+                                   open-attachment-dialog="$ctrl.openAttachmentEditor()"></decision-revision-attachments>
+    <hr>
+
+    <h4 translate="decision.revision.deliveryType"></h4>
+
+    <div class="well">
+        <div class="row">
+            <div class="col-xs-1">
+                <span class="fa fa-4x fa-fw fa-envelope text-primary"></span>
+            </div>
+
+            <div class="col-xs-7">
+                <p>
+                    <strong translate="decision.revision.deliveryPostal"></strong>
+                </p>
+
+                <p class="text-muted" style="margin-top: 20px;"
+                   translate="decision.revision.deliveryPostalNote"></p>
+            </div>
+            <div class="col-xs-4 text-right">
+                <p><br></p>
+
+                <div class="btn-group pull-right" style="margin-left: 20px">
+                    <label class="btn btn-default form-control-static"
+                           ng-model="$ctrl.activeRevision.posted"
+                           ng-change="$ctrl.togglePosted($ctrl.activeRevision.posted)"
+                           ng-disabled="!$ctrl.activeRevision.canTogglePosted"
+                           uib-btn-radio="false">
+                            <span class="text-muted fa fa-check"
+                                  ng-class="{invisible: $ctrl.activeRevision.posted}"></span>
+                        &nbsp;
+                    </label>
+                    <label class="btn btn-default form-control-static"
+                           ng-model="$ctrl.activeRevision.posted"
+                           ng-change="$ctrl.togglePosted($ctrl.activeRevision.posted)"
+                           ng-disabled="!$ctrl.activeRevision.canTogglePosted"
+                           uib-btn-radio="true">
+                            <span class="text-primary fa fa-check"
+                                  ng-class="{invisible: !$ctrl.activeRevision.posted}"></span>
+                        &nbsp;
+                    </label>
+                </div>
+
+                <p ng-switch="!!$ctrl.activeRevision.posted" class="form-control-static">
+                    <strong ng-switch-when="false"
+                            translate="decision.revision.postalNotDone"></strong>
+                    <strong ng-switch-when="true" class="text-primary"
+                            translate="decision.revision.postalDone"></strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div ng-if="$ctrl.contactPersonReceivers.length > 0">
+        <h3 translate="decision.revision.recipientsDecisionRecipient"></h3>
+        <div>
+            <button type="button" class="btn btn-primary"
+                    ng-controller="CopyEmailsController as $emailCtrl"
+                    ng-click="$emailCtrl.copyEmails($ctrl.activeRevision.receivers)">
+
+                <span class="glyphicon glyphicon-envelope"></span> &nbsp;
+                <span translate="reporting.common.copyEmails"></span>
+            </button>
+        </div>
+
+        <hr class="invisible">
+
+
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <thead>
+                <tr>
+                    <th class="col-xs-4" translate="decision.revision.recipientName"></th>
+                    <th class="col-xs-4" translate="decision.revision.recipientEmail"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="r in $ctrl.contactPersonReceivers track by r.id">
+                    <td ng-bind="::r.name"></td>
+                    <td ng-bind="::r.email"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div ng-if="$ctrl.otherReceivers.length > 0">
+        <hr>
+
+        <h4 translate="decision.revision.recipientsOther"></h4>
+
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <thead>
+                <tr>
+                    <th class="col-xs-4" translate="decision.revision.recipientName"></th>
+                    <th class="col-xs-4" translate="decision.revision.recipientEmail"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="r in $ctrl.otherReceivers track by r.id">
+                    <td ng-bind="::r.name"></td>
+                    <td ng-bind="::r.email"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

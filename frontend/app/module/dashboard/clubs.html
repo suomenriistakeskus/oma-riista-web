@@ -1,23 +1,23 @@
 <span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span>
 <table class="table table-bordered table-striped">
     <tr>
-        <td class="col-sm-6">Kaikki seurat</td>
-        <td class="col-sm-6">{{$ctrl.metrics.allClubs}}</td>
+        <td class="col-sm-6" translate="reporting.dashboard.usersTab.clubs.allClubs"></td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.allClubs"></td>
     </tr>
     <tr>
-        <td class="col-sm-6">OR:ssa luodut seurat</td>
-        <td class="col-sm-6">{{$ctrl.metrics.userCreatedClubs}}</td>
+        <td class="col-sm-6" translate="reporting.dashboard.usersTab.clubs.orClubs"></td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.userCreatedClubs"></td>
     </tr>
     <tr>
-        <td class="col-sm-6">Seurojen aktiiviset alueet</td>
-        <td class="col-sm-6">{{$ctrl.metrics.clubAreas}}</td>
+        <td class="col-sm-6" translate="reporting.dashboard.usersTab.clubs.activeAreas"></td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.clubAreas"></td>
     </tr>
     <tr>
-        <td class="col-sm-6">Seurojen lupa-alueet</td>
-        <td class="col-sm-6">{{$ctrl.metrics.clubPermitAreas}}</td>
+        <td class="col-sm-6" translate="reporting.dashboard.usersTab.clubs.permitAreas"></td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.clubPermitAreas"></td>
     </tr>
     <tr>
-        <td class="col-sm-6">Hirvieläinlupahakemukset</td>
-        <td class="col-sm-6">{{$ctrl.metrics.permitApplications}}</td>
+        <td class="col-sm-6" translate="reporting.dashboard.usersTab.clubs.mooselikeApplications"></td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.permitApplications"></td>
     </tr>
 </table>

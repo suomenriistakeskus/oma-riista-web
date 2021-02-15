@@ -14,6 +14,8 @@ import org.joda.time.format.DateTimeFormatter;
 import java.security.PrivateKey;
 import java.util.Objects;
 
+import static java.util.Optional.ofNullable;
+
 public class HuntingCardQRCodeGenerator {
     public static final DateTimeFormatter DATE_FORMAT = DateTimeFormat.forPattern("ddMMyyyy");
 
@@ -85,7 +87,6 @@ public class HuntingCardQRCodeGenerator {
         Objects.requireNonNull(dateOfBirth);
         Objects.requireNonNull(hunterNumber);
         Objects.requireNonNull(huntingCardEnd);
-        Objects.requireNonNull(rhyOfficialCode);
 
         // Max 98 characters
         final String[] parts = {
@@ -102,7 +103,7 @@ public class HuntingCardQRCodeGenerator {
                 // 8 characters
                 DATE_FORMAT.print(huntingCardEnd),
                 // 3 characters
-                rhyOfficialCode
+                ofNullable(rhyOfficialCode).orElse("-")
         };
 
         return FIELD_JOINER.join(parts);

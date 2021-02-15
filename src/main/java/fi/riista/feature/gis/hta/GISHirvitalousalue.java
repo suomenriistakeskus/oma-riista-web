@@ -1,10 +1,10 @@
 package fi.riista.feature.gis.hta;
 
 import com.querydsl.core.annotations.QueryDelegate;
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.common.entity.HasID;
 import fi.riista.util.LocalisedString;
 import org.hibernate.annotations.Type;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.domain.Persistable;
 
 import javax.annotation.Nonnull;
@@ -45,8 +45,8 @@ public class GISHirvitalousalue implements Persistable<Integer>, HasID<Integer> 
     private String nameAbbrv;
 
     @NotNull
-    @Column(nullable = false)
-    @Type(type = "org.hibernate.spatial.GeometryType")
+    @Type(type = "jts_geometry")
+    @Column(nullable = false, columnDefinition = "Geometry")
     private Geometry geom;
 
     @Nonnull

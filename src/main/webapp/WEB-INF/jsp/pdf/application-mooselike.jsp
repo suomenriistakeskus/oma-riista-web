@@ -325,6 +325,56 @@
                     </tbody>
                 </table>
             </c:if>
+
+            <table class="data-table">
+                <thead>
+                <tr>
+                    <th>
+                        <p><fmt:message key="mooselike.application.area.union.title"/></p>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <c:out value="${model.unionAreaId}"/>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <c:if test="${model.areaPartners != null && model.areaPartners.size() > 0}">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>
+                            <p><fmt:message key="mooselike.application.area.partners.title"/></p>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="areaPartner" items="${model.areaPartners}" varStatus="s">
+                        <tr>
+                            <c:choose>
+                                <c:when test="${model.locale == 'sv'}">
+                                    <td>
+                                        <c:out value="${areaPartner.club.nameSV}"/>
+                                    </td>
+                                </c:when>
+                                <c:otherwise>
+                                    <td>
+                                        <c:out value="${areaPartner.club.nameFI}"/>
+                                    </td>
+                                </c:otherwise>
+                            </c:choose>
+                            <td>
+                                <c:out value="${areaPartner.sourceArea.externalId}"/>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                    </tbody>
+                </table>
+            </c:if>
         </div>
     </div>
 

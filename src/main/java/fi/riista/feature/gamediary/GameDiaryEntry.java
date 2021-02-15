@@ -1,7 +1,7 @@
 package fi.riista.feature.gamediary;
 
 import com.google.common.base.Preconditions;
-import com.vividsolutions.jts.geom.Point;
+import fi.riista.config.Constants;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
@@ -11,8 +11,10 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.DateUtil;
 import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
+import org.locationtech.jts.geom.Point;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -24,8 +26,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
@@ -47,14 +47,13 @@ public abstract class GameDiaryEntry extends LifecycleEntity<Long> {
 
     // Geometry for GIS index. Updated using JPA lifecycle hooks. No accessor on purpose to avoid confusion.
     @NotNull
-    @Column(nullable = false)
-    @Type(type = "org.hibernate.spatial.GeometryType")
+    @Type(type = "jts_geometry")
+    @Column(nullable = false, columnDefinition = "Geometry")
     private Point geom;
 
     @NotNull
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    protected Date pointOfTime;
+    protected DateTime pointOfTime;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -116,7 +115,7 @@ public abstract class GameDiaryEntry extends LifecycleEntity<Long> {
                           final Person author) {
 
         this.geoLocation = geoLocation;
-        this.pointOfTime = pointOfTime.toDate();
+        this.pointOfTime = pointOfTime.toDateTime(Constants.DEFAULT_TIMEZONE);
         this.species = species;
 
         setAuthor(author);
@@ -125,7 +124,7 @@ public abstract class GameDiaryEntry extends LifecycleEntity<Long> {
     public abstract GameDiaryEntryType getType();
 
     public LocalDate getPointOfTimeAsLocalDate() {
-        return DateUtil.toLocalDateNullSafe(getPointOfTime());
+        return getPointOfTime().toLocalDate();
     }
 
     public abstract Person getActor();
@@ -178,11 +177,11 @@ public abstract class GameDiaryEntry extends LifecycleEntity<Long> {
         this.geoLocation = value;
     }
 
-    public Date getPointOfTime() {
+    public DateTime getPointOfTime() {
         return pointOfTime;
     }
 
-    public void setPointOfTime(final Date pointOfTime) {
+    public void setPointOfTime(final DateTime pointOfTime) {
         this.pointOfTime = pointOfTime;
     }
 

@@ -14,7 +14,6 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.util.Objects;
-import java.util.Optional;
 
 public abstract class AbstractCrudFeature<ID extends Serializable, E extends BaseEntity<ID>, D extends BaseEntityDTO<ID>> {
 
@@ -116,7 +115,7 @@ public abstract class AbstractCrudFeature<ID extends Serializable, E extends Bas
     protected E requireEntity(final ID id) {
         Objects.requireNonNull(id, "Entity primary key is required");
 
-        return Optional.ofNullable(getRepository().findOne(id))
+        return getRepository().findById(id)
                 .orElseThrow(() -> new NotFoundException("No such " + entityClass.getCanonicalName() + " id=" + id));
     }
 

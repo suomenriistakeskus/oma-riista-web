@@ -1,6 +1,5 @@
 package fi.riista.feature.permit.application.archive;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.api.application.HarvestPermitApplicationPdfController;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.feature.RequireEntityService;
@@ -22,6 +21,7 @@ import fi.riista.util.Locales;
 import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

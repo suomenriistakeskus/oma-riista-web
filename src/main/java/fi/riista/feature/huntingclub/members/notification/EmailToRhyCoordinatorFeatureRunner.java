@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,11 +21,11 @@ public class EmailToRhyCoordinatorFeatureRunner {
     @Transactional
     public void process(final HuntingLeaderFinderService feature, final HuntingLeaderEmailSenderService mailSender) {
         final DateTime processingStart = DateTime.now();
-        final Date latestRun = getLastRunTime().toDate();
+        final DateTime latestRun = getLastRunTime();
 
         final int currentHuntingYear = DateUtil.huntingYear();
         final List<Occupation> changedLeaders = feature.findChangedLeaders(
-                latestRun, processingStart.toDate(), currentHuntingYear);
+                latestRun, processingStart, currentHuntingYear);
         mailSender.sendMails(changedLeaders);
         updateLastRunTime(processingStart);
     }

@@ -1,0 +1,15 @@
+<table class="table table-condensed table-striped">
+    <thead>
+    <tr>
+        <th class="col-xs-4" translate="club.harvestsummary.gameSpecies"></th>
+        <th class="col-xs-4 text-center" translate="club.harvestsummary.count"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr ng-repeat="item in ::$ctrl.items | orderBy: '-count'">
+        <td>{{item.species.name | rI18nNameFilter}}</td>
+        <td class="text-center">{{item.count}}</td>
+    </tr>
+    </tbody>
+</table>

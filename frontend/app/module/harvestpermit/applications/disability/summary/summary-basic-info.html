@@ -1,0 +1,21 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th style="width: 80%"></th>
+        <th style="width: 10%" translate="harvestpermit.wizard.period.beginDate"></th>
+        <th style="width: 10%" translate="harvestpermit.wizard.period.endDate"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>
+            <ul>
+                <li ng-if="$ctrl.basicInfo.useMotorVehicle" translate="harvestpermit.wizard.disability.summary.reason32"></li>
+                <li ng-if="$ctrl.basicInfo.useVehicleForWeaponTransport" translate="harvestpermit.wizard.disability.summary.reason35"></li>
+            </ul>
+        </td>
+        <td ng-bind="$ctrl.basicInfo.beginDate | date:'dd.MM.yyyy'"></td>
+        <td ng-bind="$ctrl.basicInfo.endDate | date:'dd.MM.yyyy'"> </td>
+    </tr>
+    </tbody>
+</table>

@@ -32,7 +32,7 @@ public class MobileAnnouncementApiResource {
     private MobileAnnouncementFeature mobileAnnouncementFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/list", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MobileAnnouncementDTO> listAnnouncements(
             @PageableDefault(size = 500, sort = "id", direction = Sort.Direction.ASC) Pageable pageRequest,
             @RequestParam(required = false)

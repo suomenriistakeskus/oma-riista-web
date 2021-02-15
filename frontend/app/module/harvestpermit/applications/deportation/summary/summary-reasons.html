@@ -1,0 +1,23 @@
+<div ng-repeat="reason in ::$ctrl.reasons track by $index">
+
+    <label>
+        <strong ng-bind="::reason.speciesCodes | uppercase"></strong>
+    </label>
+    <br/>
+    <div ng-switch="reason.lawSection">
+        <span ng-switch-when="SECTION_41A" translate="harvestpermit.wizard.derogation.cause.reasonSection41A"></span>
+        <span ng-switch-when="SECTION_41B" translate="harvestpermit.wizard.derogation.cause.reasonSection41B"></span>
+        <span ng-switch-when="SECTION_41C" translate="harvestpermit.wizard.derogation.cause.reasonSection41C"></span>
+    </div>
+
+    <ul>
+        <li ng-repeat="sectionReason in ::reason.lawSectionReasons track by sectionReason.reasonType" ng-show="sectionReason.checked">
+            <span>{{::'harvestpermit.wizard.derogation.cause.' + sectionReason.reasonType | translate}}</span>
+        </li>
+
+    </ul>
+
+    <hr>
+</div>
+
+

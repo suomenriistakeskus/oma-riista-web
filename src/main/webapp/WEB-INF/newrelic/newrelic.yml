@@ -1,6 +1,6 @@
 # This file configures the New Relic Agent.  New Relic monitors
 # Java applications with deep visibility and low overhead.  For more details and additional
-# configuration options visit https://docs.newrelic.com/docs/java/java-agent-configuration.
+# configuration options visit https://docs.newrelic.com/docs/agents/java-agent/configuration/java-agent-configuration-config-file.
 #
 # This configuration file is custom generated for Suomen riistakeskus
 #
@@ -27,7 +27,8 @@ common: &default_settings
   # (useful for rollup reporting), separate the application names with ";".
   # For example, to report data to "My Application" and "My Application 2" use this:
   # app_name: My Application;My Application 2
-  # This setting is required.
+  # This setting is required. Up to 3 different application names can be specified.
+  # The first application name must be unique.
   app_name: oma.riista.fi
 
   # To enable high security, set this property to true. When in high
@@ -81,15 +82,6 @@ common: &default_settings
   # The log file directory.
   # Default is the logs directory in the newrelic.jar parent directory.
   #log_file_path:
-
-  # The agent communicates with New Relic via https by
-  # default.  If you want to communicate with newrelic via http,
-  # then turn off SSL by setting this value to false.
-  # This work is done asynchronously to the threads that process your
-  # application code, so response times will not be directly affected
-  # by this change.
-  # Default is true.
-  ssl: true
 
   # Proxy settings for connecting to the New Relic server:
   # If a proxy is used, the host setting is required.  Other settings
@@ -215,7 +207,7 @@ common: &default_settings
 
   # Distributed tracing lets you see the path that a request takes through your distributed system.
   # Enabling distributed tracing changes the behavior of some New Relic features, so carefully consult the transition
-  # guide before you enable this feature: https://docs.newrelic.com/docs/transition-guide-distributed-tracing
+  # guide before you enable this feature: https://docs.newrelic.com/docs/apm/distributed-tracing/getting-started/transition-guide-distributed-tracing
   # Default is false.
   distributed_tracing:
     enabled: false
@@ -246,7 +238,7 @@ common: &default_settings
 
     # By default the agent automatically inserts API calls in compiled JSPs to
     # inject the monitoring JavaScript into web pages. Not all rendering engines are supported.
-    # See https://docs.newrelic.com/docs/java/real-user-monitoring-in-java#manual_instrumentation
+    # See https://docs.newrelic.com/docs/agents/java-agent/instrumentation/new-relic-browser-java-agent#manual_instrumentation
     # for instructions to add these manually to your pages.
     # Set this attribute to false to turn off this behavior.
     auto_instrument: false
@@ -258,6 +250,10 @@ common: &default_settings
       enabled: false
 
     com.newrelic.instrumentation.spring-aop-2:
+      enabled: false
+
+    # This instrumentation reports metrics for resultset operations.
+    com.newrelic.instrumentation.jdbc-resultset:
       enabled: false
 
     # Classes loaded by classloaders in this list will not be instrumented.
@@ -292,5 +288,17 @@ common: &default_settings
 # NOTE if your application has other named environments, you should
 # provide configuration settings for these environments here.
 
+development:
+  <<: *default_settings
+  app_name: oma.riista.fi (Development)
+
+test:
+  <<: *default_settings
+  app_name: oma.riista.fi (Test)
+
 production:
   <<: *default_settings
+
+staging:
+  <<: *default_settings
+  app_name: oma.riista.fi (Staging)

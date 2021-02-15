@@ -1,23 +1,26 @@
 package fi.riista.feature.gamediary.harvest.specimen;
 
-import fi.riista.feature.common.entity.FieldPresence;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
-import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.HasGameSpeciesCode;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestSpecimenField;
 import fi.riista.util.F;
 
 import javax.annotation.Nonnull;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
-public class HarvestSpecimenValidator {
+import static java.util.Objects.requireNonNull;
+
+public class HarvestSpecimenValidator implements HasGameSpeciesCode {
+
     private final RequiredHarvestFields.Specimen requirements;
     private final HarvestSpecimenBusinessFields specimenFields;
     private final int gameSpeciesCode;
     private final boolean associatedWithHuntingDay;
+    private final boolean legallyMandatoryFieldsOnly;
 
     private final EnumSet<HarvestSpecimenFieldName> missingFields = EnumSet.noneOf(HarvestSpecimenFieldName.class);
     private final EnumSet<HarvestSpecimenFieldName> illegalFields = EnumSet.noneOf(HarvestSpecimenFieldName.class);
@@ -27,12 +30,19 @@ public class HarvestSpecimenValidator {
     public HarvestSpecimenValidator(@Nonnull final RequiredHarvestFields.Specimen requirements,
                                     @Nonnull final HarvestSpecimenBusinessFields specimenFields,
                                     final int gameSpeciesCode,
-                                    final boolean associatedWithHuntingDay) {
+                                    final boolean associatedWithHuntingDay,
+                                    final boolean legallyMandatoryFieldsOnly) {
 
         this.requirements = requirements;
-        this.specimenFields = Objects.requireNonNull(specimenFields);
+        this.specimenFields = requireNonNull(specimenFields);
         this.gameSpeciesCode = gameSpeciesCode;
         this.associatedWithHuntingDay = associatedWithHuntingDay;
+        this.legallyMandatoryFieldsOnly = legallyMandatoryFieldsOnly;
+    }
+
+    @Override
+    public int getGameSpeciesCode() {
+        return gameSpeciesCode;
     }
 
     public HarvestSpecimenValidator validateAll() {
@@ -42,19 +52,74 @@ public class HarvestSpecimenValidator {
                 .validateMooselikeWeight()
                 .validateNotEdible()
                 .validateFitnessClass()
+                .validateAntlersLost()
+                .validateAntlersType()
                 .validateAntlersWidth()
                 .validateAntlerPointsLeft()
                 .validateAntlerPointsRight()
-                .validateAntlersType();
+                .validateAntlersGirth()
+                .validateAntlersLength()
+                .validateAntlersInnerWidth()
+                .validateAntlerShaftWidth()
+                .validateAlone();
     }
 
-    private void validateField(HarvestSpecimenFieldName fieldName,
-                               FieldPresence required,
-                               Object fieldValue) {
-        if (required.nonNullValueRequired()) {
-            mustNotBeNull(fieldName, fieldValue);
-        } else if (required.nullValueRequired()) {
-            mustBeNull(fieldName, fieldValue);
+    private void validateField(final HarvestSpecimenFieldName fieldName,
+                               final RequiredHarvestSpecimenField requirement,
+                               final Object fieldValue) {
+
+        final boolean antlersLost = specimenFields.isAntlersLost();
+
+        switch (requirement) {
+            case YES:
+                mustNotBeNull(fieldName, fieldValue);
+                break;
+            case YES_IF_YOUNG:
+                if (specimenFields.isYoung()) {
+                    mustNotBeNull(fieldName, fieldValue);
+                } else {
+                    mustBeNull(fieldName, fieldValue);
+                }
+                break;
+            case YES_IF_ADULT_MALE:
+                if (specimenFields.isAdultMale()) {
+                    mustNotBeNull(fieldName, fieldValue);
+                } else {
+                    mustBeNull(fieldName, fieldValue);
+                }
+                break;
+            case YES_IF_ANTLERS_PRESENT:
+                if (specimenFields.isAdultMale() && !antlersLost) {
+                    mustNotBeNull(fieldName, fieldValue);
+                } else {
+                    mustBeNull(fieldName, fieldValue);
+                }
+                break;
+            case VOLUNTARY:
+            case ALLOWED_BUT_HIDDEN:
+                // Either null or non-null value will pass.
+                break;
+            case VOLUNTARY_IF_YOUNG:
+                if (!specimenFields.isYoung()) {
+                    mustBeNull(fieldName, fieldValue);
+                }
+                break;
+            case VOLUNTARY_IF_ADULT_MALE:
+                if (!specimenFields.isAdultMale()) {
+                    mustBeNull(fieldName, fieldValue);
+                }
+                break;
+            case VOLUNTARY_IF_ANTLERS_PRESENT:
+            case DEPRECATED_ANTLER_DETAIL:
+                if (!specimenFields.isAdultMale() || antlersLost) {
+                    mustBeNull(fieldName, fieldValue);
+                }
+                break;
+            case NO:
+                mustBeNull(fieldName, fieldValue);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported RequiredHarvestSpecimenField: " + requirement);
         }
     }
 
@@ -63,7 +128,7 @@ public class HarvestSpecimenValidator {
 
         validateField(HarvestSpecimenFieldName.AGE, requirements.getAge(), age);
 
-        if (associatedWithHuntingDay && isMooselikeRequiringPermitForHunting() && age == GameAge.UNKNOWN) {
+        if (associatedWithHuntingDay && isMooseOrDeerRequiringPermitForHunting() && age == GameAge.UNKNOWN) {
             illegalValues.put(HarvestSpecimenFieldName.AGE, age.name());
         }
 
@@ -73,7 +138,7 @@ public class HarvestSpecimenValidator {
     public HarvestSpecimenValidator validateGender() {
         final GameGender gender = specimenFields.getGender();
 
-        if (associatedWithHuntingDay && isMooselikeRequiringPermitForHunting() && gender == GameGender.UNKNOWN) {
+        if (associatedWithHuntingDay && isMooseOrDeerRequiringPermitForHunting() && gender == GameGender.UNKNOWN) {
             illegalValues.put(HarvestSpecimenFieldName.GENDER, gender.name());
         }
 
@@ -91,17 +156,14 @@ public class HarvestSpecimenValidator {
         final Double weightEstimated = specimenFields.getWeightEstimated();
         final Double weightMeasured = specimenFields.getWeightMeasured();
 
-        if (isMoose() && associatedWithHuntingDay && F.allNull(weightEstimated, weightMeasured)) {
-            missingMooseWeight = true;
+        if (!legallyMandatoryFieldsOnly) {
+            if (isMoose() && associatedWithHuntingDay && F.allNull(weightEstimated, weightMeasured)) {
+                missingMooseWeight = true;
+            }
         }
 
-        validateField(HarvestSpecimenFieldName.WEIGHT_MEASURED,
-                requirements.getWeightMeasured(),
-                weightMeasured);
-
-        validateField(HarvestSpecimenFieldName.WEIGHT_ESTIMATED,
-                requirements.getWeightEstimated(),
-                weightEstimated);
+        validateField(HarvestSpecimenFieldName.WEIGHT_MEASURED, requirements.getWeightMeasured(), weightMeasured);
+        validateField(HarvestSpecimenFieldName.WEIGHT_ESTIMATED, requirements.getWeightEstimated(), weightEstimated);
 
         return this;
     }
@@ -115,41 +177,84 @@ public class HarvestSpecimenValidator {
         validateField(HarvestSpecimenFieldName.FITNESS_CLASS,
                 requirements.getFitnessClass(),
                 specimenFields.getFitnessClass());
+
         return this;
     }
 
-    public HarvestSpecimenValidator validateAntlersWidth() {
-        validateField(HarvestSpecimenFieldName.ANTLERS_WIDTH,
-                requirements.getAntlersWidth(specimenFields.getAge(), specimenFields.getGender()),
-                specimenFields.getAntlersWidth());
-        return this;
-    }
+    public HarvestSpecimenValidator validateAntlersLost() {
+        validateField(HarvestSpecimenFieldName.ANTLERS_LOST,
+                requirements.getAntlersLost(),
+                specimenFields.getAntlersLost());
 
-    public HarvestSpecimenValidator validateAntlerPointsLeft() {
-        validateField(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT,
-                requirements.getAntlerPoints(specimenFields.getAge(), specimenFields.getGender()),
-                specimenFields.getAntlerPointsLeft());
-        return this;
-    }
-
-    public HarvestSpecimenValidator validateAntlerPointsRight() {
-        validateField(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT,
-                requirements.getAntlerPoints(specimenFields.getAge(), specimenFields.getGender()),
-                specimenFields.getAntlerPointsRight());
         return this;
     }
 
     public HarvestSpecimenValidator validateAntlersType() {
         validateField(HarvestSpecimenFieldName.ANTLERS_TYPE,
-                requirements.getAntlersType(specimenFields.getAge(), specimenFields.getGender()),
+                requirements.getAntlersType(),
                 specimenFields.getAntlersType());
+
+        return this;
+    }
+
+    public HarvestSpecimenValidator validateAntlersWidth() {
+        validateField(HarvestSpecimenFieldName.ANTLERS_WIDTH,
+                requirements.getAntlersWidth(),
+                specimenFields.getAntlersWidth());
+
+        return this;
+    }
+
+    public HarvestSpecimenValidator validateAntlerPointsLeft() {
+        validateField(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT,
+                requirements.getAntlerPoints(),
+                specimenFields.getAntlerPointsLeft());
+
+        return this;
+    }
+
+    public HarvestSpecimenValidator validateAntlerPointsRight() {
+        validateField(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT,
+                requirements.getAntlerPoints(),
+                specimenFields.getAntlerPointsRight());
+
+        return this;
+    }
+
+    public HarvestSpecimenValidator validateAntlersGirth() {
+        validateField(HarvestSpecimenFieldName.ANTLERS_GIRTH,
+                requirements.getAntlersGirth(),
+                specimenFields.getAntlersGirth());
+
+        return this;
+    }
+
+    public HarvestSpecimenValidator validateAntlersLength() {
+        validateField(HarvestSpecimenFieldName.ANTLERS_LENGTH,
+                requirements.getAntlersLength(),
+                specimenFields.getAntlersLength());
+
+        return this;
+    }
+
+    public HarvestSpecimenValidator validateAntlersInnerWidth() {
+        validateField(HarvestSpecimenFieldName.ANTLERS_INNER_WIDTH,
+                requirements.getAntlersInnerWidth(),
+                specimenFields.getAntlersInnerWidth());
+
+        return this;
+    }
+
+    public HarvestSpecimenValidator validateAntlerShaftWidth() {
+        validateField(HarvestSpecimenFieldName.ANTLER_SHAFT_WIDTH,
+                requirements.getAntlerShaftWidth(),
+                specimenFields.getAntlerShaftWidth());
+
         return this;
     }
 
     public HarvestSpecimenValidator validateAlone() {
-        validateField(HarvestSpecimenFieldName.ALONE,
-                requirements.getAlone(specimenFields.getAge()),
-                specimenFields.getAlone());
+        validateField(HarvestSpecimenFieldName.ALONE, requirements.getAlone(), specimenFields.getAlone());
         return this;
     }
 
@@ -159,16 +264,9 @@ public class HarvestSpecimenValidator {
 
     public void throwOnErrors() {
         if (hasErrors()) {
-            throw new HarvestSpecimenValidationException(missingFields, illegalFields, illegalValues, missingMooseWeight);
+            throw new HarvestSpecimenValidationException(
+                    gameSpeciesCode, missingFields, illegalFields, illegalValues, missingMooseWeight);
         }
-    }
-
-    private boolean isMoose() {
-        return GameSpecies.isMoose(gameSpeciesCode);
-    }
-
-    private boolean isMooselikeRequiringPermitForHunting() {
-        return GameSpecies.isMooseOrDeerRequiringPermitForHunting(gameSpeciesCode);
     }
 
     private void mustBeNull(final HarvestSpecimenFieldName fieldName, final Object value) {
@@ -184,11 +282,11 @@ public class HarvestSpecimenValidator {
     }
 
     private void illegal(final HarvestSpecimenFieldName fieldName) {
-        illegalFields.add(Objects.requireNonNull(fieldName));
+        illegalFields.add(requireNonNull(fieldName));
     }
 
     private void missing(final HarvestSpecimenFieldName fieldName) {
-        missingFields.add(Objects.requireNonNull(fieldName));
+        missingFields.add(requireNonNull(fieldName));
     }
 
     public EnumSet<HarvestSpecimenFieldName> getMissingFields() {

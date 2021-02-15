@@ -1,6 +1,7 @@
 package fi.riista.feature.huntingclub.statistics;
 
 import com.google.common.collect.ImmutableMap;
+import fi.riista.config.Constants;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -24,7 +25,7 @@ import java.util.Map;
 import static fi.riista.util.DateUtil.today;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTest {
 
@@ -294,7 +295,7 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         // harvest is in wrong calendar year
         final Harvest h = createHarvestWithLocationAndHuntingDay(location, model().newPerson(), species, huntingDay);
-        h.setPointOfTime(h.getPointOfTimeAsLocalDate().withYear(huntingYear).toDate());
+        h.setPointOfTime(h.getPointOfTimeAsLocalDate().withYear(huntingYear).toDateTimeAtStartOfDay(Constants.DEFAULT_TIMEZONE));
 
         assertNoHarvests(club);
     }

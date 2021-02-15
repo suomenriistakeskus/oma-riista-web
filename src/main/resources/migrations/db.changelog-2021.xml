@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd"
+        logicalFilePath="migrations/db.changelog.xml">
+
+    <changeSet id="2021-01-04-public-carnivore-pdf-downloads" author="vincit-terole">
+        <createTable tableName="public_pdf_download">
+            <column autoIncrement="true" name="gid" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="public_pdf_download_pkey"/>
+            </column>
+            <column name="download_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints nullable="false" references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_public_pdf_download_decision"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="public_pdf_download" indexName="ndx_public_pdf_download_decision">
+            <column name="permit_decision_id"></column>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2021-01-15-add-more-luke-statistics-to-rhy_annual_statistics" author="vincit-mikkori">
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="luke_northern_lapland_willow_grouse_lines" type="INTEGER"/>
+            <column name="luke_carnivore_dna_collectors" type="INTEGER"/>
+        </addColumn>
+
+        <sql><![CDATA[
+            ALTER TABLE rhy_annual_statistics ADD CONSTRAINT ck_luke_northern_lapland_willow_grouse_lines
+            CHECK (luke_northern_lapland_willow_grouse_lines >= 0);
+            ALTER TABLE rhy_annual_statistics ADD CONSTRAINT ck_luke_carnivore_dna_collectors
+            CHECK (luke_carnivore_dna_collectors >= 0);
+        ]]>
+        </sql>
+    </changeSet>
+</databaseChangeLog>

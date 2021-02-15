@@ -14,7 +14,7 @@ import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.area.HarvestPermitArea;
-import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
@@ -62,7 +62,7 @@ public class HarvestPermitApplicationSearchResultDTOTransformer
         final Function<HarvestPermitApplication, SystemUser> handlerMapping =
                 moderatorOrAdmin ? createApplicationHandlerMapping(list) : null;
 
-        final Function<HarvestPermitApplication, PermitDecision.Status> decisionStatuses =
+        final Function<HarvestPermitApplication, DecisionStatus> decisionStatuses =
                 createApplicationDecisionStatusMapping(list);
 
         return list.stream().map(application -> {
@@ -153,11 +153,11 @@ public class HarvestPermitApplicationSearchResultDTOTransformer
         return a -> mapping.get(a.getId());
     }
 
-    private Function<HarvestPermitApplication, PermitDecision.Status> createApplicationDecisionStatusMapping(
+    private Function<HarvestPermitApplication, DecisionStatus> createApplicationDecisionStatusMapping(
             final List<HarvestPermitApplication> applications) {
         final QPermitDecision DECISION = QPermitDecision.permitDecision;
 
-        final Map<Long, PermitDecision.Status> mapping = jpqlQueryFactory
+        final Map<Long, DecisionStatus> mapping = jpqlQueryFactory
                 .select(DECISION.application.id, DECISION.status)
                 .from(DECISION)
                 .where(DECISION.application.in(applications))

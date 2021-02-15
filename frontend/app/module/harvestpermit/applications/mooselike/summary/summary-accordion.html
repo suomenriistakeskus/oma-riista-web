@@ -179,6 +179,11 @@
         <mooselike-permit-application-area-details
                 permit-area="$ctrl.permitArea"
                 on-export-mml-excel="$ctrl.exportMmlExcel()"></mooselike-permit-application-area-details>
+
+        <hr class="invisible"/>
+
+        <mooselike-application-summary-area-external-ids
+            permit-area="$ctrl.permitArea"></mooselike-application-summary-area-external-ids>
     </div>
 
     <div uib-accordion-group class="panel-default"
@@ -275,7 +280,7 @@
             </div>
         </uib-accordion-heading>
 
-        <mooselike-application-decision-delivery application="$ctrl.application">
-        </mooselike-application-decision-delivery>
+        <harvest-permit-application-decision-delivery application="$ctrl.application">
+        </harvest-permit-application-decision-delivery>
     </div>
 </uib-accordion>

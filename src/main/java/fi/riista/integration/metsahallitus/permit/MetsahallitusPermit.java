@@ -5,7 +5,7 @@ import fi.riista.util.LocalisedString;
 import fi.riista.validation.FinnishHunterNumber;
 import fi.riista.validation.FinnishSocialSecurityNumber;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;

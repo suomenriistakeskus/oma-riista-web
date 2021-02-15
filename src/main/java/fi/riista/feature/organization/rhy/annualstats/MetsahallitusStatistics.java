@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class MetsahallitusStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<MetsahallitusStatistics>,
+        AnnualStatisticsManuallyEditableFields<MetsahallitusStatistics>,
         Serializable {
 
     public static final MetsahallitusStatistics reduce(@Nullable final MetsahallitusStatistics a,
@@ -54,6 +55,7 @@ public class MetsahallitusStatistics
     private Integer smallGameLicensesSoldByMetsahallitus;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "mh_last_modified")
     private DateTime lastModified;
 

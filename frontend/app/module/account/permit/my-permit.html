@@ -15,14 +15,34 @@
     </div>
 
     <div uib-collapse="collapsed">
-        <div class="permit-section">
+        <div class="permit-section" ng-if="$ctrl.hasSpeciesAmounts()">
             <div class="permit-section-header" translate="harvestpermit.speciesAndAmount"></div>
-            <div class="permit-section-content">
-                <div ng-repeat="speciesAmount in ::$ctrl.permit.speciesAmounts">
+            <div class="permit-section-content" ng-switch="$ctrl.isNestRemovalPermit()">
+                <div ng-switch-when="false" ng-repeat="speciesAmount in ::$ctrl.permit.speciesAmounts">
                     <span name-translated="speciesAmount.gameSpecies.name"></span>
                     <span ng-bind="::speciesAmount.amount"></span>
                     <span translate="harvestpermit.pcs"></span>
                     <span ng-bind="::speciesAmount | speciesAmountIntervalText"></span>
+                </div>
+                <div ng-switch-when="true" ng-repeat="speciesAmount in ::$ctrl.permit.speciesAmounts">
+                    <div>
+                        <span name-translated="speciesAmount.gameSpecies.name"></span>
+                        <span ng-bind="::speciesAmount | speciesAmountIntervalText"></span>
+                    </div>
+                    <div style="padding-left: 15px">
+                        <span ng-if="::speciesAmount.nestAmount">
+                            <span ng-bind="::speciesAmount.nestAmount"></span>
+                            <span translate="harvestpermit.management.dashboard.permittedAmount.nest"></span>
+                        </span>
+                        <span ng-if="::speciesAmount.constructionAmount">
+                            <span ng-bind="::speciesAmount.constructionAmount"></span>
+                            <span translate="harvestpermit.management.dashboard.permittedAmount.construction"></span>
+                        </span>
+                        <span ng-if="::speciesAmount.eggAmount">
+                            <span ng-bind="::speciesAmount.eggAmount"></span>
+                            <span translate="harvestpermit.management.dashboard.permittedAmount.egg"></span>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -39,7 +59,8 @@
 
         <div class="permit-section-actions">
             <button type="button" class="btn btn-primary"
-                    ng-click="$ctrl.open()">
+                    ng-click="$ctrl.open()"
+                    ng-disabled="$ctrl.actionDisabled()">
                 <span translate="harvestpermit.mine.permits.openManagement"></span>
             </button>
         </div>

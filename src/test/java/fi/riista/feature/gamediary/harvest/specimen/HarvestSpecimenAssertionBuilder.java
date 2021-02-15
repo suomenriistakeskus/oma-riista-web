@@ -8,42 +8,36 @@ import fi.riista.util.F;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.function.Consumer;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static fi.riista.test.Asserts.assertThat;
+import static java.util.Objects.requireNonNull;
+import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 
 public class HarvestSpecimenAssertionBuilder {
 
     private final ArrayList<Consumer<? super HarvestSpecimenBusinessFields>> assertionVerifiers = new ArrayList<>();
 
-    private GameAge age;
-    private GameGender gender;
-
     public static HarvestSpecimenAssertionBuilder builder() {
         return new HarvestSpecimenAssertionBuilder();
     }
 
     public void verify(@Nonnull final HarvestSpecimenBusinessFields specimen) {
-        Objects.requireNonNull(specimen);
+        requireNonNull(specimen);
         assertionVerifiers.forEach(verifier -> verifier.accept(specimen));
     }
 
-    public HarvestSpecimenAssertionBuilder withAgeAndGender(@Nullable final GameAge expectedAge,
-                                                            @Nullable final GameGender expectedGender) {
-        this.age = expectedAge;
-        this.gender = expectedGender;
-
+    public HarvestSpecimenAssertionBuilder ageAndGenderPresent() {
         return and(specimen -> {
-            assertEquals(HarvestSpecimenFieldName.AGE.name(), this.age, specimen.getAge());
-            assertEquals(HarvestSpecimenFieldName.GENDER.name(), this.gender, specimen.getGender());
+            assertThat(specimen.getAge(), is(notNullValue()), HarvestSpecimenFieldName.AGE.name());
+            assertThat(specimen.getGender(), is(notNullValue()), HarvestSpecimenFieldName.GENDER.name());
         });
     }
 
@@ -51,26 +45,15 @@ public class HarvestSpecimenAssertionBuilder {
         return and(specimen -> mustNotBeNull(HarvestSpecimenFieldName.WEIGHT, specimen.getWeight()));
     }
 
-    public HarvestSpecimenAssertionBuilder weightPresentAndEqualTo(@Nonnull final Double weight) {
-        Objects.requireNonNull(weight);
-        return weightPresent().and(specimen -> assertEquals(weight, specimen.getWeight()));
-    }
-
     public HarvestSpecimenAssertionBuilder weightAbsent() {
         return and(specimen -> mustBeNull(HarvestSpecimenFieldName.WEIGHT, specimen.getWeight()));
     }
 
-    public HarvestSpecimenAssertionBuilder weightAbsentButEstimatedWeightPresentAndEqualTo(@Nonnull final Double weight) {
-        Objects.requireNonNull(weight);
-
-        return weightAbsent()
-                .and(specimen -> {
-                    mustNotBeNull(HarvestSpecimenFieldName.WEIGHT_ESTIMATED, specimen.getWeightEstimated());
-                    assertEquals(weight, specimen.getWeightEstimated());
-                });
+    public HarvestSpecimenAssertionBuilder onlyCommonFieldsPresent() {
+        return ageAndGenderPresent().weightPresent().extensionFieldsAbsent();
     }
 
-    public HarvestSpecimenAssertionBuilder mooselikeWeightPresent() {
+    public HarvestSpecimenAssertionBuilder extendedWeightFieldsPresent() {
         return and(specimen -> {
             if (F.allNull(specimen.getWeightEstimated(), specimen.getWeightMeasured())) {
                 fail("both estimated and measured weight are null");
@@ -78,125 +61,539 @@ public class HarvestSpecimenAssertionBuilder {
         });
     }
 
-    public HarvestSpecimenAssertionBuilder allMooselikeFieldsPresent() {
-        ageAndGenderMustNotBeNull();
-        return mooselikeFieldsPreserved(this.age, this.gender);
+    public HarvestSpecimenAssertionBuilder antlerFieldsAbsent() {
+        return antlerDetailFieldsAbsent()
+                .and(specimen -> mustBeNull(HarvestSpecimenFieldName.ANTLERS_LOST, specimen.getAntlersLost()));
     }
 
-    public HarvestSpecimenAssertionBuilder allMooseFieldsPresent(@Nonnull final HarvestSpecVersion specVersion) {
-        ageAndGenderMustNotBeNull();
-        return mooseFieldsPreserved(this.age, this.gender, specVersion);
+    public HarvestSpecimenAssertionBuilder antlerDetailFieldsAbsent() {
+        return and(specimen -> {
+            mustBeNull(HarvestSpecimenFieldName.ANTLERS_TYPE, specimen.getAntlersType());
+            mustBeNull(HarvestSpecimenFieldName.ANTLERS_WIDTH, specimen.getAntlersWidth());
+            mustBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT, specimen.getAntlerPointsLeft());
+            mustBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT, specimen.getAntlerPointsRight());
+            mustBeNull(HarvestSpecimenFieldName.ANTLERS_GIRTH, specimen.getAntlersGirth());
+            mustBeNull(HarvestSpecimenFieldName.ANTLERS_LENGTH, specimen.getAntlersLength());
+            mustBeNull(HarvestSpecimenFieldName.ANTLERS_INNER_WIDTH, specimen.getAntlersInnerWidth());
+            mustBeNull(HarvestSpecimenFieldName.ANTLER_SHAFT_WIDTH, specimen.getAntlerShaftWidth());
+        });
     }
 
-    public HarvestSpecimenAssertionBuilder mooselikeFieldsPreserved(final GameAge originalAge,
-                                                                    final GameGender originalGender) {
+    public HarvestSpecimenAssertionBuilder antlersLostPresent() {
+        return antlerDetailFieldsAbsent()
+                .and(specimen -> mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_LOST, specimen.getAntlersLost()));
+    }
 
-        return mooselikeWeightPresent()
+    public HarvestSpecimenAssertionBuilder extensionFieldsAbsent() {
+        return extensionFieldsAbsentExceptEstimatedWeight()
+                .and(specimen -> mustBeNull(HarvestSpecimenFieldName.WEIGHT_ESTIMATED, specimen.getWeightEstimated()));
+    }
+
+    public HarvestSpecimenAssertionBuilder weightEstimatedPresentButOtherExtensionFieldsAbsent() {
+        return extensionFieldsAbsentExceptEstimatedWeight()
+                .and(specimen -> {
+                    mustNotBeNull(HarvestSpecimenFieldName.WEIGHT_ESTIMATED, specimen.getWeightEstimated());
+                });
+    }
+
+    private HarvestSpecimenAssertionBuilder extensionFieldsAbsentExceptEstimatedWeight() {
+        return antlerFieldsAbsent()
+                .aloneAbsent()
+                .and(specimen -> {
+                    mustBeNull(HarvestSpecimenFieldName.WEIGHT_MEASURED, specimen.getWeightMeasured());
+
+                    mustBeNull(HarvestSpecimenFieldName.FITNESS_CLASS, specimen.getFitnessClass());
+                    mustBeNull(HarvestSpecimenFieldName.NOT_EDIBLE, specimen.getNotEdible());
+                    mustBeNull(HarvestSpecimenFieldName.ADDITIONAL_INFO, specimen.getAdditionalInfo());
+                });
+    }
+
+    public HarvestSpecimenAssertionBuilder onlyAgeGenderAndWeightEstimatedPresent() {
+        return ageAndGenderPresent()
+                .weightAbsent()
+                .weightEstimatedPresentButOtherExtensionFieldsAbsent();
+    }
+
+    public HarvestSpecimenAssertionBuilder ageGenderAndExtendedWeightFieldsPresent() {
+        return ageAndGenderPresent().weightAbsent().extendedWeightFieldsPresent();
+    }
+
+    // Moose, fallow deer, white-tailed deer, wild forest reindeer
+    public HarvestSpecimenAssertionBuilder permitBasedMooselikeCommonFieldsPresent() {
+        return ageGenderAndExtendedWeightFieldsPresent()
                 .and(specimen -> {
                     mustNotBeNull(HarvestSpecimenFieldName.NOT_EDIBLE, specimen.getNotEdible());
                     mustNotBeNull(HarvestSpecimenFieldName.ADDITIONAL_INFO, specimen.getAdditionalInfo());
-
-                    if (originalAge == GameAge.ADULT && originalGender == GameGender.MALE) {
-                        mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_WIDTH, specimen.getAntlersWidth());
-                        mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT, specimen.getAntlerPointsLeft());
-                        mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT, specimen.getAntlerPointsRight());
-                    } else {
-                        mustBeNull(HarvestSpecimenFieldName.ANTLERS_WIDTH, specimen.getAntlersWidth());
-                        mustBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT, specimen.getAntlerPointsLeft());
-                        mustBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT, specimen.getAntlerPointsRight());
-                    }
                 });
     }
 
-    public HarvestSpecimenAssertionBuilder mooseFieldsPreserved(final GameAge originalAge,
-                                                                final GameGender originalGender,
-                                                                @Nonnull final HarvestSpecVersion specVersion) {
+    public HarvestSpecimenAssertionBuilder mooseCommonFieldsPresent() {
+        return permitBasedMooselikeCommonFieldsPresent()
+                .nonMooseFieldsAbsent()
+                .and(specimen -> mustNotBeNull(HarvestSpecimenFieldName.FITNESS_CLASS, specimen.getFitnessClass()));
+    }
 
-        requireSupportForMooseFields(specVersion);
-
-        return mooselikeFieldsPreserved(originalAge, originalGender)
+    public HarvestSpecimenAssertionBuilder mooseAdultMaleFields2015Present() {
+        return mooseCommonFieldsPresent()
+                .aloneAbsent()
                 .and(specimen -> {
-                    mustNotBeNull(HarvestSpecimenFieldName.FITNESS_CLASS, specimen.getFitnessClass());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_TYPE, specimen.getAntlersType());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_WIDTH, specimen.getAntlersWidth());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT, specimen.getAntlerPointsLeft());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT, specimen.getAntlerPointsRight());
 
-                    if (originalAge == GameAge.ADULT && originalGender == GameGender.MALE) {
-                        mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_TYPE, specimen.getAntlersType());
-                    } else {
-                        mustBeNull(HarvestSpecimenFieldName.ANTLERS_TYPE, specimen.getAntlersType());
-
-                        if (originalAge == GameAge.YOUNG) {
-                            if (specVersion.supportsSolitaryMooseCalves()) {
-                                mustNotBeNull(HarvestSpecimenFieldName.ALONE, specimen.getAlone());
-                            }
-                        } else {
-                            mustBeNull(HarvestSpecimenFieldName.ALONE, specimen.getAlone());
-                        }
-                    }
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_LOST, specimen.getAntlersLost());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_GIRTH, specimen.getAntlersGirth());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_LENGTH, specimen.getAntlersLength());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_INNER_WIDTH, specimen.getAntlersInnerWidth());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLER_SHAFT_WIDTH, specimen.getAntlerShaftWidth());
                 });
+    }
+
+    public HarvestSpecimenAssertionBuilder mooseAdultMaleFields2020Present() {
+        return mooseCommonFieldsPresent()
+                .aloneAbsent()
+                .and(specimen -> {
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_LOST, specimen.getAntlersLost());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_TYPE, specimen.getAntlersType());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_WIDTH, specimen.getAntlersWidth());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT, specimen.getAntlerPointsLeft());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT, specimen.getAntlerPointsRight());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_GIRTH, specimen.getAntlersGirth());
+                });
+    }
+
+    public HarvestSpecimenAssertionBuilder mooseAntlersLostFieldsPresent() {
+        return mooseCommonFieldsPresent().antlersLostPresent().aloneAbsent();
+    }
+
+    public HarvestSpecimenAssertionBuilder mooseAdultFemaleFieldsPresent() {
+        return mooseCommonFieldsPresent().antlerFieldsAbsent().aloneAbsent();
+    }
+
+    public HarvestSpecimenAssertionBuilder mooseYoungFieldsPresent() {
+        return mooseCommonFieldsPresent()
+                .antlerFieldsAbsent()
+                .and(specimen -> mustNotBeNull(HarvestSpecimenFieldName.ALONE, specimen.getAlone()));
     }
 
     public HarvestSpecimenAssertionBuilder mooseFieldsAbsent() {
-        return mooseFieldsAbsentExceptEstimatedWeight()
+        return aloneAbsent()
                 .and(specimen -> {
-                    mustBeNull(HarvestSpecimenFieldName.WEIGHT_ESTIMATED, specimen.getWeightEstimated());
+                    mustBeNull(HarvestSpecimenFieldName.FITNESS_CLASS, specimen.getFitnessClass());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_TYPE, specimen.getAntlersType());
                 });
     }
 
-    public HarvestSpecimenAssertionBuilder mooseFieldsAbsentExceptEstimatedWeight() {
-        return mooseOnlyFieldsAbsent()
+    public HarvestSpecimenAssertionBuilder aloneAbsent() {
+        return and(specimen -> mustBeNull(HarvestSpecimenFieldName.ALONE, specimen.getAlone()));
+    }
+
+    public HarvestSpecimenAssertionBuilder roeDeerCommonFieldsPresent() {
+        return ageGenderAndExtendedWeightFieldsPresent().nonRoeDeerFieldsAbsent();
+    }
+
+    public HarvestSpecimenAssertionBuilder roeDeerAdultMaleFieldsPresent() {
+        return roeDeerCommonFieldsPresent()
                 .and(specimen -> {
-                    mustBeNull(HarvestSpecimenFieldName.WEIGHT_MEASURED, specimen.getWeightMeasured());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_LOST, specimen.getAntlersLost());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT, specimen.getAntlerPointsLeft());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT, specimen.getAntlerPointsRight());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_LENGTH, specimen.getAntlersLength());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_SHAFT_WIDTH, specimen.getAntlerShaftWidth());
+                });
+    }
+
+    public HarvestSpecimenAssertionBuilder roeDeerAntlersLostFieldsPresent() {
+        return roeDeerCommonFieldsPresent().antlersLostPresent();
+    }
+
+    public HarvestSpecimenAssertionBuilder whiteTailedDeerCommonFieldsPresent() {
+        return permitBasedMooselikeCommonFieldsPresent().nonWhiteTailedDeerFieldsAbsent();
+    }
+
+    public HarvestSpecimenAssertionBuilder whiteTailedDeerAdultMaleFieldsPresent() {
+        return whiteTailedDeerCommonFieldsPresent()
+                .and(specimen -> {
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_LOST, specimen.getAntlersLost());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT, specimen.getAntlerPointsLeft());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT, specimen.getAntlerPointsRight());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_GIRTH, specimen.getAntlersGirth());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_LENGTH, specimen.getAntlersLength());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_INNER_WIDTH, specimen.getAntlersInnerWidth());
+                });
+    }
+
+    public HarvestSpecimenAssertionBuilder whiteTailedDeerAntlersLostFieldsPresent() {
+        return whiteTailedDeerCommonFieldsPresent().antlersLostPresent();
+    }
+
+    // Fallow deer, wild forest reindeer
+    public HarvestSpecimenAssertionBuilder otherDeerCommonFieldsPresent() {
+        return permitBasedMooselikeCommonFieldsPresent().nonOtherDeerFieldsAbsent();
+    }
+
+    // Fallow deer, wild forest reindeer
+    public HarvestSpecimenAssertionBuilder otherDeerAdultMaleFieldsPresent() {
+        return otherDeerCommonFieldsPresent()
+                .and(specimen -> {
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_LOST, specimen.getAntlersLost());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_WIDTH, specimen.getAntlersWidth());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT, specimen.getAntlerPointsLeft());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT, specimen.getAntlerPointsRight());
+                });
+    }
+
+    // Fallow deer, wild forest reindeer
+    public HarvestSpecimenAssertionBuilder otherDeerAntlersLostFieldsPresent() {
+        return otherDeerCommonFieldsPresent().antlersLostPresent();
+    }
+
+    // Fallow deer, white-tailed deer, wild forest reindeer
+    public HarvestSpecimenAssertionBuilder permitBasedDeerAdultMaleFields2016Present() {
+        return permitBasedMooselikeCommonFieldsPresent()
+                .and(specimen -> {
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLERS_WIDTH, specimen.getAntlersWidth());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT, specimen.getAntlerPointsLeft());
+                    mustNotBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT, specimen.getAntlerPointsRight());
+
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_LOST, specimen.getAntlersLost());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_TYPE, specimen.getAntlersType());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_GIRTH, specimen.getAntlersGirth());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_LENGTH, specimen.getAntlersLength());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_INNER_WIDTH, specimen.getAntlersInnerWidth());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLER_SHAFT_WIDTH, specimen.getAntlerShaftWidth());
+                });
+    }
+
+    public HarvestSpecimenAssertionBuilder wildBoarFieldsPresent() {
+        return ageGenderAndExtendedWeightFieldsPresent().nonWildBoarFieldsAbsent();
+    }
+
+    public HarvestSpecimenAssertionBuilder nonMooseFieldsAbsent() {
+        return and(specimen -> {
+            mustBeNull(HarvestSpecimenFieldName.ANTLERS_LENGTH, specimen.getAntlersLength());
+            mustBeNull(HarvestSpecimenFieldName.ANTLERS_INNER_WIDTH, specimen.getAntlersInnerWidth());
+            mustBeNull(HarvestSpecimenFieldName.ANTLER_SHAFT_WIDTH, specimen.getAntlerShaftWidth());
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder nonRoeDeerFieldsAbsent() {
+        return mooseFieldsAbsent()
+                .and(specimen -> {
                     mustBeNull(HarvestSpecimenFieldName.NOT_EDIBLE, specimen.getNotEdible());
                     mustBeNull(HarvestSpecimenFieldName.ADDITIONAL_INFO, specimen.getAdditionalInfo());
+
                     mustBeNull(HarvestSpecimenFieldName.ANTLERS_WIDTH, specimen.getAntlersWidth());
-                    mustBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT, specimen.getAntlerPointsLeft());
-                    mustBeNull(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT, specimen.getAntlerPointsRight());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_GIRTH, specimen.getAntlersGirth());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_INNER_WIDTH, specimen.getAntlersInnerWidth());
                 });
     }
 
-    public HarvestSpecimenAssertionBuilder mooseOnlyFieldsAbsent() {
+    public HarvestSpecimenAssertionBuilder nonWhiteTailedDeerFieldsAbsent() {
+        return mooseFieldsAbsent()
+                .and(specimen -> mustBeNull(HarvestSpecimenFieldName.ANTLER_SHAFT_WIDTH, specimen.getAntlerShaftWidth()));
+    }
+
+    public HarvestSpecimenAssertionBuilder nonOtherDeerFieldsAbsent() {
+        return mooseFieldsAbsent()
+                .and(specimen -> {
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_GIRTH, specimen.getAntlersGirth());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_LENGTH, specimen.getAntlersLength());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLERS_INNER_WIDTH, specimen.getAntlersInnerWidth());
+                    mustBeNull(HarvestSpecimenFieldName.ANTLER_SHAFT_WIDTH, specimen.getAntlerShaftWidth());
+                });
+    }
+
+    public HarvestSpecimenAssertionBuilder nonWildBoarFieldsAbsent() {
+        return antlerFieldsAbsent()
+                .aloneAbsent()
+                .and(specimen -> {
+                    mustBeNull(HarvestSpecimenFieldName.FITNESS_CLASS, specimen.getFitnessClass());
+                    mustBeNull(HarvestSpecimenFieldName.NOT_EDIBLE, specimen.getNotEdible());
+                    mustBeNull(HarvestSpecimenFieldName.ADDITIONAL_INFO, specimen.getAdditionalInfo());
+                });
+    }
+
+    public HarvestSpecimenAssertionBuilder mooseFields2017EqualTo(@Nonnull final HarvestSpecimenBusinessFields that,
+                                                                  @Nonnull final HarvestSpecVersion specVersion) {
+
+        return mooseFields2017EqualTo(that, specVersion, true);
+    }
+
+    public HarvestSpecimenAssertionBuilder mooseFields2017EqualTo(@Nonnull final HarvestSpecimenBusinessFields that,
+                                                                  @Nonnull final HarvestSpecVersion specVersion,
+                                                                  final boolean includeAntlerFields) {
+        requireNonNull(that);
+        requireNonNull(specVersion);
+
+        final HarvestSpecimenAssertionBuilder assertionBuilder = notSameInstance(that)
+                .withAgeAndGender(that.getAge(), that.getGender())
+                .withWeightEstimated(that.getWeightEstimated())
+                .withWeightMeasured(that.getWeightMeasured())
+                .withFitnessClass(that.getFitnessClass())
+                .withNotEdible(that.getNotEdible())
+                .withAdditionalInfo(that.getAdditionalInfo());
+
+        if (specVersion.supportsSolitaryMooseCalves()) {
+            assertionBuilder.withAlone(that.getAlone());
+        }
+
+        if (!includeAntlerFields) {
+            return assertionBuilder;
+        }
+
+        return assertionBuilder
+                .withAntlersType(that.getAntlersType())
+                .withAntlersWidth(that.getAntlersWidth())
+                .withAntlerPointsLeft(that.getAntlerPointsLeft())
+                .withAntlerPointsRight(that.getAntlerPointsRight());
+    }
+
+    public HarvestSpecimenAssertionBuilder mooseFields2020EqualTo(@Nonnull final HarvestSpecimenBusinessFields that) {
+        requireNonNull(that);
+
+        return notSameInstance(that)
+                .withAgeAndGender(that.getAge(), that.getGender())
+                .withWeightEstimated(that.getWeightEstimated())
+                .withWeightMeasured(that.getWeightMeasured())
+                .withFitnessClass(that.getFitnessClass())
+                .withNotEdible(that.getNotEdible())
+                .withAdditionalInfo(that.getAdditionalInfo())
+
+                .withAlone(that.getAlone())
+
+                .withAntlersLost(that.getAntlersLost())
+                .withAntlersType(that.getAntlersType())
+                .withAntlersWidth(that.getAntlersWidth())
+                .withAntlerPointsLeft(that.getAntlerPointsLeft())
+                .withAntlerPointsRight(that.getAntlerPointsRight())
+                .withAntlersGirth(that.getAntlersGirth());
+    }
+
+    public HarvestSpecimenAssertionBuilder permitBasedDeerFields2016EqualTo(@Nonnull final HarvestSpecimenBusinessFields that) {
+        return permitBasedDeerFields2016EqualTo(that, true);
+    }
+
+    public HarvestSpecimenAssertionBuilder permitBasedDeerFields2016EqualTo(@Nonnull final HarvestSpecimenBusinessFields that,
+                                                                            final boolean includeAntlerFields) {
+        requireNonNull(that);
+
+        final HarvestSpecimenAssertionBuilder assertionBuilder = notSameInstance(that)
+                .withAgeAndGender(that.getAge(), that.getGender())
+                .withWeightEstimated(that.getWeightEstimated())
+                .withWeightMeasured(that.getWeightMeasured())
+                .withNotEdible(that.getNotEdible())
+                .withAdditionalInfo(that.getAdditionalInfo());
+
+        if (!includeAntlerFields) {
+            return assertionBuilder;
+        }
+
+        return assertionBuilder
+                .withAntlersWidth(that.getAntlersWidth())
+                .withAntlerPointsLeft(that.getAntlerPointsLeft())
+                .withAntlerPointsRight(that.getAntlerPointsRight());
+    }
+
+    public HarvestSpecimenAssertionBuilder roeDeerFields2020EqualTo(@Nonnull final HarvestSpecimenBusinessFields that) {
+        requireNonNull(that);
+
+        return notSameInstance(that)
+                .withAgeAndGender(that.getAge(), that.getGender())
+                .withWeightEstimated(that.getWeightEstimated())
+                .withWeightMeasured(that.getWeightMeasured())
+
+                .withAntlersLost(that.getAntlersLost())
+                .withAntlerPointsLeft(that.getAntlerPointsLeft())
+                .withAntlerPointsRight(that.getAntlerPointsRight())
+                .withAntlersLength(that.getAntlersLength())
+                .withAntlerShaftWidth(that.getAntlerShaftWidth());
+    }
+
+    public HarvestSpecimenAssertionBuilder whiteTailedDeerFields2020EqualTo(@Nonnull final HarvestSpecimenBusinessFields that) {
+        requireNonNull(that);
+
+        return notSameInstance(that)
+                .withAgeAndGender(that.getAge(), that.getGender())
+                .withWeightEstimated(that.getWeightEstimated())
+                .withWeightMeasured(that.getWeightMeasured())
+                .withNotEdible(that.getNotEdible())
+                .withAdditionalInfo(that.getAdditionalInfo())
+
+                .withAntlersLost(that.getAntlersLost())
+                .withAntlerPointsLeft(that.getAntlerPointsLeft())
+                .withAntlerPointsRight(that.getAntlerPointsRight())
+                .withAntlersGirth(that.getAntlersGirth())
+                .withAntlersLength(that.getAntlersLength())
+                .withAntlersInnerWidth(that.getAntlersInnerWidth());
+    }
+
+    public HarvestSpecimenAssertionBuilder otherDeerFields2020EqualTo(@Nonnull final HarvestSpecimenBusinessFields that) {
+        requireNonNull(that);
+
+        return notSameInstance(that)
+                .withAgeAndGender(that.getAge(), that.getGender())
+                .withWeightEstimated(that.getWeightEstimated())
+                .withWeightMeasured(that.getWeightMeasured())
+                .withNotEdible(that.getNotEdible())
+                .withAdditionalInfo(that.getAdditionalInfo())
+
+                .withAntlersLost(that.getAntlersLost())
+                .withAntlersWidth(that.getAntlersWidth())
+                .withAntlerPointsLeft(that.getAntlerPointsLeft())
+                .withAntlerPointsRight(that.getAntlerPointsRight());
+    }
+
+    public HarvestSpecimenAssertionBuilder wildBoarFields2020EqualTo(@Nonnull final HarvestSpecimenBusinessFields that) {
+        requireNonNull(that);
+
+        return notSameInstance(that)
+                .withAgeAndGender(that.getAge(), that.getGender())
+                .withWeightEstimated(that.getWeightEstimated())
+                .withWeightMeasured(that.getWeightMeasured());
+    }
+
+    public HarvestSpecimenAssertionBuilder notSameInstance(@Nonnull final HarvestSpecimenBusinessFields obj) {
+        requireNonNull(obj);
+        return and(specimen -> assertThat(specimen, not(sameInstance(obj)), "Should not compare object to itself"));
+    }
+
+    public HarvestSpecimenAssertionBuilder withAgeAndGender(@Nullable final GameAge expectedAge,
+                                                            @Nullable final GameGender expectedGender) {
         return and(specimen -> {
-            mustBeNull(HarvestSpecimenFieldName.FITNESS_CLASS, specimen.getFitnessClass());
-            mustBeNull(HarvestSpecimenFieldName.ANTLERS_TYPE, specimen.getAntlersType());
+            assertFieldValue(expectedAge, specimen.getAge(), HarvestSpecimenFieldName.AGE);
+            assertFieldValue(expectedGender, specimen.getGender(), HarvestSpecimenFieldName.GENDER);
         });
     }
 
-    public HarvestSpecimenAssertionBuilder mooselikeFieldsEqualTo(@Nonnull final HasMooselikeFields that) {
-        Objects.requireNonNull(that);
-        return and(specimen -> assertTrue(specimen.hasEqualMooselikeFields(that)));
-    }
-
-    public HarvestSpecimenAssertionBuilder mooseFieldsEqualTo(@Nonnull final HasMooseFields that,
-                                                              @Nonnull final HarvestSpecVersion specVersion) {
-
-        Objects.requireNonNull(that);
-        requireSupportForMooseFields(specVersion);
-
+    public HarvestSpecimenAssertionBuilder withWeight(@Nullable final Double expected) {
         return and(specimen -> {
-            assertTrue(new HarvestSpecimenOps(OFFICIAL_CODE_MOOSE, specVersion).hasEqualMooseFields(specimen, that));
+            assertDoubleFieldValue(expected, specimen.getWeight(), HarvestSpecimenFieldName.WEIGHT);
         });
     }
 
-    private HarvestSpecimenAssertionBuilder and(final Consumer<? super HarvestSpecimenBusinessFields> verifier) {
-        Objects.requireNonNull(verifier);
+    public HarvestSpecimenAssertionBuilder withWeightEstimated(@Nullable final Double expected) {
+        return and(specimen -> {
+            assertDoubleFieldValue(expected, specimen.getWeightEstimated(), HarvestSpecimenFieldName.WEIGHT_ESTIMATED);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withWeightMeasured(@Nullable final Double expected) {
+        return and(specimen -> {
+            assertDoubleFieldValue(expected, specimen.getWeightMeasured(), HarvestSpecimenFieldName.WEIGHT_MEASURED);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withFitnessClass(@Nullable final GameFitnessClass expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getFitnessClass(), HarvestSpecimenFieldName.FITNESS_CLASS);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withNotEdible(@Nullable final Boolean expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getNotEdible(), HarvestSpecimenFieldName.NOT_EDIBLE);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAdditionalInfo(@Nullable final String expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAdditionalInfo(), HarvestSpecimenFieldName.ADDITIONAL_INFO);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAntlersLost(@Nullable final Boolean expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAntlersLost(), HarvestSpecimenFieldName.ANTLERS_LOST);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAntlersType(@Nullable final GameAntlersType expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAntlersType(), HarvestSpecimenFieldName.ANTLERS_TYPE);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAntlersWidth(@Nullable final Integer expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAntlersWidth(), HarvestSpecimenFieldName.ANTLERS_WIDTH);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAntlerPointsLeft(@Nullable final Integer expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAntlerPointsLeft(), HarvestSpecimenFieldName.ANTLER_POINTS_LEFT);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAntlerPointsRight(@Nullable final Integer expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAntlerPointsRight(), HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAntlersGirth(@Nullable final Integer expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAntlersGirth(), HarvestSpecimenFieldName.ANTLERS_GIRTH);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAntlersLength(@Nullable final Integer expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAntlersLength(), HarvestSpecimenFieldName.ANTLERS_LENGTH);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAntlersInnerWidth(@Nullable final Integer expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAntlersInnerWidth(), HarvestSpecimenFieldName.ANTLERS_INNER_WIDTH);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAntlerShaftWidth(@Nullable final Integer expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAntlerShaftWidth(), HarvestSpecimenFieldName.ANTLER_SHAFT_WIDTH);
+        });
+    }
+
+    public HarvestSpecimenAssertionBuilder withAlone(@Nullable final Boolean expected) {
+        return and(specimen -> {
+            assertFieldValue(expected, specimen.getAlone(), HarvestSpecimenFieldName.ALONE);
+        });
+    }
+
+    private static <T> void assertFieldValue(@Nullable final T expected,
+                                             @Nullable final T actual,
+                                             @Nonnull final HarvestSpecimenFieldName field) {
+        if (expected != null) {
+            assertThat(actual, equalTo(expected), field.name());
+        } else {
+            assertThat(actual, is(nullValue()), field.name());
+        }
+    }
+
+    private static void assertDoubleFieldValue(@Nullable final Double expected,
+                                               @Nullable final Double actual,
+                                               @Nonnull final HarvestSpecimenFieldName field) {
+        if (expected != null) {
+            assertThat(actual, closeTo(expected, 0.001), field.name());
+        } else {
+            assertThat(actual, is(nullValue()), field.name());
+        }
+    }
+
+    private HarvestSpecimenAssertionBuilder and(@Nonnull final Consumer<? super HarvestSpecimenBusinessFields> verifier) {
+        requireNonNull(verifier);
         assertionVerifiers.add(verifier);
         return this;
     }
 
-    private void ageAndGenderMustNotBeNull() {
-        checkState(this.age != null, "age is null");
-        checkState(this.gender != null, "gender is null");
-    }
-
-    private static void requireSupportForMooseFields(@Nonnull final HarvestSpecVersion specVersion) {
-        Objects.requireNonNull(specVersion, "specVersion is null");
-        checkArgument(specVersion.supportsExtendedFieldsForMoose(), "specVersion does not support moose fields");
-    }
-
     private static void mustBeNull(final HarvestSpecimenFieldName fieldName, final Object value) {
-        assertNull('"' + fieldName.name() + "\": ", value);
+        assertThat(value, is(nullValue()), '"' + fieldName.name() + "\": ");
     }
 
     private static void mustNotBeNull(final HarvestSpecimenFieldName fieldName, final Object value) {
-        assertNotNull("expected \"" + fieldName.name() + "\" to be non-null but was null", value);
+        assertThat(value, is(notNullValue()), "expected \"" + fieldName.name() + "\" to be non-null but was null");
     }
 }

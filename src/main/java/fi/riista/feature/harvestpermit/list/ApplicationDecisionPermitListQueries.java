@@ -11,6 +11,7 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.QPermitDecision;
 import org.springframework.stereotype.Repository;
@@ -47,7 +48,7 @@ public class ApplicationDecisionPermitListQueries {
     public List<PermitDecision> findDecisionsByApplicationContactPerson(final @Nonnull Person person) {
         return jpqlQueryFactory.selectFrom(DECISION)
                 .join(DECISION.application, APPLICATION)
-                .where(DECISION.status.eq(PermitDecision.Status.PUBLISHED))
+                .where(DECISION.status.eq(DecisionStatus.PUBLISHED))
                 .where(applicationPredicate(person))
                 .fetch();
     }

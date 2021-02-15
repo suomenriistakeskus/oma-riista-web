@@ -7,7 +7,6 @@ import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.observation.metadata.ObservationBaseFields;
 import fi.riista.feature.gamediary.observation.metadata.ObservationContextSensitiveFields;
 import fi.riista.util.LocalisedString;
-import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -19,6 +18,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
@@ -29,6 +29,8 @@ import java.util.Set;
 public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCode {
 
     public static final String ID_COLUMN_NAME = "game_species_id";
+
+    public static final int OFFICIAL_CODE_UNKNOWN = -1;
 
     public static final int OFFICIAL_CODE_CANADIAN_BEAVER = 48250;
     public static final int OFFICIAL_CODE_BEAR = 47348;
@@ -54,7 +56,7 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
     // Saksanhirvi
     public static final int OFFICIAL_CODE_RED_DEER = 47476;
 
-    // Japaninhirvi
+    // Japaninpeura
     public static final int OFFICIAL_CODE_SIKA_DEER = 47479;
 
     // Villisika
@@ -128,13 +130,53 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
     // Kirjohylje
     public static final int OFFICIAL_CODE_HARBOUR_SEAL = 47305;
 
-    public static final int[] ALL_GAME_SPECIES_CODES = new int[]{
+    // Haapana
+    public static final int OFFICIAL_CODE_WIGEON = 26360;
+
+    // Jouhisorsa
+    public static final int OFFICIAL_CODE_PINTAIL = 26382;
+
+    // Heinätavi
+    public static final int OFFICIAL_CODE_GARGANEY = 26388;
+
+    // Lapasorsa
+    public static final int OFFICIAL_CODE_SHOVELER = 26394;
+
+    // Punasotka
+    public static final int OFFICIAL_CODE_POCHARD = 26407;
+
+    // Tukkasotka
+    public static final int OFFICIAL_CODE_TUFTED_DUCK = 26415;
+
+    // Haahka
+    public static final int OFFICIAL_CODE_COMMON_EIDER = 26419;
+
+    // Alli
+    public static final int OFFICIAL_CODE_LONG_TAILED_DUCK = 26427;
+
+    // Tukkakoskelo
+    public static final int OFFICIAL_CODE_RED_BREASTED_MERGANSER = 26440;
+
+    // Isokoskelo
+    public static final int OFFICIAL_CODE_GOOSANDER = 26442;
+
+    // Nokikana
+    public static final int OFFICIAL_CODE_COOT = 27381;
+
+    public static final int[] ALL_GAME_SPECIES_CODES = new int[] {
             26366, 27152, 27381, 27649, 27911, 37178, 37166, 37122, 27750, 27759, 200535, 33117, 27048, 26921, 26922,
             26931, 26926, 26928, 200555, 47305, 47282, 26298, 26291, 26373, 26360, 26382, 26388, 26394, 26407, 26415,
             26419, 26427, 26435, 26440, 26442, 26287, 50106, 50386, 50336, 47476, 47479, 47774, 53004, 48089, 48251,
             48250, 48537, 46542, 47503, 47629, 47507, 200556, 47484, 47329, 47230, 47240, 47169, 47223, 47243, 50114,
             46587, 46564, 47180, 47926, 46615, 47348, 46549, 47212
     };
+
+    public static final ImmutableSet<Integer> MOOSELIKE = ImmutableSet
+            .of(OFFICIAL_CODE_FALLOW_DEER,
+                    OFFICIAL_CODE_MOOSE,
+                    OFFICIAL_CODE_ROE_DEER,
+                    OFFICIAL_CODE_WHITE_TAILED_DEER,
+                    OFFICIAL_CODE_WILD_FOREST_REINDEER);
 
     public static final ImmutableSet<Integer> DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING = ImmutableSet
             .of(OFFICIAL_CODE_FALLOW_DEER, OFFICIAL_CODE_WHITE_TAILED_DEER, OFFICIAL_CODE_WILD_FOREST_REINDEER);
@@ -147,7 +189,11 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
 
     public static final ImmutableSet<Integer> PERMIT_REQUIRED_WITHOUT_SEASON = ImmutableSet.of(
             OFFICIAL_CODE_ROE_DEER, OFFICIAL_CODE_BEAR, OFFICIAL_CODE_WOLVERINE, OFFICIAL_CODE_LYNX, OFFICIAL_CODE_WOLF,
-            OFFICIAL_CODE_GREY_SEAL, OFFICIAL_CODE_EUROPEAN_BEAVER, OFFICIAL_CODE_RINGED_SEAL, 47169);
+            OFFICIAL_CODE_GREY_SEAL, OFFICIAL_CODE_EUROPEAN_BEAVER, OFFICIAL_CODE_RINGED_SEAL, OFFICIAL_CODE_OTTER,
+            OFFICIAL_CODE_WIGEON, OFFICIAL_CODE_WILD_BOAR, OFFICIAL_CODE_EUROPEAN_POLECAT, OFFICIAL_CODE_BEAN_GOOSE,
+            OFFICIAL_CODE_PINTAIL, OFFICIAL_CODE_GARGANEY, OFFICIAL_CODE_SHOVELER, OFFICIAL_CODE_POCHARD,
+            OFFICIAL_CODE_TUFTED_DUCK, OFFICIAL_CODE_COMMON_EIDER, OFFICIAL_CODE_LONG_TAILED_DUCK,
+            OFFICIAL_CODE_RED_BREASTED_MERGANSER, OFFICIAL_CODE_GOOSANDER, OFFICIAL_CODE_COOT);
 
     public static final ImmutableSet<Integer> LARGE_CARNIVORES =
             ImmutableSet.of(OFFICIAL_CODE_BEAR, OFFICIAL_CODE_LYNX, OFFICIAL_CODE_WOLF, OFFICIAL_CODE_WOLVERINE);
@@ -157,6 +203,104 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
             26287, 26291, 26298, 26360, 26366, 26373, 26382, 26388, 26394, 26407, 26415, 26419, 26427, 26435, 26440,
             26442, 26921, 26922, 26926, 26928, 26931, 27048, 27152, 27381, 27649, 27750, 27759, 27911, 33117, 37122,
             37142, 37166, 37178, 200535);
+
+    public static final ImmutableSet<Integer> MAMMAL_PERMIT_SPECIES = ImmutableSet.of(
+            OFFICIAL_CODE_WOLVERINE,
+            OFFICIAL_CODE_WOLF,
+            OFFICIAL_CODE_BEAR,
+            OFFICIAL_CODE_OTTER,
+            OFFICIAL_CODE_LYNX,
+            OFFICIAL_CODE_EUROPEAN_BEAVER,
+            OFFICIAL_CODE_RINGED_SEAL,
+            OFFICIAL_CODE_HARBOUR_SEAL,
+            OFFICIAL_CODE_GREY_SEAL,
+            OFFICIAL_CODE_EUROPEAN_POLECAT,
+            OFFICIAL_CODE_PINE_MARTEN,
+            OFFICIAL_CODE_MOUNTAIN_HARE,
+
+
+            OFFICIAL_CODE_RABBIT,
+            OFFICIAL_CODE_BROWN_HARE,
+            OFFICIAL_CODE_RED_SQUIRREL,
+            OFFICIAL_CODE_CANADIAN_BEAVER,
+            OFFICIAL_CODE_BLUE_FOX,
+            OFFICIAL_CODE_RED_FOX,
+            OFFICIAL_CODE_BADGER,
+            OFFICIAL_CODE_ERMINE,
+            OFFICIAL_CODE_WILD_BOAR,
+            OFFICIAL_CODE_FALLOW_DEER,
+            OFFICIAL_CODE_RED_DEER,
+            OFFICIAL_CODE_SIKA_DEER,
+            OFFICIAL_CODE_ROE_DEER,
+            OFFICIAL_CODE_MOOSE,
+            OFFICIAL_CODE_WHITE_TAILED_DEER,
+            OFFICIAL_CODE_MUFFLON,
+            OFFICIAL_CODE_RACCOON_DOG,
+            OFFICIAL_CODE_AMERICAN_MINK,
+            OFFICIAL_CODE_RACCOON,
+            OFFICIAL_CODE_MUSKRAT,
+            OFFICIAL_CODE_NUTRIA,
+
+            OFFICIAL_CODE_WILD_FOREST_REINDEER);
+
+    public static final ImmutableSet<Integer> NEST_REMOVAL_PERMIT_SPECIES = ImmutableSet.of(
+            OFFICIAL_CODE_WOLVERINE,
+            OFFICIAL_CODE_WOLF,
+            OFFICIAL_CODE_BEAR,
+            OFFICIAL_CODE_OTTER,
+            OFFICIAL_CODE_LYNX,
+            OFFICIAL_CODE_EUROPEAN_BEAVER,
+            OFFICIAL_CODE_GREY_SEAL,
+            OFFICIAL_CODE_HARBOUR_SEAL,
+            OFFICIAL_CODE_RINGED_SEAL,
+            OFFICIAL_CODE_EUROPEAN_POLECAT,
+            OFFICIAL_CODE_PINE_MARTEN,
+            OFFICIAL_CODE_MOUNTAIN_HARE,
+
+            // fowl and unprotected except domestic cat
+            26287, 26291, 26298, 26360, 26366, 26373, 26382, 26388, 26394, 26407, 26415, 26419, 26427, 26435, 26440,
+            26442, 26921, 26922, 26926, 26928, 26931, 27048, 27152, 27381, 27649, 27750, 27759, 27911, 33117, 37122,
+            37142, 37166, 37178, 200535,
+
+            OFFICIAL_CODE_RABBIT,
+            OFFICIAL_CODE_BROWN_HARE,
+            OFFICIAL_CODE_RED_SQUIRREL,
+            OFFICIAL_CODE_CANADIAN_BEAVER,
+            OFFICIAL_CODE_BLUE_FOX,
+            OFFICIAL_CODE_RED_FOX,
+            OFFICIAL_CODE_BADGER,
+            OFFICIAL_CODE_ERMINE,
+            OFFICIAL_CODE_WILD_BOAR,
+            OFFICIAL_CODE_FALLOW_DEER,
+            OFFICIAL_CODE_RED_DEER,
+            OFFICIAL_CODE_SIKA_DEER,
+            OFFICIAL_CODE_ROE_DEER,
+            OFFICIAL_CODE_MOOSE,
+            OFFICIAL_CODE_WHITE_TAILED_DEER,
+            OFFICIAL_CODE_WILD_FOREST_REINDEER,
+            OFFICIAL_CODE_MUFFLON
+
+    );
+
+    public static final ImmutableSet<Integer> LAW_SECTION_TEN_PERMIT_SPECIES = ImmutableSet.of(
+            OFFICIAL_CODE_EUROPEAN_BEAVER,
+            OFFICIAL_CODE_RINGED_SEAL,
+            OFFICIAL_CODE_PARTRIDGE
+    );
+
+    public static final ImmutableSet<Integer> HABITATS_DIRECTIVE_ANNEX_IV_SPECIES = ImmutableSet.of(
+            OFFICIAL_CODE_LYNX,
+            OFFICIAL_CODE_BEAR,
+            OFFICIAL_CODE_OTTER,
+            OFFICIAL_CODE_WOLF
+    );
+
+    public static final ImmutableSet<Integer> DOG_EVENT_DISTURBANCE_SPECIES = ImmutableSet.of(
+            OFFICIAL_CODE_LYNX,
+            OFFICIAL_CODE_BEAR,
+            OFFICIAL_CODE_OTTER,
+            OFFICIAL_CODE_WOLF
+    );
 
     private Long id;
 
@@ -199,40 +343,96 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
     @Column
     private Integer srvaOrdinal;
 
+    // Static helpers for checking one specific species.
+
+    public static boolean isBeanGoose(final int speciesCode) {
+        return speciesCode == OFFICIAL_CODE_BEAN_GOOSE;
+    }
+
     public static boolean isBear(final int speciesCode) {
         return speciesCode == OFFICIAL_CODE_BEAR;
     }
 
-    public static boolean isBeaver(final int speciesCode) {
-        return OFFICIAL_CODE_CANADIAN_BEAVER == speciesCode || OFFICIAL_CODE_EUROPEAN_BEAVER == speciesCode;
+    public static boolean isFallowDeer(final int speciesCode) {
+        return speciesCode == OFFICIAL_CODE_FALLOW_DEER;
     }
 
-    public static boolean isDeerRequiringPermitForHunting(final int speciesCode) {
-        return DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.contains(speciesCode);
-    }
-
-    public static boolean isLargeCarnivore(final int speciesCode) {
-        return LARGE_CARNIVORES.contains(speciesCode);
+    public static boolean isGreySeal(final int speciesCode) {
+        return speciesCode == OFFICIAL_CODE_GREY_SEAL;
     }
 
     public static boolean isMoose(final int speciesCode) {
         return speciesCode == OFFICIAL_CODE_MOOSE;
     }
 
-    public static boolean isMooseOrDeerRequiringPermitForHunting(final int speciesCode) {
-        return MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.contains(speciesCode);
+    public static boolean isRoeDeer(final int speciesCode) {
+        return speciesCode == OFFICIAL_CODE_ROE_DEER;
     }
 
-    public static boolean isPermitRequiredWithoutSeason(final int gameSpeciesCode) {
-        return PERMIT_REQUIRED_WITHOUT_SEASON.contains(gameSpeciesCode);
+    public static boolean isWhiteTailedDeer(final int speciesCode) {
+        return speciesCode == OFFICIAL_CODE_WHITE_TAILED_DEER;
     }
 
-    public static boolean isBirdPermitSpecies(final int gameSpeciesCode) {
-        return BIRD_PERMIT_SPECIES.contains(gameSpeciesCode);
+    public static boolean isWildBoar(final int speciesCode) {
+        return speciesCode == OFFICIAL_CODE_WILD_BOAR;
+    }
+
+    public static boolean isWildForestReindeer(final int speciesCode) {
+        return speciesCode == OFFICIAL_CODE_WILD_FOREST_REINDEER;
     }
 
     public static boolean isWolf(final int speciesCode) {
         return speciesCode == OFFICIAL_CODE_WOLF;
+    }
+
+    // Static helpers for checking species group.
+
+    public static boolean isBeaver(final int speciesCode) {
+        return OFFICIAL_CODE_CANADIAN_BEAVER == speciesCode || OFFICIAL_CODE_EUROPEAN_BEAVER == speciesCode;
+    }
+
+    public static boolean isBirdPermitSpecies(final int speciesCode) {
+        return BIRD_PERMIT_SPECIES.contains(speciesCode);
+    }
+
+    public static boolean isDeerRequiringPermitForHunting(final int speciesCode) {
+        return DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.contains(speciesCode);
+    }
+
+    public static boolean isDogEventDisturbanceSpecies(final int speciesCode) {
+        return DOG_EVENT_DISTURBANCE_SPECIES.contains(speciesCode);
+    }
+
+    public static boolean isHabitatsAnnexIVSpecies(final int speciesCode) {
+        return HABITATS_DIRECTIVE_ANNEX_IV_SPECIES.contains(speciesCode);
+    }
+
+    public static boolean isLargeCarnivore(final int speciesCode) {
+        return LARGE_CARNIVORES.contains(speciesCode);
+    }
+
+    public static boolean isLawSectionTenPermitSpecies(final int speciesCode) {
+        return LAW_SECTION_TEN_PERMIT_SPECIES.contains(speciesCode);
+    }
+
+    public static boolean isMammalSpecies(final int speciesCode) {
+        return MAMMAL_PERMIT_SPECIES.contains(speciesCode);
+    }
+
+    public static boolean isMooselike(final int speciesCode) {
+        return MOOSELIKE.contains(speciesCode);
+    }
+
+    public static boolean isMooseOrDeerRequiringPermitForHunting(final int speciesCode) {
+        return MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING.contains(speciesCode);
+    }
+
+    public static boolean isNestRemovalPermitSpecies(final int speciesCode) {
+        return NEST_REMOVAL_PERMIT_SPECIES.contains(speciesCode);
+    }
+
+    public static boolean isPermitRequiredWithoutSeason(final int speciesCode) {
+        return PERMIT_REQUIRED_WITHOUT_SEASON.contains(speciesCode);
     }
 
     public GameSpecies() {
@@ -273,6 +473,10 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
 
     public boolean isMoose() {
         return isMoose(officialCode);
+    }
+
+    public boolean isWhiteTailedDeer() {
+        return isWhiteTailedDeer(officialCode);
     }
 
     public boolean isMooseOrDeerRequiringPermitForHunting() {

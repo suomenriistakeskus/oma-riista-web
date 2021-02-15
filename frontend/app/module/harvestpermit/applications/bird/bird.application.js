@@ -54,12 +54,7 @@ angular.module('app.harvestpermit.application.bird', ['app.metadata'])
                 }
             });
     })
-    .component('birdPermitApplicationWizardApplicantType', {
-        templateUrl: 'harvestpermit/applications/bird/bird-applicant-type.html',
-        bindings: {
-            subtype: '<'
-        }
-    })
+
     .factory('BirdPermitApplication', function ($resource) {
         var apiPrefix = 'api/v1/harvestpermit/application/bird/:id';
 
@@ -98,16 +93,5 @@ angular.module('app.harvestpermit.application.bird', ['app.metadata'])
             getCurrentPermitCause: getMethod('/cause'),
             updatePermitCause: postMethod('/cause'),
 
-            // Damage
-            getSpeciesDamage: getMethod('/damage', true),
-            updateSpeciesDamage: postMethod('/damage', true),
-
-            // Population
-            getSpeciesPopulation: getMethod('/population', true),
-            updateSpeciesPopulation: postMethod('/population', true),
-
-            // Attachments
-            listAttachments: getMethod('/attachment', true),
-            updateAttachmentAdditionalInfo: postMethod('/attachment', true),
         });
     });

@@ -49,6 +49,6 @@ public class MailMessageBounceService {
             result.add(entity);
         }
 
-        mailMessageBounceRepository.save(result);
+        mailMessageBounceRepository.saveAll(result);
     }
 }

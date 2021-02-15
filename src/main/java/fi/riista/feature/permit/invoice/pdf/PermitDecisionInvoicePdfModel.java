@@ -52,6 +52,7 @@ class PermitDecisionInvoicePdfModel {
                 invoice.getPaymentDate());
     }
 
+
     private static final DateTimeFormatter INVOICE_DATE_PATTERN = DateTimeFormat.forPattern("d.M.yyyy");
     private static final DateTimeFormatter DUE_DATE_PATTERN = DateTimeFormat.forPattern("dd.MM.yyyy");
 

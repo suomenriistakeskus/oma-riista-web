@@ -1,5 +1,6 @@
 package fi.riista.feature.permit.decision;
 
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.decision.document.PermitDecisionSectionIdentifier;
 
 import javax.persistence.Access;
@@ -37,49 +38,49 @@ public class PermitDecisionCompleteStatus implements Serializable {
         Objects.requireNonNull(sectionId, "sectionId is null");
 
         switch (sectionId) {
-            case application:
+            case APPLICATION:
                 this.application = value;
                 break;
-            case applicationReasoning:
+            case APPLICATION_REASONING:
                 this.applicationReasoning = value;
                 break;
-            case processing:
+            case PROCESSING:
                 this.processing = value;
                 break;
-            case decision:
+            case DECISION:
                 this.decision = value;
                 break;
-            case decisionReasoning:
+            case DECISION_REASONING:
                 this.decisionReasoning = value;
                 break;
-            case restriction:
+            case RESTRICTION:
                 this.restriction = value;
                 break;
-            case execution:
+            case EXECUTION:
                 this.execution = value;
                 break;
-            case legalAdvice:
+            case LEGAL_ADVICE:
                 this.legalAdvice = value;
                 break;
-            case notificationObligation:
+            case NOTIFICATION_OBLIGATION:
                 this.notificationObligation = value;
                 break;
-            case appeal:
+            case APPEAL:
                 this.appeal = value;
                 break;
-            case additionalInfo:
+            case ADDITIONAL_INFO:
                 this.additionalInfo = value;
                 break;
-            case delivery:
+            case DELIVERY:
                 this.delivery = value;
                 break;
-            case payment:
+            case PAYMENT:
                 this.payment = value;
                 break;
-            case administrativeCourt:
+            case ADMINISTRATIVE_COURT:
                 this.administrativeCourt = value;
                 break;
-            case attachments:
+            case ATTACHMENTS:
                 this.attachments = value;
                 break;
             default:
@@ -88,24 +89,30 @@ public class PermitDecisionCompleteStatus implements Serializable {
     }
 
     @Transient
-    public boolean allComplete() {
-        return streamEditableStatus().allMatch(Boolean::booleanValue);
+    public boolean allComplete(final String permitTypeCode) {
+        final boolean commonEditableStatus = streamCommonEditableStatus().allMatch(Boolean::booleanValue);
+        final boolean deliveryStatus = PermitTypeCode.isDisabilityPermitTypeCode(permitTypeCode) || delivery;
+
+        return commonEditableStatus && deliveryStatus;
     }
 
     @Transient
-    public boolean allCompleteForRejected() {
-        return streamEditableStatusForRejection().allMatch(Boolean::booleanValue);
+    public boolean allCompleteForRejected(final String permitTypeCode) {
+        final boolean commonEditableStatus = streamCommonEditableStatusForRejection().allMatch(Boolean::booleanValue);
+        final boolean deliveryStatus = PermitTypeCode.isDisabilityPermitTypeCode(permitTypeCode) || delivery;
+
+        return commonEditableStatus && deliveryStatus;
     }
 
-    private Stream<Boolean> streamEditableStatus() {
+    private Stream<Boolean> streamCommonEditableStatus() {
         return Stream.of(applicationReasoning, processing, decisionReasoning, execution,
-                legalAdvice, notificationObligation, appeal, additionalInfo, delivery, payment, administrativeCourt,
+                legalAdvice, notificationObligation, appeal, additionalInfo, payment, administrativeCourt,
                 attachments);
     }
 
-    private Stream<Boolean> streamEditableStatusForRejection() {
+    private Stream<Boolean> streamCommonEditableStatusForRejection() {
         return Stream.of(applicationReasoning, processing, decisionReasoning,
-                legalAdvice, notificationObligation, appeal, additionalInfo, delivery, payment, administrativeCourt,
+                legalAdvice, notificationObligation, appeal, additionalInfo, payment, administrativeCourt,
                 attachments);
     }
 

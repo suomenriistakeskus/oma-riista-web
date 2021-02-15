@@ -37,7 +37,7 @@ public class GetPalstaFeatureCollectionQuery {
     }
 
     @Nonnull
-    private Feature mapResultToFeature(final ResultSet rs, final GISUtils.SRID srid) throws SQLException {
+    private static Feature mapResultToFeature(final ResultSet rs, final GISUtils.SRID srid) throws SQLException {
         final Feature feature = new Feature();
 
         feature.setId(String.valueOf(rs.getLong("id")));

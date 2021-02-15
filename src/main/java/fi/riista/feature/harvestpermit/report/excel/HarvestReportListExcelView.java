@@ -22,38 +22,62 @@ public class HarvestReportListExcelView extends AbstractXlsxView {
     private static final DateTimeFormatter DATETIME_PATTERN = DateTimeFormat.forPattern("yyyy-MM-dd_HH-mm-ss");
 
     public static HarvestReportListExcelView create(final Localiser localiser,
-                                                    final List<HarvestReportExcelDTO> data) {
-        final String[] rowHeaders = localiser.translate(HEADER_LOCALIZATION_KEYS);
+                                                    final List<HarvestReportExcelDTO> data,
+                                                    final boolean includeDetails) {
+        final String[] rowHeaders = localiser.translate(includeDetails
+                ? HEADER_LOCALIZATION_KEYS_DETAILS
+                : HEADER_LOCALIZATION_KEYS);
         final String filename = String.format("%s-%s.xlsx",
                 StringUtils.uncapitalize(localiser.getTranslation("harvestReports")),
                 DATETIME_PATTERN.print(DateUtil.now()));
 
-        return new HarvestReportListExcelView(data, rowHeaders, filename);
+        return new HarvestReportListExcelView(data, rowHeaders, filename, includeDetails);
     }
 
-    private static final String[] HEADER_LOCALIZATION_KEYS = new String[]{
+    /*package*/ static final String[] HEADER_LOCALIZATION_KEYS_DETAILS = new String[]{
             "state", "reportingTime", "date", "clockTime",
             "species", "gender", "age", "weight",
             "rka", "rhyAbbrv",
             "permitNumber", "permitType",
             "harvestSeasonName", "harvestQuotaArea",
-            "feedingPlace", "taigaBeanGoose", "reportedWithPhoneCall", "huntingMethod", "huntingAreaType", "nameOfHuntingClubOrParty", "huntingAreaSize",
+            "feedingPlace", "taigaBeanGoose", "reportedWithPhoneCall", "huntingMethod", "huntingAreaType",
+            "nameOfHuntingClubOrParty", "huntingAreaSize",
             "geolocationSource", "geolocationAccuracy", "latitude", "longitude", "propertyIdentifier", "municipality",
 
-            "lastNameOfAuthor", "firstNameOfAuthor", "addressOfAuthor", "postalCodeOfAuthor", "postOfficeOfAuthor", "phoneNumberOfAuthor", "emailOfAuthor",
-            "lastNameOfHunter", "firstNameOfHunter", "addressOfHunter", "postalCodeOfHunter", "postOfficeOfHunter", "phoneNumberOfHunter", "emailOfHunter", "huntingCardOfHunter"
+            "lastNameOfAuthor", "firstNameOfAuthor", "addressOfAuthor", "postalCodeOfAuthor", "postOfficeOfAuthor",
+            "phoneNumberOfAuthor", "emailOfAuthor",
+            "lastNameOfHunter", "firstNameOfHunter", "addressOfHunter", "postalCodeOfHunter", "postOfficeOfHunter",
+            "phoneNumberOfHunter", "emailOfHunter", "huntingCardOfHunter"
+    };
+
+    /*package*/ static final String[] HEADER_LOCALIZATION_KEYS = new String[]{
+            "state", "reportingTime", "date", "clockTime",
+            "species", "gender", "age", "weight",
+            "rka", "rhyAbbrv",
+            "permitNumber", "permitType",
+            "harvestSeasonName", "harvestQuotaArea",
+            "feedingPlace", "taigaBeanGoose", "reportedWithPhoneCall", "huntingMethod", "huntingAreaType",
+            "nameOfHuntingClubOrParty", "huntingAreaSize",
+            "geolocationSource", "geolocationAccuracy", "latitude", "longitude", "propertyIdentifier", "municipality"
     };
 
     private final List<HarvestReportExcelDTO> data;
     private final String[] rowHeaders;
     private final String filename;
+    private final boolean includeDetails;
 
-    private HarvestReportListExcelView(final List<HarvestReportExcelDTO> data,
+    /*package*/ void buildForTest(final Workbook workbook, final HttpServletResponse response) {
+        buildExcelDocument(null, workbook, null, response);
+    }
+
+    protected HarvestReportListExcelView(final List<HarvestReportExcelDTO> data,
                                        final String[] rowHeaders,
-                                       final String filename) {
+                                       final String filename,
+                                       final boolean includeDetails) {
         this.data = Objects.requireNonNull(data);
         this.rowHeaders = Objects.requireNonNull(rowHeaders);
         this.filename = Objects.requireNonNull(filename);
+        this.includeDetails = includeDetails;
     }
 
     @Override
@@ -111,28 +135,31 @@ public class HarvestReportListExcelView extends AbstractXlsxView {
                     .appendNumberCell(dto.getLocationLatitude())
                     .appendNumberCell(dto.getLocationLongitude())
                     .appendTextCell(dto.getPropertyIdentifier())
-                    .appendTextCell(dto.getMunicipalityCode())
+                    .appendTextCell(dto.getMunicipalityCode());
 
-                    // author
+            if (includeDetails) {
+                excelHelper
 
-                    .appendTextCell(dto.getHarvestReportAuthorLastName())
-                    .appendTextCell(dto.getHarvestReportAuthorFirstName())
-                    .appendTextCell(dto.getHarvestReportAuthorAddress())
-                    .appendTextCell(dto.getHarvestReportAuthorPostalCode())
-                    .appendTextCell(dto.getHarvestReportAuthorPostalResidence())
-                    .appendTextCell(dto.getHarvestReportAuthorPhone())
-                    .appendTextCell(dto.getHarvestReportAuthorEmail())
+                        // author
+                        .appendTextCell(dto.getHarvestReportAuthorLastName())
+                        .appendTextCell(dto.getHarvestReportAuthorFirstName())
+                        .appendTextCell(dto.getHarvestReportAuthorAddress())
+                        .appendTextCell(dto.getHarvestReportAuthorPostalCode())
+                        .appendTextCell(dto.getHarvestReportAuthorPostalResidence())
+                        .appendTextCell(dto.getHarvestReportAuthorPhone())
+                        .appendTextCell(dto.getHarvestReportAuthorEmail())
 
-                    // actor
+                        // actor
+                        .appendTextCell(dto.getHunterLastName())
+                        .appendTextCell(dto.getHunterFirstName())
+                        .appendTextCell(dto.getHunterAddress())
+                        .appendTextCell(dto.getHunterPostalCode())
+                        .appendTextCell(dto.getHunterPostalResidence())
+                        .appendTextCell(dto.getHunterPhone())
+                        .appendTextCell(dto.getHunterEmail())
+                        .appendTextCell(dto.getHunterHuntingCard());
 
-                    .appendTextCell(dto.getHunterLastName())
-                    .appendTextCell(dto.getHunterFirstName())
-                    .appendTextCell(dto.getHunterAddress())
-                    .appendTextCell(dto.getHunterPostalCode())
-                    .appendTextCell(dto.getHunterPostalResidence())
-                    .appendTextCell(dto.getHunterPhone())
-                    .appendTextCell(dto.getHunterEmail())
-                    .appendTextCell(dto.getHunterHuntingCard());
+            }
         }
     }
 }

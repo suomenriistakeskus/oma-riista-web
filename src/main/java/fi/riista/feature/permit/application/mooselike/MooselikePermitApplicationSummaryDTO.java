@@ -9,6 +9,7 @@ import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.person.PersonWithNameDTO;
+import fi.riista.feature.permit.application.DeliveryAddressDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachmentDTO;
@@ -94,7 +95,7 @@ public class MooselikePermitApplicationSummaryDTO extends BaseEntityDTO<Long> {
         dto.setEmail2(entity.getEmail2());
 
         dto.setDeliveryByMail(entity.getDeliveryByMail());
-
+        dto.setDeliveryAddress(DeliveryAddressDTO.fromNullable(entity.getDeliveryAddress()));
         dto.setDecisionLanguage(entity.getDecisionLocale().getLanguage());
 
         dto.setHuntingYear(entity.getApplicationYear());
@@ -113,6 +114,7 @@ public class MooselikePermitApplicationSummaryDTO extends BaseEntityDTO<Long> {
     private Integer applicationNumber;
     private String applicationName;
     private HarvestPermitCategory harvestPermitCategory;
+    private DeliveryAddressDTO deliveryAddress;
 
     private PersonContactInfoDTO contactPerson;
     private PermitHolderDTO permitHolder;
@@ -188,6 +190,14 @@ public class MooselikePermitApplicationSummaryDTO extends BaseEntityDTO<Long> {
 
     public void setHarvestPermitCategory(HarvestPermitCategory harvestPermitCategory) {
         this.harvestPermitCategory = harvestPermitCategory;
+    }
+
+    public DeliveryAddressDTO getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(final DeliveryAddressDTO deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
     }
 
     public PersonContactInfoDTO getContactPerson() {

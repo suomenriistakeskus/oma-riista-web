@@ -14,7 +14,10 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.PermitHolder;
+import fi.riista.feature.permit.decision.PermitDecision;
 
 import java.util.function.Consumer;
 
@@ -22,6 +25,12 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
 
     default void withMooseHuntingGroupFixture(final Consumer<HuntingGroupFixture> consumer) {
         consumer.accept(new HuntingGroupFixture(getEntitySupplier()));
+    }
+
+    default void withDeerHuntingGroupFixture(final Consumer<HuntingGroupFixture> consumer) {
+        withHuntingGroupFixture(getEntitySupplier().newRiistanhoitoyhdistys(),
+                                getEntitySupplier().newGameSpeciesWhiteTailedDeer(),
+                                consumer);
     }
 
     default void withHuntingGroupFixture(final GameSpecies species, final Consumer<HuntingGroupFixture> consumer) {
@@ -64,6 +73,11 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
         public final Occupation groupLeaderOccupation;
         public final Occupation groupMemberOccupation;
 
+        public final PermitDecision decision;
+
+        public final HarvestPermitApplication application;
+        public final HarvestPermitApplicationSpeciesAmount applicationSpeciesAmount;
+
         public HuntingGroupFixture(final EntitySupplier es) {
             this(es, es.newRiistanhoitoyhdistys(), es.newGameSpeciesMoose());
         }
@@ -72,17 +86,56 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
                                    final Riistanhoitoyhdistys rhy,
                                    final GameSpecies species) {
 
-            this(es, es.newHarvestPermitSpeciesAmount(es.newMooselikePermit(rhy), species), true);
+            this(
+                    es,
+                    es.newHarvestPermitSpeciesAmount(es.newMooselikePermit(rhy), species),
+                    es.newPermitDecision(rhy, species),
+                    es.newHarvestPermitApplication(rhy, es.newHarvestPermitArea(), species),
+                    species,
+                    true
+            );
         }
 
         public HuntingGroupFixture(final EntitySupplier es,
                                    final HarvestPermitSpeciesAmount speciesAmount,
                                    final boolean setClubAsPermitHolder) {
+            this(
+                    es,
+                    speciesAmount,
+                    es.newPermitDecision(speciesAmount.getHarvestPermit().getRhy(), speciesAmount.getGameSpecies()),
+                    es.newHarvestPermitApplication(speciesAmount.getHarvestPermit().getRhy(), es.newHarvestPermitArea(), speciesAmount.getGameSpecies()),
+                    speciesAmount.getGameSpecies(),
+                    setClubAsPermitHolder
+            );
+        }
 
+        public HuntingGroupFixture(final EntitySupplier es,
+                                   final HarvestPermitSpeciesAmount speciesAmount,
+                                   final PermitDecision decision,
+                                   final HarvestPermitApplication application,
+                                   final GameSpecies species,
+                                   final boolean setClubAsPermitHolder) {
+            this(
+                    es,
+                    speciesAmount,
+                    decision,
+                    application,
+                    es.newHarvestPermitApplicationSpeciesAmount(application, species),
+                    setClubAsPermitHolder
+            );
+        }
+
+        public HuntingGroupFixture(final EntitySupplier es,
+                                   final HarvestPermitSpeciesAmount speciesAmount,
+                                   final PermitDecision decision,
+                                   final HarvestPermitApplication application,
+                                   final HarvestPermitApplicationSpeciesAmount applicationSpeciesAmount,
+                                   final boolean setClubAsPermitHolder) {
             this.speciesAmount = speciesAmount;
 
             species = speciesAmount.getGameSpecies();
             permit = speciesAmount.getHarvestPermit();
+            permit.setPermitDecision(decision);
             rhy = permit.getRhy();
 
             club = es.newHuntingClub(rhy);
@@ -95,6 +148,7 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
             }
 
             group = es.newHuntingClubGroup(club, speciesAmount);
+            group.updateHarvestPermit(permit);
 
             zoneCentroid = es.geoLocation(GeoLocation.Source.MANUAL);
             clubArea = es.newHuntingClubArea(club, "fi", "sv", group.getHuntingYear());
@@ -116,6 +170,11 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
             groupMember = es.newPerson();
             es.newOccupation(club, groupMember, OccupationType.SEURAN_JASEN);
             groupMemberOccupation = es.newOccupation(group, groupMember, OccupationType.RYHMAN_JASEN);
+
+            this.decision = decision;
+
+            this.application = application;
+            this.applicationSpeciesAmount = applicationSpeciesAmount;
         }
     }
 }

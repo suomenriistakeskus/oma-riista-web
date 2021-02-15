@@ -24,10 +24,11 @@ import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.multipart.support.MultipartFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
@@ -41,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 @EnableWebMvc
 @EnableSpringDataWebSupport
 @ComponentScan(Constants.API_BASE_PACKAGE)
-public class WebMVCConfig extends WebMvcConfigurerAdapter {
+public class WebMVCConfig implements WebMvcConfigurer {
 
     // Limit multipart request size to 100 MiB
     private static final long MAX_UPLOAD_SIZE = 100 * 1024 * 1024;
@@ -78,6 +79,14 @@ public class WebMVCConfig extends WebMvcConfigurerAdapter {
         resolver.setSuffix(".jsp");
 
         return resolver;
+    }
+
+    @Override
+    public void addCorsMappings(final CorsRegistry registry) {
+        registry.addMapping("/api/v1/anon/**")
+                .allowedMethods("GET")
+                .allowCredentials(false)
+                .allowedOrigins("https://riista.fi");
     }
 
     @Override

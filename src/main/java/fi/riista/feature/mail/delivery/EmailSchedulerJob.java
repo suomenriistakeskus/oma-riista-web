@@ -1,10 +1,9 @@
 package fi.riista.feature.mail.delivery;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
+import fi.riista.config.quartz.RunAsAdminJob;
 import fi.riista.feature.mail.MailService;
 import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,14 +14,14 @@ import javax.annotation.Resource;
         name = "MailSender",
         enabledProperty = "mail.enabled",
         fixedRate = 5_000)
-public class EmailSchedulerJob implements Job {
+public class EmailSchedulerJob extends RunAsAdminJob {
     private static final Logger LOG = LoggerFactory.getLogger(EmailSchedulerJob.class);
 
     @Resource
     private MailService mailService;
 
     @Override
-    public void execute(final JobExecutionContext context) {
+    public void executeAsAdmin() {
         try {
             mailService.processOutgoingMail();
         } catch (final Exception ex) {

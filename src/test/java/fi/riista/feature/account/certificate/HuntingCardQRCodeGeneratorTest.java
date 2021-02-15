@@ -14,7 +14,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
 
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 

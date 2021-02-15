@@ -2,12 +2,12 @@
 
     <div class="modal-header">
         <button riista-modal-close></button>
-        <h3 class="modal-title" translate="harvestpermit.decision.settings.appeal.title"></h3>
+        <h3 class="modal-title" translate="decision.settings.appeal.title"></h3>
     </div>
 
     <div class="modal-body" style="min-height: 220px">
         <div class="form-group">
-            <label class="col-xs-5 control-label" translate="harvestpermit.decision.settings.appeal.isAppealInitiated"></label>
+            <label class="col-xs-5 control-label" translate="decision.settings.appeal.isAppealInitiated"></label>
 
             <div class="col-xs-7">
                 <div class="btn-group btn-group-justified">
@@ -28,13 +28,13 @@
 
         <div class="form-group" show-errors ng-if="$ctrl.appealInitiated">
             <label for="appealStatus" class="col-xs-5 control-label">
-                <span translate="harvestpermit.decision.settings.appeal.appealStatus"></span>
+                <span translate="decision.settings.appeal.appealStatus"></span>
                 <small class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
             <div class="col-xs-6">
                 <select class="form-control" id="appealStatus" name="appealStatus"
-                        ng-options="a as ('harvestpermit.decision.appealStatus.' + a) | translate for a in $ctrl.appealStatusOptions"
+                        ng-options="a as ('decision.appealStatus.' + a) | translate for a in $ctrl.appealStatusOptions"
                         ng-model="$ctrl.appealStatus" required>
                 </select>
             </div>

@@ -27,7 +27,7 @@ public class SrvaExportApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "anon/srva", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "anon/srva", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SrvaPublicExportDTO> getSrvaPublicExportData(final @RequestParam int calendarYear) {
         return feature.exportPublic(calendarYear);
     }

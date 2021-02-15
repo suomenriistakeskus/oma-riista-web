@@ -1,7 +1,7 @@
 package fi.riista.feature.account;
 
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 public class AccountAddressDTO {

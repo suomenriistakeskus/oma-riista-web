@@ -4,8 +4,8 @@ import com.google.common.base.Preconditions;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
-import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.common.repository.BaseRepositoryImpl;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -19,6 +19,7 @@ import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.security.EntityPermission;
+import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -192,10 +193,10 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
         }
 
         if (dto.hasBeginDate()) {
-            q.where(SRVA.pointOfTime.goe(dto.getBeginDate().toDate()));
+            q.where(SRVA.pointOfTime.goe(DateUtil.toDateTimeNullSafe(dto.getBeginDate())));
         }
         if (dto.hasEndDate()) {
-            q.where(SRVA.pointOfTime.lt(dto.getEndDate().plusDays(1).toDate()));
+            q.where(SRVA.pointOfTime.lt(DateUtil.toDateTimeNullSafe(dto.getEndDate().plusDays(1))));
         }
 
         return q;

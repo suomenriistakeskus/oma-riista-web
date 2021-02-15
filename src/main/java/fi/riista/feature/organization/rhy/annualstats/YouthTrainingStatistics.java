@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -23,7 +24,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class YouthTrainingStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<YouthTrainingStatistics>,
+        AnnualStatisticsManuallyEditableFields<YouthTrainingStatistics>,
         Serializable {
     public static final YouthTrainingStatistics reduce(@Nullable final YouthTrainingStatistics a,
                                                         @Nullable final YouthTrainingStatistics b) {
@@ -99,6 +100,7 @@ public class YouthTrainingStatistics
     private boolean otherYouthTargetedTrainingParticipantsOverridden;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "youth_trainings_last_modified")
     private DateTime lastModified;
 
@@ -168,23 +170,35 @@ public class YouthTrainingStatistics
 
     @Override
     public void assignFrom(@Nonnull final YouthTrainingStatistics that) {
+        if (!Objects.equals(this.schoolTrainingEvents, that.schoolTrainingEvents)) {
+            this.schoolTrainingEventsOverridden = true;
+        }
         this.schoolTrainingEvents = that.schoolTrainingEvents;
-        this.schoolTrainingEventsOverridden = that.schoolTrainingEventsOverridden;
 
+        if (!Objects.equals(this.schoolTrainingParticipants, that.schoolTrainingParticipants)) {
+            this.schoolTrainingParticipantsOverridden = true;
+        }
         this.schoolTrainingParticipants = that.schoolTrainingParticipants;
-        this.schoolTrainingParticipantsOverridden = that.schoolTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.collegeTrainingEvents, that.collegeTrainingEvents)) {
+            this.collegeTrainingEventsOverridden = true;
+        }
         this.collegeTrainingEvents = that.collegeTrainingEvents;
-        this.collegeTrainingEventsOverridden = that.collegeTrainingEventsOverridden;
 
+        if (!Objects.equals(this.collegeTrainingParticipants, that.collegeTrainingParticipants)) {
+            this.collegeTrainingParticipantsOverridden = true;
+        }
         this.collegeTrainingParticipants = that.collegeTrainingParticipants;
-        this.collegeTrainingParticipantsOverridden = that.collegeTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.otherYouthTargetedTrainingEvents, that.otherYouthTargetedTrainingEvents)) {
+            this.otherYouthTargetedTrainingEventsOverridden = true;
+        }
         this.otherYouthTargetedTrainingEvents = that.otherYouthTargetedTrainingEvents;
-        this.otherYouthTargetedTrainingEventsOverridden = that.otherYouthTargetedTrainingEventsOverridden;
 
+        if (!Objects.equals(this.otherYouthTargetedTrainingParticipants, that.otherYouthTargetedTrainingParticipants)) {
+            this.otherYouthTargetedTrainingParticipantsOverridden = true;
+        }
         this.otherYouthTargetedTrainingParticipants = that.otherYouthTargetedTrainingParticipants;
-        this.otherYouthTargetedTrainingParticipantsOverridden = that.otherYouthTargetedTrainingParticipantsOverridden;
     }
 
     @Nullable

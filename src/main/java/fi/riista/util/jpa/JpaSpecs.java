@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -270,7 +269,7 @@ public final class JpaSpecs {
 
     @Nonnull
     public static <T> Specification<T> withinInterval(
-            @Nonnull final SingularAttribute<? super T, Date> dateAttribute, @Nonnull final Interval interval) {
+            @Nonnull final SingularAttribute<? super T, DateTime> dateAttribute, @Nonnull final Interval interval) {
 
         Objects.requireNonNull(dateAttribute, "dateAttribute must not be null");
         Objects.requireNonNull(interval, "interval must not be null");
@@ -280,7 +279,7 @@ public final class JpaSpecs {
 
     @Nonnull
     public static <T> Specification<T> withinInterval(
-            @Nonnull final SingularAttribute<? super T, Date> dateAttribute,
+            @Nonnull final SingularAttribute<? super T, DateTime> dateAttribute,
             @Nullable final LocalDate beginDate,
             @Nullable final LocalDate endDate) {
 
@@ -327,19 +326,19 @@ public final class JpaSpecs {
 
     @Nonnull
     public static <T> Specification<T> withinHuntingYear(
-            @Nonnull final SingularAttribute<? super T, Date> dateAttribute, final int firstCalendarYearOfHuntingYear) {
+            @Nonnull final SingularAttribute<? super T, DateTime> dateAttribute, final int firstCalendarYearOfHuntingYear) {
 
         return withinInterval(dateAttribute, DateUtil.huntingYearInterval(firstCalendarYearOfHuntingYear));
     }
 
     @Nonnull
     public static <T extends LifecycleEntity<? extends Serializable>> Specification<T> creationTimeOlderThan(
-            @Nonnull final Date olderThan) {
+            @Nonnull final DateTime olderThan) {
 
         Objects.requireNonNull(olderThan);
 
         return (root, query, cb) -> {
-            final Path<Date> dateField =
+            final Path<DateTime> dateField =
                     root.get(LifecycleEntity_.lifecycleFields).get(EntityLifecycleFields_.creationTime);
             return cb.lessThan(dateField, olderThan);
         };
@@ -347,12 +346,12 @@ public final class JpaSpecs {
 
     @Nonnull
     public static <T extends LifecycleEntity<? extends Serializable>> Specification<T> creationTimeBetween(
-            @Nonnull final Date start, @Nonnull final Date end) {
+            @Nonnull final DateTime start, @Nonnull final DateTime end) {
         Objects.requireNonNull(start);
         Objects.requireNonNull(end);
 
         return (root, query, cb) -> {
-            final Path<Date> dateField =
+            final Path<DateTime> dateField =
                     root.get(LifecycleEntity_.lifecycleFields).get(EntityLifecycleFields_.creationTime);
             return cb.between(dateField, start, end);
         };

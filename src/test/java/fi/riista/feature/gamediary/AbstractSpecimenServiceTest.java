@@ -17,14 +17,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static com.google.common.collect.Lists.partition;
-import static fi.riista.test.Asserts.assertEmpty;
+import static fi.riista.test.Asserts.assertThat;
 import static fi.riista.test.TestUtils.expectIllegalArgumentException;
 import static fi.riista.test.TestUtils.expectNPE;
 import static fi.riista.test.TestUtils.expectOutOfBoundsSpecimenAmountException;
@@ -36,10 +35,12 @@ import static fi.riista.util.Functions.idAndVersion;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
 public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry, ENTITY extends BaseEntity<Long>, DTO extends BaseEntityDTO<Long>, VERSION extends GameDiaryEntitySpecVersion>
@@ -63,7 +64,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
     protected abstract AbstractSpecimenService<PARENT, ENTITY, DTO, VERSION> getService();
 
-    protected abstract SpecimenTestOps<PARENT, ENTITY, DTO> getSpecimenTestOps(GameSpecies species, VERSION version);
+    protected abstract SpecimenTestOps<PARENT, ENTITY, DTO> getSpecimenTestOps(PARENT parent, VERSION version);
 
     protected abstract List<ENTITY> findSpecimensInInsertionOrder(PARENT diaryEntry);
 
@@ -133,7 +134,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
             final List<DTO> dtos = ctx.createDTOs(5);
             final List<ENTITY> persistedSpecimens = ctx.invokeAdd(dtos.size(), dtos);
-            assertTrue(ctx.equalContent(persistedSpecimens, dtos));
+            assertThat(ctx.equalContent(persistedSpecimens, dtos), is(true));
 
         }).accept(this::newPersistentParent);
     }
@@ -157,8 +158,8 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
             final List<ENTITY> persistedSpecimens = ctx.invokeAdd(allDtos.size(), allDtos);
 
-            assertEquals(dtosWithContent.size(), persistedSpecimens.size());
-            assertTrue(ctx.equalContent(persistedSpecimens, dtosWithContent));
+            assertThat(persistedSpecimens, hasSize(dtosWithContent.size()));
+            assertThat(ctx.equalContent(persistedSpecimens, dtosWithContent), is(true));
 
         }).accept(this::newPersistentParent);
     }
@@ -245,7 +246,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
             ctx.mutateContent(updatedDtos);
 
             final List<ENTITY> updatedEntities = ctx.invokeSet(updatedDtos.size(), updatedDtos);
-            assertTrue(ctx.equalIdAndContent(updatedEntities, updatedDtos));
+            assertThat(ctx.equalIdAndContent(updatedEntities, updatedDtos), is(true));
 
         }).accept(this::newParent);
     }
@@ -275,18 +276,18 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
                     ctx.invokeSet(newAndToBeUpdatedDtos.size(), newAndToBeUpdatedDtos);
 
             // Assert removed
-            assertFalse(specimensAfterUpdate.stream().anyMatch(hasAnyIdOf(initialEntitiesToBeRemoved)));
+            assertThat(specimensAfterUpdate.stream().anyMatch(hasAnyIdOf(initialEntitiesToBeRemoved)), is(false));
 
             // Assert updated
             final List<ENTITY> updatedEntities =
                     F.filterToList(specimensAfterUpdate, hasAnyIdOf(initialEntitiesToBeUpdated));
-            assertTrue(ctx.equalIdAndContent(updatedEntities, updatedDtos));
+            assertThat(ctx.equalIdAndContent(updatedEntities, updatedDtos), is(true));
             updatedEntities.forEach(e -> assertVersion(e, 1));
 
             // Assert newly-added
             final List<ENTITY> newEntities =
                     F.filterToList(specimensAfterUpdate, idNotAnyOf(initialEntitiesToBeUpdated));
-            assertTrue(ctx.equalContent(newEntities, newDtos));
+            assertThat(ctx.equalContent(newEntities, newDtos), is(true));
             newEntities.forEach(e -> assertVersion(e, 0));
 
         }).accept(this::newParent);
@@ -316,8 +317,8 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
             final List<ENTITY> specimensAfter = ctx.findExistingSpecimensForParentInInsertionOrder();
 
-            assertEquals(1, specimensAfter.size());
-            assertTrue(ctx.equalIdAndContent(specimensAfter, singletonList(ctx.transform(spe1))));
+            assertThat(specimensAfter, hasSize(1));
+            assertThat(ctx.equalIdAndContent(specimensAfter, singletonList(ctx.transform(spe1))), is(true));
 
         }).accept(this::newParent);
     }
@@ -339,8 +340,8 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
             final List<DTO> dtosWithContent = oddEvenPartitioning.get(false);
 
-            assertEquals(dtosWithContent.size(), updatedSpecimens.size());
-            assertTrue(ctx.equalIdAndContent(updatedSpecimens, dtosWithContent));
+            assertThat(updatedSpecimens, hasSize(dtosWithContent.size()));
+            assertThat(ctx.equalIdAndContent(updatedSpecimens, dtosWithContent), is(true));
 
         }).accept(this::newParent);
     }
@@ -361,8 +362,8 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
             final List<DTO> dtosWithContent = oddEvenPartitioning.get(false);
 
-            assertEquals(dtosWithContent.size(), persistedSpecimens.size());
-            assertTrue(ctx.equalContent(persistedSpecimens, dtosWithContent));
+            assertThat(persistedSpecimens, hasSize(dtosWithContent.size()));
+            assertThat(ctx.equalContent(persistedSpecimens, dtosWithContent), is(true));
 
         }).accept(this::newParent);
     }
@@ -378,8 +379,8 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
             final List<ENTITY> persistedSpecimens = ctx.invokeSet_expectNoneChanged(allDtos.size(), allDtos);
 
-            assertEquals(allDtos.size(), persistedSpecimens.size());
-            assertTrue(ctx.equalContent(persistedSpecimens, allDtos));
+            assertThat(persistedSpecimens, hasSize(allDtos.size()));
+            assertThat(ctx.equalContent(persistedSpecimens, allDtos), is(true));
 
         }).accept(this::newParent);
     }
@@ -391,7 +392,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
             ctx.createSpecimens(3);
             persistInCurrentlyOpenTransaction();
 
-            assertEmpty(ctx.invokeSet(3, emptyList()));
+            assertThat(ctx.invokeSet(3, emptyList()), is(empty()));
 
         }).accept(this::newParent);
     }
@@ -408,31 +409,35 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
             ctx.createSpecimens(10);
             persistInCurrentlyOpenTransaction();
             getService().deleteAllSpecimens(ctx.getParent());
-            assertEmpty(ctx.findExistingSpecimensForParentInInsertionOrder());
+            assertThat(ctx.findExistingSpecimensForParentInInsertionOrder(), is(empty()));
 
         }).accept(this::newParent);
     }
 
-    protected List<ENTITY> invokeAdd(
-            final PARENT diaryEntry, final int totalAmount, final List<DTO> dtoList, final VERSION version) {
+    protected List<ENTITY> invokeAdd(final PARENT diaryEntry,
+                                     final int totalAmount,
+                                     final List<DTO> dtoList,
+                                     final VERSION version) {
 
         final List<ENTITY> result = getService().addSpecimens(diaryEntry, totalAmount, dtoList, version);
         result.forEach(s -> assertVersion(s, 0));
 
         // Do this result transformation before the following query (that triggers flush).
-        final List<Tuple2<Long, Integer>> resultIdsAndVersions = result.stream().map(idAndVersion()).collect(toList());
+        final List<Tuple2<Long, Integer>> resultIdsAndVersions = F.mapNonNullsToList(result, idAndVersion());
 
         final List<ENTITY> persistentSpecimens = findSpecimensInInsertionOrder(diaryEntry);
 
         // Assert that returned list is same than is persisted and that the specimens are not in
         // dirty state (previous query triggered flush causing dirty state to be persisted).
-        assertEquals(persistentSpecimens.stream().map(idAndVersion()).collect(toList()), resultIdsAndVersions);
+        assertThat(resultIdsAndVersions, equalTo(F.mapNonNullsToList(persistentSpecimens, idAndVersion())));
 
         return persistentSpecimens;
     }
 
-    protected List<ENTITY> invokeSet(
-            final PARENT diaryEntry, final int totalAmount, final List<DTO> dtoList, final VERSION version) {
+    protected List<ENTITY> invokeSet(final PARENT diaryEntry,
+                                     final int totalAmount,
+                                     final List<DTO> dtoList,
+                                     final VERSION version) {
 
         return invokeSet(diaryEntry, totalAmount, dtoList, version, true);
     }
@@ -445,17 +450,16 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
         final Tuple2<List<ENTITY>, Boolean> result =
                 getService().setSpecimens(diaryEntry, totalAmount, dtoList, version);
-        assertEquals(changesExpected, result._2);
+        assertThat(result._2, is(changesExpected));
 
         // Do this result transformation before the following query that triggers flush.
-        final List<Tuple2<Long, Integer>> resultIdsAndVersions =
-                result._1.stream().map(idAndVersion()).collect(toList());
+        final List<Tuple2<Long, Integer>> resultIdsAndVersions = F.mapNonNullsToList(result._1, idAndVersion());
 
         final List<ENTITY> persistentSpecimens = findSpecimensInInsertionOrder(diaryEntry);
 
         // Assert that returned list is same than is persisted and that the specimens are not in
         // dirty state (previous query triggered flush causing dirty state to be persisted).
-        assertEquals(persistentSpecimens.stream().map(idAndVersion()).collect(toList()), resultIdsAndVersions);
+        assertThat(resultIdsAndVersions, equalTo(F.mapNonNullsToList(persistentSpecimens, idAndVersion())));
 
         return persistentSpecimens;
     }
@@ -470,7 +474,6 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
     protected Consumer<Supplier<PARENT>> testAllVersionsBefore(final VERSION versionUpperBound,
                                                                final Consumer<Context> execution) {
-
         return parentSupplier -> {
             forEachVersionBefore(versionUpperBound, version -> with(execution).accept(parentSupplier.get(), version));
         };
@@ -478,7 +481,6 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
     protected Consumer<Supplier<PARENT>> testAllVersionsStartingFrom(final VERSION minVersion,
                                                                      final Consumer<Context> execution) {
-
         return parentSupplier -> {
             forEachVersionStartingFrom(minVersion, version -> with(execution).accept(parentSupplier.get(), version));
         };
@@ -501,10 +503,10 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
 
         DTO transform(@Nonnull ENTITY entity);
 
-        // Mutates all fields except ID and rev.
+        // Mutates business fields but not ID and rev.
         void mutateContent(@Nonnull DTO dto);
 
-        // Clears all fields except ID and rev.
+        // Clears all business fields except ID and rev.
         void clearContent(@Nonnull DTO dto);
 
         boolean equalContent(@Nonnull ENTITY entity, @Nonnull DTO dto);
@@ -517,9 +519,9 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
         private final SpecimenTestOps<PARENT, ENTITY, DTO> ops;
 
         public Context(@Nonnull final PARENT diaryEntry, @Nonnull final VERSION version) {
-            this.diaryEntry = Objects.requireNonNull(diaryEntry, "diaryEntry is null");
-            this.version = Objects.requireNonNull(version, "version is null");
-            this.ops = getSpecimenTestOps(Objects.requireNonNull(diaryEntry.getSpecies(), "species is null"), version);
+            this.diaryEntry = requireNonNull(diaryEntry, "diaryEntry is null");
+            this.version = requireNonNull(version, "version is null");
+            this.ops = getSpecimenTestOps(diaryEntry, version);
         }
 
         public PARENT getParent() {
@@ -563,7 +565,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
         }
 
         public List<DTO> transform(@Nonnull final Collection<ENTITY> entities) {
-            Objects.requireNonNull(entities);
+            requireNonNull(entities);
             return entities.stream().map(this::transform).collect(toList());
         }
 
@@ -572,7 +574,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
         }
 
         public void mutateContent(@Nonnull final Collection<? extends DTO> dtos) {
-            Objects.requireNonNull(dtos);
+            requireNonNull(dtos);
             dtos.forEach(this::mutateContent);
         }
 
@@ -605,8 +607,7 @@ public abstract class AbstractSpecimenServiceTest<PARENT extends GameDiaryEntry,
         }
 
         private PARENT requireParent() {
-            return Objects.requireNonNull(diaryEntry, "parent must not be null");
+            return requireNonNull(diaryEntry, "parent must not be null");
         }
     }
-
 }

@@ -13,11 +13,13 @@ import fi.riista.feature.permit.application.conflict.ListPermitApplicationConfli
 import fi.riista.feature.permit.application.conflict.PrintApplicationConflictFeature;
 import fi.riista.feature.permit.application.conflict.PrintApplicationConflictMapModel;
 import fi.riista.feature.permit.application.conflict.PrintApplicationConflictRequestDTO;
+import fi.riista.feature.permit.application.fragment.HarvestPermitAreaFragmentExcelRequestDTO;
 import fi.riista.feature.permit.application.fragment.HarvestPermitAreaFragmentInfoDTO;
 import fi.riista.feature.permit.application.fragment.HarvestPermitAreaFragmentRequestDTO;
 import fi.riista.feature.permit.application.fragment.ListApplicationAreaFragmentsFeature;
 import fi.riista.feature.permit.application.fragment.PrintApplicationAreaFragmentDTO;
 import fi.riista.feature.permit.application.fragment.PrintApplicationAreaFragmentFeature;
+import fi.riista.feature.permit.application.fragment.PrintApplicationAreaFragmentListDTO;
 import fi.riista.feature.permit.application.geometry.HarvestPermitApplicationGeometryFeature;
 import fi.riista.feature.permit.application.metsahallitus.MetsahallitusAreaPermitImportFeature;
 import fi.riista.feature.permit.application.metsahallitus.MetsahallitusAreaPermitNumbersDTO;
@@ -66,6 +68,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -123,7 +126,7 @@ public class MoosePermitApplicationApiResource {
     // READ
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/full", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{applicationId:\\d+}/full", produces = MediaType.APPLICATION_JSON_VALUE)
     public MooselikePermitApplicationSummaryDTO allDetails(@PathVariable final long applicationId) {
         return mooselikePermitApplicationSummaryFeature.getAllDetails(applicationId);
     }
@@ -131,7 +134,7 @@ public class MoosePermitApplicationApiResource {
     // PERMIT HOLDER
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/permit-holder", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{applicationId:\\d+}/permit-holder", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HuntingClubDTO> listAvailablePermitHolders(@PathVariable final long applicationId) {
         return mooselikePermitApplicationHolderFeature.listAvailablePermitHolders(applicationId);
     }
@@ -154,6 +157,8 @@ public class MoosePermitApplicationApiResource {
     // SPECIES AMOUNTS
 
     static class AmountList {
+
+        @NotEmpty
         @Valid
         public List<MooselikePermitApplicationSpeciesAmountDTO> list;
 
@@ -167,13 +172,13 @@ public class MoosePermitApplicationApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/species", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{applicationId:\\d+}/species", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MooselikePermitApplicationSpeciesAmountDTO> getSpeciesAmounts(@PathVariable final long applicationId) {
         return mooselikePermitApplicationSpeciesFeature.getSpeciesAmounts(applicationId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping(value = "/{applicationId:\\d+}/species", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/{applicationId:\\d+}/species", produces = MediaType.APPLICATION_JSON_VALUE)
     public void saveSpeciesAmounts(
             final @PathVariable long applicationId,
             final @Valid @RequestBody AmountList dto) {
@@ -188,11 +193,13 @@ public class MoosePermitApplicationApiResource {
             final MetsahallitusAreaPermitUrlsDTO urls = mhAreaPermitImportFeature.fetchUrls(dto);
             final int mhPermitNumber = dto.getMhPermitNumber();
 
-            final MultipartFile verdictFile = mhAreaPermitImportFeature.downloadFile(urls.getVerdictFileUrl(), "Aluelupa_" + mhPermitNumber);
+            final MultipartFile verdictFile = mhAreaPermitImportFeature.downloadFile(urls.getVerdictFileUrl(),
+                    "Aluelupa_" + mhPermitNumber);
             harvestPermitApplicationAttachmentFeature.addAttachment(applicationId, MH_AREA_PERMIT, verdictFile);
 
             for (final String url : urls.getShooterListFileUrls()) {
-                final MultipartFile shooterListFile = mhAreaPermitImportFeature.downloadFile(url, "Ampujaluettelo_" + mhPermitNumber);
+                final MultipartFile shooterListFile = mhAreaPermitImportFeature.downloadFile(url,
+                        "Ampujaluettelo_" + mhPermitNumber);
                 harvestPermitApplicationAttachmentFeature.addAttachment(applicationId, SHOOTER_LIST, shooterListFile);
             }
             return ResponseEntity.ok().build();
@@ -208,7 +215,7 @@ public class MoosePermitApplicationApiResource {
     // SHOOTER COUNTS
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/shooters", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{applicationId:\\d+}/shooters", produces = MediaType.APPLICATION_JSON_VALUE)
     public MooselikePermitApplicationShooterCountDTO getShooterCounts(final @PathVariable long applicationId) {
         return mooselikePermitApplicationShooterCountFeature.getShooterCounts(applicationId);
     }
@@ -268,13 +275,14 @@ public class MoosePermitApplicationApiResource {
     // CALCULATE GEOMETRY
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/area", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public MooselikePermitApplicationAreaDTO getPermitArea(@PathVariable final long applicationId) {
-        return harvestPermitApplicationGeometryFeature.getPermitArea(applicationId);
+    @GetMapping(value = "/{applicationId:\\d+}/area", produces = MediaType.APPLICATION_JSON_VALUE)
+    public MooselikePermitApplicationAreaDTO getPermitArea(@PathVariable final long applicationId,
+                                                           final Locale locale) {
+        return harvestPermitApplicationGeometryFeature.getPermitArea(applicationId, locale);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/area/status", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{applicationId:\\d+}/area/status", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, HarvestPermitArea.StatusCode> getStatus(@PathVariable long applicationId) {
         return ImmutableMap.of("status", harvestPermitApplicationGeometryFeature.getStatus(applicationId));
     }
@@ -294,7 +302,7 @@ public class MoosePermitApplicationApiResource {
     // FINAL GEOMETRY
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/area/bounds", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{applicationId:\\d+}/area/bounds", produces = MediaType.APPLICATION_JSON_VALUE)
     public GISBounds getGeometryBounds(@PathVariable final long applicationId) {
         return harvestPermitApplicationGeometryFeature.getBounds(applicationId);
     }
@@ -312,7 +320,8 @@ public class MoosePermitApplicationApiResource {
 
     // FRAGMENTS
 
-    @PostMapping(value = "/{applicationId:\\d+}/area/fragmentinfo", produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
+    @PostMapping(value = "/{applicationId:\\d+}/area/fragmentinfo", produces =
+            MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
     public List<HarvestPermitAreaFragmentInfoDTO> getGeometryFragmentInfo(
             final @PathVariable long applicationId,
             final @RequestBody @Valid HarvestPermitAreaFragmentRequestDTO dto) {
@@ -321,13 +330,9 @@ public class MoosePermitApplicationApiResource {
 
     @PostMapping(value = "/{applicationId:\\d+}/area/fragments/excel")
     public ModelAndView getFragmentsExcel(final @PathVariable long applicationId,
-                                          final @RequestParam int fragmentSizeLimit,
+                                          final @Valid @RequestBody HarvestPermitAreaFragmentExcelRequestDTO dto,
                                           final Locale locale) {
-        final HarvestPermitAreaFragmentRequestDTO dto = new HarvestPermitAreaFragmentRequestDTO();
-        dto.setApplicationId(applicationId);
-        dto.setFragmentSizeLimit(fragmentSizeLimit);
-
-        return new ModelAndView(listPermitAreaFragmentsFeature.getFragmentExcel(dto, locale));
+        return new ModelAndView(listPermitAreaFragmentsFeature.getFragmentExcel(applicationId, dto, locale));
     }
 
     @PostMapping(value = "/{applicationId:\\d+}/area/fragments/{fragmentId:[0-9A-Za-z]{8}}/print",
@@ -336,10 +341,13 @@ public class MoosePermitApplicationApiResource {
                                    final @PathVariable String fragmentId,
                                    final Locale locale,
                                    final @ModelAttribute @Valid MapPdfParameters dto) {
-        final PrintApplicationAreaFragmentDTO fragmentData = printApplicationAreaFragmentFeature.getFragmentData(applicationId, fragmentId);
-        final MapPdfModel mapModel = printApplicationAreaFragmentFeature.getMapModel(fragmentData, dto.getOverlay(), locale);
+        final PrintApplicationAreaFragmentDTO fragmentData =
+                printApplicationAreaFragmentFeature.getFragmentData(applicationId, fragmentId);
+        final MapPdfModel mapModel = printApplicationAreaFragmentFeature.getMapModel(fragmentData, dto.getOverlay(),
+                locale);
 
-        final byte[] pdfData = printApplicationAreaFragmentFeature.createPdf(fragmentData, mapModel, dto);
+        final byte[] pdfData =
+                printApplicationAreaFragmentFeature.createSingleFragmentPdf(fragmentData, mapModel, dto, locale);
 
         return ResponseEntity.ok()
                 .contentType(MediaTypeExtras.APPLICATION_PDF)
@@ -348,17 +356,37 @@ public class MoosePermitApplicationApiResource {
                 .body(pdfData);
     }
 
+    @PostMapping(value = "/{applicationId:\\d+}/area/fragments/print",
+            consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> printFragments(final @PathVariable long applicationId,
+                                            final @Valid @RequestBody PrintApplicationAreaFragmentListDTO fragmentsDto,
+                                            final Locale locale) {
+        try {
+            final PrintApplicationAreaFragmentFeature.PdfData pdfData =
+                    printApplicationAreaFragmentFeature.makeConcatenatedPdf(applicationId,
+                            fragmentsDto, locale);
+            return ResponseEntity.ok()
+                    .contentType(MediaTypeExtras.APPLICATION_PDF)
+                    .contentLength(pdfData.getData().length)
+                    .headers(ContentDispositionUtil.header(pdfData.getFilename()))
+                    .body(pdfData.getData());
+        } catch (IOException e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+    }
+
     // CONFLICTS
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}/conflicts", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{applicationId:\\d+}/conflicts", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HarvestPermitApplicationConflictDTO> listConflicts(@PathVariable long applicationId) {
         return listPermitApplicationConflictsFeature.listConflicts(applicationId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/{applicationId:\\d+}/conflicts/{otherId:\\d+}",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HarvestPermitApplicationConflictPalstaDTO> listConflictsWithAnotherApplication(
             @PathVariable long applicationId, @PathVariable long otherId) {
         return listPermitApplicationConflictsFeature.listConflictsWithAnotherApplication(applicationId, otherId);

@@ -1,9 +1,9 @@
 package fi.riista.integration.paytrail.rest.model;
 
 import fi.riista.validation.PhoneNumber;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;

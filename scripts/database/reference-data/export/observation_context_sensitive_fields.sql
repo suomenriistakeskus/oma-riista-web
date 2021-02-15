@@ -20,7 +20,10 @@ SELECT
   o.mooselike_female_2_calfs_amount,
   o.mooselike_female_3_calfs_amount,
   o.mooselike_female_4_calfs_amount,
-  o.mooselike_unknown_specimen_amount
+  o.mooselike_unknown_specimen_amount,
+  o.observation_category,
+  o.deer_hunting_type,
+  o.deer_hunting_type_description
 FROM observation_context_sensitive_fields o
   JOIN game_species g ON (g.game_species_id = o.game_species_id)
 ORDER BY o.metadata_version, g.official_code;

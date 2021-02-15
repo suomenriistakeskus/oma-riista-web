@@ -9,5 +9,9 @@ public interface GameSpeciesRepository extends BaseRepository<GameSpecies, Long>
 
     Optional<GameSpecies> findByOfficialCode(int officialCode);
 
+    List<GameSpecies> findByOfficialCodeIn(List<Integer> officialCodes);
+
     List<GameSpecies> findBySrvaOrdinalNotNullOrderBySrvaOrdinal();
+
+    List<GameSpecies> findAllByOfficialCodeIn(List<Integer> codes);
 }

@@ -3,8 +3,8 @@ package fi.riista.feature.permit.decision.revision;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
 

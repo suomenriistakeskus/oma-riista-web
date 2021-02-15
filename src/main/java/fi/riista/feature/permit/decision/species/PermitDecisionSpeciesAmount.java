@@ -17,19 +17,16 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
 @Access(AccessType.FIELD)
 public class PermitDecisionSpeciesAmount extends LifecycleEntity<Long> implements Has2BeginEndDates {
-
-    public static LocalDate getDefaultMooselikeBeginDate(final int huntingYear) {
-        return new LocalDate(huntingYear, 9, 1);
-    }
-
-    public static LocalDate getDefaultMooselikeEndDate(final int huntingYear) {
-        return new LocalDate(huntingYear + 1, 1, 15);
-    }
 
     public enum RestrictionType {
         /**
@@ -57,8 +54,17 @@ public class PermitDecisionSpeciesAmount extends LifecycleEntity<Long> implement
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private GameSpecies gameSpecies;
 
-    @Column(nullable = false)
-    private float amount;
+    @Column(name = "amount")
+    private Float specimenAmount;
+
+    @Column
+    private Integer nestAmount;
+
+    @Column
+    private Integer eggAmount;
+
+    @Column
+    private Integer constructionAmount;
 
     @NotNull
     @Column(nullable = false)
@@ -90,16 +96,31 @@ public class PermitDecisionSpeciesAmount extends LifecycleEntity<Long> implement
     public PermitDecisionSpeciesAmount() {
     }
 
-    public PermitDecisionSpeciesAmount(final PermitDecision permitDecision,
+    public static PermitDecisionSpeciesAmount createForHarvest(final PermitDecision permitDecision,
+                                                               final GameSpecies gameSpecies,
+                                                               final float amount,
+                                                               final RestrictionType restrictionType,
+                                                               final Float restrictionAmount,
+                                                               final LocalDate beginDate,
+                                                               final LocalDate endDate) {
+        final PermitDecisionSpeciesAmount spa = new PermitDecisionSpeciesAmount(permitDecision,
+                gameSpecies,
+                restrictionType,
+                restrictionAmount,
+                beginDate,
+                endDate);
+        spa.setSpecimenAmount(amount);
+        return spa;
+    }
+
+    private PermitDecisionSpeciesAmount(final PermitDecision permitDecision,
                                        final GameSpecies gameSpecies,
-                                       final float amount,
                                        final RestrictionType restrictionType,
                                        final Float restrictionAmount,
                                        final LocalDate beginDate,
                                        final LocalDate endDate) {
         this.permitDecision = permitDecision;
         this.gameSpecies = gameSpecies;
-        this.amount = amount;
         this.restrictionType = restrictionType;
         this.restrictionAmount = restrictionAmount;
         this.beginDate = beginDate;
@@ -113,7 +134,18 @@ public class PermitDecisionSpeciesAmount extends LifecycleEntity<Long> implement
     }
 
     public boolean hasGrantedSpecies() {
-        return amount > 0;
+        return (specimenAmount != null && specimenAmount > 0) ||
+                Stream.of(nestAmount, eggAmount, constructionAmount)
+                        .filter(Objects::nonNull)
+                        .anyMatch(amount -> amount > 0);
+    }
+
+    @AssertTrue
+    public boolean isValidAmount() {
+        final List<Integer> nestRemovalAmounts = Stream.of(nestAmount, eggAmount, constructionAmount)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return specimenAmount != null || !nestRemovalAmounts.isEmpty();
     }
 
     // Accessors -->
@@ -148,12 +180,36 @@ public class PermitDecisionSpeciesAmount extends LifecycleEntity<Long> implement
         this.gameSpecies = gameSpecies;
     }
 
-    public float getAmount() {
-        return amount;
+    public Float getSpecimenAmount() {
+        return specimenAmount;
     }
 
-    public void setAmount(float amount) {
-        this.amount = amount;
+    public void setSpecimenAmount(final Float harvestAmount) {
+        this.specimenAmount = harvestAmount;
+    }
+
+    public Integer getNestAmount() {
+        return nestAmount;
+    }
+
+    public void setNestAmount(final Integer nestAmount) {
+        this.nestAmount = nestAmount;
+    }
+
+    public Integer getEggAmount() {
+        return eggAmount;
+    }
+
+    public void setEggAmount(final Integer eggAmount) {
+        this.eggAmount = eggAmount;
+    }
+
+    public Integer getConstructionAmount() {
+        return constructionAmount;
+    }
+
+    public void setConstructionAmount(final Integer constructionAmount) {
+        this.constructionAmount = constructionAmount;
     }
 
     public RestrictionType getRestrictionType() {

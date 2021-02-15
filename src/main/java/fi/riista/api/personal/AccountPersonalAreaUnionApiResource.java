@@ -50,16 +50,16 @@ public class AccountPersonalAreaUnionApiResource {
 
     // READ
 
-    @GetMapping(value = "/page/me", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/page/me", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public Slice<PersonalAreaUnionDTO> listMinePaged(@RequestParam int huntingYear,
                                                      @RequestParam int page,
                                                      @RequestParam int size) {
         return personalAreaUnionFeature.listMinePaged(huntingYear,
-                new PageRequest(page, size, Sort.Direction.DESC, "id"));
+                PageRequest.of(page, size, Sort.Direction.DESC, "id"));
     }
 
-    @GetMapping(value = "/page/{personId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/page/{personId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public Slice<PersonalAreaUnionDTO> listForPersonPaged(@RequestParam int huntingYear,
                                                           @PathVariable long personId,
@@ -67,16 +67,16 @@ public class AccountPersonalAreaUnionApiResource {
                                                           @RequestParam int size) {
         return personalAreaUnionFeature.listForPersonPaged(
                 personId, huntingYear,
-                new PageRequest(page, size, Sort.Direction.DESC, "id"));
+                PageRequest.of(page, size, Sort.Direction.DESC, "id"));
     }
 
-    @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<PersonalAreaUnionBasicDetailsDTO> listMineReady(@RequestParam int huntingYear) {
         return personalAreaUnionFeature.listMineReady(huntingYear);
     }
 
-    @GetMapping(value = "/{personId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{personId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<PersonalAreaUnionBasicDetailsDTO> listForPersonReady(@RequestParam int huntingYear,
                                                                      @PathVariable long personId) {
@@ -85,12 +85,12 @@ public class AccountPersonalAreaUnionApiResource {
 
     // CREATE
 
-    @PostMapping(value = "/me", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/me", produces = MediaType.APPLICATION_JSON_VALUE)
     public PersonalAreaUnionDTO createAreaUnion(@Valid @RequestBody final PersonalAreaUnionCreateRequestDTO dto) {
         return personalAreaUnionFeature.createAreaUnionForMe(dto);
     }
 
-    @PostMapping(value = "/{personId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(value = "/{personId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public PersonalAreaUnionDTO createAreaUnion(@PathVariable long personId,
                                                 @Valid @RequestBody final PersonalAreaUnionCreateRequestDTO dto) {
         return personalAreaUnionFeature.createAreaUnionForPerson(dto, personId);
@@ -98,7 +98,7 @@ public class AccountPersonalAreaUnionApiResource {
 
     // RENAME
 
-    @PutMapping(value = "/{areaId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{areaId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public PersonalAreaUnionDTO updateAreaUnion(@PathVariable long areaId,
                                                 @Valid @RequestBody final PersonalAreaUnionModifyRequestDTO dto) {
         return personalAreaUnionFeature.updateAreaUnion(areaId, dto);
@@ -143,7 +143,7 @@ public class AccountPersonalAreaUnionApiResource {
     // CALCULATE GEOMETRY
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{areaId:\\d+}/area/status", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{areaId:\\d+}/area/status", produces = MediaType.APPLICATION_JSON_VALUE)
     public Map<String, HarvestPermitArea.StatusCode> getStatus(@PathVariable long areaId) {
         return ImmutableMap.of("status", personalAreaUnionFeature.getStatus(areaId));
     }

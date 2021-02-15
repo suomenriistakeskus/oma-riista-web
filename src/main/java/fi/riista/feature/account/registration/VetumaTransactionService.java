@@ -54,11 +54,8 @@ public class VetumaTransactionService {
             throw new VetumaTransactionException(String.format("Invalid SAML TRID=%s", trid));
         }
 
-        final VetumaTransaction vetumaTransaction = vetumaTransactionRepository.findOne(trid);
-
-        if (vetumaTransaction == null) {
-            throw new VetumaTransactionException(String.format("SAML TRID=%s not found", trid));
-        }
+        final VetumaTransaction vetumaTransaction = vetumaTransactionRepository.findById(trid)
+                .orElseThrow(() -> new VetumaTransactionException(String.format("SAML TRID=%s not found", trid)));
 
         if (vetumaTransaction.isExpiredNow(SAML_TRANSACTION_TIMEOUT)) {
             vetumaTransaction.setStatusTimeout();

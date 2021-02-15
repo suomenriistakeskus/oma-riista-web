@@ -42,8 +42,18 @@ angular.module('app.occupation.controllers', [])
                 $ctrl.showBoard = v.board !== null && v.board.length !== 0;
             };
 
+            var updateCurrentOccupations = function() {
+                var currentOccupations = $ctrl.tenses.current(occupationTypes.board, $ctrl.allOccupations);
+                $ctrl.currentBoardRoles = _(currentOccupations.board).filter(function (occ) {
+                    return !!occ.boardRepresentation;
+                }).map(function (occ) {
+                    return occ.boardRepresentation;
+                }).value();
+            };
+
             // show current as default
             $ctrl.showTense($ctrl.tenses.current);
+            updateCurrentOccupations();
 
             function onSuccess() {
                 NotificationService.showDefaultSuccess();
@@ -51,6 +61,7 @@ angular.module('app.occupation.controllers', [])
                 Occupations.query({orgId: orgId}).$promise.then(function (data) {
                     $ctrl.allOccupations = data;
                     $ctrl.showTense($ctrl.selectedTense);
+                    updateCurrentOccupations();
                 });
             }
 
@@ -61,17 +72,13 @@ angular.module('app.occupation.controllers', [])
             }
 
             $ctrl.addOccupation = function () {
-                OccupationDialogService.addOccupation(orgId, occupationTypes, onlyBoard)
+                OccupationDialogService.addOccupation(orgId, occupationTypes, onlyBoard, $ctrl.currentBoardRoles)
                     .then(onSuccess, onFailure);
             };
 
             $ctrl.showSelected = function (selected) {
-                OccupationDialogService.showSelected(selected, orgId, occupationTypes, onlyBoard)
+                OccupationDialogService.showSelected(selected, orgId, occupationTypes, onlyBoard, $ctrl.currentBoardRoles)
                     .then(onSuccess, onFailure);
-            };
-
-            $ctrl.removeSelected = function (selected) {
-                OccupationDialogService.removeSelected(selected, orgId).then(onSuccess, onFailure);
             };
 
             $ctrl.exportToExcel = function (params) {
@@ -85,7 +92,7 @@ angular.module('app.occupation.controllers', [])
         function ($scope, $uibModalInstance,
                   Helpers, CallOrderConfig, TranslatedBlockUI,
                   Occupations, OccupationFindPerson,
-                  orgId, occupation, occupationTypes, existingPersons) {
+                  orgId, occupation, occupationTypes, existingPersons, boardTypes, currentBoardRoles, BoardRepresentationRoles) {
 
             $scope.existingPersons = existingPersons;
             $scope.personDisplayName = function (person) {
@@ -100,11 +107,31 @@ angular.module('app.occupation.controllers', [])
             $scope.callOrderConfig = CallOrderConfig;
             $scope.occupation = occupation;
             $scope.occupationTypes = occupationTypes;
+            $scope.boardTypes = boardTypes;
+            $scope.boardRepresentationRoles = BoardRepresentationRoles;
+            $scope.substitute = {};
+            if (occupation.substitute) {
+                $scope.substitute.person = occupation.substitute;
+            }
+
+            $scope.currentBoardRoles = _.filter(currentBoardRoles, function (role) {
+                return role !== $scope.occupation.boardRepresentation;
+            });
+
+            $scope.isBoardRoleDisabled = function (o) {
+                return $scope.currentBoardRoles.indexOf(o) !== -1;
+            };
 
             $scope.searchPerson = {
                 error: false,
                 ssn: occupation && occupation.person ? occupation.person.ssn : null,
                 hunterNumber: occupation && occupation.person ? occupation.person.hunterNumber : null
+            };
+
+            $scope.searchSubstitute = {
+                error: false,
+                ssn: $scope.substitute ? $scope.substitute.ssn : null,
+                hunterNumber: $scope.substitute ? $scope.substitute.hunterNumber : null
             };
 
             $scope.addPersonBy = {value: 'existing'};
@@ -115,19 +142,37 @@ angular.module('app.occupation.controllers', [])
                 }
             });
 
+            $scope.addSubstituteBy = {value: 'existing'};
+            $scope.onAddSubstituteChanged = function () {
+                $scope.substitute.person = null;
+                $scope.searchSubstitute.error = false;
+            };
+
+            $scope.isBoardType = function () {
+                if ($scope.boardTypes) {
+                    return $scope.boardTypes.indexOf($scope.occupation.occupationType) !== -1;
+                }
+
+                return false;
+            };
+
+            $scope.isSubstituteRequired = function () {
+                return $scope.isBoardType() && $scope.occupation.occupationType !== 'HALLITUKSEN_VARAJASEN';
+            };
+
             function canEditAddress(person) {
                 return person && !person.registered && (!person.address || person.address.editable);
             }
 
-            function decorateSearch(searchMethod) {
+            function decorateSearch(searchMethod, personData, searchParams) {
                 var ok = function (response) {
-                    $scope.occupation.person = response.data;
-                    $scope.searchPerson.error = false;
+                    personData.person = response.data;
+                    searchParams.error = false;
                 };
 
                 var nok = function () {
-                    $scope.occupation.person = null;
-                    $scope.searchPerson.error = true;
+                    personData.person = null;
+                    searchParams.error = true;
                 };
 
                 var done = function () {
@@ -145,11 +190,19 @@ angular.module('app.occupation.controllers', [])
 
             $scope.findPersonBySsn = decorateSearch(function () {
                 return OccupationFindPerson.findBySsn($scope.searchPerson.ssn);
-            });
+            }, $scope.occupation, $scope.searchPerson);
 
             $scope.findPersonByHunterNumber = decorateSearch(function () {
                 return OccupationFindPerson.findByHunterNumber($scope.searchPerson.hunterNumber);
-            });
+            }, $scope.occupation, $scope.searchPerson);
+
+            $scope.findSubstituteBySsn = decorateSearch(function () {
+                return OccupationFindPerson.findBySsn($scope.searchSubstitute.ssn);
+            }, $scope.substitute, $scope.searchSubstitute);
+
+            $scope.findSubstituteByHunterNumber = decorateSearch(function () {
+                return OccupationFindPerson.findByHunterNumber($scope.searchSubstitute.hunterNumber);
+            }, $scope.substitute, $scope.searchSubstitute);
 
             $scope.startEditPersonInformation = function () {
                 $scope.editPersonInformation = true;
@@ -181,6 +234,15 @@ angular.module('app.occupation.controllers', [])
                 var exists = function (value) {
                     return !_.isNull(value) && !_.isUndefined(value);
                 };
+
+                var isSubstituteForBoardMember = function () {
+                    if ($scope.isSubstituteRequired()) {
+                        return exists($scope.substitute.person);
+                    }
+
+                    return true;
+                };
+
                 if (CallOrderConfig.isCallOrderType(occupation.occupationType)) {
                     if (_.indexOf(CallOrderConfig.callOrderValues, occupation.callOrder) === -1) {
                         return false;
@@ -189,7 +251,7 @@ angular.module('app.occupation.controllers', [])
                         return false;
                     }
                 }
-                return exists(occupation.occupationType) && exists(occupation.person);
+                return exists(occupation.occupationType) && exists(occupation.person) && isSubstituteForBoardMember();
             };
             $scope.save = function () {
                 var newOccupation = angular.copy(occupation);// prevent ui showing updated object properties on save
@@ -201,6 +263,10 @@ angular.module('app.occupation.controllers', [])
                     delete newOccupation.person.address;
                 }
 
+                if ($scope.isSubstituteRequired() && $scope.substitute.person) {
+                    newOccupation.substitute = $scope.substitute.person;
+                }
+
                 var saveMethod = !newOccupation.id ? Occupations.save : Occupations.update;
 
                 saveMethod({orgId: orgId}, newOccupation).$promise
@@ -209,27 +275,6 @@ angular.module('app.occupation.controllers', [])
                     }, function () {
                         $uibModalInstance.dismiss('error');
                     });
-            };
-            $scope.cancel = function () {
-                $uibModalInstance.dismiss('cancel');
-            };
-        })
-    .controller('OccupationRemoveController',
-        function ($scope, $uibModalInstance, Occupations, CallOrderConfig, orgId, occupation) {
-            $scope.callOrderConfig = CallOrderConfig;
-            $scope.occupation = occupation;
-            $scope.remove = function () {
-                if (occupation.id) {
-                    Occupations.delete({orgId: orgId}, occupation).$promise
-                        .then(function () {
-                            $uibModalInstance.close();
-                        }, function () {
-                            $uibModalInstance.dismiss('error');
-                        });
-
-                } else {
-                    $uibModalInstance.dismiss('error');
-                }
             };
             $scope.cancel = function () {
                 $uibModalInstance.dismiss('cancel');

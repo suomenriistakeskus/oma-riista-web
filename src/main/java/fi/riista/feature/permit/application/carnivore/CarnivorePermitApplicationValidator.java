@@ -43,7 +43,7 @@ public class CarnivorePermitApplicationValidator {
         requireNonNull(application);
         requireNonNull(carnivoreApplication);
 
-        ValidationUtil.validateCommonContent(application);
+        ValidationUtil.validateCommonHarvestPermitContent(application);
 
         assertPermitHolderInformationValid(application);
 

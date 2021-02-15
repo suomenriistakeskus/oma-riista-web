@@ -15,7 +15,6 @@ import java.util.stream.IntStream;
 
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationConstants.FIRST_SUBSIDY_YEAR;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.HUNTING_CONTROL_EVENTS;
-import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.LUKE_CARNIVORE_CONTACT_PERSONS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.MOOSELIKE_TAXATION_PLANNING_EVENTS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.RHY_MEMBERS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SMALL_GAME_LICENSES_SOLD_BY_METSAHALLITUS;
@@ -24,7 +23,11 @@ import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriter
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUBSIDIZABLE_OTHER_TRAINING_EVENTS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUBSIDIZABLE_STUDENT_AND_YOUTH_TRAINING_EVENTS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUM_OF_LUKE_CALCULATIONS;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUM_OF_LUKE_CALCULATIONS_PRE_2021;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.TOTAL_LUKE_CARNIVORE_PERSONS;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.TOTAL_LUKE_CARNIVORE_PERSONS_PRE_2021;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.WOLF_TERRITORY_WORKGROUPS;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.WOLF_TERRITORY_WORKGROUPS_PRE_2021;
 import static fi.riista.test.TestUtils.currency;
 import static fi.riista.util.DateUtil.currentYear;
 import static java.util.stream.Collectors.toList;
@@ -86,7 +89,8 @@ public class RhySubsidyTestHelper {
                 .build();
     }
 
-    public static void assertEquality(final StatisticsBasedSubsidyShareDTO expected,
+    public static void assertEquality(final int subsidyYear,
+                                      final StatisticsBasedSubsidyShareDTO expected,
                                       final StatisticsBasedSubsidyShareDTO actual) {
 
         assertEquality(RHY_MEMBERS, expected, actual, StatisticsBasedSubsidyShareDTO::getRhyMembers);
@@ -103,16 +107,22 @@ public class RhySubsidyTestHelper {
         assertEquality(HUNTING_CONTROL_EVENTS,
                 expected, actual, StatisticsBasedSubsidyShareDTO::getHuntingControlEvents);
 
-        assertEquality(SUM_OF_LUKE_CALCULATIONS,
+        final SubsidyAllocationCriterion lukeCalculations =
+                subsidyYear >= 2021 ? SUM_OF_LUKE_CALCULATIONS : SUM_OF_LUKE_CALCULATIONS_PRE_2021;
+        assertEquality(lukeCalculations,
                 expected, actual, StatisticsBasedSubsidyShareDTO::getSumOfLukeCalculations);
 
-        assertEquality(LUKE_CARNIVORE_CONTACT_PERSONS,
+        final SubsidyAllocationCriterion carnivorePersons =
+                subsidyYear >= 2021 ? TOTAL_LUKE_CARNIVORE_PERSONS_PRE_2021 : TOTAL_LUKE_CARNIVORE_PERSONS;
+        assertEquality(carnivorePersons,
                 expected, actual, StatisticsBasedSubsidyShareDTO::getLukeCarnivoreContactPersons);
 
         assertEquality(MOOSELIKE_TAXATION_PLANNING_EVENTS,
                 expected, actual, StatisticsBasedSubsidyShareDTO::getMooselikeTaxationPlanningEvents);
 
-        assertEquality(WOLF_TERRITORY_WORKGROUPS,
+        final SubsidyAllocationCriterion wolfTerritoryWorkgroups =
+                subsidyYear >= 2021 ? WOLF_TERRITORY_WORKGROUPS : WOLF_TERRITORY_WORKGROUPS_PRE_2021;
+        assertEquality(wolfTerritoryWorkgroups,
                 expected, actual, StatisticsBasedSubsidyShareDTO::getWolfTerritoryWorkgroups);
 
         assertEquality(SRVA_ALL_MOOSELIKE_EVENTS,

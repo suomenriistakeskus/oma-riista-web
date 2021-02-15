@@ -13,24 +13,22 @@ import static org.junit.Assert.assertTrue;
 
 public class SubsidyCompensationOutputDTOTest {
 
-    private final SubsidyCompensationOutputDTO aboveLowerLimitAfterDecrease = createDecreased("002", 9, 5, 8, 1);
-    private final SubsidyCompensationOutputDTO atLowerLimitAfterDecrease = createDecreased("003", 8, 5, 8, 2);
-    private final SubsidyCompensationOutputDTO belowLowerLimitAfterDecrease = createDecreased("004", 7, 5, 8, 3);
-    private final SubsidyCompensationOutputDTO negativeSecondBatchAfterDecrease = createDecreased("005", 5, 6, 4, 5);
+    private final SubsidyCompensationOutputDTO aboveLowerLimitAfterDecrease = createDecreased("002", 9, 8, 1);
+    private final SubsidyCompensationOutputDTO atLowerLimitAfterDecrease = createDecreased("003", 8, 8, 2);
+    private final SubsidyCompensationOutputDTO belowLowerLimitAfterDecrease = createDecreased("004", 7, 8, 3);
 
     @Test
     public void testIncreased() {
-        final SubsidyCompensationInputDTO in = SubsidyCompensationInputs.create("001", 2, 1, 3);
+        final SubsidyCompensationInputDTO in = SubsidyCompensationInputs.create("001", 2, 3);
 
         final BigDecimal increment = currency(1);
         final SubsidyCompensationOutputDTO out = SubsidyCompensationOutputDTO.increased(in, increment);
 
+        final BigDecimal incresedSubsidy = in.getCalculatedSubsidy().add(increment);
+
         assertEquals(in.getRhyCode(), out.getRhyCode());
-
-        final BigDecimal incresedSubsidy = in.getTotalSubsidyCalculatedForCurrentYear().add(increment);
-
-        assertEquals(incresedSubsidy, out.getTotalSubsidyAfterCompensation());
-        assertEquals(in.getSubsidyGrantedInFirstBatchOfCurrentYear(), out.getSubsidyGrantedInFirstBatchOfCurrentYear());
+        assertEquals(incresedSubsidy, out.getSubsidyAfterCompensation());
+        assertEquals(incresedSubsidy, out.getCalculatedSubsidy());
         assertEquals(in.getSubsidyLowerLimitBasedOnLastYear(), out.getSubsidyLowerLimitBasedOnLastYear());
         assertNull(out.getDecrement());
         assertFalse(out.isDownscaled());
@@ -50,12 +48,11 @@ public class SubsidyCompensationOutputDTOTest {
         final BigDecimal decrement = currency(1);
         final SubsidyCompensationOutputDTO out = SubsidyCompensationOutputDTO.decreased(in, decrement);
 
+        final BigDecimal decresedSubsidy = in.getCalculatedSubsidy().subtract(decrement);
+
         assertEquals(in.getRhyCode(), out.getRhyCode());
-
-        final BigDecimal decresedSubsidy = in.getTotalSubsidyCalculatedForCurrentYear().subtract(decrement);
-
-        assertEquals(decresedSubsidy, out.getTotalSubsidyAfterCompensation());
-        assertEquals(in.getSubsidyGrantedInFirstBatchOfCurrentYear(), out.getSubsidyGrantedInFirstBatchOfCurrentYear());
+        assertEquals(decresedSubsidy, out.getSubsidyAfterCompensation());
+        assertEquals(decresedSubsidy, out.getCalculatedSubsidy());
         assertEquals(in.getSubsidyLowerLimitBasedOnLastYear(), out.getSubsidyLowerLimitBasedOnLastYear());
         assertEquals(decrement, out.getDecrement());
         assertTrue(out.isDownscaled());
@@ -75,13 +72,12 @@ public class SubsidyCompensationOutputDTOTest {
     }
 
     private static void testKeepSubsidyUnchanged(final boolean alreadyCompensated) {
-        final SubsidyCompensationInputDTO in = SubsidyCompensationInputs.create("001", 8, 4, 8, alreadyCompensated);
-
+        final SubsidyCompensationInputDTO in = SubsidyCompensationInputs.create("001", 8, 8, alreadyCompensated);
         final SubsidyCompensationOutputDTO out = SubsidyCompensationOutputDTO.keepSubsidyUnchanged(in);
 
         assertEquals(in.getRhyCode(), out.getRhyCode());
-        assertEquals(in.getTotalSubsidyCalculatedForCurrentYear(), out.getTotalSubsidyAfterCompensation());
-        assertEquals(in.getSubsidyGrantedInFirstBatchOfCurrentYear(), out.getSubsidyGrantedInFirstBatchOfCurrentYear());
+        assertEquals(in.getCalculatedSubsidy(), out.getSubsidyAfterCompensation());
+        assertEquals(in.getCalculatedSubsidy(), out.getCalculatedSubsidy());
         assertEquals(in.getSubsidyLowerLimitBasedOnLastYear(), out.getSubsidyLowerLimitBasedOnLastYear());
         assertNull(out.getDecrement());
         assertFalse(out.isDownscaled());
@@ -90,21 +86,10 @@ public class SubsidyCompensationOutputDTOTest {
     }
 
     @Test
-    public void testCountDifferenceOfTotalCalculatedSubsidyToLowerLimit() {
-        assertEquals(currency(1), aboveLowerLimitAfterDecrease.countDifferenceOfTotalCalculatedSubsidyToLowerLimit());
-        assertEquals(ZERO_MONETARY_AMOUNT, atLowerLimitAfterDecrease.countDifferenceOfTotalCalculatedSubsidyToLowerLimit());
-        assertEquals(currency(-1), belowLowerLimitAfterDecrease.countDifferenceOfTotalCalculatedSubsidyToLowerLimit());
-
-        assertEquals(currency(1), negativeSecondBatchAfterDecrease.countDifferenceOfTotalCalculatedSubsidyToLowerLimit());
-    }
-
-    @Test
-    public void testGetCalculatedSubsidyForSecondBatch() {
-        assertEquals(currency(4), aboveLowerLimitAfterDecrease.getCalculatedSubsidyForSecondBatch());
-        assertEquals(currency(3), atLowerLimitAfterDecrease.getCalculatedSubsidyForSecondBatch());
-        assertEquals(currency(2), belowLowerLimitAfterDecrease.getCalculatedSubsidyForSecondBatch());
-
-        assertEquals(currency(-1), negativeSecondBatchAfterDecrease.getCalculatedSubsidyForSecondBatch());
+    public void testCountDifferenceOfCalculatedSubsidyToLowerLimit() {
+        assertEquals(currency(1), aboveLowerLimitAfterDecrease.countDifferenceOfCalculatedSubsidyToLowerLimit());
+        assertEquals(ZERO_MONETARY_AMOUNT, atLowerLimitAfterDecrease.countDifferenceOfCalculatedSubsidyToLowerLimit());
+        assertEquals(currency(-1), belowLowerLimitAfterDecrease.countDifferenceOfCalculatedSubsidyToLowerLimit());
     }
 
     @Test
@@ -112,8 +97,6 @@ public class SubsidyCompensationOutputDTOTest {
         assertFalse(aboveLowerLimitAfterDecrease.isExactlyAtLowerLimit());
         assertTrue(atLowerLimitAfterDecrease.isExactlyAtLowerLimit());
         assertFalse(belowLowerLimitAfterDecrease.isExactlyAtLowerLimit());
-
-        assertFalse(negativeSecondBatchAfterDecrease.isExactlyAtLowerLimit());
     }
 
     @Test
@@ -121,8 +104,6 @@ public class SubsidyCompensationOutputDTOTest {
         assertFalse(aboveLowerLimitAfterDecrease.isCompensationNeeded());
         assertFalse(atLowerLimitAfterDecrease.isCompensationNeeded());
         assertTrue(belowLowerLimitAfterDecrease.isCompensationNeeded());
-
-        assertTrue(negativeSecondBatchAfterDecrease.isCompensationNeeded());
     }
 
     @Test
@@ -130,36 +111,24 @@ public class SubsidyCompensationOutputDTOTest {
         assertEquals(ZERO_MONETARY_AMOUNT, aboveLowerLimitAfterDecrease.countAmountOfCompensationNeed());
         assertEquals(ZERO_MONETARY_AMOUNT, atLowerLimitAfterDecrease.countAmountOfCompensationNeed());
         assertEquals(currency(1), belowLowerLimitAfterDecrease.countAmountOfCompensationNeed());
-
-        assertEquals(currency(1), negativeSecondBatchAfterDecrease.countAmountOfCompensationNeed());
     }
 
-    private static void assertTransformedInput(final SubsidyCompensationOutputDTO output,
+    private static void assertTransformedInput(final SubsidyCompensationOutputDTO dto,
                                                final boolean shouldBeTaggedAlreadyCompensated) {
 
-        final SubsidyCompensationInputDTO transformed = output.toInputForAnotherCompensationRound();
+        final SubsidyCompensationInputDTO transformed = dto.toInputForAnotherCompensationRound();
 
-        assertEquals(output.getRhyCode(), transformed.getRhyCode());
-        assertEquals(output.getTotalSubsidyAfterCompensation(), transformed.getTotalSubsidyCalculatedForCurrentYear());
-        assertEquals(
-                output.getSubsidyGrantedInFirstBatchOfCurrentYear(),
-                transformed.getSubsidyGrantedInFirstBatchOfCurrentYear());
-        assertEquals(
-                output.getSubsidyLowerLimitBasedOnLastYear(), transformed.getSubsidyLowerLimitBasedOnLastYear());
+        assertEquals(dto.getRhyCode(), transformed.getRhyCode());
+        assertEquals(dto.getSubsidyAfterCompensation(), transformed.getCalculatedSubsidy());
+        assertEquals(dto.getSubsidyLowerLimitBasedOnLastYear(), transformed.getSubsidyLowerLimitBasedOnLastYear());
         assertEquals(shouldBeTaggedAlreadyCompensated, transformed.isAlreadyCompensated());
     }
 
     private static SubsidyCompensationOutputDTO createDecreased(final String rhyCode,
                                                                 final int calculatedSubsidy,
-                                                                final int subsidyGrantedInFirstBatch,
                                                                 final int subsidyLowerLimitBasedOnLastYear,
                                                                 final int decrement) {
-
         return new SubsidyCompensationOutputDTO(
-                rhyCode,
-                currency(calculatedSubsidy),
-                currency(subsidyGrantedInFirstBatch),
-                currency(subsidyLowerLimitBasedOnLastYear),
-                currency(decrement));
+                rhyCode, currency(calculatedSubsidy), currency(subsidyLowerLimitBasedOnLastYear), currency(decrement));
     }
 }

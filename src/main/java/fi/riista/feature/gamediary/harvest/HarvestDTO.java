@@ -3,6 +3,7 @@ package fi.riista.feature.gamediary.harvest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import fi.riista.feature.common.entity.PropertyIdentifier;
 import fi.riista.feature.gamediary.HasAuthorAndActor;
 import fi.riista.feature.gamediary.HasHuntingDayId;
 import fi.riista.feature.harvestpermit.season.HarvestArea;
@@ -17,6 +18,7 @@ import fi.riista.util.F;
 import fi.riista.validation.DoNotValidate;
 import fi.riista.validation.XssSafe;
 import org.hibernate.validator.constraints.SafeHtml;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
@@ -25,7 +27,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-import java.util.ArrayList;
+import java.util.Optional;
+
+import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.CURRENTLY_SUPPORTED;
+import static java.util.Objects.requireNonNull;
 
 public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, HasHuntingDayId {
 
@@ -92,13 +97,7 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
     private LocalDateTime pointOfTimeApprovedToHuntingDay;
 
     public HarvestDTO() {
-        // In non-mobile context this should never be null.
-        setSpecimens(new ArrayList<>());
-    }
-
-    @AssertTrue
-    public boolean isAmountValid() {
-        return getSpecimens().size() <= getAmount();
+        setHarvestSpecVersion(CURRENTLY_SUPPORTED); // (most recent) currently supported by default
     }
 
     @AssertTrue
@@ -109,16 +108,11 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
     // Accessors ->
 
     @Override
-    public final HarvestSpecVersion getHarvestSpecVersion() {
-        return HarvestSpecVersion.MOST_RECENT;
-    }
-
-    @Override
     public PersonWithHunterNumberDTO getAuthorInfo() {
         return authorInfo;
     }
 
-    public void setAuthorInfo(PersonWithHunterNumberDTO authorInfo) {
+    public void setAuthorInfo(final PersonWithHunterNumberDTO authorInfo) {
         this.authorInfo = authorInfo;
     }
 
@@ -127,7 +121,7 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
         return actorInfo;
     }
 
-    public void setActorInfo(PersonWithHunterNumberDTO actorInfo) {
+    public void setActorInfo(final PersonWithHunterNumberDTO actorInfo) {
         this.actorInfo = actorInfo;
     }
 
@@ -176,11 +170,12 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
         this.moderatorFullName = moderatorFullName;
     }
 
+    @Override
     public int getAmount() {
         return amount;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(final int amount) {
         this.amount = amount;
     }
 
@@ -230,7 +225,7 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
         return huntingDayId;
     }
 
-    public void setHuntingDayId(Long huntingDayId) {
+    public void setHuntingDayId(final Long huntingDayId) {
         this.huntingDayId = huntingDayId;
     }
 
@@ -238,7 +233,7 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
         return permittedMethod;
     }
 
-    public void setPermittedMethod(PermittedMethod permittedMethod) {
+    public void setPermittedMethod(final PermittedMethod permittedMethod) {
         this.permittedMethod = permittedMethod;
     }
 
@@ -249,7 +244,7 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
     }
 
     @JsonIgnore
-    public void setHuntingClub(HuntingClubDTO huntingClub) {
+    public void setHuntingClub(final HuntingClubDTO huntingClub) {
         this.huntingClub = huntingClub;
     }
 
@@ -260,7 +255,7 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
     }
 
     @JsonIgnore
-    public void setGroupOfHuntingDay(OrganisationNameDTO groupOfHuntingDay) {
+    public void setGroupOfHuntingDay(final OrganisationNameDTO groupOfHuntingDay) {
         this.groupOfHuntingDay = groupOfHuntingDay;
     }
 
@@ -271,7 +266,7 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
     }
 
     @JsonIgnore
-    public void setApproverToHuntingDay(PersonWithHunterNumberDTO approverToHuntingDay) {
+    public void setApproverToHuntingDay(final PersonWithHunterNumberDTO approverToHuntingDay) {
         this.approverToHuntingDay = approverToHuntingDay;
     }
 
@@ -283,18 +278,23 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
 
     @JsonProperty
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public void setPointOfTimeApprovedToHuntingDay(LocalDateTime pointOfTimeApprovedToHuntingDay) {
+    public void setPointOfTimeApprovedToHuntingDay(final LocalDateTime pointOfTimeApprovedToHuntingDay) {
         this.pointOfTimeApprovedToHuntingDay = pointOfTimeApprovedToHuntingDay;
     }
 
     // Builder -->
 
-    public static Builder<?> builder() {
-        return new ConcreteBuilder();
+    public static Builder<?> builder(@Nonnull final HarvestSpecVersion specVersion) {
+        return new ConcreteBuilder(specVersion);
     }
 
     // Allows sub-classing for tests and adding new fluent interface style methods.
     public static abstract class Builder<SELF extends Builder<SELF>> extends HarvestDTOBase.Builder<HarvestDTO, SELF> {
+
+        protected Builder(@Nonnull final HarvestSpecVersion specVersion) {
+            super();
+            withSpecVersion(requireNonNull(specVersion));
+        }
 
         public SELF withAmount(final int amount) {
             dto.setAmount(amount);
@@ -346,15 +346,15 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
                     .chain(self -> {
                         dto.setPermittedMethod(harvest.getPermittedMethod());
                         dto.setLukeStatus(harvest.getLukeStatus());
-                        dto.setPropertyIdentifier(harvest.getPropertyIdentifier() != null
-                                ? harvest.getPropertyIdentifier().getDelimitedValue() : null);
+                        dto.setPropertyIdentifier(
+                                F.mapNullable(harvest.getPropertyIdentifier(), PropertyIdentifier::getDelimitedValue));
                         dto.setRhyId(F.getId(harvest.getRhy()));
                         dto.setHuntingDayId(F.getId(harvest.getHuntingDayOfGroup()));
                         dto.setPointOfTimeApprovedToHuntingDay(
                                 DateUtil.toLocalDateTimeNullSafe(harvest.getPointOfTimeApprovedToHuntingDay()));
                         dto.setModeratorOverride(harvest.isModeratorOverride());
-                        dto.setHarvestReportDate(harvest.getHarvestReportDate() != null
-                                ? harvest.getHarvestReportDate().toLocalDateTime() : null);
+                        dto.setHarvestReportDate(
+                                F.mapNullable(harvest.getHarvestReportDate(), DateTime::toLocalDateTime));
                     });
         }
 
@@ -365,6 +365,11 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
     }
 
     private static final class ConcreteBuilder extends Builder<ConcreteBuilder> {
+
+        public ConcreteBuilder(@Nonnull final HarvestSpecVersion specVersion) {
+            super(specVersion);
+        }
+
         @Override
         protected ConcreteBuilder self() {
             return this;

@@ -1,0 +1,17 @@
+# Development database for oma-riista-web
+#
+# Build:
+# $ docker build -f Dockerfile.postgres -t oma-riista-db .
+#
+# Run:
+# $ docker run -d -p 5432:5432 --name <dbname> oma-riista-db
+#
+# Initialization:
+# $ ./init-development-db.sh localhost 5432
+#
+
+FROM postgres:10.9
+
+RUN apt-get update && apt-get install -y postgresql-10-postgis-2.5
+
+EXPOSE 5432

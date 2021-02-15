@@ -21,18 +21,12 @@ public class SecurityConfigurationProperties {
     @Value("${security.extauth.otp.enabled}")
     private boolean otpExtAuthEnabled;
 
-    @Value("${ip.whitelist.moosedatacardupload}")
-    private String ipWhitelistForMooseDataCardUpload;
 
     // Allow disable for unit-testing
     private boolean disableAddressBlocker;
 
     public byte[] getJwtSecret() {
         return jwtSecret.getBytes();
-    }
-
-    public String getIpWhitelistForMooseDataCardUpload() {
-        return ipWhitelistForMooseDataCardUpload;
     }
 
     public Seconds getRememberMeTimeToLive() {

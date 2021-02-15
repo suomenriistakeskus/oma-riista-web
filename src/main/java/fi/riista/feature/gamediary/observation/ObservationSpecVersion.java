@@ -15,15 +15,22 @@ public enum ObservationSpecVersion implements GameDiaryEntitySpecVersion {
 
     _1,
     _2, // Observation types for beavers changed.
-    _3; // Added amount of mooselike calfs and large carnivore specific fields.
+    _3, // Added amount of mooselike calfs and large carnivore specific fields.
+    _4; // Added category and deer hunting specific fields
 
     public static final ObservationSpecVersion LOWEST_VERSION_SUPPORTING_XTRA_BEAVER_TYPES = _2;
     public static final ObservationSpecVersion LOWEST_VERSION_SUPPORTING_LARGE_CARNIVORE_FIELDS = _3;
     public static final ObservationSpecVersion LOWEST_VERSION_SUPPORTING_CALF_AMOUNT_WITHIN_HUNTING = _3;
+    public static final ObservationSpecVersion LOWEST_VERSION_SUPPORTING_CATEGORY = _4;
+    public static final ObservationSpecVersion LOWEST_VERSION_SUPPORTING_DEER_HUNTING_TYPE = _4;
 
-    public static final ObservationSpecVersion MOST_RECENT = _3;
+    public static final ObservationSpecVersion MOST_RECENT = _4;
 
-    private static final BiMap<ObservationSpecVersion, Integer> INT_ENCODINGS = ImmutableBiMap.of(_1, 1, _2, 2, _3, 3);
+    private static final BiMap<ObservationSpecVersion, Integer> INT_ENCODINGS = ImmutableBiMap.of(
+            _1, 1,
+            _2, 2,
+            _3, 3,
+            _4, 4);
 
     @JsonCreator
     public static ObservationSpecVersion fromIntValue(final int value) {
@@ -63,6 +70,14 @@ public enum ObservationSpecVersion implements GameDiaryEntitySpecVersion {
 
     public boolean supportsLargeCarnivoreFields() {
         return greaterThanOrEqualTo(LOWEST_VERSION_SUPPORTING_LARGE_CARNIVORE_FIELDS);
+    }
+
+    public boolean supportsCategory() {
+        return greaterThanOrEqualTo(LOWEST_VERSION_SUPPORTING_CATEGORY);
+    }
+
+    public boolean supportsDeerHuntingType() {
+        return greaterThanOrEqualTo(LOWEST_VERSION_SUPPORTING_CATEGORY);
     }
 
     public boolean requiresBeaverObservationTypeTranslationForMobile(final int gameSpeciesCode) {

@@ -90,7 +90,7 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
             assertEquals(1, permit.getSpeciesAmounts().size());
             HarvestPermitSpeciesAmount speciesAmount = permit.getSpeciesAmounts().iterator().next();
             assertEquals(species, speciesAmount.getGameSpecies());
-            assertEquals(1.0f, speciesAmount.getAmount(), 0.01f);
+            assertEquals(1.0f, speciesAmount.getSpecimenAmount(), 0.01f);
             assertEquals(HarvestPermitSpeciesAmount.RestrictionType.AE, speciesAmount.getRestrictionType());
             assertEquals(1.0f, speciesAmount.getRestrictionAmount(), 0.01f);
             assertEquals(d(2014, 4, 1), speciesAmount.getBeginDate());

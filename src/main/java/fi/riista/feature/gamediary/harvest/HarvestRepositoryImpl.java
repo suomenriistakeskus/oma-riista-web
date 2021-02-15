@@ -236,19 +236,7 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
                                                                            final Interval interval,
                                                                            final int huntingYear,
                                                                            final Set<Integer> mooseLikeOfficialCodes) {
-        /*
-          SELECT h.harvest_id
-          FROM occupation occ JOIN person p ON (occ.organisation_id = :clubId AND occ.person_id = p.person_id)
-          JOIN harvest h ON ((p.person_id = h.author_id OR p.person_id = h.actual_shooter_id)
-            AND h.point_of_time BETWEEN COALESCE(occ.begin_date, h.point_of_time) AND COALESCE(occ.end_date, h.point_of_time))
-          JOIN hunting_club_area hca ON (hca.club_id = :clubId AND hca.hunting_year = :huntingYear AND hca.is_active=TRUE)
-          JOIN zone z ON (z.zone_id=hca.zone_id AND ST_Intersects(z.geom, h.geom))
-          WHERE occ.deletion_time IS NULL
-            AND h.point_of_time >= :beginTime
-            AND h.point_of_time < :endTime
-            AND (h.harvest_report_required = FALSE OR (h.harvest_report_required = TRUE AND h.harvest_report_state = 'APPROVED'))
-            AND h.game_species_id NOT IN (SELECT game_species_id FROM game_species WHERE official_code IN (:mooselike))
-        */
+
         final SQOccupation clubOccupation = new SQOccupation("occ");
         final SQPerson person = new SQPerson("p");
         final SQHarvest harvest = new SQHarvest("h2");
@@ -266,24 +254,31 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
                 .from(gameSpecies)
                 .where(gameSpecies.officialCode.in(mooseLikeOfficialCodes));
 
-        return SQLExpressions.select(harvest.harvestId)
+        final SQLQuery<Long> memberHarvests = SQLExpressions
+                .select(harvest.harvestId)
                 .from(clubOccupation)
                 .join(person).on(clubOccupation.organisationId.eq(huntingClubId)
                         .and(clubOccupation.personId.eq(person.personId)))
                 .join(harvest).on(isAuthorOrShooter.and(harvestDate.between(
                         clubOccupation.beginDate.coalesce(harvestDate),
                         clubOccupation.endDate.coalesce(harvestDate))))
-                .join(huntingClubArea).on(huntingClubArea.clubId.eq(huntingClubId)
-                        .and(huntingClubArea.huntingYear.eq(huntingYear))
-                        .and(huntingClubArea.isActive.isTrue()))
-                .join(zone).on(huntingClubArea.zoneId.eq(zone.zoneId)
-                        .and(zone.geom.intersects(harvest.geom)))
                 .where(clubOccupation.deletionTime.isNull())
                 .where(harvest.pointOfTime.goe(new Timestamp(interval.getStartMillis())))
                 .where(harvest.pointOfTime.lt(new Timestamp(interval.getEndMillis())))
                 .where(harvest.harvestReportRequired.isFalse().or(harvest.harvestReportRequired.isTrue()
                         .and(harvest.harvestReportState.eq(HarvestReportState.APPROVED.name()))))
                 .where(harvest.gameSpeciesId.notIn(queryMooseLikeSpeciesIds));
+
+        // Match harvests from members with club area
+        return SQLExpressions.select(harvest.harvestId)
+                .from(huntingClubArea)
+                .join(zone).on(huntingClubArea.zoneId.eq(zone.zoneId))
+                .join(harvest).on((zone.geom.intersects(harvest.geom)))
+                .where(huntingClubArea.clubId.eq(huntingClubId))
+                .where(huntingClubArea.huntingYear.eq(huntingYear))
+                .where(huntingClubArea.isActive.isTrue())
+                .where(harvest.harvestId.in(memberHarvests));
+
     }
 
     private static SQLQuery<Long> harvestLinkedToClubHuntingDay(final long huntingClubId,
@@ -368,8 +363,8 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
                 .where(permit.rhy.eq(rhy)
                         .and(harvest.species.eq(species))
                         .and(harvest.pointOfTime.between(
-                                new Timestamp(interval.getStart().getMillis()),
-                                new Timestamp(interval.getEnd().getMillis()))))
+                                interval.getStart(),
+                                interval.getEnd())))
                 .fetch();
     }
 

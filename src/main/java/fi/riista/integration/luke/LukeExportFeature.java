@@ -11,6 +11,7 @@ import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenRepository;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen_;
 import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationRepository;
 import fi.riista.feature.gamediary.observation.Observation_;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
@@ -56,6 +57,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,10 +75,11 @@ import static fi.riista.util.Collect.leastAfterGroupingBy;
 import static fi.riista.util.jpa.JpaSpecs.and;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static fi.riista.util.jpa.JpaSpecs.inCollection;
+import static fi.riista.util.jpa.JpaSpecs.notEqual;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
-import static org.springframework.data.jpa.domain.Specifications.where;
+import static org.springframework.data.jpa.domain.Specification.where;
 
 @Service
 public class LukeExportFeature {
@@ -159,9 +162,9 @@ public class LukeExportFeature {
                     where(inCollection(HuntingClubGroup_.harvestPermit, moosePermits))
                             .and(equal(HuntingClubGroup_.species, moose)));
 
-            final List<GroupHuntingDay> days = groupHuntingDayRepository.findAll(inCollection(GroupHuntingDay_.group, groups));
+            final List<GroupHuntingDay> days = groupHuntingDayRepository.findAll(huntingDayPredicate(groups));
             final List<Harvest> harvests = harvestRepository.findAll(and(withinDays(days), equal(GameDiaryEntry_.species, moose)));
-            final List<Observation> observations = observationRepository.findAll(and(withinDays(days), equal(Observation_.withinMooseHunting, true)));
+            final List<Observation> observations = observationRepository.findAll(and(withinDays(days), equal(Observation_.observationCategory, ObservationCategory.MOOSE_HUNTING)));
 
             final Map<Long, List<HuntingClubGroup>> clubGroups = groups.stream().collect(groupingByIdOf(Organisation::getParentOrganisation));
             final Map<Long, List<GroupHuntingDay>> groupDays = days.stream().collect(groupingByIdOf(GroupHuntingDay::getGroup));
@@ -209,6 +212,10 @@ public class LukeExportFeature {
         return permits;
     }
 
+    private static Specification<GroupHuntingDay> huntingDayPredicate(final List<HuntingClubGroup> groups) {
+        return and(inCollection(GroupHuntingDay_.group, groups), notEqual(GroupHuntingDay_.createdBySystem, true));
+    }
+
     private Map<HarvestPermit, Map<HuntingClub, MooseHuntingSummary>> findSummaries(final List<HarvestPermit> moosePermits) {
         return mooseHuntingSummaryRepository
                 .findAll(where(inCollection(MooseHuntingSummary_.harvestPermit, moosePermits))
@@ -238,6 +245,11 @@ public class LukeExportFeature {
 
     @Nonnull
     private Map<Long, Occupation> findClubContacts(final Set<HuntingClub> clubs) {
+
+        if (clubs.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
         return occupationRepository
                 .findActiveByOrganisationsAndTypes(F.getUniqueIds(clubs), EnumSet.of(SEURAN_YHDYSHENKILO))
                 .stream()

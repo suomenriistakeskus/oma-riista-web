@@ -29,8 +29,8 @@ public class ClubMemberApiResource {
     @RequestMapping(
             method = RequestMethod.PUT,
             value = "/{clubId:\\d+}/member/{id:\\d+}/type",
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public OccupationDTO updateMemberType(@PathVariable long clubId,
                                           @PathVariable long id,
                                           @RequestBody @Valid HuntingClubMemberTypeDTO dto) {
@@ -40,7 +40,7 @@ public class ClubMemberApiResource {
     @RequestMapping(
             method = RequestMethod.GET,
             value = "/{clubId:\\d+}/member/{id:\\d+}/locked",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ImmutableMap<String, Boolean> isLocked(@PathVariable long clubId,
                                                   @PathVariable long id) {
         return ImmutableMap.of("isLocked", crudFeature.isLocked(id));
@@ -64,7 +64,7 @@ public class ClubMemberApiResource {
     @RequestMapping(
             method = RequestMethod.GET,
             value = "/{clubId:\\d+}/member",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<OccupationDTO> listMembers(@PathVariable long clubId) {
         return crudFeature.listMembers(clubId);

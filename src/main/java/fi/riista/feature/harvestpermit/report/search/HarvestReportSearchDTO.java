@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.validation.XssSafe;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 

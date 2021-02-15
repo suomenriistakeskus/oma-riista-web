@@ -157,39 +157,6 @@
 
 <hr class="invisible">
 
-<div class="alert alert-danger">
-    <div ng-switch="$ctrl.protectedAreaAttachmentList.length > 0">
-        <span ng-switch-when="true" class="fa fa-info-circle"></span>
-        <span ng-switch-when="false" class="fa fa-exclamation-triangle"></span>
-    </div>
-
-    <div class="alert-content">
-        <p translate="harvestpermit.wizard.bird.map.attachmentInstruction"></p>
-    </div>
-</div>
-
-<div class="bird-application-wizard-area-attachment"
-     ng-repeat="a in $ctrl.protectedAreaAttachmentList track by a.id">
-    <div class="attachment-logo">
-        <span class="fa fa-2x fa-file-o text-primary"></span>
-    </div>
-
-    <div class="attachment-name" ng-bind="a.name"></div>
-
-    <div class="remove-button">
-        <a ng-click="$ctrl.removeAttachment(a)">
-            <span class="fa fa-lg fa-fw fa-remove text-danger"></span>
-        </a>
-    </div>
-</div>
-
-<hr class="invisible">
-
-<permit-application-attachment-upload
-        uri="$ctrl.attachmentBaseUri"
-        attachment-type="'PROTECTED_AREA'"
-        done="$ctrl.attachmentUploadComplete(fileName, response)"></permit-application-attachment-upload>
-
 <permit-application-wizard-navigation
         exit="$ctrl.exit(protectedAreaForm)"
         previous="$ctrl.previous(protectedAreaForm)"

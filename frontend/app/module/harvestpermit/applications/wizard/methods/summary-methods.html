@@ -1,0 +1,65 @@
+<p ng-if="!$ctrl.showSpecies" translate="harvestpermit.wizard.bird.summary.noMethodsRequested"></p>
+
+<div ng-if="::$ctrl.show32">
+    <p translate="harvestpermit.wizard.methods.deviate32Label"></p>
+    <div class="well">
+        <span ng-bind="::$ctrl.methods.deviateSection32"></span>
+    </div>
+</div>
+
+<div ng-if="::$ctrl.show33">
+    <p translate="harvestpermit.wizard.methods.deviate33Label"></p>
+    <div class="well">
+        <p ng-if="::$ctrl.methods.tapeRecorders">
+            <span translate="harvestpermit.wizard.methods.tapeRecorders"></span>
+        </p>
+        <p ng-if="::!!$ctrl.methods.deviateSection33">
+            <span ng-bind="::$ctrl.methods.deviateSection33"></span>
+        </p>
+    </div>
+</div>
+
+<div ng-if="::$ctrl.show34">
+    <p translate="harvestpermit.wizard.methods.deviate34Label"></p>
+    <div class="well">
+        <p ng-if="::$ctrl.methods.traps">
+            <span translate="harvestpermit.wizard.methods.traps"></span>
+        </p>
+        <p ng-if="::!!$ctrl.methods.deviateSection34">
+            <span ng-bind="::$ctrl.methods.deviateSection34"></span>
+        </p>
+    </div>
+</div>
+
+<div ng-if="::$ctrl.show35">
+    <p translate="harvestpermit.wizard.methods.deviate35Label"></p>
+    <div class="well">
+        <span ng-bind="::$ctrl.methods.deviateSection35"></span>
+    </div>
+</div>
+
+<div ng-if="::$ctrl.show51">
+    <p translate="harvestpermit.wizard.methods.deviate51Label"></p>
+    <div class="well">
+        <p ng-bind="::$ctrl.methods.deviateSection51"></p>
+    </div>
+</div>
+
+<div ng-if="::$ctrl.showSpecies">
+    <hr class="invisible">
+    <hr class="invisible">
+
+    <p translate="harvestpermit.wizard.methods.methodJustification1"></p>
+
+    <div ng-repeat="a in ::$ctrl.methods.speciesJustifications">
+        <p><strong ng-bind="::a.gameSpeciesCode | translateSpeciesCode | uppercase"></strong></p>
+        <div class="well">
+            <span ng-hide="::a.forbiddenMethodsUsed"
+                  translate="harvestpermit.wizard.methods.methodsNotInUseForSpecies"></span>
+            <span ng-bind="::a.justification"></span>
+        </div>
+
+        <hr>
+    </div>
+</div>
+

@@ -1,9 +1,8 @@
 package fi.riista.integration.lupahallinta;
 
 import fi.riista.feature.account.user.SystemUserPrivilege;
-import fi.riista.feature.gamediary.GameAge;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.fixture.HarvestSpecimenType;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
@@ -21,15 +20,15 @@ import org.springframework.security.access.AccessDeniedException;
 import javax.annotation.Resource;
 import java.util.List;
 
-import static fi.riista.feature.gamediary.GameAge.ADULT;
-import static fi.riista.feature.gamediary.GameAge.YOUNG;
-import static fi.riista.feature.gamediary.GameGender.FEMALE;
-import static fi.riista.feature.gamediary.GameGender.MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_FEMALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_FEMALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_MALE;
 import static fi.riista.util.DateUtil.today;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MooselikeHarvestExportToLupahallintaFeatureTest extends EmbeddedDatabaseTest
         implements HuntingGroupFixtureMixin {
@@ -66,7 +65,7 @@ public class MooselikeHarvestExportToLupahallintaFeatureTest extends EmbeddedDat
     @Test
     public void testWithHarvests() {
         withMooseHuntingGroupFixture(f -> {
-            createHuntingDay(f.group, 1, 0, ADULT, MALE, f.species);
+            createHuntingDay(f.group, 1, 0, ADULT_MALE, f.species);
             withPersistedAndAuthenticatedRestUser(() -> {
                 final List<LHMooselikeHarvestsCSVRow> res = feature.exportToCSV(f.speciesAmount.resolveHuntingYear());
                 assertThat(res, hasSize(1));
@@ -84,15 +83,15 @@ public class MooselikeHarvestExportToLupahallintaFeatureTest extends EmbeddedDat
             final HarvestPermitSpeciesAmount deerAmount1 = model().newHarvestPermitSpeciesAmount(f.permit, deer);
             final HarvestPermitSpeciesAmount deerAmount2 = model().newHarvestPermitSpeciesAmount(f2.permit, deer);
 
-            createHuntingDay(f.group, 1, 0, ADULT, MALE, moose);
+            createHuntingDay(f.group, 1, 0, ADULT_MALE, moose);
 
             final HuntingClubGroup deerGroup = model().newHuntingClubGroup(f.club, deerAmount1);
-            createHuntingDay(deerGroup, 1, 0, ADULT, FEMALE, deer);
+            createHuntingDay(deerGroup, 1, 0, ADULT_FEMALE, deer);
 
-            createHuntingDay(f2.group, 1, 0, YOUNG, MALE, moose);
+            createHuntingDay(f2.group, 1, 0, YOUNG_MALE, moose);
 
             final HuntingClubGroup deerGroup2 = model().newHuntingClubGroup(f2.club, deerAmount2);
-            createHuntingDay(deerGroup2, 1, 0, YOUNG, FEMALE, deer);
+            createHuntingDay(deerGroup2, 1, 0, YOUNG_FEMALE, deer);
 
             withPersistedAndAuthenticatedRestUser(() -> {
                 final List<LHMooselikeHarvestsCSVRow> res = feature.exportToCSV(f.speciesAmount.resolveHuntingYear());
@@ -128,22 +127,22 @@ public class MooselikeHarvestExportToLupahallintaFeatureTest extends EmbeddedDat
     }
 
     private void createHuntingDay(final HuntingClubGroup group, final int howManyHarvests, final int howManyNotEdible,
-                                  final GameAge age, final GameGender gender, final GameSpecies species) {
+                                  final HarvestSpecimenType specimenType, final GameSpecies species) {
 
         final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, today());
         huntingDay.setNumberOfHunters(1);
 
         for (int i = 0; i < howManyHarvests; i++) {
-            createHarvest(i < howManyNotEdible, age, gender, huntingDay, species);
+            createHarvest(i < howManyNotEdible, specimenType, huntingDay, species);
         }
     }
 
-    private void createHarvest(final boolean notEdible, final GameAge age, final GameGender gender,
+    private void createHarvest(final boolean notEdible, final HarvestSpecimenType specimenType,
                                final GroupHuntingDay huntingDay, final GameSpecies species) {
 
         final Harvest harvest = model().newHarvest(species, model().newPerson(), huntingDay);
 
-        final HarvestSpecimen specimen = model().newHarvestSpecimen(harvest, age, gender);
+        final HarvestSpecimen specimen = model().newHarvestSpecimen(harvest, specimenType);
         specimen.setNotEdible(notEdible);
     }
 }

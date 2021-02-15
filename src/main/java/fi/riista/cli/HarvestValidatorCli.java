@@ -12,10 +12,12 @@ import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestFieldValidator;
 import fi.riista.feature.gamediary.harvest.HarvestReportingType;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenValidator;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.util.DateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import java.util.List;
+
+import static java.util.Optional.ofNullable;
 
 public class HarvestValidatorCli {
     private static final Logger LOG = LoggerFactory.getLogger(HarvestValidatorCli.class);
@@ -73,7 +77,11 @@ public class HarvestValidatorCli {
 
             final QHarvest HARVEST = QHarvest.harvest;
 
-            final List<Long> harvestIdList = queryFactory.select(HARVEST.id).from(HARVEST).orderBy(HARVEST.id.asc()).fetch();
+            final List<Long> harvestIdList =
+                    queryFactory.select(HARVEST.id).from(HARVEST).orderBy(HARVEST.id.asc()).fetch();
+
+            // TODO: Check whether this needs to be set otherwise.
+            final boolean isDeerPilot2020Activated = false;
 
             for (final List<Long> partition : Lists.partition(harvestIdList, 1000)) {
                 transactionTemplate.execute(new TransactionCallbackWithoutResult() {
@@ -85,7 +93,8 @@ public class HarvestValidatorCli {
                                 .orderBy(HARVEST.id.asc())
                                 .fetch();
 
-                        validateBatch(harvestList);
+                        // TODO: Fetch persons'
+                        validateBatch(harvestList, isDeerPilot2020Activated);
 
                         entityManager.clear();
                     }
@@ -100,7 +109,8 @@ public class HarvestValidatorCli {
     private static int TOTAL_HARVEST_ERRORS = 0;
     private static int TOTAL_SPECIMEN_ERRORS = 0;
 
-    private static void validateBatch(final List<Harvest> harvestList) {
+    // TODO Remove `isDeerPilot2020Enabled` when deer pilot 2020 is over.
+    private static void validateBatch(final List<Harvest> harvestList, final boolean isDeerPilot2020Enabled) {
         for (final Harvest harvest : harvestList) {
             if (harvest.getHuntingDayOfGroup() != null) {
                 if (harvest.getHuntingDayOfGroup().getGroup().isFromMooseDataCard()) {
@@ -110,13 +120,24 @@ public class HarvestValidatorCli {
 
             // Validate updated fields
             final int speciesCode = harvest.getSpecies().getOfficialCode();
-            final boolean associatedWithHuntingDay = harvest.getHuntingDayOfGroup() != null;
+            final GroupHuntingDay huntingDayOfGroup = harvest.getHuntingDayOfGroup();
+            final boolean associatedWithHuntingDay = huntingDayOfGroup != null;
+            final boolean legallyMandatoryFieldsOnly =
+                    ofNullable(huntingDayOfGroup).map(GroupHuntingDay::isCreatedBySystem).orElse(false);
+
             final int huntingYear = DateUtil.huntingYearContaining(harvest.getPointOfTimeAsLocalDate());
             final HarvestReportingType reportingType = harvest.resolveReportingType();
+
+            // TODO Remove deer pilot translation when deer pilot 2020 is over.
+            final HarvestSpecVersion revisedSpecVersion =
+                    HarvestSpecVersion.CURRENTLY_SUPPORTED.revertIfNotOnDeerPilot(isDeerPilot2020Enabled);
+
             final RequiredHarvestFields.Specimen specimenFieldRequirements = RequiredHarvestFields.getSpecimenFields(
-                    huntingYear, speciesCode, harvest.getHuntingMethod(), reportingType);
+                    huntingYear, speciesCode, harvest.getHuntingMethod(), reportingType, legallyMandatoryFieldsOnly,
+                    revisedSpecVersion);
+
             final RequiredHarvestFields.Report reportRequirements = RequiredHarvestFields.getFormFields(
-                    huntingYear, speciesCode, reportingType);
+                    huntingYear, speciesCode, reportingType, legallyMandatoryFieldsOnly, isDeerPilot2020Enabled);
 
             final HarvestFieldValidator harvestFieldValidator = new HarvestFieldValidator(reportRequirements, harvest);
             harvestFieldValidator.validateAll();
@@ -124,7 +145,8 @@ public class HarvestValidatorCli {
             if (harvestFieldValidator.hasErrors()) {
                 TOTAL_HARVEST_ERRORS++;
 
-                LOG.error(String.format("Harvest id=%d reportingType=%s speciesCode=%d huntingYear=%d huntingDay=%s has missing fields %s and invalid fields %s",
+                LOG.error(String.format("Harvest id=%d reportingType=%s speciesCode=%d huntingYear=%d huntingDay=%s " +
+                                "has missing fields %s and invalid fields %s",
                         harvest.getId(),
                         reportingType,
                         speciesCode,
@@ -135,13 +157,17 @@ public class HarvestValidatorCli {
             }
 
             for (final HarvestSpecimen specimen : harvest.getSortedSpecimens()) {
-                final HarvestSpecimenValidator specimenValidator = new HarvestSpecimenValidator(specimenFieldRequirements, specimen, speciesCode, associatedWithHuntingDay);
+                final HarvestSpecimenValidator specimenValidator =
+                        new HarvestSpecimenValidator(specimenFieldRequirements, specimen, speciesCode,
+                                associatedWithHuntingDay, legallyMandatoryFieldsOnly);
                 specimenValidator.validateAll();
 
                 if (specimenValidator.hasErrors()) {
                     TOTAL_SPECIMEN_ERRORS++;
 
-                    LOG.error(String.format("Harvest id=%d specimen id=%d reportingType=%s speciesCode=%d huntingYear=%d huntingDay=%s age=%s gender=%s has missing fields %s and illegal values %s illegal fields %s and missing moose weight %s",
+                    LOG.error(String.format("Harvest id=%d specimen id=%d reportingType=%s speciesCode=%d " +
+                                    "huntingYear=%d huntingDay=%s age=%s gender=%s has missing fields %s and illegal " +
+                                    "values %s illegal fields %s and missing moose weight %s",
                             harvest.getId(),
                             specimen.getId(),
                             reportingType,

@@ -14,7 +14,7 @@ import fi.riista.feature.harvestpermit.report.search.HarvestReportSearchDTO;
 import fi.riista.feature.harvestpermit.report.search.HarvestReportSearchFeature;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.data.domain.Pageable;
@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(value = "/api/v1/harvestreport", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/harvestreport", produces = MediaType.APPLICATION_JSON_VALUE)
 public class HarvestReportApiResource {
 
     @Resource
@@ -109,7 +109,7 @@ public class HarvestReportApiResource {
         final EnumLocaliser localiser = new EnumLocaliser(messageSource, LocaleContextHolder.getLocale());
         final List<HarvestReportExcelDTO> data = harvestReportSearchFeature.searchCoordinatorExcel(dto);
 
-        return new ModelAndView(HarvestReportListExcelView.create(localiser, data));
+        return new ModelAndView(HarvestReportListExcelView.create(localiser, data, false));
     }
 
     @PostMapping("/admin/search/excel")
@@ -121,7 +121,7 @@ public class HarvestReportApiResource {
         final EnumLocaliser localiser = new EnumLocaliser(messageSource, LocaleContextHolder.getLocale());
         final List<HarvestReportExcelDTO> data = harvestReportSearchFeature.searchModeratorExcel(dto);
 
-        return new ModelAndView(HarvestReportListExcelView.create(localiser, data));
+        return new ModelAndView(HarvestReportListExcelView.create(localiser, data, true));
     }
 
 }

@@ -29,10 +29,12 @@ import org.joda.time.LocalDateTime;
  *         &lt;element name="weightEstimated" type="{http://www.w3.org/2001/XMLSchema}double" minOccurs="0"/&gt;
  *         &lt;element name="weightMeasured" type="{http://www.w3.org/2001/XMLSchema}double" minOccurs="0"/&gt;
  *         &lt;element name="fitnessClass" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}gameFitnessClass" minOccurs="0"/&gt;
+ *         &lt;element name="antlersLost" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/&gt;
  *         &lt;element name="antlersType" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}gameAntlersType" minOccurs="0"/&gt;
  *         &lt;element name="antlersWidth" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="antlerPointsLeft" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="antlerPointsRight" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
+ *         &lt;element name="antlersGirth" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="notEdible" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/&gt;
  *         &lt;element name="additionalInfo" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
@@ -53,10 +55,12 @@ import org.joda.time.LocalDateTime;
     "weightEstimated",
     "weightMeasured",
     "fitnessClass",
+    "antlersLost",
     "antlersType",
     "antlersWidth",
     "antlerPointsLeft",
     "antlerPointsRight",
+    "antlersGirth",
     "notEdible",
     "additionalInfo"
 })
@@ -84,6 +88,8 @@ public class LEM_Harvest {
     @XmlSchemaType(name = "token")
     protected LEM_GameFitnessClass fitnessClass;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
+    protected Boolean antlersLost;
+    @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
     @XmlSchemaType(name = "token")
     protected LEM_GameAntlersType antlersType;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
@@ -92,6 +98,8 @@ public class LEM_Harvest {
     protected Integer antlerPointsLeft;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
     protected Integer antlerPointsRight;
+    @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
+    protected Integer antlersGirth;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
     protected Boolean notEdible;
     @XmlElement(namespace = "http://riista.fi/integration/luke/export/mooselikeharvests/2016/07")
@@ -290,6 +298,30 @@ public class LEM_Harvest {
     }
 
     /**
+     * Gets the value of the antlersLost property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *     
+     */
+    public Boolean isAntlersLost() {
+        return antlersLost;
+    }
+
+    /**
+     * Sets the value of the antlersLost property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *     
+     */
+    public void setAntlersLost(Boolean value) {
+        this.antlersLost = value;
+    }
+
+    /**
      * Gets the value of the antlersType property.
      * 
      * @return
@@ -383,6 +415,30 @@ public class LEM_Harvest {
      */
     public void setAntlerPointsRight(Integer value) {
         this.antlerPointsRight = value;
+    }
+
+    /**
+     * Gets the value of the antlersGirth property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Integer }
+     *     
+     */
+    public Integer getAntlersGirth() {
+        return antlersGirth;
+    }
+
+    /**
+     * Sets the value of the antlersGirth property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Integer }
+     *     
+     */
+    public void setAntlersGirth(Integer value) {
+        this.antlersGirth = value;
     }
 
     /**

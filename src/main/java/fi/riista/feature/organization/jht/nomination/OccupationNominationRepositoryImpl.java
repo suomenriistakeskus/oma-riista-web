@@ -9,6 +9,7 @@ import com.querydsl.core.types.dsl.DatePath;
 import com.querydsl.core.types.dsl.EnumPath;
 import com.querydsl.jpa.JPQLQuery;
 import fi.riista.feature.organization.QOrganisation;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.jht.email.NotifyJhtOccupationNominationToRkaEmailDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
@@ -19,8 +20,9 @@ import org.joda.time.LocalDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.support.QueryDslRepositorySupport;
+import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -30,10 +32,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.ESITETTY;
+import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.HYLATTY;
+import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.NIMITETTY;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 @Repository
-public class OccupationNominationRepositoryImpl extends QueryDslRepositorySupport
+public class OccupationNominationRepositoryImpl extends QuerydslRepositorySupport
         implements OccupationNominationRepositoryCustom {
 
     public OccupationNominationRepositoryImpl() {
@@ -41,8 +47,9 @@ public class OccupationNominationRepositoryImpl extends QueryDslRepositorySuppor
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public Map<OccupationNomination.NominationStatus, Long> countByNominationStatus(final Riistanhoitoyhdistys rhy, final OccupationType occupationType) {
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Map<OccupationNomination.NominationStatus, Long> countByNominationStatus(final Riistanhoitoyhdistys rhy,
+                                                                                    final OccupationType occupationType) {
         final QOccupationNomination qOccupationNomination = QOccupationNomination.occupationNomination;
         final EnumPath<OccupationNomination.NominationStatus> nominationStatus = qOccupationNomination.nominationStatus;
 
@@ -56,10 +63,11 @@ public class OccupationNominationRepositoryImpl extends QueryDslRepositorySuppor
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public Page<OccupationNomination> searchPage(@Nonnull final Pageable pageRequest,
                                                  @Nonnull final OccupationType occupationType,
                                                  @Nonnull final OccupationNomination.NominationStatus nominationStatus,
+                                                 @Nullable final RiistakeskuksenAlue rka,
                                                  @Nullable final Riistanhoitoyhdistys rhy,
                                                  @Nullable final Person person,
                                                  @Nullable final LocalDate beginDate,
@@ -68,50 +76,39 @@ public class OccupationNominationRepositoryImpl extends QueryDslRepositorySuppor
         Preconditions.checkNotNull(occupationType, "occupationType is null");
         Preconditions.checkNotNull(nominationStatus, "nominationStatus is null");
 
-        final QOccupationNomination qOccupationNomination = QOccupationNomination.occupationNomination;
-
+        final QOccupationNomination OCCUPATION_NOMINATION = QOccupationNomination.occupationNomination;
+        final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
         final List<Predicate> predicateList = new LinkedList<>();
 
-        predicateList.add(qOccupationNomination.occupationType.eq(occupationType));
-        predicateList.add(qOccupationNomination.nominationStatus.eq(nominationStatus));
+        predicateList.add(OCCUPATION_NOMINATION.occupationType.eq(occupationType));
+        predicateList.add(OCCUPATION_NOMINATION.nominationStatus.eq(nominationStatus));
 
         if (rhy != null) {
-            predicateList.add(qOccupationNomination.rhy.eq(rhy));
+            predicateList.add(OCCUPATION_NOMINATION.rhy.eq(rhy));
+        } else if (rka != null) {
+            predicateList.add(RHY.parentOrganisation.eq(rka));
         }
 
         if (person != null) {
-            predicateList.add(qOccupationNomination.person.eq(person));
+            predicateList.add(OCCUPATION_NOMINATION.person.eq(person));
         }
 
-        if (nominationStatus == OccupationNomination.NominationStatus.NIMITETTY ||
-                nominationStatus == OccupationNomination.NominationStatus.HYLATTY) {
-            dateRangePredicate(qOccupationNomination.decisionDate, beginDate, endDate).ifPresent(predicateList::add);
-        } else if (nominationStatus == OccupationNomination.NominationStatus.ESITETTY) {
-            dateRangePredicate(qOccupationNomination.nominationDate, beginDate, endDate).ifPresent(predicateList::add);
+        if (nominationStatus == NIMITETTY || nominationStatus == HYLATTY) {
+            dateRangePredicate(OCCUPATION_NOMINATION.decisionDate, beginDate, endDate).ifPresent(predicateList::add);
+        } else if (nominationStatus == ESITETTY) {
+            dateRangePredicate(OCCUPATION_NOMINATION.nominationDate, beginDate, endDate).ifPresent(predicateList::add);
         }
 
         final Predicate[] predicateArray = predicateList.toArray(new Predicate[predicateList.size()]);
 
-        final JPQLQuery<OccupationNomination> query = from(qOccupationNomination)
+        final JPQLQuery<OccupationNomination> query = from(OCCUPATION_NOMINATION)
+                .leftJoin(OCCUPATION_NOMINATION.rhy, RHY)
                 .where(predicateArray)
-                .select(qOccupationNomination);
+                .select(OCCUPATION_NOMINATION);
 
         final List<OccupationNomination> resultList = getQuerydsl().applyPagination(pageRequest, query).fetch();
 
         return new PageImpl<>(resultList, pageRequest, query.fetchCount());
-    }
-
-    private static Optional<BooleanExpression> dateRangePredicate(final DatePath<LocalDate> datePath,
-                                                                  final LocalDate beginDate,
-                                                                  final LocalDate endDate) {
-        if (beginDate != null && endDate != null) {
-            return Optional.of(datePath.between(beginDate, endDate));
-        } else if (beginDate != null) {
-            return Optional.of(datePath.goe(beginDate));
-        } else if (endDate != null) {
-            return Optional.of(datePath.loe(endDate));
-        }
-        return Optional.empty();
     }
 
     @Override
@@ -127,7 +124,7 @@ public class OccupationNominationRepositoryImpl extends QueryDslRepositorySuppor
                 .join(NOMINATION.rhy, RHY)
                 .join(RHY.parentOrganisation, RKA)
                 .where(NOMINATION.nominationDate.eq(nominationDate),
-                        NOMINATION.nominationStatus.eq(OccupationNomination.NominationStatus.ESITETTY),
+                        NOMINATION.nominationStatus.eq(ESITETTY),
                         RKA.email.isNotNull())
                 .select(NOMINATION.occupationType,
                         RHY.officialCode,
@@ -141,5 +138,34 @@ public class OccupationNominationRepositoryImpl extends QueryDslRepositorySuppor
                         tuple.get(rhyName),
                         tuple.get(RKA.email)))
                 .collect(toList());
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public LocalDate findProposalDateForNomination(final @Nonnull Riistanhoitoyhdistys rhy,
+                                                   final @Nonnull OccupationType occupationType) {
+        requireNonNull(rhy);
+        requireNonNull(occupationType);
+        final QOccupationNomination OCCUPATION_NOMINATION = QOccupationNomination.occupationNomination;
+
+        return from(OCCUPATION_NOMINATION)
+                .select(OCCUPATION_NOMINATION.nominationDate.max())
+                .where(OCCUPATION_NOMINATION.rhy.eq(rhy),
+                        OCCUPATION_NOMINATION.nominationStatus.eq(ESITETTY),
+                        OCCUPATION_NOMINATION.occupationType.eq(occupationType))
+                .fetchOne();
+    }
+
+    private static Optional<BooleanExpression> dateRangePredicate(final DatePath<LocalDate> datePath,
+                                                                  final LocalDate beginDate,
+                                                                  final LocalDate endDate) {
+        if (beginDate != null && endDate != null) {
+            return Optional.of(datePath.between(beginDate, endDate));
+        } else if (beginDate != null) {
+            return Optional.of(datePath.goe(beginDate));
+        } else if (endDate != null) {
+            return Optional.of(datePath.loe(endDate));
+        }
+        return Optional.empty();
     }
 }

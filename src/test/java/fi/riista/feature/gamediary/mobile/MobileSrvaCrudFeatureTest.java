@@ -7,16 +7,16 @@ import fi.riista.feature.error.RevisionConflictException;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.image.GameDiaryImageRepository;
 import fi.riista.feature.gamediary.srva.SrvaApprovedException;
-import fi.riista.feature.gamediary.srva.SrvaEventSpecVersion;
-import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
+import fi.riista.feature.gamediary.srva.SrvaEventRepository;
+import fi.riista.feature.gamediary.srva.SrvaEventSpecVersion;
 import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
 import fi.riista.feature.gamediary.srva.SrvaEventTypeEnum;
+import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.test.TestUtils;
-import fi.riista.feature.gamediary.srva.SrvaEventRepository;
 import fi.riista.util.DateUtil;
 import org.junit.Test;
 import org.springframework.mock.web.MockMultipartFile;
@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class MobileSrvaCrudFeatureTest extends EmbeddedDatabaseTest {
@@ -103,7 +103,7 @@ public class MobileSrvaCrudFeatureTest extends EmbeddedDatabaseTest {
             assertNotNull(outputDto);
 
             runInTransaction(() -> {
-                final SrvaEvent savedSrvaEvent = srvaEventRepository.findOne(outputDto.getId());
+                final SrvaEvent savedSrvaEvent = srvaEventRepository.findById(outputDto.getId()).orElse(null);
                 assertNotNull(savedSrvaEvent);
                 assertEquals(Integer.valueOf(0), savedSrvaEvent.getConsistencyVersion());
 
@@ -198,7 +198,7 @@ public class MobileSrvaCrudFeatureTest extends EmbeddedDatabaseTest {
                 final MobileSrvaEventDTO dto = mobileSrvaCrudFeature.createSrvaEvent(inputDto);
 
                 // Change manually state to APPROVED so that updateSrvaEvent throws RunTimeException
-                SrvaEvent event = srvaEventRepository.findOne(dto.getId());
+                SrvaEvent event = srvaEventRepository.findById(dto.getId()).orElse(null);
                 event.setState(SrvaEventStateEnum.APPROVED);
                 event.setApproverAsUser(user);
                 event = srvaEventRepository.saveAndFlush(event);
@@ -221,7 +221,7 @@ public class MobileSrvaCrudFeatureTest extends EmbeddedDatabaseTest {
             onSavedAndAuthenticated(createUser(person), () -> {
                 mobileSrvaCrudFeature.deleteSrvaEvent(srvaEvent.getId());
 
-                assertNull(srvaEventRepository.findOne(srvaEvent.getId()));
+                assertFalse(srvaEventRepository.existsById(srvaEvent.getId()));
             });
         });
     }

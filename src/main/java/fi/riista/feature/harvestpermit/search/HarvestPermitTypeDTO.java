@@ -13,6 +13,8 @@ public class HarvestPermitTypeDTO {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String permitType;
 
+    private HarvestPermitDecisionOrigin origin;
+
     private Set<Integer> speciesCodes;
 
     public HarvestPermitTypeDTO() {
@@ -20,10 +22,12 @@ public class HarvestPermitTypeDTO {
 
     public HarvestPermitTypeDTO(final String permitTypeCode,
                                 final String permitType,
+                                final HarvestPermitDecisionOrigin origin,
                                 final Set<Integer> speciesCodes) {
         Preconditions.checkArgument(permitTypeCode.length() == 3, "Invalid permitTypeCode:" + permitTypeCode);
         this.permitTypeCode = permitTypeCode;
         this.permitType = permitType;
+        this.origin = origin;
         this.speciesCodes = speciesCodes;
     }
 
@@ -49,5 +53,13 @@ public class HarvestPermitTypeDTO {
 
     public void setSpeciesCodes(Set<Integer> speciesCodes) {
         this.speciesCodes = speciesCodes;
+    }
+
+    public HarvestPermitDecisionOrigin getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(final HarvestPermitDecisionOrigin origin) {
+        this.origin = origin;
     }
 }

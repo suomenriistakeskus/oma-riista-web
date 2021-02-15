@@ -6,7 +6,6 @@ import org.springframework.jdbc.core.JdbcOperations;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Set;
 
 public class UpdatePalstaFeatureQueries {
     private static final String SELECT_SQL = "SELECT palsta_id FROM zone_palsta WHERE zone_id = ?";

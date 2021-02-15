@@ -16,6 +16,7 @@ import org.springframework.security.access.AccessDeniedException;
 import javax.annotation.Resource;
 import java.util.List;
 
+import static fi.riista.util.DateUtil.currentYear;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -85,8 +86,8 @@ public class CarnivorePermitApplicationSpeciesAmountFeatureTest extends Embedded
         final CarnivorePermitApplicationSpeciesAmountDTO dto = new CarnivorePermitApplicationSpeciesAmountDTO();
         dto.setAmount(42);
         dto.setGameSpeciesCode(GameSpecies.OFFICIAL_CODE_BEAR);
-        dto.setBegin(new LocalDate(2019, 10, 1));
-        dto.setEnd(new LocalDate(2019, 10, 15));
+        dto.setBegin(new LocalDate(currentYear(), 10, 1));
+        dto.setEnd(new LocalDate(currentYear(), 10, 15));
 
         onSavedAndAuthenticated(createNewUser("applicant", applicant), () -> {
             feature.saveSpeciesAmount(application.getId(), dto);
@@ -97,7 +98,7 @@ public class CarnivorePermitApplicationSpeciesAmountFeatureTest extends Embedded
             assertEquals(1, spaList.size());
             final HarvestPermitApplicationSpeciesAmount spa = spaList.get(0);
             assertEquals(bear, spa.getGameSpecies());
-            assertEquals(42, spa.getAmount(), 0.01);
+            assertEquals(42, spa.getSpecimenAmount(), 0.01);
         });
     }
 
@@ -106,8 +107,8 @@ public class CarnivorePermitApplicationSpeciesAmountFeatureTest extends Embedded
         final CarnivorePermitApplicationSpeciesAmountDTO dto = new CarnivorePermitApplicationSpeciesAmountDTO();
         dto.setAmount(42);
         dto.setGameSpeciesCode(GameSpecies.OFFICIAL_CODE_BEAR);
-        dto.setBegin(new LocalDate(2019, 8, 19));
-        dto.setEnd(new LocalDate(2019, 10, 15));
+        dto.setBegin(new LocalDate(currentYear(), 8, 19));
+        dto.setEnd(new LocalDate(currentYear(), 10, 15));
 
         onSavedAndAuthenticated(createNewUser("applicant", applicant), () -> {
             feature.saveSpeciesAmount(application.getId(), dto);
@@ -120,8 +121,8 @@ public class CarnivorePermitApplicationSpeciesAmountFeatureTest extends Embedded
         final CarnivorePermitApplicationSpeciesAmountDTO dto = new CarnivorePermitApplicationSpeciesAmountDTO();
         dto.setAmount(42);
         dto.setGameSpeciesCode(GameSpecies.OFFICIAL_CODE_BEAR);
-        dto.setBegin(new LocalDate(2019, 8, 20));
-        dto.setEnd(new LocalDate(2019, 11, 1));
+        dto.setBegin(new LocalDate(currentYear(), 8, 20));
+        dto.setEnd(new LocalDate(currentYear(), 11, 1));
 
         onSavedAndAuthenticated(createNewUser("applicant", applicant), () -> {
             feature.saveSpeciesAmount(application.getId(), dto);

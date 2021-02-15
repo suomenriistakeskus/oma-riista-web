@@ -9,11 +9,11 @@ import org.mockito.Mockito;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.encoding.PlaintextPasswordEncoder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -240,7 +240,7 @@ public class OneTimePasswordAuthenticationProviderTest {
         OneTimePasswordAuthenticationProvider provider = new OneTimePasswordAuthenticationProvider();
         provider.setSecurityConfigurationProperties(properties);
         provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(new PlaintextPasswordEncoder());
+        provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance());
 
         OneTimePasswordCodeService codeService = new OneTimePasswordCodeService(properties);
         ReflectionTestUtils.setField(provider, "oneTimePasswordCodeService", codeService);

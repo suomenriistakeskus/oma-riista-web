@@ -6,7 +6,6 @@ import fi.riista.feature.harvestpermit.HarvestPermitContactPersonDTO;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.PermitHolderDTO;
-import fi.riista.feature.permit.application.mooselike.MooselikePermitApplicationSpeciesAmountDTO;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
@@ -32,8 +31,8 @@ public class ListPermitApplicationDTO implements HasID<Long> {
                 .orElse(null);
 
         final HarvestPermitContactPersonDTO contactPerson = HarvestPermitContactPersonDTO.create(application.getContactPerson());
-        final List<MooselikePermitApplicationSpeciesAmountDTO> speciesAmounts = F.mapNonNullsToList(
-                application.getSpeciesAmounts(), MooselikePermitApplicationSpeciesAmountDTO::create);
+        final List<ListPermitApplicationSpeciesAmountDTO> speciesAmounts = F.mapNonNullsToList(
+                application.getSpeciesAmounts(), ListPermitApplicationSpeciesAmountDTO::create);
 
         return new ListPermitApplicationDTO(
                 application.getId(),
@@ -52,7 +51,7 @@ public class ListPermitApplicationDTO implements HasID<Long> {
     private ListPermitApplicationDTO(final @Nonnull Long id,
                                      final @Nonnull HarvestPermitApplication.Status status,
                                      final HarvestPermitCategory harvestPermitCategory,
-                                     final @Nonnull List<MooselikePermitApplicationSpeciesAmountDTO> speciesAmounts,
+                                     final @Nonnull List<ListPermitApplicationSpeciesAmountDTO> speciesAmounts,
                                      final DateTime submitDate,
                                      final Integer applicationNumber,
                                      final String applicationName,
@@ -86,7 +85,7 @@ public class ListPermitApplicationDTO implements HasID<Long> {
 
     private final PermitHolderDTO permitHolder;
     private final OrganisationNameDTO huntingClub;
-    private final List<MooselikePermitApplicationSpeciesAmountDTO> speciesAmounts;
+    private final List<ListPermitApplicationSpeciesAmountDTO> speciesAmounts;
 
     @Override
     public Long getId() {
@@ -129,7 +128,7 @@ public class ListPermitApplicationDTO implements HasID<Long> {
         return permitHolder;
     }
 
-    public List<MooselikePermitApplicationSpeciesAmountDTO> getSpeciesAmounts() {
+    public List<ListPermitApplicationSpeciesAmountDTO> getSpeciesAmounts() {
         return speciesAmounts;
     }
 }

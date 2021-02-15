@@ -10,8 +10,10 @@ import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.permit.HasHarvestCountsForPermit;
 import fi.riista.feature.huntingclub.support.HuntingClubTestDataHelper;
+import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.application.DeliveryAddress;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.invoice.Invoice;
@@ -28,6 +30,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static fi.riista.feature.organization.person.Person.DeletionCode.D;
 import static fi.riista.feature.permit.invoice.InvoiceState.DELIVERED;
 import static fi.riista.feature.permit.invoice.InvoiceState.PAID;
 import static fi.riista.feature.permit.invoice.InvoiceState.REMINDER;
@@ -304,6 +307,37 @@ public class EndOfMooselikePermitHuntingFeatureTest extends EmbeddedDatabaseTest
         });
     }
 
+
+    @Test
+    public void testPermitContactPersonDoesNotHaveAddress_personDeceased() {
+        withHarvestPermitFixture(f -> {
+
+            final Person permitContactPerson = f.permit.getOriginalContactPerson();
+            permitContactPerson.setMrAddress(null);
+            permitContactPerson.setOtherAddress(null);
+            permitContactPerson.setDeletionCode(D);
+
+            helper.createHarvestsForHuntingGroup(f.group, model().newPerson(), HasHarvestCountsForPermit.of(
+                    1, 0, 0, 0,
+                    0, 0));
+
+            persistAndCallEndMooselikeHunting(f.speciesAmount, f.club, true);
+
+            runInTransaction(() -> {
+                final PermitHarvestInvoice harvestInvoice = getHarvestInvoiceAndAssertOnlyOneExists();
+
+                final Invoice invoice = harvestInvoice.getInvoice();
+
+                final DeliveryAddress deliveryAddress = f.permitDecision.getDeliveryAddress();
+                final Address invoiceRecipientAddress = invoice.getRecipientAddress();
+                assertEquals(deliveryAddress.getStreetAddress(), invoiceRecipientAddress.getStreetAddress());
+                assertEquals(deliveryAddress.getPostalCode(), invoiceRecipientAddress.getPostalCode());
+                assertEquals(deliveryAddress.getCity(), invoiceRecipientAddress.getCity());
+
+            });
+        });
+    }
+
     // NOT HAPPY cases
 
     @Test
@@ -336,25 +370,6 @@ public class EndOfMooselikePermitHuntingFeatureTest extends EmbeddedDatabaseTest
                 fail("Expected " + AmendmentPermitDoesNotMatchHarvestCountException.class.getSimpleName());
 
             } catch (final AmendmentPermitDoesNotMatchHarvestCountException e) {
-                assertMooseHuntingEndStatus(f.speciesAmount.getId(), false);
-                assertHarvestInvoiceNotCreated();
-            }
-        });
-    }
-
-    @Test
-    public void testPermitContactPersonDoesNotHaveAddress() {
-        withHarvestPermitFixture(f -> {
-
-            final Person permitContactPerson = f.permit.getOriginalContactPerson();
-            permitContactPerson.setMrAddress(null);
-            permitContactPerson.setOtherAddress(null);
-
-            try {
-                persistAndCallEndMooselikeHunting(f.speciesAmount, f.club, true);
-                fail("Expected " + IllegalStateException.class.getSimpleName());
-
-            } catch (final IllegalStateException e) {
                 assertMooseHuntingEndStatus(f.speciesAmount.getId(), false);
                 assertHarvestInvoiceNotCreated();
             }
@@ -416,7 +431,7 @@ public class EndOfMooselikePermitHuntingFeatureTest extends EmbeddedDatabaseTest
     }
 
     private void assertMooseHuntingEndStatus(final long speciesAmountId, final boolean expectFinished) {
-        assertEquals(expectFinished, speciesAmountRepository.findOne(speciesAmountId).isMooselikeHuntingFinished());
+        assertEquals(expectFinished, speciesAmountRepository.findById(speciesAmountId).get().isMooselikeHuntingFinished());
     }
 
     private void assertHarvestInvoiceNotCreated() {

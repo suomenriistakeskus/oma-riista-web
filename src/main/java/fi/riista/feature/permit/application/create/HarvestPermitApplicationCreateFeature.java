@@ -14,8 +14,29 @@ import fi.riista.feature.permit.application.bird.BirdPermitApplication;
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationRepository;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationRepository;
+import fi.riista.feature.permit.application.deportation.DeportationPermitApplication;
+import fi.riista.feature.permit.application.deportation.DeportationPermitApplicationRepository;
+import fi.riista.feature.permit.application.disability.DisabilityPermitApplication;
+import fi.riista.feature.permit.application.disability.DisabilityPermitApplicationRepository;
+import fi.riista.feature.permit.application.dogevent.DogEventApplication;
+import fi.riista.feature.permit.application.dogevent.DogEventApplicationRepository;
+import fi.riista.feature.permit.application.gamemanagement.GameManagementPermitApplication;
+import fi.riista.feature.permit.application.gamemanagement.GameManagementPermitApplicationRepository;
+import fi.riista.feature.permit.application.importing.ImportingPermitApplication;
+import fi.riista.feature.permit.application.importing.ImportingPermitApplicationRepository;
+import fi.riista.feature.permit.application.lawsectionten.LawSectionTenPermitApplication;
+import fi.riista.feature.permit.application.lawsectionten.LawSectionTenPermitApplicationRepository;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplication;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationRepository;
+import fi.riista.feature.permit.application.nestremoval.NestRemovalPermitApplication;
+import fi.riista.feature.permit.application.nestremoval.NestRemovalPermitApplicationRepository;
+import fi.riista.feature.permit.application.research.ResearchPermitApplication;
+import fi.riista.feature.permit.application.research.ResearchPermitApplicationRepository;
+import fi.riista.feature.permit.application.weapontransportation.WeaponTransportationPermitApplication;
+import fi.riista.feature.permit.application.weapontransportation.WeaponTransportationPermitApplicationRepository;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.area.HarvestPermitAreaRepository;
+import fi.riista.security.EntityPermission;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +64,36 @@ public class HarvestPermitApplicationCreateFeature {
     private CarnivorePermitApplicationRepository carnivorePermitApplicationRepository;
 
     @Resource
+    private MammalPermitApplicationRepository mammalPermitApplicationRepository;
+
+    @Resource
+    private NestRemovalPermitApplicationRepository nestRemovalPermitApplicationRepository;
+
+    @Resource
+    private LawSectionTenPermitApplicationRepository lawSectionTenPermitApplicationRepository;
+
+    @Resource
+    private WeaponTransportationPermitApplicationRepository weaponTransportationPermitApplicationRepository;
+
+    @Resource
+    private DisabilityPermitApplicationRepository disabilityPermitApplicationRepository;
+
+    @Resource
+    private DogEventApplicationRepository dogEventApplicationRepository;
+
+    @Resource
+    private DeportationPermitApplicationRepository deportationPermitApplicationRepository;
+
+    @Resource
+    private ResearchPermitApplicationRepository researchPermitApplicationRepository;
+
+    @Resource
+    private ImportingPermitApplicationRepository importingPermitApplicationRepository;
+
+    @Resource
+    private GameManagementPermitApplicationRepository gameManagementPermitApplicationRepository;
+
+    @Resource
     private ActiveUserService activeUserService;
 
     @Resource
@@ -52,7 +103,8 @@ public class HarvestPermitApplicationCreateFeature {
     private SecureRandom secureRandom;
 
     @Transactional
-    public HarvestPermitApplicationBasicDetailsDTO create(final HarvestPermitApplicationCreateDTO dto, final Locale locale) {
+    public HarvestPermitApplicationBasicDetailsDTO create(final HarvestPermitApplicationCreateDTO dto,
+                                                          final Locale locale) {
         final HarvestPermitArea permitArea = createPermitAreaIfRequired(dto);
         final Person contactPerson = resolveContactPerson(dto);
 
@@ -67,6 +119,8 @@ public class HarvestPermitApplicationCreateFeature {
         application.setStatus(HarvestPermitApplication.Status.DRAFT);
         application.setApplicationYear(dto.getHuntingYear());
         application.setDeliveryAddress(DeliveryAddress.createFromPersonNullable(contactPerson));
+
+        activeUserService.assertHasPermission(application, EntityPermission.CREATE);
 
         harvestPermitApplicationRepository.save(application);
 
@@ -90,6 +144,37 @@ public class HarvestPermitApplicationCreateFeature {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_BEAR:
                 carnivorePermitApplicationRepository.save(CarnivorePermitApplication.create(application));
+                break;
+            case MAMMAL:
+                mammalPermitApplicationRepository.save(MammalPermitApplication.create(application));
+                break;
+            case NEST_REMOVAL:
+                nestRemovalPermitApplicationRepository.save(NestRemovalPermitApplication.create(application));
+                break;
+            case LAW_SECTION_TEN:
+                lawSectionTenPermitApplicationRepository.save(LawSectionTenPermitApplication.create(application));
+                break;
+            case WEAPON_TRANSPORTATION:
+                weaponTransportationPermitApplicationRepository.save(WeaponTransportationPermitApplication.create(application));
+                break;
+            case DISABILITY:
+                disabilityPermitApplicationRepository.save(DisabilityPermitApplication.create(application));
+                break;
+            case DOG_UNLEASH:
+            case DOG_DISTURBANCE:
+                dogEventApplicationRepository.save(DogEventApplication.create(application));
+                break;
+            case DEPORTATION:
+                deportationPermitApplicationRepository.save(new DeportationPermitApplication(application));
+                break;
+            case RESEARCH:
+                researchPermitApplicationRepository.save((new ResearchPermitApplication(application)));
+                break;
+            case IMPORTING:
+                importingPermitApplicationRepository.save(ImportingPermitApplication.create(application));
+                break;
+            case GAME_MANAGEMENT:
+                gameManagementPermitApplicationRepository.save(new GameManagementPermitApplication(application));
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported permit category:" + dto.getCategory());

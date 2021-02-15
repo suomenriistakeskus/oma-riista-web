@@ -2,7 +2,8 @@ package fi.riista.config.properties;
 
 import fi.riista.config.BatchConfig;
 import fi.riista.config.Constants;
-import fi.riista.config.jpa.CustomHibernateNamingStrategy;
+import fi.riista.config.jpa.ImprovedImplicitNamingStrategy;
+import fi.riista.config.jpa.ImprovedPhysicalNamingStrategy;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.loader.BatchFetchStyle;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,18 +30,20 @@ public class JPAProperties {
         props.put(AvailableSettings.SHOW_SQL, showSql);
         props.put(AvailableSettings.FORMAT_SQL, formatSql);
 
+        // XXX: Type registration is broken for embedded classes
         props.put("jadira.usertype.autoRegisterUserTypes", "true");
         props.put("jadira.usertype.currencyCode", "EUR");
         props.put("jadira.usertype.seed", "org.jadira.usertype.spi.shared.JvmTimestampSeed");
-        props.put("jadira.usertype.useJdbc42Apis", "false");
+        props.put("jadira.usertype.javaZone", Constants.DEFAULT_TIMEZONE_ID);
 
-        props.put(org.hibernate.jpa.AvailableSettings.VALIDATION_MODE, "callback, ddl");
-        props.put(org.hibernate.jpa.AvailableSettings.PERSIST_VALIDATION_GROUP, "javax.validation.groups.Default");
-        props.put(org.hibernate.jpa.AvailableSettings.UPDATE_VALIDATION_GROUP, "javax.validation.groups.Default");
+        props.put(AvailableSettings.JPA_VALIDATION_MODE, "callback, ddl");
+        props.put(AvailableSettings.JPA_PERSIST_VALIDATION_GROUP, "javax.validation.groups.Default");
+        props.put(AvailableSettings.JPA_UPDATE_VALIDATION_GROUP, "javax.validation.groups.Default");
 
         props.put(AvailableSettings.LOG_SESSION_METRICS, false);
-        props.put(org.hibernate.jpa.AvailableSettings.NAMING_STRATEGY, CustomHibernateNamingStrategy.class.getName());
-        props.put(org.hibernate.jpa.AvailableSettings.LOCK_TIMEOUT, "15000");
+        props.put(AvailableSettings.PHYSICAL_NAMING_STRATEGY, ImprovedPhysicalNamingStrategy.class.getName());
+        props.put(AvailableSettings.IMPLICIT_NAMING_STRATEGY, ImprovedImplicitNamingStrategy.class.getName());
+        props.put(AvailableSettings.JPA_LOCK_TIMEOUT, "15000");
         props.put(AvailableSettings.MAX_FETCH_DEPTH, 1);
         props.put(AvailableSettings.STATEMENT_BATCH_SIZE, BatchConfig.BATCH_SIZE);
         props.put(AvailableSettings.BATCH_VERSIONED_DATA, true);

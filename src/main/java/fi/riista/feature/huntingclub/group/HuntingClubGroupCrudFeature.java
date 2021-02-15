@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.group;
 
+import com.google.common.base.Preconditions;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.common.entity.EntityLifecycleFields;
@@ -232,6 +233,14 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
 
     @Transactional
     public HuntingClubGroupDTO copy(final Long originalGroupId, final HuntingClubGroupCopyDTO dto) {
-        return toDTO(copyClubGroupService.copy(originalGroupId, dto));
+        final HuntingClubGroup originalGroup = requireEntityService.requireHuntingGroup(originalGroupId,
+                HuntingClubGroupAuthorization.Permission.COPY);
+        final HuntingClubArea huntingArea = requireEntityService.requireHuntingClubArea(dto.getHuntingAreaId(),
+                EntityPermission.READ);
+
+        Preconditions.checkState(Objects.equals(huntingArea.getHuntingYear(), dto.getHuntingYear()),
+                "hunting area year must match with selected year");
+
+        return toDTO(copyClubGroupService.copyGroup(originalGroup, huntingArea));
     }
 }

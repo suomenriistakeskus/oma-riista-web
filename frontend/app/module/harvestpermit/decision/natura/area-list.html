@@ -1,0 +1,37 @@
+<div class="row">
+    <div class="col-xs-7">
+        <strong translate="{{ $ctrl.title }}"></strong>
+    </div>
+    <div class="col-xs-5">
+        <button class="btn btn-xs btn-primary pull-right"
+                ng-click="$ctrl.copyToClipboard()"
+                translate="decision.natura.buttons.copyToClipboard">
+        </button>
+    </div>
+</div>
+
+<div class="panel-body">
+    <table class="table">
+        <tbody>
+        <tr>
+            <th>
+                <div class="row">
+                    <div class="col-xs-5" translate="decision.natura.areaInfo.areaId"></div>
+                    <div class="col-xs-3" translate="decision.natura.areaInfo.areaSize"></div>
+                    <div class="col-xs-4" translate="decision.natura.areaInfo.distance"></div>
+                </div>
+            </th>
+        </tr>
+        <tr ng-if="!$ctrl.areaList.length"><td translate="decision.natura.selectedAreasPlaceholder"></td></tr>
+        <tr ng-repeat="area in $ctrl.areaList track by area.info.naturaId">
+            <td>
+                <r-natura-area-info area-info="area.info"
+                                    on-remove="$ctrl.onRemove({naturaId: area.info.naturaId})"
+                                    selected-area-id="$ctrl.selectedAreaId"
+                                    ng-click="$ctrl.onSelect({naturaId: area.info.naturaId})">
+                </r-natura-area-info>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

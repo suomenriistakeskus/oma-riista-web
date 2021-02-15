@@ -8,6 +8,12 @@
     <li ng-class="{'active': $ctrl.tab === 'postalQueue'}">
         <a ng-click="$ctrl.showTab('postalQueue')" translate="harvestpermit.admin.application.menu.postalQueue"></a>
     </li>
+    <li ng-class="{'active': $ctrl.tab === 'annualRenewals'}" ng-if="$ctrl.decisionsToRenewExist">
+        <a ng-click="$ctrl.showTab('annualRenewals')">
+            <span ng-if="$ctrl.myRenewalTodos" class="r-account-todo text-danger">{{$ctrl.myRenewalTodos}}</span>
+            <span translate="harvestpermit.admin.application.menu.annualRenewals"></span>
+        </a>
+    </li>
 </ul>
 
 <div ng-switch="$ctrl.tab">

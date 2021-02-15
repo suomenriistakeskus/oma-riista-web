@@ -1,10 +1,12 @@
 package fi.riista.feature.permit.decision.action;
 
+import fi.riista.feature.common.decision.DecisionActionCommunicationType;
+import fi.riista.feature.common.decision.DecisionActionType;
 import fi.riista.feature.common.dto.BaseEntityDTO;
-import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDateTime;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 public class PermitDecisionActionDTO extends BaseEntityDTO<Long> {
@@ -16,9 +18,9 @@ public class PermitDecisionActionDTO extends BaseEntityDTO<Long> {
     private LocalDateTime pointOfTime;
 
     @NotNull
-    private PermitDecisionAction.ActionType actionType;
+    private DecisionActionType actionType;
 
-    private PermitDecisionAction.CommunicationType communicationType;
+    private DecisionActionCommunicationType communicationType;
 
     @NotBlank
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
@@ -57,19 +59,19 @@ public class PermitDecisionActionDTO extends BaseEntityDTO<Long> {
         this.pointOfTime = pointOfTime;
     }
 
-    public PermitDecisionAction.ActionType getActionType() {
+    public DecisionActionType getActionType() {
         return actionType;
     }
 
-    public void setActionType(final PermitDecisionAction.ActionType actionType) {
+    public void setActionType(final DecisionActionType actionType) {
         this.actionType = actionType;
     }
 
-    public PermitDecisionAction.CommunicationType getCommunicationType() {
+    public DecisionActionCommunicationType getCommunicationType() {
         return communicationType;
     }
 
-    public void setCommunicationType(final PermitDecisionAction.CommunicationType communicationType) {
+    public void setCommunicationType(final DecisionActionCommunicationType communicationType) {
         this.communicationType = communicationType;
     }
 

@@ -1,9 +1,7 @@
 package fi.riista.api.mobile;
 
-import fi.riista.feature.account.mobile.MobileAccountV1DTO;
-import fi.riista.feature.account.mobile.MobileAccountV1Feature;
-import fi.riista.feature.account.mobile.MobileAccountV2DTO;
-import fi.riista.feature.account.mobile.MobileAccountV2Feature;
+import fi.riista.feature.account.mobile.MobileAccountDTO;
+import fi.riista.feature.account.mobile.MobileAccountFeature;
 import fi.riista.feature.push.MobilePushRegistrationDTO;
 import fi.riista.feature.push.RegisterMobileClientDeviceFeature;
 import net.rossillo.spring.web.mvc.CacheControl;
@@ -20,33 +18,26 @@ import javax.validation.Valid;
 @RestController
 public class MobileAccountApiResource {
 
-    public static final String ACCOUNT_V1_RESOURCE_URL = "/api/mobile/v1/gamediary/account";
-    public static final String ACCOUNT_V2_RESOURCE_URL = "/api/mobile/v2/gamediary/account";
-    public static final String PUSH_REGISTER_RESOURCE_URL = "/api/mobile/v2/push/register";
+    // Transition to "v2" was done within release of observation API.
+    private static final String API_PREFIX = "/api/mobile/v2";
+
+    public static final String ACCOUNT_RESOURCE_URL = API_PREFIX + "/gamediary/account";
+    public static final String PUSH_REGISTER_RESOURCE_URL = API_PREFIX + "/push/register";
 
     @Resource
-    private MobileAccountV1Feature mobileAccountV1Feature;
-
-    @Resource
-    private MobileAccountV2Feature mobileAccountV2Feature;
+    private MobileAccountFeature mobileAccountFeature;
 
     @Resource
     private RegisterMobileClientDeviceFeature registerMobileClientDeviceFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = ACCOUNT_V1_RESOURCE_URL, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public MobileAccountV1DTO getV1Account() {
-        return mobileAccountV1Feature.getMobileAccount();
+    @GetMapping(value = ACCOUNT_RESOURCE_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+    public MobileAccountDTO getAccount() {
+        return mobileAccountFeature.getMobileAccount();
     }
 
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = ACCOUNT_V2_RESOURCE_URL, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public MobileAccountV2DTO getV2Account() {
-        return mobileAccountV2Feature.getMobileAccount();
-    }
-
-    @PostMapping(value = PUSH_REGISTER_RESOURCE_URL, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public void registerDeviceForPushNotifications(@RequestBody @Valid MobilePushRegistrationDTO dto) {
+    @PostMapping(value = PUSH_REGISTER_RESOURCE_URL, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void registerDeviceForPushNotifications(@RequestBody @Valid final MobilePushRegistrationDTO dto) {
         registerMobileClientDeviceFeature.registerDevice(dto);
     }
 }

@@ -10,6 +10,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface HarvestSpecVersionSupport {
-    HarvestSpecVersion since();
-    int apiVersion() default 2;
+    HarvestSpecVersion lowest();
 }

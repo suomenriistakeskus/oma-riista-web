@@ -83,22 +83,25 @@ public class CalculateZoneAreaSizeQueries {
                 " FROM z JOIN rhy ON ST_Intersects(rhy.geom, ST_SetSRID(z.geom, 3047))" +
                 " WHERE GeometryType(z.geom) IN ('POLYGON', 'MULTIPOLYGON')";
 
-        return getSumOfAreaSizeBySql(zoneId, innerSql);
+        return getSumOfAreaSizeBySql(innerSql, zoneParam(zoneId));
     }
 
-    public List<GISZoneSizeByOfficialCodeDTO> getSumOfAreaSizeByVerotusLohko(final long zoneId) {
+    public List<GISZoneSizeByOfficialCodeDTO> getSumOfAreaSizeByVerotusLohko(final int huntingYear, final long zoneId) {
         final String innerSql = "SELECT verotus_lohko.official_code AS official_code," +
                 " ST_MakeValid((ST_Dump(ST_Intersection(verotus_lohko.geom, z.geom))).geom) AS geom" +
                 " FROM z JOIN verotus_lohko ON ST_Intersects(verotus_lohko.geom, z.geom)" +
-                " WHERE GeometryType(z.geom) IN ('POLYGON', 'MULTIPOLYGON')";
+                " WHERE GeometryType(z.geom) IN ('POLYGON', 'MULTIPOLYGON')" +
+                " AND verotus_lohko.hunting_year = :huntingYear";
 
-        return getSumOfAreaSizeBySql(zoneId, innerSql);
+        return getSumOfAreaSizeBySql(innerSql, zoneAndHuntingYearParams(zoneId, huntingYear));
     }
 
-    private List<GISZoneSizeByOfficialCodeDTO> getSumOfAreaSizeBySql(final long zoneId, final String innerSql) {
+    private List<GISZoneSizeByOfficialCodeDTO> getSumOfAreaSizeBySql(final String innerSql,
+                                                                     final MapSqlParameterSource params) {
         return jdbcOperations.query("WITH z AS (" +
                 // 1. Split application permit area to smaller polygons
-                " SELECT ST_Buffer(ST_MakeValid(ST_SubDivide(ST_MakeValid((ST_Dump(geom)).geom), :chunkSize)), 0) AS geom" +
+                " SELECT ST_Buffer(ST_MakeValid(ST_SubDivide(ST_MakeValid((ST_Dump(geom)).geom), :chunkSize)), 0) AS " +
+                "geom" +
                 " FROM zone" +
                 " WHERE zone_id = :zoneId" +
                 // 2. Calculate intersection geometries for Zone and Block
@@ -132,17 +135,23 @@ public class CalculateZoneAreaSizeQueries {
                 " AND GeometryType(z_state_block.geom) IN ('POLYGON', 'MULTIPOLYGON')" +
                 // 8. Calculate combined geometry area size for total, land and water area size
                 "), total_area AS (" +
-                " SELECT official_code, COALESCE(SUM(ST_Area(z_block.geom)), 0) AS size FROM z_block GROUP BY official_code" +
+                " SELECT official_code, COALESCE(SUM(ST_Area(z_block.geom)), 0) AS size FROM z_block GROUP BY " +
+                "official_code" +
                 "), water_area AS (" +
-                " SELECT official_code, COALESCE(SUM(ST_Area(z_block_water.geom)), 0) AS size FROM z_block_water GROUP BY official_code" +
+                " SELECT official_code, COALESCE(SUM(ST_Area(z_block_water.geom)), 0) AS size FROM z_block_water " +
+                "GROUP BY official_code" +
                 "), land_area AS (" +
-                " SELECT official_code, COALESCE(total_area.size, 0) - COALESCE(water_area.size, 0) AS size FROM total_area LEFT JOIN water_area USING (official_code)" +
+                " SELECT official_code, COALESCE(total_area.size, 0) - COALESCE(water_area.size, 0) AS size FROM " +
+                "total_area LEFT JOIN water_area USING (official_code)" +
                 "), state_area AS (" +
-                " SELECT official_code, COALESCE(SUM(ST_Area(z_state_block.geom)), 0) AS size FROM z_state_block GROUP BY official_code" +
+                " SELECT official_code, COALESCE(SUM(ST_Area(z_state_block.geom)), 0) AS size FROM z_state_block " +
+                "GROUP BY official_code" +
                 "), state_water_area AS (" +
-                " SELECT official_code, COALESCE(SUM(ST_Area(z_state_water_block.geom)), 0) AS size FROM z_state_water_block GROUP BY official_code" +
+                " SELECT official_code, COALESCE(SUM(ST_Area(z_state_water_block.geom)), 0) AS size FROM " +
+                "z_state_water_block GROUP BY official_code" +
                 "), state_land_area AS (" +
-                " SELECT official_code, COALESCE(state_area.size, 0) - COALESCE(state_water_area.size, 0) AS size FROM state_area LEFT JOIN state_water_area USING (official_code)" +
+                " SELECT official_code, COALESCE(state_area.size, 0) - COALESCE(state_water_area.size, 0) AS size " +
+                "FROM state_area LEFT JOIN state_water_area USING (official_code)" +
                 "), private_area AS (" +
                 "  SELECT official_code, COALESCE(total_area.size, 0) - COALESCE(state_area.size, 0) AS size" +
                 "  FROM total_area LEFT JOIN state_area USING (official_code)" +
@@ -174,7 +183,7 @@ public class CalculateZoneAreaSizeQueries {
                 " LEFT JOIN state_land_area USING (official_code)" +
                 " LEFT JOIN private_area USING (official_code)" +
                 " LEFT JOIN private_land_area USING (official_code)" +
-                " LEFT JOIN private_water_area USING (official_code);", zoneParam(zoneId), (rs, i) -> {
+                " LEFT JOIN private_water_area USING (official_code);", params, (rs, i) -> {
 
             final TotalLandWaterSizeDTO bothSize = new TotalLandWaterSizeDTO(
                     rs.getDouble("total"),
@@ -220,5 +229,10 @@ public class CalculateZoneAreaSizeQueries {
     private static MapSqlParameterSource zoneParam(final long zoneId) {
         return new MapSqlParameterSource("zoneId", zoneId)
                 .addValue("chunkSize", 8192);
+    }
+
+    private static MapSqlParameterSource zoneAndHuntingYearParams(final long zoneId, final int huntingYear) {
+        return zoneParam(zoneId)
+                .addValue("huntingYear", huntingYear);
     }
 }

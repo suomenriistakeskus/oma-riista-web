@@ -16,7 +16,8 @@ import static java.util.stream.Collectors.toMap;
 // statistics of previous year.
 public final class SubsidyAllocationStage1Calculation {
 
-    public static List<BasicSubsidyAllocationDTO> calculateStatisticsBasedSubsidyAllocation(
+    public static List<RhySubsidyStage1DTO> calculateStatisticsBasedSubsidyAllocation(
+            final int subsidyYear,
             @Nonnull final List<AnnualStatisticsExportDTO> allRhyStatistics,
             @Nonnull final List<SubsidyAllocatedToCriterionDTO> criteriaAllocations) {
 
@@ -28,20 +29,22 @@ public final class SubsidyAllocationStage1Calculation {
         final StatisticsBasedSubsidyShareCalculator shareCalculator =
                 new StatisticsBasedSubsidyShareCalculator(unitAmountIndex);
 
-        return F.mapNonNullsToList(allRhyStatistics, statistics -> createAllocation(statistics, shareCalculator));
+        return F.mapNonNullsToList(allRhyStatistics, statistics ->
+                createAllocation(subsidyYear, statistics, shareCalculator));
     }
 
-    private static BasicSubsidyAllocationDTO createAllocation(final AnnualStatisticsExportDTO statistics,
-                                                              final StatisticsBasedSubsidyShareCalculator shareCalculator) {
+    private static RhySubsidyStage1DTO createAllocation(final int subsidyYear,
+                                                        final AnnualStatisticsExportDTO statistics,
+                                                        final StatisticsBasedSubsidyShareCalculator shareCalculator) {
 
-        final StatisticsBasedSubsidyShareDTO calculatedShares = shareCalculator.calculateSubsidyShare(statistics);
+        final StatisticsBasedSubsidyShareDTO calculatedShares =
+                shareCalculator.calculateSubsidyShare(subsidyYear, statistics);
 
-        return new BasicSubsidyAllocationDTO(
-                statistics.getOrganisation(),
-                statistics.getParentOrganisation(),
-                calculatedShares,
-                roundTotalSubsidyShare(calculatedShares.countSumOfAllShares()),
-                0); // remainder euros are not calculated in this stage
+        return new RhySubsidyStage1DTO(
+                new RhyAndRkaDTO(statistics.getOrganisation(), statistics.getParentOrganisation()),
+                new SubsidyCalculationStage1DTO(
+                        calculatedShares,
+                        roundTotalSubsidyShare(calculatedShares.countSumOfAllShares())));
     }
 
     private SubsidyAllocationStage1Calculation() {

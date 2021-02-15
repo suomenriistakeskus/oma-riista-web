@@ -16,8 +16,9 @@ public class HirviJyvitysExcelApiResource {
     @Resource
     private JyvitysExcelFeature excelFeature;
 
-    @GetMapping(value = "/{officialCode:\\d{3}}/excel")
-    public ModelAndView exportExcel(@PathVariable final String officialCode) {
-        return new ModelAndView(excelFeature.export(officialCode));
+    @GetMapping(value = "/{huntingYear:\\d+}/{officialCode:\\d{3}}/excel")
+    public ModelAndView exportExcel(@PathVariable int huntingYear,
+                                    @PathVariable final String officialCode) {
+        return new ModelAndView(excelFeature.export(huntingYear, officialCode));
     }
 }

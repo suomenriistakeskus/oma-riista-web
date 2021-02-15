@@ -6,7 +6,6 @@ import fi.riista.util.F;
 import fi.riista.util.Functions;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import javax.annotation.Nonnull;
@@ -176,7 +175,7 @@ public final class JpaGroupingUtils {
         }
 
         final Specification<U> compoundSpec =
-                constraint == null ? inSpec : Specifications.where(inSpec).and(constraint);
+                constraint == null ? inSpec : Specification.where(inSpec).and(constraint);
 
         final List<U> list = sortCriteria != null
                 ? repository.findAll(compoundSpec, sortCriteria)

@@ -3,7 +3,7 @@ package fi.riista.feature.organization.calendar;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.address.Address;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;

@@ -3,6 +3,7 @@ package fi.riista.feature.dashboard;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQueryFactory;
@@ -25,6 +26,7 @@ import fi.riista.feature.permit.area.QHarvestPermitArea;
 import fi.riista.feature.shootingtest.QShootingTestAttempt;
 import fi.riista.feature.shootingtest.QShootingTestEvent;
 import fi.riista.feature.shootingtest.QShootingTestParticipant;
+import fi.riista.feature.shootingtest.ShootingTestAttemptResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -39,8 +41,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.QUALIFIED;
+import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.REBATED;
+import static java.util.stream.Collectors.toList;
 
 @Component
 @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
@@ -572,23 +577,41 @@ public class DashboardFeature {
 
         final DashboardShootingTestDTO dto = new DashboardShootingTestDTO();
 
-        // Ampumakoesuorituksia yhteensä
-        dto.setCountOfTotalAttempts(queryFactory
-                .select(ATTEMPT.count())
+        final Map<String, List<ShootingTestAttemptResult>> hunterNumberToResults = queryFactory
+                .select(ATTEMPT.result, PARTICIPANT.hunterNumber)
                 .from(ATTEMPT)
                 .join(ATTEMPT.participant, PARTICIPANT)
                 .join(PARTICIPANT.shootingTestEvent, EVENT)
                 .join(EVENT.calendarEvent, CALENDAR_EVENT)
                 .where(calendarEvent2019Predicate)
-                .where(ATTEMPT.result.eq(QUALIFIED))
-                .fetchOne());
+                .where(ATTEMPT.result.ne(REBATED).and(EVENT.lockedTime.isNotNull()))
+                .transform(GroupBy.groupBy(PARTICIPANT.hunterNumber).as(GroupBy.list(ATTEMPT.result)));
+
+        final long participantCount = hunterNumberToResults.entrySet().stream()
+                .filter(entry -> entry.getValue().contains(QUALIFIED))
+                .count();
+
+        final List<ShootingTestAttemptResult> allAttempts = hunterNumberToResults.entrySet().stream()
+                .flatMap(entry -> entry.getValue().stream())
+                .collect(toList());
+
+        final long allAttemptCount = allAttempts.size();
+        final long qualifiedAttemptCount = allAttempts.stream()
+                .filter(attempt -> attempt == QUALIFIED)
+                .count();
+
+        // Ampumakoesuorituksia yhteensä
+        dto.setCountOfTotalAttempts(allAttemptCount);
+        dto.setCountOfQualifiedAttempts(qualifiedAttemptCount);
+
+        dto.setCountOfQualifiedParticipants(participantCount);
 
         // Suljettuja ampumakoetapahtumia
         dto.setCountOfClosedEvents(queryFactory
                 .select(EVENT.count())
                 .from(EVENT)
                 .join(EVENT.calendarEvent, CALENDAR_EVENT)
-                .where(calendarEvent2019Predicate)
+                .where(calendarEvent2019Predicate.and(EVENT.lockedTime.isNotNull()))
                 .fetchOne());
 
         // RHY:t joissa sähköinen kirjaus otettu käyttöön

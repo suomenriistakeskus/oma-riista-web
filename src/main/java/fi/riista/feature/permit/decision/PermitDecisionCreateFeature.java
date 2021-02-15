@@ -1,6 +1,7 @@
 package fi.riista.feature.permit.decision;
 
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.decision.delivery.PermitDecisionDeliveryRepository;
 import fi.riista.feature.permit.decision.delivery.PermitDecisionDeliveryService;
@@ -14,6 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Collections;
+
+import static fi.riista.feature.common.decision.GrantStatus.UNCHANGED;
+
 
 @Component
 public class PermitDecisionCreateFeature {
@@ -45,6 +49,9 @@ public class PermitDecisionCreateFeature {
     @Resource
     private PermitDecisionDerogationService permitDecisionDerogationService;
 
+    @Resource
+    private ActiveUserService activeUserService;
+
     @Transactional
     public Long getOrCreateDecisionForApplication(final CreatePermitDecisionDTO dto) {
         final HarvestPermitApplication application = requireEntityService.requireHarvestPermitApplication(
@@ -57,13 +64,19 @@ public class PermitDecisionCreateFeature {
 
     // Package private for testing
     /* package */ PermitDecision createDecision(final HarvestPermitApplication application) {
-        final PermitDecision decision = permitDecisionRepository.save(PermitDecision.createForApplication(application));
-        permitDecisionSpeciesAmountRepository.save(permitDecisionSpeciesAmountService.createSpecies(decision));
+        final PermitDecision decision = PermitDecision.createForApplication(application);
+        activeUserService.assertHasPermission(decision, EntityPermission.CREATE);
+        permitDecisionRepository.save(decision);
 
-        decision.setDelivery(permitDecisionDeliveryRepository.save(
+        if (application.getHarvestPermitCategory().hasSpeciesAmount()) {
+            permitDecisionSpeciesAmountRepository.saveAll(permitDecisionSpeciesAmountService.createSpecies(decision));
+            permitDecisionGrantStatusService.updateGrantStatus(decision);
+        } else {
+            decision.setGrantStatus(UNCHANGED);
+        }
+
+        decision.setDelivery(permitDecisionDeliveryRepository.saveAll(
                 permitDecisionDeliveryService.generateDeliveries(decision, Collections.emptyList())));
-
-        permitDecisionGrantStatusService.updateGrantStatus(decision);
 
         if (application.getHarvestPermitCategory().isDerogation()) {
             permitDecisionDerogationService.initializeForApplication(decision);

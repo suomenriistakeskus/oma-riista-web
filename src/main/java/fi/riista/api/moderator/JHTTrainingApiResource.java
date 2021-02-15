@@ -7,7 +7,7 @@ import fi.riista.feature.organization.jht.training.JHTTrainingDTO;
 import fi.riista.feature.organization.jht.training.JHTTrainingSearchDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(value = "/api/v1/jht-training")
@@ -45,8 +45,8 @@ public class JHTTrainingApiResource {
     @RequestMapping(
             value = "search",
             method = RequestMethod.POST,
-            produces = APPLICATION_JSON_UTF8_VALUE,
-            consumes = APPLICATION_JSON_UTF8_VALUE)
+            produces = APPLICATION_JSON_VALUE,
+            consumes = APPLICATION_JSON_VALUE)
     public Page<JHTTrainingDTO> search(@RequestBody @Validated JHTTrainingSearchDTO dto) {
         return jhtTrainingCrudFeature.search(dto);
     }
@@ -64,8 +64,8 @@ public class JHTTrainingApiResource {
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(
             method = RequestMethod.POST,
-            consumes = APPLICATION_JSON_UTF8_VALUE,
-            produces = APPLICATION_JSON_UTF8_VALUE)
+            consumes = APPLICATION_JSON_VALUE,
+            produces = APPLICATION_JSON_VALUE)
     public JHTTrainingDTO create(@RequestBody @Validated JHTTrainingDTO dto) {
         return jhtTrainingCrudFeature.create(dto);
     }
@@ -73,7 +73,7 @@ public class JHTTrainingApiResource {
     @ResponseStatus(HttpStatus.CREATED)
     @RequestMapping(value = "{id:\\d+}/propose",
             method = RequestMethod.POST,
-            consumes = APPLICATION_JSON_UTF8_VALUE)
+            consumes = APPLICATION_JSON_VALUE)
     public void propose(@Validated(JHTTrainingDTO.IdAndRhyValidation.class)
                         @RequestBody JHTTrainingDTO dto,
                         @PathVariable Long id) {
@@ -88,13 +88,13 @@ public class JHTTrainingApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/mine", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/mine", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
     public List<JHTTrainingDTO> listMyTrainings() {
         return jhtTrainingCrudFeature.listMine();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/person/{personId:\\d+}", method = RequestMethod.GET, produces = APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/person/{personId:\\d+}", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
     public List<JHTTrainingDTO> forPerson(@PathVariable long personId) {
         return jhtTrainingCrudFeature.listForPerson(personId);
     }

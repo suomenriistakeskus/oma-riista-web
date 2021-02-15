@@ -1,0 +1,16 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th style="width: 15%" translate="harvestpermit.wizard.species.table.headerSpecies"></th>
+        <th style="width: 10%" translate="harvestpermit.wizard.period.beginDate"></th>
+        <th style="width: 10%" translate="harvestpermit.wizard.period.endDate"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="spa in ::$ctrl.periods track by spa.gameSpeciesCode">
+        <td ng-bind="spa.gameSpeciesCode | translateSpeciesCode"></td>
+        <td ng-bind="spa.beginDate | date:'dd.MM.yyyy'"></td>
+        <td ng-bind="spa.endDate | date:'dd.MM.yyyy'"> </td>
+    </tr>
+    </tbody>
+</table>

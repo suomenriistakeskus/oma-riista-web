@@ -1,5 +1,6 @@
 package fi.riista.feature.permit.application.archive;
 
+import com.google.common.base.Preconditions;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
 import fi.riista.feature.storage.FileStorageService;
@@ -48,7 +49,9 @@ public class PermitApplicationArchiveService {
 
     @Transactional(readOnly = true)
     public PermitApplicationArchiveDTO getDataForArchive(final long applicationId) {
-        return PermitApplicationArchiveDTO.create(harvestPermitApplicationRepository.getOne(applicationId));
+        final HarvestPermitApplication application = harvestPermitApplicationRepository.getOne(applicationId);
+        Preconditions.checkArgument(application.getStatus() == HarvestPermitApplication.Status.ACTIVE);
+        return PermitApplicationArchiveDTO.create(application);
     }
 
     // No transaction here as intended

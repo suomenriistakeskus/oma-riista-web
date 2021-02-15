@@ -26,7 +26,7 @@ angular.module('app.harvestpermit.decision.document.general', [])
                 };
 
                 $ctrl.editDocumentSettings = function () {
-                    PermitDecisionDocumentSettingsModal.open($ctrl.decision.id).then(function () {
+                    PermitDecisionDocumentSettingsModal.open($ctrl.decision.id, $ctrl.decision.permitTypeCode).then(function () {
                         RefreshDecisionStateService.refresh();
                     });
                 };

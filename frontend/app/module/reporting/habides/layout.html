@@ -1,18 +1,19 @@
 <form class="form">
+    <h4 translate="reporting.habides.birds"></h4>
     <div class="form-group">
         <div class="row">
             <div class="col-xs-6 col-md-3">
                 <label translate="reporting.habides.calendarYear"></label>
                 <select class="form-control"
                         ng-options="year for year in $ctrl.years track by year"
-                        ng-model="$ctrl.selected.year">
+                        ng-model="$ctrl.selectedBird.year">
                 </select>
             </div>
             <div class="col-xs-6 col-md-3">
                 <label translate="reporting.habides.species"></label>
                 <select class="form-control"
-                        ng-options="s.name for s in $ctrl.species track by s.code"
-                        ng-model="$ctrl.selected.species">
+                        ng-options="s.name for s in $ctrl.birdSpecies track by s.code"
+                        ng-model="$ctrl.selectedBird.species">
                 </select>
             </div>
         </div>
@@ -21,4 +22,52 @@
         <span class="fa fa-file-code-o"></span>&nbsp;
         <span translate="global.button.exportToXml"></span>
     </button>
+    <div ng-switch="$ctrl.birdError.errorCategory">
+        <div class="r-draft-decisions" ng-switch-when="DRAFT_DECISIONS">
+            <span class="text-danger" translate="reporting.habides.draftDecisions"></span>
+            <ul class="r-draft-decisions" ng-repeat="permit in $ctrl.birdError.draftDecisions track by $index">
+                <li class="text-danger" ng-bind="permit"></li>
+            </ul>
+        </div>
+        <div class="r-draft-decisions" ng-switch-when="NOT_FOUND">
+            <span class="text-danger" translate="reporting.habides.notFound"></span>
+        </div>
+    </div>
+
+    <hr>
+
+    <h4 translate="reporting.habides.mammals"></h4>
+    <div class="form-group">
+        <div class="row">
+            <div class="col-xs-6 col-md-3">
+                <label translate="reporting.habides.huntingYear"></label>
+                <select class="form-control"
+                        ng-options="year.name for year in $ctrl.huntingYears track by year.year"
+                        ng-model="$ctrl.selectedMammal.huntingYear">
+                </select>
+            </div>
+            <div class="col-xs-6 col-md-3">
+                <label translate="reporting.habides.species"></label>
+                <select class="form-control"
+                        ng-options="s.name for s in $ctrl.mammalSpecies track by s.code"
+                        ng-model="$ctrl.selectedMammal.species">
+                </select>
+            </div>
+        </div>
+    </div>
+    <button type="button" class="btn btn-default" ng-click="$ctrl.exportMammalsToXml()">
+        <span class="fa fa-file-code-o"></span>&nbsp;
+        <span translate="global.button.exportToXml"></span>
+    </button>
+    <div ng-switch="$ctrl.mammalError.errorCategory">
+        <div class="r-draft-decisions" ng-switch-when="DRAFT_DECISIONS">
+            <span class="text-danger" translate="reporting.habides.draftDecisions"></span>
+            <ul class="r-draft-decisions" ng-repeat="permit in $ctrl.mammalError.draftDecisions track by $index">
+                <li class="text-danger" ng-bind="permit"></li>
+            </ul>
+        </div>
+        <div class="r-draft-decisions" ng-switch-when="NOT_FOUND">
+            <span class="text-danger" translate="reporting.habides.notFound"></span>
+        </div>
+    </div>
 </form>

@@ -38,7 +38,7 @@ public class MobileAnnouncementFeature {
                 .withActiveUser(activeUserService.getActiveUserInfoOrNull())
                 .withActivePersonOccupations(occupationRepository.findActiveByPerson(person))
                 .withActivePersonRhy(person.getRhyMembership())
-                .withCreatedAfter(since.toDate());
+                .withCreatedAfter(since);
 
         return filterAnnouncements(filter, pageRequest);
     }

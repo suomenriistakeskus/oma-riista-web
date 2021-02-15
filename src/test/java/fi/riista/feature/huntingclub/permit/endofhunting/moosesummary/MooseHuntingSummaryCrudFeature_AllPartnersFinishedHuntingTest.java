@@ -1,8 +1,6 @@
 package fi.riista.feature.huntingclub.permit.endofhunting.moosesummary;
 
 import com.google.common.collect.Sets;
-import fi.riista.feature.gamediary.GameAge;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.endofhunting.MooselikeHuntingFinishedException;
@@ -12,7 +10,6 @@ import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.permit.endofhunting.AllPartnersFinishedHuntingMailFeature;
 import fi.riista.feature.huntingclub.permit.endofhunting.AllPartnersFinishedHuntingMailService;
 import fi.riista.test.EmbeddedDatabaseTest;
-import org.joda.time.LocalDate;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +17,7 @@ import org.junit.Test;
 import javax.annotation.Resource;
 import java.util.Set;
 
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
 import static fi.riista.util.DateUtil.today;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -114,10 +112,10 @@ public class MooseHuntingSummaryCrudFeature_AllPartnersFinishedHuntingTest exten
         harvest.setRhy(permit.getRhy());
 
         final GroupHuntingDay huntingDay =
-                model().newGroupHuntingDay(group, LocalDate.fromDateFields(harvest.getPointOfTime()));
+                model().newGroupHuntingDay(group, harvest.getPointOfTime().toLocalDate());
         harvest.updateHuntingDayOfGroup(huntingDay, null);
 
-        model().newHarvestSpecimen(harvest, GameAge.ADULT, GameGender.MALE);
+        model().newHarvestSpecimen(harvest, ADULT_MALE);
     }
 
     @Test

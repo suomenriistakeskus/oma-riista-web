@@ -84,7 +84,7 @@ public class HarvestPermitApplicationSendFeatureTest extends EmbeddedDatabaseTes
         });
 
         runInTransaction(() -> {
-            final HarvestPermitApplication persisted = repository.findOne(application.getId());
+            final HarvestPermitApplication persisted = repository.findById(application.getId()).get();
             assertNotNull(persisted);
             assertEquals(2019, persisted.getApplicationYear());
         });

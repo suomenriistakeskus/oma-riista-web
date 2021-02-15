@@ -59,6 +59,10 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
             dto.getPerson().getAddress().setEditable(person.isAddressEditable());
         }
 
+        if (occupation.getSubstitute() != null) {
+            dto.setSubstitute(PersonContactInfoDTO.create(occupation.getSubstitute()));
+        }
+
         return dto;
     }
 
@@ -71,6 +75,7 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
         dto.setBeginDate(occupation.getBeginDate());
         dto.setEndDate(occupation.getEndDate());
         dto.setCallOrder(occupation.getCallOrder());
+        dto.setBoardRepresentation(occupation.getBoardRepresentation());
         return dto;
     }
 
@@ -94,6 +99,11 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
     private ContactInfoShare contactInfoShare;
 
     private LocalDateTime modificationTime;
+
+    private OccupationBoardRepresentationRole boardRepresentation;
+
+    @Valid
+    private PersonContactInfoDTO substitute;
 
     @Override
     public Long getId() {
@@ -195,5 +205,21 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
 
     public void setModificationTime(LocalDateTime modificationTime) {
         this.modificationTime = modificationTime;
+    }
+
+    public OccupationBoardRepresentationRole getBoardRepresentation() {
+        return boardRepresentation;
+    }
+
+    public void setBoardRepresentation(OccupationBoardRepresentationRole boardRepresentation) {
+        this.boardRepresentation = boardRepresentation;
+    }
+
+    public PersonContactInfoDTO getSubstitute() {
+        return substitute;
+    }
+
+    public void setSubstitute(final PersonContactInfoDTO substitute) {
+        this.substitute = substitute;
     }
 }

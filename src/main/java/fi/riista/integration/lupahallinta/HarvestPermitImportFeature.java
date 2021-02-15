@@ -91,7 +91,7 @@ public class HarvestPermitImportFeature {
             }
             if (allErrors.isEmpty()) {
                 updateLhSyncTime(addedOrChanged, lhSyncTime);
-                harvestPermitRepository.save(addedOrChanged);
+                harvestPermitRepository.saveAll(addedOrChanged);
 
                 return new HarvestPermitImportResultDTO(addedOrChanged.size(), messages);
             }

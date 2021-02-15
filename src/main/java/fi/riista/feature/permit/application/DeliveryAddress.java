@@ -2,7 +2,6 @@ package fi.riista.feature.permit.application;
 
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
-import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
@@ -10,6 +9,7 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.Optional;
@@ -49,7 +49,21 @@ public class DeliveryAddress {
     @Column(name = "delivery_address_country_name")
     private String country;
 
-    public static DeliveryAddress createFromPersonNullable(@Nonnull Person contactPerson) {
+    public static DeliveryAddress create(@Nonnull final String recipient,
+                                         @Nonnull final Address address) {
+        requireNonNull(recipient);
+        requireNonNull(address);
+
+        final DeliveryAddress deliveryAddress = new DeliveryAddress();
+        deliveryAddress.setRecipient(recipient);
+        deliveryAddress.setStreetAddress(address.getStreetAddress());
+        deliveryAddress.setPostalCode(address.getPostalCode());
+        deliveryAddress.setCity(address.getCity());
+        deliveryAddress.setCountry(address.getCountry());
+        return deliveryAddress;
+    }
+
+    public static DeliveryAddress createFromPersonNullable(@Nonnull final Person contactPerson) {
         requireNonNull(contactPerson);
 
         return Optional.ofNullable(contactPerson.getAddress()).map(address -> {
@@ -63,7 +77,7 @@ public class DeliveryAddress {
         }).orElse(null);
     }
 
-    public Address toAddress(){
+    public Address toAddress() {
         final Address address = new Address();
         address.setStreetAddress(getStreetAddress());
         address.setPostalCode(getPostalCode());

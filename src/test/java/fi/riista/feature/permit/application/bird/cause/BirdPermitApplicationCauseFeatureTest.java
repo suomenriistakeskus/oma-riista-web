@@ -27,7 +27,8 @@ public class BirdPermitApplicationCauseFeatureTest extends EmbeddedDatabaseTest 
 
             birdPermitApplicationCauseFeature.updateCauseInfo(application.getId(), updateDto);
 
-            final BirdPermitApplicationCauseDTO dto = birdPermitApplicationCauseFeature.getCauseInfo(application.getId());
+            final BirdPermitApplicationCauseDTO dto =
+                    birdPermitApplicationCauseFeature.getCauseInfo(application.getId());
 
             assertFalse(dto.isCausePublicHealth());
             assertFalse(dto.isCausePublicSafety());
@@ -55,7 +56,8 @@ public class BirdPermitApplicationCauseFeatureTest extends EmbeddedDatabaseTest 
 
             birdPermitApplicationCauseFeature.updateCauseInfo(application.getId(), updateDto);
 
-            final BirdPermitApplicationCauseDTO dto = birdPermitApplicationCauseFeature.getCauseInfo(application.getId());
+            final BirdPermitApplicationCauseDTO dto =
+                    birdPermitApplicationCauseFeature.getCauseInfo(application.getId());
 
             assertTrue(dto.isCausePublicHealth());
             assertTrue(dto.isCausePublicSafety());

@@ -8,16 +8,16 @@ import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.data.jpa.domain.Specifications.where;
+import static org.springframework.data.jpa.domain.Specification.where;
 
 @Component
 public class TemporaryGameDiaryImagesRemover {
@@ -45,9 +45,10 @@ public class TemporaryGameDiaryImagesRemover {
     @Resource
     private GameDiaryImageRepository gameDiaryImageRepository;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional
     public void removeExpiredTemporaryImages(final ReadablePeriod expirationTime) {
-        final Date olderThan = DateTime.now().minus(expirationTime).toDate();
+        final DateTime olderThan = DateTime.now().minus(expirationTime);
 
         final List<GameDiaryImage> expired = gameDiaryImageRepository.findAll(
                 where(SPEC_FOR_IMAGE_NOT_RELATED_TO_ANY_GAME_DIARY_ENTRY)

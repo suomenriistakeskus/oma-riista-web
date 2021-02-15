@@ -1,0 +1,126 @@
+<permit-decision-nav-header decision="$ctrl.decision"></permit-decision-nav-header>
+
+<div class="row">
+    <div class="col-md-6 col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title" translate="decision.summary.applicationSummary.title"></h3>
+            </div>
+
+            <div class="panel-body" style="min-height: 185px;">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <th class="col-xs-6"
+                            translate="jht.nomination.decision.decisionNumber"></th>
+                        <td ng-bind="::$ctrl.decision.decisionNumber"></td>
+                    </tr>
+                    <tr>
+                        <th translate="occupation.nomination.field.nominationDate"></th>
+                        <td>
+                            <div class="input-group"
+                                 ng-controller="DatePickerController">
+
+                                <input type="text" name="publishDate" id="publishDate"
+                                       class="form-control"
+                                       uib-datepicker-popup is-open="isDatePickerOpen"
+                                       ng-model="$ctrl.decision.proposalDate"
+                                       ng-change="$ctrl.updateProposalDate()"
+                                       required>
+
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default" tabindex="-1"
+                                            ng-click="toggleDatePopup($event)">
+                                        <span class="glyphicon glyphicon-calendar"></span>
+                                    </button>
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th translate="decision.summary.applicationSummary.delivery"></th>
+                        <td ng-switch="$ctrl.decision.deliveryByMail">
+                            <span ng-switch-when="true"
+                                  translate="decision.summary.applicationSummary.deliveryPaper"></span>
+                            <span ng-switch-when="false"
+                                  translate="decision.summary.applicationSummary.deliveryEmail"></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-xs-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title" translate="decision.summary.status.title"></h3>
+            </div>
+
+            <div class="panel-body" style="min-height: 185px;">
+                <table class="table">
+                    <tbody>
+                    <tr>
+                        <th class="col-xs-6" translate="decision.summary.status.status"></th>
+                        <td>
+                            <strong translate="jht.nomination.decision.status.{{::$ctrl.decision.status}}"></strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="col-xs-6" translate="jht.nomination.decision.decisionName"></th>
+                        <td translate="jht.nomination.decision.decisionType.{{::$ctrl.decision.decisionType}}"></td>
+                    </tr>
+                    <tr>
+                        <th class="col-xs-6" translate="jht.nomination.decision.occupationType"></th>
+                        <td>
+                            <strong translate="occupation.type.{{::$ctrl.decision.occupationType}}"></strong>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="col-xs-6" translate="decision.summary.status.handler"></th>
+                        <td>
+                            <div ng-show="::$ctrl.decision.handler">
+                                <span ng-bind="::$ctrl.decision.handler.byName"></span>
+                                <span ng-bind="::$ctrl.decision.handler.lastName"></span>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="col-xs-6" translate="decision.summary.status.appealStatus"></th>
+                        <td>
+                            <span ng-if="::$ctrl.decision.appealStatus"
+                                  translate="decision.appealStatus.{{::$ctrl.decision.appealStatus}}"></span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+
+                <div class="row">
+                    <div class="col-xs-6">
+                        <button type="button" class="btn btn-default pull-left"
+                                ng-click="$ctrl.showActions()">
+                            <span class="fa fa-fw fa-eye"></span>
+                            <span translate="decision.summary.status.showActions"></span>
+                        </button>
+                    </div>
+                    <div class="col-xs-6">
+                        <assign-decision-handler decision="$ctrl.decision"
+                                                 assign="$ctrl.assignDecision()"
+                                                 unassign="$ctrl.unassignDecision()"></assign-decision-handler>
+                    </div>
+                </div>
+                <div class="row" style="padding-top: 5px" ng-if="$ctrl.decision.userIsHandler">
+                    <div class="col-xs-offset-6 col-xs-6">
+                        <button type="button" class="btn btn-primary btn-block"
+                                ng-click="$ctrl.editAppealSettings()">
+                            <span class="fa fa-fw fa-cog"></span>
+                            <span translate="decision.summary.status.appealSettings"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+

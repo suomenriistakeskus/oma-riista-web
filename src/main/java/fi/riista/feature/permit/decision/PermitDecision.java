@@ -1,12 +1,16 @@
 package fi.riista.feature.permit.decision;
 
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.common.decision.AppealStatus;
+import fi.riista.feature.common.decision.DecisionBase;
+import fi.riista.feature.common.decision.DecisionStatus;
+import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.DeliveryAddress;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
@@ -17,8 +21,6 @@ import fi.riista.feature.permit.decision.action.PermitDecisionAction;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachment;
 import fi.riista.feature.permit.decision.authority.PermitDecisionAuthority;
 import fi.riista.feature.permit.decision.delivery.PermitDecisionDelivery;
-import fi.riista.util.DateUtil;
-import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -59,14 +61,7 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(AccessType.FIELD)
-public class PermitDecision extends LifecycleEntity<Long> {
-
-    private static final LocalisedString FILENAME_PREFIX =
-            new LocalisedString("Päätös", "Beslut");
-
-    public static String getFileName(final Locale locale, final String permitNumber) {
-        return String.format("%s-%s.pdf", FILENAME_PREFIX.getAnyTranslation(locale), permitNumber);
-    }
+public class PermitDecision extends LifecycleEntity<Long> implements DecisionBase {
 
     public static int getDecisionYear(final int applicationHuntingYear,
                                       final @Nonnull List<HarvestPermitApplicationSpeciesAmount> speciesAmounts) {
@@ -139,17 +134,6 @@ public class PermitDecision extends LifecycleEntity<Long> {
         decision.setHuntingClub(ref.getHuntingClub());
     }
 
-    public enum Status {
-        // Kesken
-        DRAFT,
-
-        // Lukittu
-        LOCKED,
-
-        // Julkaistu
-        PUBLISHED
-    }
-
     public enum DecisionType {
         // Pyyntilupa
         HARVEST_PERMIT,
@@ -158,36 +142,10 @@ public class PermitDecision extends LifecycleEntity<Long> {
         CANCEL_APPLICATION,
 
         // Hakemuksen tutkimatta jättäminen
-        IGNORE_APPLICATION
-    }
+        IGNORE_APPLICATION,
 
-    public enum GrantStatus {
-        // Myönnetään kuten anottu
-        UNCHANGED,
-        // Myönnetään mutta muutoksin
-        RESTRICTED,
-        // Hylätty
-        REJECTED
-    }
-
-    public enum AppealStatus {
-        // Päätöksestä valitettu
-        INITIATED,
-
-        // Valitus jätetty käsittelemättä
-        IGNORED,
-
-        // Oikeuden ratkaisu, Ei muutosta
-        UNCHANGED,
-
-        // Oikeuden ratkaisu, Päätös kumottu,
-        REPEALED,
-
-        // Oikeuden ratkaisu, Päätös osittain kumottu
-        PARTIALLY_REPEALED,
-
-        // Oikeuden ratkaisu, Palautettu uudelleen käsiteltäväksi
-        RETREATMENT
+        // Ilmoitusmenettelyn peruutus
+        CANCEL_ANNUAL_RENEWAL
     }
 
     public static final String ID_COLUMN_NAME = "permit_decision_id";
@@ -197,7 +155,7 @@ public class PermitDecision extends LifecycleEntity<Long> {
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status = Status.DRAFT;
+    private DecisionStatus status = DecisionStatus.DRAFT;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -372,19 +330,6 @@ public class PermitDecision extends LifecycleEntity<Long> {
     }
 
     @Transient
-    public void assertStatus(final Status allowed) {
-        assertStatus(EnumSet.of(allowed));
-    }
-
-    @Transient
-    public void assertStatus(final EnumSet<Status> allowed) {
-        if (!allowed.contains(this.status)) {
-            throw new IllegalStateException(
-                    String.format("status should be %s was %s", allowed, this.status));
-        }
-    }
-
-    @Transient
     public void assertDecisionType(final DecisionType allowed) {
         assertDecisionType(EnumSet.of(allowed));
     }
@@ -395,35 +340,6 @@ public class PermitDecision extends LifecycleEntity<Long> {
             throw new IllegalStateException(
                     String.format("decisionType should be %s was %s", allowed, this.decisionType));
         }
-    }
-
-    @Transient
-    public void setStatusDraft() {
-        assertStatus(EnumSet.of(Status.LOCKED, Status.PUBLISHED));
-
-        this.status = Status.DRAFT;
-    }
-
-    @Transient
-    public void setStatusPublished() {
-        assertStatus(EnumSet.of(Status.LOCKED));
-
-        this.status = Status.PUBLISHED;
-    }
-
-    @Transient
-    public void setStatusLocked() {
-        assertStatus(EnumSet.of(Status.DRAFT));
-
-        if (grantStatus != GrantStatus.REJECTED && !getCompleteStatus().allComplete()) {
-            throw new IllegalStateException("All decision sections must be complete");
-        }
-        if (grantStatus == GrantStatus.REJECTED && !getCompleteStatus().allCompleteForRejected()) {
-            throw new IllegalStateException("All decision sections must be complete");
-        }
-
-        this.status = Status.LOCKED;
-        this.lockedDate = DateUtil.now();
     }
 
     @Nonnull
@@ -444,23 +360,8 @@ public class PermitDecision extends LifecycleEntity<Long> {
     }
 
     @Transient
-    public void assertHandler(final SystemUser currentUser) {
-        if (handler == null) {
-            throw new IllegalStateException("Handler is null");
-        }
-        if (!isHandler(currentUser)) {
-            throw new IllegalStateException("Handler is not same as current user");
-        }
-    }
-
-    @Transient
-    public boolean isHandler(final @Nonnull SystemUser currentUser) {
-        return Objects.equals(F.getId(handler), F.getId(currentUser));
-    }
-
-    @Transient
     public boolean isDraft() {
-        return this.status == Status.DRAFT;
+        return this.status == DecisionStatus.DRAFT;
     }
 
     @Transient
@@ -476,13 +377,23 @@ public class PermitDecision extends LifecycleEntity<Long> {
     @Nonnull
     @Transient
     public String createPermitNumber() {
-        return PermitNumberUtil.createPermitNumber(decisionYear, validityYears, decisionNumber);
+        return DocumentNumberUtil.createDocumentNumber(decisionYear, validityYears, decisionNumber);
     }
 
     @Nonnull
     @Transient
     public String createPermitNumber(final int year) {
-        return PermitNumberUtil.createPermitNumber(year, validityYears, decisionNumber);
+        return DocumentNumberUtil.createDocumentNumber(year, validityYears, decisionNumber);
+    }
+
+    @Override
+    public void assertAllowedToLock() {
+        if (grantStatus != GrantStatus.REJECTED && !getCompleteStatus().allComplete(permitTypeCode)) {
+            throw new IllegalStateException("All decision sections must be complete");
+        }
+        if (grantStatus == GrantStatus.REJECTED && !getCompleteStatus().allCompleteForRejected(permitTypeCode)) {
+            throw new IllegalStateException("All decision sections must be complete");
+        }
     }
 
     // Accessors -->
@@ -501,11 +412,13 @@ public class PermitDecision extends LifecycleEntity<Long> {
         this.id = id;
     }
 
-    public Status getStatus() {
+    @Override
+    public DecisionStatus getStatus() {
         return status;
     }
 
-    private void setStatus(final Status status) {
+    @Override
+    public void setStatus(final DecisionStatus status) {
         this.status = status;
     }
 
@@ -589,6 +502,7 @@ public class PermitDecision extends LifecycleEntity<Long> {
         this.application = application;
     }
 
+    @Override
     public SystemUser getHandler() {
         return handler;
     }
@@ -637,10 +551,12 @@ public class PermitDecision extends LifecycleEntity<Long> {
         this.huntingClub = huntingClub;
     }
 
+    @Override
     public DateTime getLockedDate() {
         return lockedDate;
     }
 
+    @Override
     public void setLockedDate(final DateTime lockedDate) {
         this.lockedDate = lockedDate;
     }

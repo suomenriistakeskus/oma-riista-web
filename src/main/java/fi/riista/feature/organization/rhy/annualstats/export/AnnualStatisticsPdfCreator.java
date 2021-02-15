@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -206,6 +207,15 @@ public class AnnualStatisticsPdfCreator {
             }
         }
 
+        private static List<String> splitItem(final String item, final int size) {
+            final ArrayList<String> splitItem = new ArrayList<>();
+            for (int i = 0; i < item.length(); i += size) {
+                splitItem.add(item.substring(i, Math.min(item.length(), i + size)));
+            }
+
+            return splitItem;
+        }
+
         private void writeStatisticItem(final AnnualStatisticsExportDTO dto,
                                         final AnnualStatisticItem item) throws IOException {
 
@@ -217,7 +227,15 @@ public class AnnualStatisticsPdfCreator {
                     .extractValue(dto)
                     .getOrElseGet(number -> number == null ? null : NUMBER_FORMATTER.format(number));
 
-            writeText(title, (MARGIN_TEXT_LEFT + indentMultiplier * INDENT_UNIT) * DOTS_PER_MM);
+            final List<String> splitTitle = splitItem(title, MAX_TEXT_LENGTH);
+            final int numTitleRows = splitTitle.size();
+            for (int i = 0; i < numTitleRows; i++) {
+                writeText(splitTitle.get(i), (MARGIN_TEXT_LEFT + indentMultiplier * INDENT_UNIT) * DOTS_PER_MM);
+                if (i < numTitleRows - 1) {
+                    writeEmptyLine();
+                }
+            }
+
             writeTextOnRight(value);
             writeEmptyLine();
         }

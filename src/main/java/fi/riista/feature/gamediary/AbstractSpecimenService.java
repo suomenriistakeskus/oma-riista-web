@@ -22,6 +22,7 @@ import java.util.function.BiConsumer;
 import static fi.riista.util.Filters.hasAnyIdOf;
 import static fi.riista.util.Filters.idNotAnyOf;
 import static fi.riista.util.jpa.JpaSpecs.equal;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, ENTITY extends BaseEntity<Long>, DTO extends BaseEntityDTO<Long>, VERSION extends GameDiaryEntitySpecVersion> {
@@ -32,7 +33,7 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
     private final String parentClassName;
 
     protected AbstractSpecimenService(@Nonnull final SingularAttribute<? super ENTITY, PARENT> parentAttribute) {
-        this.parentAttribute = Objects.requireNonNull(parentAttribute);
+        this.parentAttribute = requireNonNull(parentAttribute);
         this.parentClassName = parentAttribute.getJavaType().getSimpleName();
     }
 
@@ -44,18 +45,56 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
 
     protected abstract BiConsumer<DTO, ENTITY> getSpecimenFieldCopier(@Nonnull PARENT parent, @Nonnull VERSION version);
 
+    /**
+     * Adds specimens to parent object.
+     *
+     * @param parent      - Parent object which the specimens will be associated with
+     * @param totalAmount - Total amount of specimens defined for parent
+     * @param dtos        - DTO objects containing data for specimens to be persisted/merged
+     * @param version     - HarvestSpecVersion which the client who provides DTO objects does implement
+     * @return pair consisting of (1) specimens existing after method call and (2) boolean value
+     * indicating whether any changes were persisted into database.
+     */
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public List<ENTITY> addSpecimens(
-            @Nonnull final PARENT parent,
-            final int totalAmount,
-            @Nonnull final List<DTO> dtos,
-            @Nonnull final VERSION version) {
+    public List<ENTITY> addSpecimens(@Nonnull final PARENT parent,
+                                     final int totalAmount,
+                                     @Nonnull final List<DTO> dtos,
+                                     @Nonnull final VERSION version) {
+
+        return addSpecimens(parent, totalAmount, dtos, version, false);
+    }
+
+    /**
+     * Adds specimens to parent object.
+     *
+     * @param parent                 - Parent object which the specimens will be associated with
+     * @param totalAmount            - Total amount of specimens defined for parent
+     * @param dtos                   - DTO objects containing data for specimens to be persisted/merged
+     * @param version                - HarvestSpecVersion which the client who provides DTO objects does implement
+     * @param disableInputValidation - An emergency switch that can be toggled on if it turns out that client is
+     *                               behaving incorrectly and there is no easy and quick fix around. In that case,
+     *                               it is trusted that specimen copier copies fields properly from DTOs to entities.
+     *                               However, disabling input validation should not be turned on by default because
+     *                               it hides bugs at client-side.
+     * @return pair consisting of (1) specimens existing after method call and (2) boolean value
+     * indicating whether any changes were persisted into database.
+     */
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public List<ENTITY> addSpecimens(@Nonnull final PARENT parent,
+                                     final int totalAmount,
+                                     @Nonnull final List<DTO> dtos,
+                                     @Nonnull final VERSION version,
+                                     final boolean disableInputValidation) {
 
         checkParameters(parent, totalAmount, dtos, version);
 
+        if (!disableInputValidation) {
+            validateInputSpecimens(parent, dtos, version);
+        }
+
         final List<ENTITY> ret = createNewSpecimens(parent, filterSpecimensWithContent(dtos), version);
 
-        validateSpecimen(parent, ret);
+        validateResultSpecimens(parent, ret);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("{}(id={}): Added {} new specimen(s), set total amount to {}",
@@ -66,21 +105,51 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
     }
 
     /**
-     * @param parent      - Parent object with which the specimens are associated
+     * Updates specimens to parent object.
+     *
+     * @param parent      - Parent object which the specimens will be associated with
      * @param totalAmount - Total amount of specimens defined for parent
-     * @param dtos        - DTO containing data for specimens to be persisted/merged
-     * @param version
+     * @param dtos        - DTO objects containing data for specimens to be persisted/merged
+     * @param version     - HarvestSpecVersion which the client who provides DTO objects does implement
      * @return pair consisting of (1) specimens existing after method call and (2) boolean value
      * indicating whether any changes were persisted into database.
      */
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Tuple2<List<ENTITY>, Boolean> setSpecimens(
-            @Nonnull final PARENT parent,
-            final int totalAmount,
-            @Nonnull final List<DTO> dtos,
-            @Nonnull final VERSION version) {
+    public Tuple2<List<ENTITY>, Boolean> setSpecimens(@Nonnull final PARENT parent,
+                                                      final int totalAmount,
+                                                      @Nonnull final List<DTO> dtos,
+                                                      @Nonnull final VERSION version) {
+
+        return setSpecimens(parent, totalAmount, dtos, version, false);
+    }
+
+    /**
+     * Updates specimens to parent object.
+     *
+     * @param parent                 - Parent object which the specimens will be associated with
+     * @param totalAmount            - Total amount of specimens defined for parent
+     * @param dtos                   - DTO objects containing data for specimens to be persisted/merged
+     * @param version                - HarvestSpecVersion which the client who provides DTO objects does implement
+     * @param disableInputValidation - An emergency switch that can be toggled on if it turns out that client is
+     *                               behaving incorrectly and there is no easy and quick fix around. In that case,
+     *                               it is trusted that specimen copier copies fields properly from DTOs to entities.
+     *                               However, disabling input validation should not be turned on by default because
+     *                               it hides bugs at client-side.
+     * @return pair consisting of (1) specimens existing after method call and (2) boolean value
+     * indicating whether any changes were persisted into database.
+     */
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Tuple2<List<ENTITY>, Boolean> setSpecimens(@Nonnull final PARENT parent,
+                                                      final int totalAmount,
+                                                      @Nonnull final List<DTO> dtos,
+                                                      @Nonnull final VERSION version,
+                                                      final boolean disableInputValidation) {
 
         checkParameters(parent, totalAmount, dtos, version);
+
+        if (!disableInputValidation) {
+            validateInputSpecimens(parent, dtos, version);
+        }
 
         final List<ENTITY> existingSpecimens = findExistingSpecimensInInsertionOrder(parent);
 
@@ -116,7 +185,7 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
         });
         resultSpecimens.addAll(0, entitiesToBeUpdated);
 
-        validateSpecimen(parent, resultSpecimens);
+        validateResultSpecimens(parent, resultSpecimens);
 
         // To have specimen revisions updated for DTO transformation.
         if (!entitiesToBeUpdated.isEmpty()) {
@@ -137,14 +206,21 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
         // (1) new entities to be saved,
         // (2) entities to be removed, or
         // (3) entities whose fields were updated.
-        final boolean changesDetected = numNewSpecimens > 0 ||
-                !entitiesToBeRemoved.isEmpty() ||
-                !DtoUtil.equalIdsAndVersions(entitiesToBeUpdated, updateDtos);
+        final boolean changesDetected = numNewSpecimens > 0
+                || !entitiesToBeRemoved.isEmpty()
+                || !DtoUtil.equalIdsAndVersions(entitiesToBeUpdated, updateDtos);
 
         return Tuple.of(resultSpecimens, changesDetected);
     }
 
-    protected void validateSpecimen(@Nonnull final PARENT parent, @Nonnull final List<ENTITY> specimenList) {
+    protected void validateInputSpecimens(@Nonnull final PARENT parent,
+                                          @Nonnull final List<DTO> inputSpecimen,
+                                          @Nonnull final VERSION version) {
+
+    }
+
+    protected void validateResultSpecimens(@Nonnull final PARENT parent,
+                                           @Nonnull final List<ENTITY> outputSpecimens) {
 
     }
 
@@ -159,8 +235,7 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("{}(id={}): Removed all ({}) specimen(s)",
-                    parentClassName, parent.getId(), allSpecimens.size());
+            LOG.debug("{}(id={}): Removed all ({}) specimen(s)", parentClassName, parent.getId(), allSpecimens.size());
         }
     }
 
@@ -172,21 +247,20 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
         return F.sortedById(findExistingSpecimens(parent));
     }
 
-    protected void checkParameters(
-            @Nonnull final PARENT parent,
-            final int totalAmount,
-            @Nonnull final List<DTO> dtos,
-            @Nonnull final VERSION version) {
+    protected void checkParameters(@Nonnull final PARENT parent,
+                                   final int totalAmount,
+                                   @Nonnull final List<DTO> dtos,
+                                   @Nonnull final VERSION version) {
 
         requirePersistedEntity(parent);
-        Objects.requireNonNull(dtos, "dtos is null");
-        Objects.requireNonNull(version, "version is null");
+        requireNonNull(dtos, "dtos is null");
+        requireNonNull(version, "version is null");
 
         OutOfBoundsSpecimenAmountException.assertDtoCount(dtos, totalAmount);
     }
 
     private void requirePersistedEntity(final PARENT parent) {
-        if (Objects.requireNonNull(parent).isNew()) {
+        if (requireNonNull(parent).isNew()) {
             throw new IllegalArgumentException(
                     String.format("%s object must be persisted prior to being added specimens", parentClassName));
         }
@@ -209,5 +283,4 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
                 })
                 .collect(toList());
     }
-
 }

@@ -14,6 +14,7 @@ import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmoun
 import fi.riista.feature.permit.application.bird.BirdPermitApplication;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCause;
 import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.decision.PermitDecisionRepository;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
@@ -39,6 +40,9 @@ public class AmendApplicationFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
     private HarvestPermitApplicationSpeciesAmountRepository harvestPermitApplicationSpeciesAmountRepository;
+
+    @Resource
+    private PermitDecisionRepository permitDecisionRepository;
 
     @Before
     public void setup() {
@@ -93,7 +97,10 @@ public class AmendApplicationFeatureTest extends EmbeddedDatabaseTest {
             amendApplicationFeature.stopAmendApplication(dto);
         });
 
-        assertEquals(2019, decision.getDecisionYear());
+        runInTransaction(() -> {
+            final PermitDecision updatedDecision = permitDecisionRepository.getOne(decision.getId());
+            assertEquals(2019, updatedDecision.getDecisionYear());
+        });
     }
 
     private void setSpeciesPeriod(final LocalDate begin, final LocalDate end) {

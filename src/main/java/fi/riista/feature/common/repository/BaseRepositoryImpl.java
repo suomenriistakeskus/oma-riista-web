@@ -11,23 +11,25 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
-import org.springframework.data.jpa.repository.support.QueryDslJpaRepository;
 import org.springframework.data.jpa.repository.support.Querydsl;
+import org.springframework.data.jpa.repository.support.QuerydslJpaRepository;
 import org.springframework.data.querydsl.SimpleEntityPathResolver;
+import org.springframework.data.repository.NoRepositoryBean;
 
 import javax.persistence.EntityManager;
 import java.io.Serializable;
 import java.util.List;
 import java.util.stream.Stream;
 
+@NoRepositoryBean
 public class BaseRepositoryImpl<T, ID extends Serializable>
-        extends QueryDslJpaRepository<T, ID>
+        extends QuerydslJpaRepository<T, ID>
         implements BaseRepository<T, ID> {
 
     private final EntityPath<T> path;
     private final Querydsl querydsl;
 
-    public BaseRepositoryImpl(final JpaEntityInformation<T, ID> entityInformation, final EntityManager entityManager) {
+    public BaseRepositoryImpl(JpaEntityInformation<T, ID> entityInformation, EntityManager entityManager) {
         super(entityInformation, entityManager);
         path = SimpleEntityPathResolver.INSTANCE.createPath(entityInformation.getJavaType());
         final PathBuilder<T> builder = new PathBuilder<>(path.getType(), path.getMetadata());

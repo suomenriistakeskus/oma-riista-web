@@ -7,6 +7,7 @@ import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ public class PostalQueueNotificationFeature {
     @Resource
     private RuntimeEnvironmentUtil runtimeEnvironmentUtil;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional
     public void sendPostalQueueNotification() {
         if (!runtimeEnvironmentUtil.isProductionEnvironment()) {

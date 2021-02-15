@@ -1,13 +1,13 @@
 package fi.riista.cli;
 
 import com.google.common.base.Stopwatch;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBHexFileReader;
-import com.vividsolutions.jts.io.WKBReader;
-import com.vividsolutions.jts.io.WKTWriter;
 import fi.riista.util.GISUtils;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBHexFileReader;
+import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKTWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -11,6 +11,7 @@ import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.util.DateUtil;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -29,13 +29,27 @@ public class HarvestReportAutomaticApprovalFeature {
 
     private static final LocalDate HUNTING_YEAR_2017 = new LocalDate(2017, 8, 1);
     private static final LocalDate HUNTING_YEAR_2018 = new LocalDate(2018, 8, 1);
+    private static final LocalDate HUNTING_YEAR_2020 = new LocalDate(2020, 8, 1);
 
-    private static final Map<Integer, LocalDate> AUTO_APPROVE_ENABLED = ImmutableMap.of(
-            GameSpecies.OFFICIAL_CODE_WILD_BOAR, HUNTING_YEAR_2017,
-            GameSpecies.OFFICIAL_CODE_ROE_DEER, HUNTING_YEAR_2017,
-            GameSpecies.OFFICIAL_CODE_GREY_SEAL, HUNTING_YEAR_2018,
-            GameSpecies.OFFICIAL_CODE_BEAN_GOOSE, HUNTING_YEAR_2018,
-            GameSpecies.OFFICIAL_CODE_EUROPEAN_POLECAT, HUNTING_YEAR_2018);
+    private static final Map<Integer, LocalDate> AUTO_APPROVE_ENABLED =
+            ImmutableMap.<Integer, LocalDate>builder()
+                    .put(GameSpecies.OFFICIAL_CODE_WILD_BOAR, HUNTING_YEAR_2017)
+                    .put(GameSpecies.OFFICIAL_CODE_ROE_DEER, HUNTING_YEAR_2017)
+                    .put(GameSpecies.OFFICIAL_CODE_GREY_SEAL, HUNTING_YEAR_2018)
+                    .put(GameSpecies.OFFICIAL_CODE_BEAN_GOOSE, HUNTING_YEAR_2018)
+                    .put(GameSpecies.OFFICIAL_CODE_EUROPEAN_POLECAT, HUNTING_YEAR_2018)
+                    .put(GameSpecies.OFFICIAL_CODE_WIGEON, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_PINTAIL, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_GARGANEY, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_SHOVELER, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_POCHARD, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_TUFTED_DUCK, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_COMMON_EIDER, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_LONG_TAILED_DUCK, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_RED_BREASTED_MERGANSER, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_GOOSANDER, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_COOT, HUNTING_YEAR_2020)
+                    .build();
 
     public static final String AUTO_ACCEPT_REASON = "Automaattihyväksytty";
 
@@ -48,21 +62,21 @@ public class HarvestReportAutomaticApprovalFeature {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional
     public void runAutoApprove() {
-        final Date harvestReportModifiedEarlierThan = DateUtil.now().minusDays(1).toDate();
+        final DateTime harvestReportModifiedEarlierThan = DateUtil.now().minusDays(1).toDateTime();
         AUTO_APPROVE_ENABLED.forEach((speciesCode, enabledFrom) ->
-                findAndChangeState(harvestReportModifiedEarlierThan, speciesCode, DateUtil.toDateNullSafe(enabledFrom)));
+                findAndChangeState(harvestReportModifiedEarlierThan, speciesCode, enabledFrom));
     }
 
-    private void findAndChangeState(final Date harvestReportModifiedEarlierThan,
+    private void findAndChangeState(final DateTime harvestReportModifiedEarlierThan,
                                     final int speciesCode,
-                                    final Date enabledFrom) {
+                                    final LocalDate enabledFrom) {
 
         final QHarvest HARVEST = QHarvest.harvest;
         final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
 
         final List<Harvest> reports = queryFactory.selectFrom(HARVEST)
                 .join(HARVEST.species, SPECIES)
-                .where(HARVEST.pointOfTime.goe(enabledFrom),
+                .where(HARVEST.pointOfTime.goe(DateUtil.toDateTimeNullSafe(enabledFrom)),
                         HARVEST.lifecycleFields.modificationTime.lt(harvestReportModifiedEarlierThan),
                         HARVEST.harvestReportState.eq(HarvestReportState.SENT_FOR_APPROVAL),
                         SPECIES.officialCode.eq(speciesCode))

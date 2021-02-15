@@ -62,8 +62,7 @@ public class RhyAnnualStatisticsNotificationFeature {
     }
 
     private Integration getIntegrationForModeratorUpdateNotification() {
-        return Optional
-                .ofNullable(integrationRepository.findOne(RHY_ANNUAL_STATISTICS_MODERATOR_UPDATE_NOTIFICATION_ID))
+        return integrationRepository.findById(RHY_ANNUAL_STATISTICS_MODERATOR_UPDATE_NOTIFICATION_ID)
                 .orElseGet(() -> {
                     final Integration newIntegration = new Integration();
                     newIntegration.setId(RHY_ANNUAL_STATISTICS_MODERATOR_UPDATE_NOTIFICATION_ID);

@@ -1,10 +1,10 @@
 package fi.riista.feature.harvest;
 
+import fi.riista.config.Constants;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameCategory;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.fixture.HarvestSpecimenType;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.organization.person.Person;
@@ -113,9 +113,9 @@ public class LegalHarvestCertificatePdfFeatureTest extends EmbeddedDatabaseTest 
     private Harvest createAcceptedHarvest(final GameSpecies species) {
         final Harvest harvest = model().newHarvest(harvestPerson);
         harvest.setRhy(rhy);
-        model().newHarvestSpecimen(harvest, GameAge.ADULT, GameGender.MALE);
+        model().newHarvestSpecimen(harvest, HarvestSpecimenType.ADULT_MALE);
         harvest.setSpecies(species);
-        harvest.setPointOfTime(today().toDate());
+        harvest.setPointOfTime(today().toDateTimeAtStartOfDay(Constants.DEFAULT_TIMEZONE));
         harvest.setHarvestReportState(HarvestReportState.APPROVED);
         harvest.setHarvestReportDate(now());
         harvest.setHarvestReportAuthor(harvestPerson);

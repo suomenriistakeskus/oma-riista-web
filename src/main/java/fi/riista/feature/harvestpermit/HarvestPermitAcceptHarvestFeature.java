@@ -1,5 +1,6 @@
 package fi.riista.feature.harvestpermit;
 
+import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.CommitHookService;
@@ -7,6 +8,7 @@ import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestFieldValidator;
 import fi.riista.feature.gamediary.harvest.HarvestReportingType;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenValidator;
@@ -15,15 +17,17 @@ import fi.riista.feature.harvestpermit.report.HarvestReportExistsException;
 import fi.riista.feature.harvestpermit.report.HarvestReportNotSupportedException;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.report.email.HarvestReportNotificationService;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
-import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Objects;
+
+import static java.util.Optional.ofNullable;
 
 @Component
 public class HarvestPermitAcceptHarvestFeature {
@@ -39,6 +43,9 @@ public class HarvestPermitAcceptHarvestFeature {
 
     @Resource
     private CommitHookService commitHookService;
+
+    @Resource
+    private DeerPilotService deerPilotService;
 
     @Transactional
     public void changeAcceptedToPermit(@Nonnull HarvestPermitAcceptHarvestDTO dto) {
@@ -82,7 +89,7 @@ public class HarvestPermitAcceptHarvestFeature {
                 throw new HarvestReportExistsException(harvest);
             }
 
-            validateHarvestFieldsForReporting(harvest);
+            validateHarvestFieldsForReporting(harvest, deerPilotService.isPilotUser(harvest.getAuthor()));
 
             final SystemUser activeUser = activeUserService.requireActiveUser();
             harvest.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
@@ -105,23 +112,35 @@ public class HarvestPermitAcceptHarvestFeature {
     }
 
     // Fields must be validated again because editing from mobile might cause inconsistencies
-    private static void validateHarvestFieldsForReporting(final Harvest harvest) {
-        final LocalDate harvestDate = DateUtil.toLocalDateNullSafe(harvest.getPointOfTime());
-        final int huntingYear = DateUtil.huntingYearContaining(harvestDate);
+    private static void validateHarvestFieldsForReporting(final Harvest harvest, final boolean deerPilotUser) {
+        final int huntingYear = DateUtil.huntingYearContaining(harvest.getPointOfTimeAsLocalDate());
         final int gameSpeciesCode = harvest.getSpecies().getOfficialCode();
-        final boolean associatedWithHuntingDay = harvest.getHuntingDayOfGroup() != null;
-
         final HarvestReportingType reportingType = HarvestReportingType.PERMIT;
-        final RequiredHarvestFields.Report reportFieldRequirements = RequiredHarvestFields.getFormFields(
-                huntingYear, gameSpeciesCode, reportingType);
+
+        final GroupHuntingDay huntingDayOfGroup = harvest.getHuntingDayOfGroup();
+        final boolean associatedWithHuntingDay = huntingDayOfGroup != null;
+        final boolean legallyMandatoryFieldsOnly = ofNullable(huntingDayOfGroup)
+                .map(GroupHuntingDay::isCreatedBySystem)
+                .orElse(false);
+
+        final RequiredHarvestFields.Report reportFieldRequirements = RequiredHarvestFields
+                .getFormFields(huntingYear, gameSpeciesCode, reportingType, legallyMandatoryFieldsOnly, deerPilotUser);
+
+        // TODO `overrideSpecVersion` will be removed when deer pilot 2020 is over.
+        final HarvestSpecVersion overrideSpecVersion =
+                HarvestSpecVersion.CURRENTLY_SUPPORTED.revertIfNotOnDeerPilot(deerPilotUser);
+
         final RequiredHarvestFields.Specimen specimenFieldRequirements = RequiredHarvestFields.getSpecimenFields(
-                huntingYear, gameSpeciesCode, harvest.getHuntingMethod(), reportingType);
+                huntingYear, gameSpeciesCode, harvest.getHuntingMethod(), reportingType, legallyMandatoryFieldsOnly,
+                overrideSpecVersion);
 
         new HarvestFieldValidator(reportFieldRequirements, harvest).validateAll().throwOnErrors();
 
         for (HarvestSpecimen harvestSpecimen : harvest.getSortedSpecimens()) {
-            new HarvestSpecimenValidator(specimenFieldRequirements, harvestSpecimen,
-                    gameSpeciesCode, associatedWithHuntingDay).validateAll().throwOnErrors();
+            new HarvestSpecimenValidator(specimenFieldRequirements, harvestSpecimen, gameSpeciesCode,
+                    associatedWithHuntingDay, legallyMandatoryFieldsOnly)
+                    .validateAll()
+                    .throwOnErrors();
         }
     }
 }

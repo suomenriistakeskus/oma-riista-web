@@ -24,6 +24,7 @@ angular.module('app.harvestpermit.application', [])
             assignedApplications: postMethod('/assigned/applications'),
             assignedDecisions: postMethod('/assigned/decisions'),
             postalQueue: postMethod('/search/postalqueue', true),
+            annualRenewals: postMethod('/search/annualrenewals', true),
             listYears: getMethod('/years', true),
             listHandlers: getMethod('/handlers', true),
 
@@ -40,4 +41,9 @@ angular.module('app.harvestpermit.application', [])
             startAmending: postMethod('/amend/start'),
             stopAmending: postMethod('/amend/stop')
         });
-    });
+    })
+    .factory('ModeratorTodos', function ($resource) {
+        var apiPrefix = 'api/v1/moderator/todo';
+        return $resource(apiPrefix, {}, {});
+    })
+    .constant('ApplicationVehicleTypes', ['AUTO', 'MOOTTORIKELKKA', 'MONKIJA', 'MUU']);

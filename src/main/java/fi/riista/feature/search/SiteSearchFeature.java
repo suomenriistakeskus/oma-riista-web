@@ -82,7 +82,7 @@ public class SiteSearchFeature {
                 of(OrganisationType.RHY)));
 
         builder.setPersons(personRepository.findAllPersonsByFuzzyFullNameMatch(
-                searchTerm, new PageRequest(0, MAX_RESULT_PERSON)));
+                searchTerm, PageRequest.of(0, MAX_RESULT_PERSON)));
 
         builder.setOtherOrganisations(searchOrganisations(searchTerm, builder.getLocale(), MAX_RESULT_ORGANISATION_OTHER,
                 of(OrganisationType.RK, OrganisationType.RKA, OrganisationType.ARN, OrganisationType.VRN)));
@@ -101,7 +101,7 @@ public class SiteSearchFeature {
         }
 
         // Increase fuzziness result count for post-processing
-        final PageRequest pageRequest = new PageRequest(0, 100);
+        final PageRequest pageRequest = PageRequest.of(0, 100);
 
         final String city = municipalityAndSearchTerm._1;
         final String searchTerm = municipalityAndSearchTerm._2;
@@ -143,7 +143,7 @@ public class SiteSearchFeature {
 
     private List<Organisation> searchOrganisations(final String searchTerm, final Locale locale, final int maxResults,
                                                    final EnumSet<OrganisationType> organisationTypes) {
-        final PageRequest pageRequest = new PageRequest(0, maxResults);
+        final PageRequest pageRequest = PageRequest.of(0, maxResults);
 
         if (Locales.isSwedish(locale)) {
             return organisationRepository.findBySwedishFuzzyNameMatch(

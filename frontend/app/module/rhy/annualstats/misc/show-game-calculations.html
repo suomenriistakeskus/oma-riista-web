@@ -36,8 +36,20 @@
                         <td num-pieces="::$ctrl.luke.waterBirdCouples"></td>
                     </tr>
                     <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.luke.northernLaplandWillowGrouseLines"></td>
+                        <td num-pieces="::$ctrl.luke.northernLaplandWillowGrouseLines"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.misc.luke.totalCarnivorePersons"></td>
+                        <td num-persons="::([$ctrl.luke.carnivoreContactPersons, $ctrl.luke.carnivoreDnaCollectors] | sumFinite)"></td>
+                    </tr>
+                    <tr>
                         <td class="col-xs-9" translate="rhy.annualStats.misc.luke.carnivoreContactPersons"></td>
                         <td num-persons="::$ctrl.luke.carnivoreContactPersons"></td>
+                    </tr>
+                    <tr>
+                        <td class="col-xs-9" translate="rhy.annualStats.misc.luke.carnivoreDnaCollectors"></td>
+                        <td num-persons="::$ctrl.luke.carnivoreDnaCollectors"></td>
                     </tr>
                 </tbody>
             </table>

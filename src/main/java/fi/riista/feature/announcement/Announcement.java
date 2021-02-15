@@ -3,7 +3,7 @@ package fi.riista.feature.announcement;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.Organisation;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.persistence.Access;

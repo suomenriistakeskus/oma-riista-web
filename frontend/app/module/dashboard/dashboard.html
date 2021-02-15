@@ -1,92 +1,104 @@
 <uib-tabset active="active">
 
-    <uib-tab index="0" select="$ctrl.select(0)" heading="Käyttäjät">
+    <uib-tab index="0" select="$ctrl.select(0)" heading="{{'reporting.dashboard.usersTab.title' | translate}}">
         <div class="fa fa-refresh fa-lg" ng-if="!$ctrl.shouldLoadFirstTab" ng-click="$ctrl.loadFirstTab()"></div>
 
         <div ng-if="$ctrl.shouldLoadFirstTab && $ctrl.selectedTab === 0">
             <div class="row">
                 <div class="col-md-5">
-                    <h2>Käyttäjät</h2>
+                    <h2 translate="reporting.dashboard.usersTab.users.heading"></h2>
                     <dashboard-users></dashboard-users>
                 </div>
                 <div class="col-md-6 col-md-offset-1">
-                    <h2>PDF lataukset</h2>
+                    <h2 translate="reporting.dashboard.usersTab.pdf.heading"></h2>
                     <dashboard-pdf></dashboard-pdf>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-5">
-                    <h2>Seurat</h2>
+                    <h2 translate="reporting.dashboard.usersTab.clubs.heading"></h2>
                     <dashboard-clubs></dashboard-clubs>
                 </div>
             </div>
         </div>
     </uib-tab>
 
-    <uib-tab index="1" select="$ctrl.select(1)" heading="Hirvi">
+    <uib-tab index="1" select="$ctrl.select(1)" heading="{{'reporting.dashboard.mooselikeTab.title' | translate}}">
         <div class="row">
             <div class="col-md-5">
-                <h2>Hirvieläinten metsästys kuluvana metsästysvuonna</h2>
+                <h2 translate="reporting.dashboard.mooselikeTab.mooselikeHunting.heading"></h2>
                 <dashboard-mooselike-hunting ng-if="$ctrl.selectedTab === 1"></dashboard-mooselike-hunting>
             </div>
         </div>
+        <hr/>
+        <dashboard-deer-pilot-statistics></dashboard-deer-pilot-statistics>
     </uib-tab>
 
-    <uib-tab index="2" select="$ctrl.select(2)" heading="Saalis">
+    <uib-tab index="2" select="$ctrl.select(2)" heading="{{'reporting.dashboard.harvestTab.title' | translate}}">
         <div class="row">
             <div class="col-md-5">
-                <h2>Saaliskirjaukset ja -ilmoitukset</h2>
+                <h2 translate="reporting.dashboard.harvestTab.reports.heading"></h2>
                 <dashboard-harvest-observations ng-if="$ctrl.selectedTab === 2"></dashboard-harvest-observations>
             </div>
 
         </div>
 
         <hr/>
-        <h2>Poimintatyökalu</h2>
+        <h2 translate="reporting.dashboard.harvestTab.collector.heading"></h2>
         <dashboard-harvest-summary></dashboard-harvest-summary>
+        <dashboard-end-of-hunting-reports></dashboard-end-of-hunting-reports>
     </uib-tab>
 
-    <uib-tab index="3" select="$ctrl.select(3)" heading="Srva">
+    <uib-tab index="3" select="$ctrl.select(3)" heading="{{'reporting.dashboard.srvaTab.title' | translate}}">
         <div class="row">
             <div class="col-md-5">
-                <h2>SRVA-tapahtumat</h2>
+                <h2 translate="reporting.dashboard.srvaTab.heading"></h2>
                 <dashboard-srva ng-if="$ctrl.selectedTab === 3"></dashboard-srva>
             </div>
         </div>
     </uib-tab>
 
-    <uib-tab index="4" select="$ctrl.select(4)" heading="Ampumakoe">
-        <h2>Ampumakokeen sähköiset kirjaukset 1.1.2019 alkaen</h2>
+    <uib-tab index="4" select="$ctrl.select(4)" heading="{{'reporting.dashboard.shootingTestTab.title' | translate}}">
+        <h2 translate="reporting.dashboard.shootingTestTab.heading"></h2>
         <dashboard-shooting-test ng-if="$ctrl.selectedTab === 4"></dashboard-shooting-test>
     </uib-tab>
 
-    <uib-tab index="5" select="$ctrl.select(5)" heading="MH-luvat">
-        <h2>Metsähallituksen lupamäärät</h2>
+    <uib-tab index="5" select="$ctrl.select(5)" heading="{{'reporting.dashboard.mhPermitsTab.title' | translate}}">
+        <h2 translate="reporting.dashboard.mhPermitsTab.heading"></h2>
         <dashboard-mh-permits ng-if="$ctrl.selectedTab === 5"></dashboard-mh-permits>
     </uib-tab>
 
-    <uib-tab index="6" select="$ctrl.select(6)" heading="Viestit">
+    <uib-tab index="6" select="$ctrl.select(6)" heading="{{'reporting.dashboard.announcementTab.title' | translate}}">
         <div class="row">
             <div class="col-md-5">
-                <h2>Viestit</h2>
+                <h2 translate="reporting.dashboard.announcementTab.heading"></h2>
                 <dashboard-announcement ng-if="$ctrl.selectedTab === 6"></dashboard-announcement>
             </div>
         </div>
     </uib-tab>
 
-    <uib-tab index="7" select="$ctrl.select(7)" heading="Mobiili">
-        <h2>Mobiili kirjautumiset</h2>
+    <uib-tab index="7" select="$ctrl.select(7)" heading="{{'reporting.dashboard.mobileTab.title' | translate}}">
+        <h2 translate="reporting.dashboard.mobileTab.heading"></h2>
         <dashboard-mobile-login ng-if="$ctrl.selectedTab === 7"></dashboard-mobile-login>
     </uib-tab>
 
-    <uib-tab index="8" select="$ctrl.select(8)" heading="Muut" ng-if="$ctrl.isAdmin">
-        <h2>Muita toimintoja</h2>
+    <uib-tab index="8" select="$ctrl.select(8)" heading="{{'reporting.dashboard.eventsTab.title' | translate}}">
+        <h2 translate="reporting.dashboard.eventsTab.heading"></h2>
+        <dashboard-events ng-if="$ctrl.selectedTab === 8"></dashboard-events>
+    </uib-tab>
 
-        <h2>Hyväksytyt saalisilmoitukset</h2>
+    <uib-tab index="9" select="$ctrl.select(9)" heading="{{'reporting.dashboard.carnivoreTab.heading' | translate}}">
+        <dashboard-carnivore-public-pdf-downloads ng-if="$ctrl.selectedTab === 9"></dashboard-carnivore-public-pdf-downloads>
+    </uib-tab>
+
+    <uib-tab index="10" select="$ctrl.select(10)" heading="{{'reporting.dashboard.otherItemsTab.title' | translate}}" ng-if="$ctrl.isAdmin">
+        <h2 translate="reporting.dashboard.otherItemsTab.heading"></h2>
+
+        <h2 translate="reporting.dashboard.otherItemsTab.harvestReports.heading"></h2>
         <dashboard-harvest-reports></dashboard-harvest-reports>
         <hr>
 
-        <h2>RHY tietojen muokkaukset</h2>
+        <h2 translate="reporting.dashboard.otherItemsTab.rhyEdits.heading"></h2>
         <dashboard-rhy></dashboard-rhy>
     </uib-tab>
 

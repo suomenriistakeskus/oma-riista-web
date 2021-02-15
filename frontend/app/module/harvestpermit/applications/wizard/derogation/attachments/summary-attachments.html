@@ -1,0 +1,22 @@
+<p ng-show="::($ctrl.attachments.length === 0)">
+    <span class="text-muted" translate="harvestpermit.wizard.attachments.none"></span>
+</p>
+
+<table class="table" ng-if="::($ctrl.attachments.length > 0)">
+    <thead>
+    <tr>
+        <th translate="harvestpermit.wizard.attachments.filename"></th>
+        <th translate="">harvestpermit.wizard.attachments.attachmentDescription</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="a in ::$ctrl.attachments">
+        <td>
+            <a ng-click="$ctrl.downloadAttachment(a.id)" ng-bind="::a.name"></a>
+        </td>
+        <td>
+            <span ng-bind="::a.additionalInfo"></span>
+        </td>
+    </tr>
+    </tbody>
+</table>

@@ -26,7 +26,7 @@ public class UncaughtExceptionFilter extends OncePerRequestFilter {
             return;
 
         } catch (MultipartException me) {
-            LOG.error("Multipart upload failed", me.getMessage());
+            LOG.error("{}: Multipart upload failed: {}", me.getClass().getSimpleName(), me.getMessage());
 
         } catch (NestedServletException nse) {
             // Should be handled automatically by HandlerExceptionResolver
@@ -45,7 +45,7 @@ public class UncaughtExceptionFilter extends OncePerRequestFilter {
 
         try (final PrintWriter writer = response.getWriter()) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             writer.print("{\"status\": \"ERROR\", \"message\": \"uncaught exception\"}");
             writer.flush();
 

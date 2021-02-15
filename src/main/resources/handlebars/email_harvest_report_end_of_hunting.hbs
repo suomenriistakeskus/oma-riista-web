@@ -57,7 +57,7 @@
 {{#each harvests}}
 <div style="margin-top: 10px;margin-bottom: 10px;padding-top: 10px;">
     <div>
-        <strong> {{timestamp pointOfTime "dd.MM.yyyy HH:mm"}} </strong>
+        <strong> {{dateTime pointOfTime "dd.MM.yyyy HH:mm"}} </strong>
         <strong>
             {{species.nameFinnish}}
             {{amount}} kpl
@@ -114,5 +114,5 @@
 
 {{/if}}
 <p>
-    (Viestin tunnistetiedot: {{timestamp timestamp "dd.MM.yyyy HH:mm:ss"}}, state={{state}}, author={{author.id}})
+    (Viestin tunnistetiedot: {{dateTime timestamp "dd.MM.yyyy HH:mm:ss"}}, state={{state}}, author={{author.id}})
 </p>

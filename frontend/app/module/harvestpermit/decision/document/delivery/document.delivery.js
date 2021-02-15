@@ -7,12 +7,12 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
             templateUrl: 'harvestpermit/decision/document/delivery/document.delivery.html',
             controllerAs: '$ctrl',
             controller: function (PermitDecisionUtils, PermitDecisionDeliveryModal, PermitDecision,
-                                  NotificationService, RefreshDecisionStateService,
+                                  PermitDecisionSection, NotificationService, RefreshDecisionStateService,
                                   decision, reference, decisionId) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.sectionId = 'delivery';
+                    $ctrl.sectionId = PermitDecisionSection.DELIVERY;
                     $ctrl.decision = decision;
                     $ctrl.sectionContent = PermitDecisionUtils.getSectionContent(decision, $ctrl.sectionId);
                 };
@@ -61,7 +61,7 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
         }
     })
 
-    .service('PermitDecisionDeliveryModal', function ($uibModal, PermitDecision) {
+    .service('PermitDecisionDeliveryModal', function ($uibModal, PermitDecision, DecisionRkaRecipient) {
         this.open = function (decisionId, referenceId) {
             return $uibModal.open({
                 templateUrl: 'harvestpermit/decision/document/delivery/select-delivery-modal.html',
@@ -73,10 +73,10 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
                     deliveries: function () {
                         return PermitDecision.getDeliveries({id: decisionId}).$promise;
                     },
-                    referenceReliveries: function () {
+                    referenceDeliveries: function () {
                         return referenceId ? PermitDecision.getDeliveries({id: referenceId}).$promise : null;
                     },
-                    rkaDeliveryList: function (DecisionRkaRecipient) {
+                    rkaDeliveryList: function () {
                         return DecisionRkaRecipient.query().$promise;
                     }
                 }
@@ -84,7 +84,7 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
         };
 
         function ModalController($uibModalInstance, $filter,
-                                 decisionId, deliveries, referenceReliveries, rkaDeliveryList) {
+                                 decisionId, deliveries, referenceDeliveries, rkaDeliveryList) {
             var $ctrl = this;
 
             var rI18nNameFilter = $filter('rI18nNameFilter');
@@ -114,15 +114,16 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
                 $ctrl.selectedTab = 'a';
 
                 $ctrl.deliveries = deliveries;
-                $ctrl.referenceReliveries = referenceReliveries;
+                $ctrl.referenceDeliveries = referenceDeliveries;
                 $ctrl.typeaheadModel = null;
 
-                $ctrl.referenceEnabled = referenceReliveries && referenceReliveries.length;
-                $ctrl.referenceContent = referenceReliveries;
+                $ctrl.referenceEnabled = referenceDeliveries && referenceDeliveries.length;
+                $ctrl.referenceContent = referenceDeliveries;
 
                 $ctrl.fromList = true;
                 $ctrl.adhoc = {};
 
+                $ctrl.rka = null;
                 $ctrl.rkas = _(rkaDeliveryList).map(function (d) {
                     return rI18nNameFilter(d.rka);
                 }).uniq().sort().value();
@@ -131,7 +132,7 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
             };
 
             $ctrl.overwriteWithReference = function () {
-                $ctrl.deliveries = referenceReliveries;
+                $ctrl.deliveries = referenceDeliveries;
             };
 
             $ctrl.rkaSelected = function () {

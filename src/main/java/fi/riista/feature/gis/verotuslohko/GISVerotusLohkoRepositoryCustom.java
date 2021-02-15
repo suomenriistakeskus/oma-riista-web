@@ -4,5 +4,5 @@ import java.util.Collection;
 import java.util.List;
 
 public interface GISVerotusLohkoRepositoryCustom {
-    List<GISVerotusLohkoDTO> findWithoutGeometry(Collection<String> officialCodes);
+    List<GISVerotusLohkoDTO> findWithoutGeometry(int huntingYear, Collection<String> officialCodes);
 }

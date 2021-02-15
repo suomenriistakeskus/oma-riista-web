@@ -25,6 +25,8 @@ public class AdminGameDiarySummaryRequestDTO {
 
     private boolean harvestReportOnly;
 
+    private boolean officialHarvestOnly;
+
     public Integer getSpeciesCode() {
         return speciesCode;
     }
@@ -71,5 +73,13 @@ public class AdminGameDiarySummaryRequestDTO {
 
     public void setHarvestReportOnly(final boolean harvestReportOnly) {
         this.harvestReportOnly = harvestReportOnly;
+    }
+
+    public boolean isOfficialHarvestOnly() {
+        return officialHarvestOnly;
+    }
+
+    public void setOfficialHarvestOnly(final boolean officialHarvestOnly) {
+        this.officialHarvestOnly = officialHarvestOnly;
     }
 }

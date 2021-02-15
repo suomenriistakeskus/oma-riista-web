@@ -36,9 +36,9 @@ public class PermitDecisionDeliveryFeature {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.READ);
         decision.assertHandler(activeUserService.requireActiveUser());
 
-        permitDecisionDeliveryRepository.delete(findDeliveriesByDecision(decision));
+        permitDecisionDeliveryRepository.deleteAll(findDeliveriesByDecision(decision));
 
-        decision.setDelivery(permitDecisionDeliveryRepository.save(
+        decision.setDelivery(permitDecisionDeliveryRepository.saveAll(
                 permitDecisionDeliveryService.generateDeliveries(decision, updateDto.getDeliveries())));
 
         decision.getDocument().setDelivery(permitDecisionTextService.generateDelivery(decision));

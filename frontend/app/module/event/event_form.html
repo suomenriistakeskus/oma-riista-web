@@ -139,7 +139,10 @@
                     <input type="number" class="form-control"
                            name="participants" id="participants"
                            ng-model="viewState.event.participants"
-                           ng-disabled="viewState.event.lockedAsPastStatistics"/>
+                           ng-disabled="viewState.event.lockedAsPastStatistics"
+                           min="0"
+                           max="99999"
+                           step="1"/>
                 </div>
             </div>
         </div>
@@ -184,6 +187,28 @@
                        ng-disabled="viewState.event.lockedAsPastCalendarEvent || isInRowEditMode()">
                     <span class="fa fa-fw fa-lg fa-check-circle"
                           ng-class="{invisible: !viewState.event.excludedFromStatistics}"></span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isRemoteEventAllowed(viewState.event.calendarEventType)">
+            <label for="remote" class="col-xs-4 control-label" translate="event.form.remoteTrainingEvent"></label>
+            <div id="remote" class="btn-group col-xs-8">
+                <label class="btn btn-default"
+                       ng-model="viewState.event.remoteEvent"
+                       uib-btn-radio="false"
+                       ng-disabled="viewState.event.lockedAsPastCalendarEvent || isInRowEditMode()">
+                    <span class="text-muted fa fa-fw fa-lg fa-check-circle"
+                          ng-class="{invisible: viewState.event.remoteEvent}"></span>
+                </label>
+
+                <label class="btn"
+                       ng-class="viewState.event.remoteEvent ? 'btn-primary' : 'btn-default'"
+                       ng-model="viewState.event.remoteEvent"
+                       uib-btn-radio="true"
+                       ng-disabled="viewState.event.lockedAsPastCalendarEvent || isInRowEditMode()">
+                    <span class="fa fa-fw fa-lg fa-check-circle"
+                          ng-class="{invisible: !viewState.event.remoteEvent}"></span>
                 </label>
             </div>
         </div>

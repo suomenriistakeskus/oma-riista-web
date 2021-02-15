@@ -6,6 +6,7 @@ import fi.riista.feature.gamediary.GameSpeciesService;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationDTOTransformer;
 import fi.riista.feature.gamediary.observation.ObservationRepository;
@@ -64,7 +65,8 @@ public class GameDiaryExcelFeature {
         return new GameDiaryExcelView(
                 new EnumLocaliser(messageSource, locale),
                 species,
-                harvestDtoTransformer.apply(harvests),
+                // TODO Update to currently supported HarvestSpecVersion.
+                harvestDtoTransformer.apply(harvests, HarvestSpecVersion._7),
                 observationDtoTransformer.apply(observations));
     }
 

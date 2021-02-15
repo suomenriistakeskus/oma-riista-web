@@ -1,6 +1,5 @@
 package fi.riista.feature.gamediary.srva;
 
-import com.vividsolutions.jts.geom.Point;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
@@ -12,6 +11,8 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.F;
 import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
+import org.locationtech.jts.geom.Point;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -29,14 +30,11 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -94,14 +92,13 @@ public class SrvaEvent extends LifecycleEntity<Long> {
 
     // Geometry for GIS index. Updated using JPA lifecycle hooks. No accessor on purpose to avoid confusion.
     @NotNull
-    @Column(nullable = false)
-    @Type(type = "org.hibernate.spatial.GeometryType")
+    @Column(nullable = false, columnDefinition = "Geometry")
+    @Type(type = "jts_geometry")
     private Point geom;
 
     @NotNull
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date pointOfTime;
+    private DateTime pointOfTime;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -298,11 +295,11 @@ public class SrvaEvent extends LifecycleEntity<Long> {
         this.eventResult = eventResult;
     }
 
-    public Date getPointOfTime() {
+    public DateTime getPointOfTime() {
         return pointOfTime;
     }
 
-    public void setPointOfTime(Date pointOfTime) {
+    public void setPointOfTime(DateTime pointOfTime) {
         this.pointOfTime = pointOfTime;
     }
 

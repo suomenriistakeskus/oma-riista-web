@@ -28,6 +28,11 @@ angular.module('app.account.area', [])
             combinedFeatures: {
                 method: 'GET',
                 url: apiPrefix + '/combinedFeatures'
+            },
+            findByExternalId: {
+                method: 'GET',
+                url: 'api/v1/account/area/by-external-id/:areaExternalId',
+                isArray: false
             }
         });
     })

@@ -76,14 +76,14 @@ public class ModeratorAreaDTOTransformer extends ListTransformer<ModeratorArea, 
 
     private Function<ModeratorArea, SystemUser> createModeratorMapping(final List<ModeratorArea> list) {
         final Set<Long> userIds = list.stream().map(ModeratorArea::getModerator).collect(idSet());
-        final Map<Long, SystemUser> userById = F.indexById(userRepository.findAll(userIds));
+        final Map<Long, SystemUser> userById = F.indexById(userRepository.findAllById(userIds));
 
         return a -> userById.get(F.getId(a.getModerator()));
     }
 
     private Function<ModeratorArea, Organisation> createRkaMapping(final List<ModeratorArea> list) {
         final Set<Long> rkaIds = list.stream().map(ModeratorArea::getRka).collect(idSet());
-        final Map<Long, Organisation> rkaById = F.indexById(organisationRepository.findAll(rkaIds));
+        final Map<Long, Organisation> rkaById = F.indexById(organisationRepository.findAllById(rkaIds));
 
         return a -> rkaById.get(F.getId(a.getRka()));
     }

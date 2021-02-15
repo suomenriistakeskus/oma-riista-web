@@ -2,44 +2,44 @@
     <thead>
     <tr>
         <td><span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
-        <td>kirjauksia</td>
-        <td>yksilöitä</td>
+        <td translate="reporting.dashboard.srvaTab.events"></td>
+        <td translate="reporting.dashboard.srvaTab.individuals"></td>
     </tr>
     </thead>
 
     <tr>
-        <td>SRVA-kirjauksia yhteensä</td>
-        <td>{{$ctrl.metrics.countSrvaEvent}}</td>
-        <td>{{$ctrl.metrics.countSrvaEventSpecimen}}</td>
+        <td translate="reporting.dashboard.srvaTab.allEvents"></td>
+        <td ng-bind="::$ctrl.metrics.countSrvaEvent"></td>
+        <td ng-bind="::$ctrl.metrics.countSrvaEventSpecimen"></td>
     </tr>
 
     <tr>
-        <td>SRVA-kirjauksia kesken</td>
-        <td>{{$ctrl.metrics.countSrvaEventUnfinished}}</td>
-        <td>{{$ctrl.metrics.countSrvaEventSpecimenUnfinished}}</td>
+        <td translate="reporting.dashboard.srvaTab.unfinishedEvents"></td>
+        <td ng-bind="::$ctrl.metrics.countSrvaEventUnfinished"></td>
+        <td ng-bind="::$ctrl.metrics.countSrvaEventSpecimenUnfinished"></td>
     </tr>
 
     <tr>
-        <td>SRVA-kirjauksia hyväksytty</td>
-        <td>{{$ctrl.metrics.countSrvaEventApproved}}</td>
-        <td>{{$ctrl.metrics.countSrvaEventSpecimenApproved}}</td>
+        <td translate="reporting.dashboard.srvaTab.approvedEvents"></td>
+        <td ng-bind="::$ctrl.metrics.countSrvaEventApproved"></td>
+        <td ng-bind="::$ctrl.metrics.countSrvaEventSpecimenApproved"></td>
     </tr>
 
     <tr>
-        <td>SRVA-kirjauksia hylätty</td>
-        <td>{{$ctrl.metrics.countSrvaEventRejected}}</td>
-        <td>{{$ctrl.metrics.countSrvaEventSpecimenRejected}}</td>
+        <td translate="reporting.dashboard.srvaTab.rejectedEvents"></td>
+        <td ng-bind="::$ctrl.metrics.countSrvaEventRejected"></td>
+        <td ng-bind="::$ctrl.metrics.countSrvaEventSpecimenRejected"></td>
     </tr>
 
     <tr>
-        <td>SRVA-kirjauksia mobiilissa</td>
-        <td>{{$ctrl.metrics.countSrvaEventFromMobile}}</td>
+        <td translate="reporting.dashboard.srvaTab.mobileEvents"></td>
+        <td ng-bind="::$ctrl.metrics.countSrvaEventFromMobile"></td>
         <td></td>
     </tr>
 
     <tr>
-        <td>SRVA-kirjauksia webissä</td>
-        <td>{{$ctrl.metrics.countSrvaEventFromWeb}}</td>
+        <td translate="reporting.dashboard.srvaTab.webEvents"></td>
+        <td ng-bind="::$ctrl.metrics.countSrvaEventFromWeb"></td>
         <td></td>
     </tr>
 </table>

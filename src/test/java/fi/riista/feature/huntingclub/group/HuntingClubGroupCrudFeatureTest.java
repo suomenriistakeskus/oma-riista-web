@@ -89,7 +89,7 @@ public class HuntingClubGroupCrudFeatureTest extends EmbeddedDatabaseTest implem
 
         onSavedAndAuthenticated(createNewModerator(), () -> {
             feature.delete(group.getId());
-            assertFalse(repo.exists(group.getId()));
+            assertFalse(repo.existsById(group.getId()));
         });
     }
 
@@ -101,7 +101,7 @@ public class HuntingClubGroupCrudFeatureTest extends EmbeddedDatabaseTest implem
 
             onSavedAndAuthenticated(createUser(person), () -> {
                 feature.delete(group.getId());
-                assertFalse(repo.exists(group.getId()));
+                assertFalse(repo.existsById(group.getId()));
             });
         });
     }

@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryTemplate.APPLICATION_START_ROW;
+import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_APPLICANT;
+import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_APPLICATION_NUMBER;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_AREA_LAND;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_AREA_PRIVATE;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_AREA_STATE;
@@ -27,14 +29,17 @@ import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.Jyvitys
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_AREA_WATER;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_CALF_QUOTA;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_OFFICIAL_CODE;
+import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_PRIVATE_LAND;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_QUOTA_TO_ALLOCATE;
+import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_STATE_LAND;
+import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_STATE_LAND_ACCEPTED_FOR_JYVITYS;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_TITLE;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoValueCellAddress.getValueCellAddressFor;
 import static fi.riista.util.NumberUtils.squareMetersToHectares;
 
 public class JyvitysExcelVerotuslohkoTemplate implements JyvitysExcelCellAddressManipulation {
     public static final int VEROTUSLOHKO_STATIC_CONTENT_HEIGHT_ROWS = 27;
-    public static final int VEROTUSLOHKO_SHEET_COLUMN_COUNT = 15;
+    public static final int VEROTUSLOHKO_SHEET_COLUMN_COUNT = 16;
 
     private static final double INITIAL_VALUE = 0.0;
 
@@ -68,10 +73,11 @@ public class JyvitysExcelVerotuslohkoTemplate implements JyvitysExcelCellAddress
         initializeApplicationRows();
 
         sheet.setDefaultColumnWidth(12);
-        sheet.setColumnWidth(0, 50 * 256);
-        sheet.setColumnWidth(1, 15 * 256);
-        sheet.setColumnWidth(2, 15 * 256);
-        sheet.setColumnWidth(3, 15 * 256);
+        sheet.setColumnWidth(VEROTUSLOHKO_APPLICATION_NUMBER.getColumnNumber(), 25 * 256);
+        sheet.setColumnWidth(VEROTUSLOHKO_APPLICANT.getColumnNumber(), 50 * 256);
+        sheet.setColumnWidth(VEROTUSLOHKO_PRIVATE_LAND.getColumnNumber(), 15 * 256);
+        sheet.setColumnWidth(VEROTUSLOHKO_STATE_LAND.getColumnNumber(), 15 * 256);
+        sheet.setColumnWidth(VEROTUSLOHKO_STATE_LAND_ACCEPTED_FOR_JYVITYS.getColumnNumber(), 15 * 256);
         return this;
     }
 
@@ -148,7 +154,7 @@ public class JyvitysExcelVerotuslohkoTemplate implements JyvitysExcelCellAddress
         propertyTemplate.applyBorders(sheet);
     }
 
-    private void applyBorders(final CellRangeAddress address, final PropertyTemplate propertyTemplate) {
+    private static void applyBorders(final CellRangeAddress address, final PropertyTemplate propertyTemplate) {
         propertyTemplate.drawBorders(address, BorderStyle.MEDIUM, BorderExtent.OUTSIDE);
     }
 

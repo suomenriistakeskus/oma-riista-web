@@ -71,7 +71,7 @@ angular.module('app.harvestreport.search', [])
         };
     })
 
-    .service('HarvestReportSearchSidebar', function (DiaryEntrySidebar) {
+    .service('HarvestReportSearchSidebar', function (HarvestReportSearchHarvestSidebar) {
         this.createSidebar = function () {
             var currentSidebar = null;
             var selectedDiaryEntry = null;
@@ -88,7 +88,7 @@ angular.module('app.harvestreport.search', [])
 
                 selectedDiaryEntry = diaryEntry;
 
-                var modalInstance = DiaryEntrySidebar.showSidebar(diaryEntry);
+                var modalInstance = HarvestReportSearchHarvestSidebar.showSidebar(diaryEntry);
 
                 modalInstance.opened.then(function () {
                     currentSidebar = modalInstance;
@@ -108,6 +108,20 @@ angular.module('app.harvestreport.search', [])
 
                 return modalInstance.result;
             };
+        };
+    })
+
+    .service('HarvestReportSearchHarvestSidebar', function ($q, offCanvasStack) {
+        this.showSidebar = function (harvest) {
+            return offCanvasStack.open({
+                controller: 'DiaryEntrySidebarController',
+                templateUrl: 'diary/sidebar/diary-sidebar.html',
+                largeDialog: false,
+                resolve: {
+                    entry: _.constant(harvest),
+                    computedFields: _.constant(null)
+                }
+            });
         };
     })
 

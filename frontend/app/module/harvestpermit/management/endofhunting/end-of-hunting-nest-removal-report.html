@@ -1,0 +1,78 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" translate="harvestpermit.management.endOfHunting.nestRemovalTitle"></h3>
+</div>
+
+<div class="modal-body">
+    <h5 ng-show="::$ctrl.report.harvestReportState" translate="harvestpermit.nestRemovalReportDoneInfo"></h5>
+
+    <div ng-if="::!$ctrl.hasUsages" class="alert alert-warning" translate="harvestpermit.noHarvests"></div>
+
+    <div class="table-responsive" ng-if="::$ctrl.hasUsages">
+        <table class="table">
+            <thead>
+            <tr>
+                <th class="col-xs-4" translate="harvestpermit.gameInfo"></th>
+                <th class="col-xs-2" translate="harvestpermit.management.dashboard.nestRemovalUsage.egg"></th>
+                <th class="col-xs-2" translate="harvestpermit.management.dashboard.nestRemovalUsage.nest"></th>
+                <th class="col-xs-2" translate="harvestpermit.management.dashboard.nestRemovalUsage.construction"></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr ng-repeat="usage in ::$ctrl.report.usages track by usage.speciesCode">
+                <td class="col-xs-4" ng-bind="::usage.speciesCode | translateSpeciesCode | capitalize"></td>
+                <td class="col-xs-2" ng-bind="::usage.usedEggAmount"></td>
+                <td class="col-xs-2" ng-bind="::usage.usedNestAmount"></td>
+                <td class="col-xs-2" ng-bind="::usage.usedConstructionAmount"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="form-group">
+        <div ng-show="::$ctrl.showAdditionalComments">
+            <label for="endOfHuntingReportComments" class="control-label">
+                <span translate="gamediary.form.moderatorDescription"></span>
+            </label>
+            <textarea name="endOfHuntingReportComments"
+                      id="endOfHuntingReportComments"
+                      class="form-control"
+                      rows="6"
+                      ng-model="$ctrl.report.endOfHuntingReportComments"
+                      ng-disabled="::!$ctrl.isModerator || $ctrl.report.harvestReportState === 'APPROVED'">
+            </textarea>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <!-- CANCEL -->
+    <button type="button" class="btn btn-default"
+            ng-click="$close()">
+        <span translate="global.button.cancel"></span>
+    </button>
+
+    <!-- ACCEPT -->
+    <button type="button" class="btn r-harvestreport-approved"
+            ng-show="$ctrl.report.actions.accept"
+            ng-disabled="$ctrl.report.harvestReportState === 'APPROVED'"
+            ng-click="$ctrl.accept()">
+        <span class="glyphicon glyphicon-thumbs-up"></span> &nbsp;
+        <span translate="harvestreport.button.changeStateTo.APPROVED"></span>
+    </button>
+
+    <!-- CREATE -->
+    <button type="button" class="btn btn-primary"
+            ng-show="::$ctrl.report.actions.create"
+            ng-click="$ctrl.create()">
+        <span translate="harvestpermit.management.endOfHunting.createNestRemovalButton"></span>
+    </button>
+
+    <!-- REMOVE -->
+    <button type="button" class="btn btn-warning"
+            ng-show="::$ctrl.report.actions.remove"
+            ng-confirm-click
+            ng-confirm-click-action="$ctrl.remove()">
+        <span translate="harvestpermit.management.endOfHunting.removeButton"></span>
+    </button>
+</div>

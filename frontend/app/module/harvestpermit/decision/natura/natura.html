@@ -1,0 +1,32 @@
+<div class="row">
+    <div class="col-xs-5">
+        <permit-decision-nav-header decision="$ctrl.decision" ng-show="!!$ctrl.decision"></permit-decision-nav-header>
+
+        <r-natura-property-selection map-state="$ctrl.mapState"></r-natura-property-selection>
+
+        <r-natura-area-list
+                title="decision.natura.selectedAreasTitle"
+                area-list="$ctrl.selectedAreas"
+                application-id="$ctrl.applicationId"
+                selected-area-id="$ctrl.selectedAreaId"
+                on-remove="$ctrl.removeArea(naturaId)"
+                on-select="$ctrl.selectArea(naturaId)">
+        </r-natura-area-list>
+    </div>
+
+    <div class="col-xs-7">
+            <leaflet class="r-cursor-arrow"
+                     id="naturaAreaMap" name="naturaAreaMap"
+                     defaults="$ctrl.mapDefaults"
+                     layers="$ctrl.mapDefaults.mmlLayers"
+                     controls="$ctrl.mapDefaults.controls"
+                     event-broadcast="$ctrl.mapEvents"
+                     lf-center="$ctrl.mapState.center"
+                     bounds="$ctrl.mapState.viewBounds"
+                     r-geolocation-editable="true"
+                     r-geolocation-marker-force-finland="true"
+                     r-viewport-height>
+                <marker-cluster id="naturaAreaMarkers" leaflet-markers="$ctrl.markers"></marker-cluster>
+            </leaflet>
+    </div>
+</div>

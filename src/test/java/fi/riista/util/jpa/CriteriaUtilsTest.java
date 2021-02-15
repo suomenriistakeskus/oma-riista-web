@@ -39,7 +39,7 @@ public class CriteriaUtilsTest extends EmbeddedDatabaseTest {
         persistInNewTransaction();
 
         runInTransaction(() -> {
-            final SystemUser user2 = userRepo.findOne(user.getId());
+            final SystemUser user2 = userRepo.findById(user.getId()).orElse(null);
 
             // We want to enforce statistics assertions for the target
             // method to be called next.

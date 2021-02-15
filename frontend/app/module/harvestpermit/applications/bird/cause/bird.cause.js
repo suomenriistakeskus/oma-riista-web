@@ -53,7 +53,7 @@ angular.module('app.harvestpermit.application.bird.cause', ['app.metadata'])
         };
 
         $ctrl.doGotoPrevious = function () {
-            wizard.goto('map');
+            wizard.goto('mapdetails');
         };
 
         $ctrl.previousDisabled = function () {

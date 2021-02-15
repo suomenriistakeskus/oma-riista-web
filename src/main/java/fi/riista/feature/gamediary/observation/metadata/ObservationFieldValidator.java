@@ -28,6 +28,7 @@ public class ObservationFieldValidator {
 
     private final ObservationContextSensitiveFields ctxFields;
     private final boolean userHasCarnivoreAuthority;
+    private final boolean userIsInDeerPilot;
 
     private final Map<String, Required> staticBaseFields;
     private final Map<String, Required> staticSpecimenFields;
@@ -40,13 +41,15 @@ public class ObservationFieldValidator {
 
     public ObservationFieldValidator(@Nonnull final ObservationBaseFields baseFields,
                                      @Nonnull final ObservationContextSensitiveFields ctxFields,
-                                     final boolean userHasCarnivoreAuthority) {
+                                     final boolean userHasCarnivoreAuthority,
+                                     final boolean userIsInDeerPilot) {
 
         checkArgument(baseFields.getMetadataVersion() == ctxFields.getMetadataVersion(), "Metadata version mismatch");
 
         Objects.requireNonNull(baseFields, "baseFields is null");
         this.ctxFields = Objects.requireNonNull(ctxFields, "ctxFields is null");
         this.userHasCarnivoreAuthority = userHasCarnivoreAuthority;
+        this.userIsInDeerPilot = userIsInDeerPilot;
 
         this.staticBaseFields = ObservationFieldRequirements.getStaticBaseFields(baseFields, ctxFields);
         this.dynamicBaseFields = ObservationFieldRequirements.getDynamicBaseFields(ctxFields);
@@ -180,7 +183,7 @@ public class ObservationFieldValidator {
 
         dynamicBaseFields.forEach((name, req) -> {
             if (!namesOfExcludedBaseFields.contains(name)) {
-                ret.put(name, req.toSimpleFieldPresence(userHasCarnivoreAuthority));
+                ret.put(name, req.toSimpleFieldPresence(userHasCarnivoreAuthority, userIsInDeerPilot));
             }
         });
 
@@ -199,7 +202,7 @@ public class ObservationFieldValidator {
 
         dynamicSpecimenFields.forEach((name, req) -> {
             if (!namesOfExcludedSpecimenFields.contains(name)) {
-                ret.put(name, req.toSimpleFieldPresence(userHasCarnivoreAuthority));
+                ret.put(name, req.toSimpleFieldPresence(userHasCarnivoreAuthority, userIsInDeerPilot));
             }
         });
 
@@ -284,9 +287,9 @@ public class ObservationFieldValidator {
     }
 
     private String formatContextAsString() {
-        return format("{ gameSpeciesCode: %d, withinMooseHunting: %s, observationType: %s, isCarnivoreAuthority: %s, metadataVersion: %d }",
+        return format("{ gameSpeciesCode: %d, observationCategory: %s, observationType: %s, isCarnivoreAuthority: %s, metadataVersion: %d }",
                 ctxFields.getSpecies().getOfficialCode(),
-                ctxFields.isWithinMooseHunting(),
+                ctxFields.getObservationCategory(),
                 ctxFields.getObservationType().name(),
                 userHasCarnivoreAuthority,
                 ctxFields.getMetadataVersion());

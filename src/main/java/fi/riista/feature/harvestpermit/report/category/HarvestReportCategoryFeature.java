@@ -3,7 +3,7 @@ package fi.riista.feature.harvestpermit.report.category;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesRepository;
 import fi.riista.feature.gamediary.harvest.HarvestReportingType;
-import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsDTO;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestReportFieldsDTO;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
 import fi.riista.feature.harvestpermit.season.HarvestSeasonRepository;
 import fi.riista.util.DateUtil;
@@ -27,6 +27,7 @@ public class HarvestReportCategoryFeature {
     @Transactional(readOnly = true)
     public List<HarvestReportCategoryDTO> list(final boolean availableForReportingTodayOnly,
                                                final boolean excludePermitNotRequiredWithoutSeason) {
+
         final LocalDate reportingDate = availableForReportingTodayOnly ? DateUtil.today() : null;
         final List<HarvestSeason> seasons = harvestSeasonRepository.listAllForReportingFetchSpecies(reportingDate);
 
@@ -36,8 +37,11 @@ public class HarvestReportCategoryFeature {
             final GameSpecies species = season.getSpecies();
             final int gameSpeciesCode = species.getOfficialCode();
             final int huntingYear = DateUtil.huntingYearContaining(season.getBeginDate());
-            final RequiredHarvestFieldsDTO fields = RequiredHarvestFieldsDTO.create(
-                    gameSpeciesCode, huntingYear, HarvestReportingType.SEASON);
+
+            // Deer pilot is not relevant for report fields of season harvests -> false
+            // FIXME "fields" is actually unused property in front-end. To be removed.
+            final RequiredHarvestReportFieldsDTO fields = RequiredHarvestReportFieldsDTO
+                    .create(gameSpeciesCode, huntingYear, HarvestReportingType.SEASON, false);
 
             result.add(HarvestReportCategoryDTO.createForSeason(season, fields));
         }
@@ -49,8 +53,10 @@ public class HarvestReportCategoryFeature {
             final int gameSpeciesCode = species.getOfficialCode();
 
             if (!excludePermitNotRequiredWithoutSeason || GameSpecies.isPermitRequiredWithoutSeason(gameSpeciesCode)) {
-                final RequiredHarvestFieldsDTO fields = RequiredHarvestFieldsDTO.create(
-                        gameSpeciesCode, currentHuntingYear, HarvestReportingType.PERMIT);
+                // Deer pilot is not relevant for report fields of permit harvests -> false
+                // FIXME "fields" is actually unused property in front-end. To be removed.
+                final RequiredHarvestReportFieldsDTO fields = RequiredHarvestReportFieldsDTO
+                        .create(gameSpeciesCode, currentHuntingYear, HarvestReportingType.PERMIT, false);
 
                 result.add(HarvestReportCategoryDTO.createForPermit(species, fields));
             }

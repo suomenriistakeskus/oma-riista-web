@@ -1,0 +1,39 @@
+@import "attachments/dogdisturbance.attachments.less";
+
+
+.r-dog-disturbance {
+
+  .glyphicon {
+    color: @r-green;
+  }
+
+  .text-danger.glyphicon {
+    color: @r-red;
+  }
+
+  .mandatory-field:after {
+    font-family: FontAwesome;
+    content: "\f069";
+    color: @r-red;
+    font-size: small;
+    white-space: nowrap;
+    margin-left: 6px;
+  }
+
+  :required {
+    border-left-width: 5px;
+    border-left-color: lightgrey;
+  }
+
+  :required:valid {
+    border-left-color: @r-green;
+  }
+
+  .ng-touched:invalid,
+  .has-error input:valid,
+  .has-error textarea:valid,
+  .ng-dirty:invalid {
+    border-left-color: @r-red;
+  }
+
+}

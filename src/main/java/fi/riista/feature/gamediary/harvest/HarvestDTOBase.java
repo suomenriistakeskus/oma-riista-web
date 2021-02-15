@@ -3,6 +3,7 @@ package fi.riista.feature.gamediary.harvest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import fi.riista.feature.gamediary.DeerHuntingType;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
 import fi.riista.feature.gamediary.harvest.Harvest.StateAcceptedToHarvestPermit;
@@ -11,6 +12,7 @@ import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenOps;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -18,60 +20,76 @@ import org.hibernate.validator.constraints.SafeHtml;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
-import java.util.Collections;
+import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Collections.emptyList;
+
 public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
+
+    @NotNull
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
+    private HarvestSpecVersion harvestSpecVersion;
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._6)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._6)
     private HuntingAreaType huntingAreaType;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._6)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._6)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String huntingParty;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._6)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._6)
     private Double huntingAreaSize;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._6)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._6)
     private HuntingMethod huntingMethod;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._6)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._6)
     private Boolean reportedWithPhoneCall;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._6)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._6)
     private Boolean feedingPlace;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._6)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._6)
     private Boolean taigaBeanGoose;
 
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._2)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     private boolean harvestReportRequired;
 
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._2)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     private HarvestReportState harvestReportState;
 
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._2)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String permitNumber;
 
     @JsonIgnore
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._2)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     protected String permitType;
 
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._2)
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
     private Harvest.StateAcceptedToHarvestPermit stateAcceptedToHarvestPermit;
 
     @Valid
-    @HarvestSpecVersionSupport(since = HarvestSpecVersion._1)
-    private List<HarvestSpecimenDTO> specimens;
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._3)
+    private List<HarvestSpecimenDTO> specimens = new ArrayList<>();
+
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._7)
+    private DeerHuntingType deerHuntingType;
+
+    @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._7)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String deerHuntingOtherTypeDescription;
 
     protected HarvestDTOBase() {
         super(GameDiaryEntryType.HARVEST);
@@ -82,18 +100,35 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
     }
 
     public HarvestSpecimenOps specimenOps() {
-        return new HarvestSpecimenOps(getGameSpeciesCode(), getHarvestSpecVersion());
+        return new HarvestSpecimenOps(
+                getGameSpeciesCode(),
+                getHarvestSpecVersion(),
+                DateUtil.huntingYearContaining(getPointOfTime().toLocalDate()));
+    }
+
+    @AssertTrue
+    public boolean isAmountValid() {
+        final int numSpecimens = specimens != null ? specimens.size() : 0;
+        return getAmount() >= numSpecimens;
     }
 
     // Accessors -->
 
-    public abstract HarvestSpecVersion getHarvestSpecVersion();
+    public HarvestSpecVersion getHarvestSpecVersion() {
+        return harvestSpecVersion;
+    }
+
+    public void setHarvestSpecVersion(final HarvestSpecVersion specVersion) {
+        this.harvestSpecVersion = specVersion;
+    }
+
+    public abstract int getAmount();
 
     public HuntingAreaType getHuntingAreaType() {
         return huntingAreaType;
     }
 
-    public void setHuntingAreaType(HuntingAreaType huntingAreaType) {
+    public void setHuntingAreaType(final HuntingAreaType huntingAreaType) {
         this.huntingAreaType = huntingAreaType;
     }
 
@@ -101,7 +136,7 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
         return huntingParty;
     }
 
-    public void setHuntingParty(String huntingParty) {
+    public void setHuntingParty(final String huntingParty) {
         this.huntingParty = huntingParty;
     }
 
@@ -109,7 +144,7 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
         return huntingAreaSize;
     }
 
-    public void setHuntingAreaSize(Double huntingAreaSize) {
+    public void setHuntingAreaSize(final Double huntingAreaSize) {
         this.huntingAreaSize = huntingAreaSize;
     }
 
@@ -117,7 +152,7 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
         return huntingMethod;
     }
 
-    public void setHuntingMethod(HuntingMethod huntingMethod) {
+    public void setHuntingMethod(final HuntingMethod huntingMethod) {
         this.huntingMethod = huntingMethod;
     }
 
@@ -125,7 +160,7 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
         return reportedWithPhoneCall;
     }
 
-    public void setReportedWithPhoneCall(Boolean reportedWithPhoneCall) {
+    public void setReportedWithPhoneCall(final Boolean reportedWithPhoneCall) {
         this.reportedWithPhoneCall = reportedWithPhoneCall;
     }
 
@@ -196,16 +231,31 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
         this.specimens = specimens;
     }
 
-    public void setSpecimensMappedFrom(final List<HarvestSpecimen> specimenEntities) {
-        this.specimens = !F.isNullOrEmpty(specimenEntities)
-                ? specimenOps().transformList(specimenEntities)
-                : getHarvestSpecVersion().requiresSpecimenList() ? Collections.emptyList() : null;
+    public DeerHuntingType getDeerHuntingType() {
+        return deerHuntingType;
+    }
+
+    public void setDeerHuntingType(final DeerHuntingType deerHuntingType) {
+        this.deerHuntingType = deerHuntingType;
+    }
+
+    public String getDeerHuntingOtherTypeDescription() {
+        return deerHuntingOtherTypeDescription;
+    }
+
+    public void setDeerHuntingOtherTypeDescription(final String deerHuntingOtherTypeDescription) {
+        this.deerHuntingOtherTypeDescription = deerHuntingOtherTypeDescription;
     }
 
     // Builder -->
 
     protected static abstract class Builder<DTO extends HarvestDTOBase, SELF extends Builder<DTO, SELF>>
             extends HuntingDiaryEntryDTO.Builder<DTO, SELF> {
+
+        public SELF withSpecVersion(@Nullable final HarvestSpecVersion specVersion) {
+            dto.setHarvestSpecVersion(specVersion);
+            return self();
+        }
 
         public SELF withHarvestReportRequired(final boolean required) {
             dto.setHarvestReportRequired(required);
@@ -227,9 +277,7 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
             return self();
         }
 
-        public SELF withStateAcceptedToHarvestPermit(
-                @Nullable final StateAcceptedToHarvestPermit stateAcceptedToHarvestPermit) {
-
+        public SELF withStateAcceptedToHarvestPermit(@Nullable final StateAcceptedToHarvestPermit stateAcceptedToHarvestPermit) {
             dto.setStateAcceptedToHarvestPermit(stateAcceptedToHarvestPermit);
             return self();
         }
@@ -269,6 +317,16 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
             return self();
         }
 
+        public SELF withDeerHuntingType(final DeerHuntingType deerHuntingType) {
+            dto.setDeerHuntingType(deerHuntingType);
+            return self();
+        }
+
+        public SELF withDeerHuntingOtherTypeDescription(final String deerHuntingOtherTypeDescription) {
+            dto.setDeerHuntingOtherTypeDescription(deerHuntingOtherTypeDescription);
+            return self();
+        }
+
         // ASSOCIATIONS MUST NOT BE TRAVERSED IN THIS METHOD (except for identifiers that are
         // part of Harvest itself).
         public SELF populateWith(@Nonnull final Harvest harvest) {
@@ -277,9 +335,7 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
             final SELF builder = populateWithEntry(harvest)
                     .withHarvestReportState(harvest.getHarvestReportState())
                     .withHarvestReportRequired(harvest.isHarvestReportRequired())
-                    .withStateAcceptedToHarvestPermit(specVersion.supportsHarvestPermitState()
-                            ? harvest.getStateAcceptedToHarvestPermit()
-                            : null);
+                    .withStateAcceptedToHarvestPermit(harvest.getStateAcceptedToHarvestPermit());
 
             if (!specVersion.supportsHarvestReport()) {
                 return builder;
@@ -292,7 +348,9 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
                     .withHuntingMethod(harvest.getHuntingMethod())
                     .withReportedWithPhoneCall(harvest.getReportedWithPhoneCall())
                     .withFeedingPlace(harvest.getFeedingPlace())
-                    .withTaigaBeanGoose(harvest.getTaigaBeanGoose());
+                    .withTaigaBeanGoose(harvest.getTaigaBeanGoose())
+                    .withDeerHuntingType(harvest.getDeerHuntingType())
+                    .withDeerHuntingOtherTypeDescription(harvest.getDeerHuntingOtherTypeDescription());
         }
 
         public SELF populateWith(@Nullable final HarvestPermit permit) {
@@ -308,9 +366,10 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
             return self();
         }
 
-        public SELF populateSpecimensWith(@Nullable final List<HarvestSpecimen> specimenEntities) {
-            dto.setSpecimensMappedFrom(specimenEntities);
-            return self();
+        public SELF withSpecimensMappedFrom(final List<HarvestSpecimen> specimenEntities) {
+            return withSpecimens(!F.isNullOrEmpty(specimenEntities)
+                    ? dto.specimenOps().transformList(specimenEntities)
+                    : emptyList());
         }
     }
 }

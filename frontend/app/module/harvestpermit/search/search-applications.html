@@ -1,16 +1,37 @@
 <div class="row">
-    <div class="col-xs-3" ng-if="$ctrl.tab !== 'postalQueue'">
-        <moderator-application-search-filters
-                filters="$ctrl.filters"
-                available-species="$ctrl.availableSpecies"
-                handlers="$ctrl.handlers"
-                reset="$ctrl.reset()"
-                search="$ctrl.loadPage(0)">
-        </moderator-application-search-filters>
+    <div ng-switch="$ctrl.tab">
+        <div class="col-xs-3" ng-switch-when="annualRenewals">
+            <div class="btn-group btn-group-justified" style="margin-bottom: 20px">
+                <label class="btn"
+                       ng-class="{'btn-default': !$ctrl.mineAnnual, 'btn-primary': $ctrl.mineAnnual}"
+                       ng-click="$ctrl.setShowMineAnnual(true)">
+                    <span class="fa fa-3x fa-user"></span>
+                    <br>
+                    <span translate="harvestpermit.admin.application.filterMine"></span>
+                </label>
+                <label class="btn"
+                       ng-class="{'btn-default': $ctrl.mineAnnual, 'btn-primary': !$ctrl.mineAnnual}"
+                       ng-click="$ctrl.setShowMineAnnual(false)">
+                    <span class="fa fa-3x fa-filter"></span>
+                    <br>
+                    <span translate="harvestpermit.admin.application.filterAll"></span>
+                </label>
+            </div>
+        </div>
+        <div class="col-xs-3" ng-switch-when="filter">
+            <moderator-application-search-filters
+                    filters="$ctrl.filters"
+                    available-species="$ctrl.availableSpecies"
+                    handlers="$ctrl.handlers"
+                    reset="$ctrl.reset()"
+                    search="$ctrl.loadPage(0)">
+            </moderator-application-search-filters>
+        </div>
+
     </div>
 
     <div ng-class="{'col-xs-9': $ctrl.tab !== 'postalQueue', 'col-xs-12': $ctrl.tab === 'postalQueue'}">
-        <div ng-if="$ctrl.tab !== 'postalQueue'">
+        <div ng-if="$ctrl.tab === 'filter'">
             <button type="button" class="btn btn-primary" ng-click="$ctrl.exportResultsToExcel()">
                 <span class="glyphicon glyphicon-search"></span> &nbsp;
                 <span translate="global.button.exportToExcel"></span>

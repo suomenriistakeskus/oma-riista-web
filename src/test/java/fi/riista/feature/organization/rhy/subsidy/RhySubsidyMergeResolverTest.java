@@ -2,12 +2,16 @@ package fi.riista.feature.organization.rhy.subsidy;
 
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
+import fi.riista.feature.organization.rhy.MergedRhyMappingTestHelper;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatistics;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsTestDataPopulator;
+import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticsExportDTO;
 import fi.riista.test.DefaultEntitySupplierProvider;
+import fi.riista.util.F;
 import fi.riista.util.NumberGenerator;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,14 +19,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
-import static fi.riista.feature.organization.rhy.MergedRhyMapping.NEW_ETELÄ_SOISALO_078;
-import static fi.riista.feature.organization.rhy.MergedRhyMapping.OLD_HEINÄVESI_056;
-import static fi.riista.feature.organization.rhy.MergedRhyMapping.OLD_KANGASLAMMI_060;
+import static fi.riista.feature.organization.rhy.MergedRhyMapping.RhyMerge.create;
 import static fi.riista.feature.organization.rhy.subsidy.RhySubsidyTestHelper.assertOrganisationTransformation;
 import static fi.riista.feature.organization.rhy.subsidy.RhySubsidyTestHelper.export;
-import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationConstants.FIRST_SUBSIDY_YEAR;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.HUNTING_CONTROL_EVENTS;
-import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.LUKE_CARNIVORE_CONTACT_PERSONS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.MOOSELIKE_TAXATION_PLANNING_EVENTS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.RHY_MEMBERS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SMALL_GAME_LICENSES_SOLD_BY_METSAHALLITUS;
@@ -31,15 +31,23 @@ import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriter
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUBSIDIZABLE_OTHER_TRAINING_EVENTS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUBSIDIZABLE_STUDENT_AND_YOUTH_TRAINING_EVENTS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.SUM_OF_LUKE_CALCULATIONS;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.TOTAL_LUKE_CARNIVORE_PERSONS;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.WOLF_TERRITORY_WORKGROUPS;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationCriterion.getSubsidyCriteria;
+import static fi.riista.test.Asserts.assertThat;
 import static fi.riista.test.TestUtils.currency;
+import static fi.riista.util.DateUtil.currentYear;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 
 public class RhySubsidyMergeResolverTest
         implements DefaultEntitySupplierProvider, RhyAnnualStatisticsTestDataPopulator {
 
     private RiistakeskuksenAlue rka;
+
+    private int subsidyYear;
 
     private Riistanhoitoyhdistys unchangedRhy;
     private Riistanhoitoyhdistys oldRhy1;
@@ -50,10 +58,20 @@ public class RhySubsidyMergeResolverTest
     public void setup() {
         rka = createRka("050");
 
+        subsidyYear = currentYear();
         unchangedRhy = createRhy("051", rka);
-        oldRhy1 = createRhy(OLD_HEINÄVESI_056, rka);
-        oldRhy2 = createRhy(OLD_KANGASLAMMI_060, rka);
-        newRhy = createRhy(NEW_ETELÄ_SOISALO_078, rka);
+        oldRhy1 = createRhy("111", rka);
+        oldRhy2 = createRhy("222", rka);
+        newRhy = createRhy("333", rka);
+
+        MergedRhyMappingTestHelper.assignMerges(asList(
+                create(subsidyYear, "111", "333"),
+                create(subsidyYear, "222", "333")));
+    }
+
+    @After
+    public void tearDown() {
+        MergedRhyMappingTestHelper.reset();
     }
 
     @Override
@@ -63,6 +81,7 @@ public class RhySubsidyMergeResolverTest
 
     @Test
     public void testMergeStatistics() {
+
         final RhyAnnualStatistics stats1 = createRhyAnnualStatistics(unchangedRhy);
         final RhyAnnualStatistics stats2 = createRhyAnnualStatistics(oldRhy1);
         final RhyAnnualStatistics stats3 = createRhyAnnualStatistics(oldRhy2);
@@ -75,10 +94,10 @@ public class RhySubsidyMergeResolverTest
         final AnnualStatisticsExportDTO inputStats2 = export(stats2);
         final AnnualStatisticsExportDTO inputStats3 = export(stats3);
 
-        final List<AnnualStatisticsExportDTO> mergedStatistics = createResolver(FIRST_SUBSIDY_YEAR)
+        final List<AnnualStatisticsExportDTO> mergedStatistics = createResolver(subsidyYear)
                 .mergeStatistics(asList(inputStats1, inputStats2, inputStats3));
 
-        assertEquals(2, mergedStatistics.size());
+        assertThat(mergedStatistics, hasSize(2));
 
         final AnnualStatisticsExportDTO outputStats1 = mergedStatistics.get(0);
         assertOrganisationTransformation(unchangedRhy, outputStats1.getOrganisation());
@@ -105,14 +124,14 @@ public class RhySubsidyMergeResolverTest
                                                           final Integer expectedSoldMhLicenses) {
 
         final ImmutableMap<SubsidyAllocationCriterion, Integer> assertPairs = ImmutableMap
-                .<SubsidyAllocationCriterion, Integer> builder()
+                .<SubsidyAllocationCriterion, Integer>builder()
                 .put(RHY_MEMBERS, expectedRhyMembers)
                 .put(SUBSIDIZABLE_HUNTER_EXAM_TRAINING_EVENTS, expectedHunterExamTrainingEvents)
                 .put(SUBSIDIZABLE_OTHER_TRAINING_EVENTS, expectedOtherTrainingEvents)
                 .put(SUBSIDIZABLE_STUDENT_AND_YOUTH_TRAINING_EVENTS, expectedStudentAndYouthTrainingEvents)
                 .put(HUNTING_CONTROL_EVENTS, expectedHuntingControlEvents)
                 .put(SUM_OF_LUKE_CALCULATIONS, expectedSumOfLukeCalculations)
-                .put(LUKE_CARNIVORE_CONTACT_PERSONS, expectedLukeCarnivoreContactPersons)
+                .put(TOTAL_LUKE_CARNIVORE_PERSONS, expectedLukeCarnivoreContactPersons)
                 .put(MOOSELIKE_TAXATION_PLANNING_EVENTS, expectedMooselikeTaxationPlanningEvents)
                 .put(WOLF_TERRITORY_WORKGROUPS, expectedWolfTerritoryWorkgroups)
                 .put(SRVA_ALL_MOOSELIKE_EVENTS, expectedSrvaMooselikeEvents)
@@ -120,10 +139,21 @@ public class RhySubsidyMergeResolverTest
                 .build();
 
         assertPairs.forEach((criterion, expectedQuantity) -> {
-            assertEquals(
-                    criterion.name() + ": ",
-                    expectedQuantity,
-                    criterion.getRelatedStatisticItem().extractInteger(statistics));
+            assertThat(
+                    criterion.getRelatedStatisticItem().extractInteger(statistics),
+                    equalTo(expectedQuantity),
+                    criterion.name() + ": ");
+        });
+    }
+
+    private void assertStatistics(final AnnualStatisticsExportDTO stats, final AnnualStatisticsExportDTO expectedStats) {
+        getSubsidyCriteria(subsidyYear).forEach((criterion) -> {
+            final AnnualStatisticItem statisticItem = criterion.getRelatedStatisticItem();
+
+            assertThat(
+                    statisticItem.extractInteger(stats),
+                    equalTo(statisticItem.extractInteger(expectedStats)),
+                    criterion.name() + ": ");
         });
     }
 
@@ -142,18 +172,96 @@ public class RhySubsidyMergeResolverTest
                 rhyCodeToSubsidyAmountGrantedLastYear, rhyCodeToSubsidyAmountGrantedInFirstBatchOfCurrentYear);
 
         final PreviouslyGrantedSubsidiesDTO output =
-                createResolver(FIRST_SUBSIDY_YEAR).mergePreviouslyGrantedSubsidies(input);
+                createResolver(subsidyYear).mergePreviouslyGrantedSubsidies(input);
 
         // Should remain unchanged
-        assertEquals(
-                rhyCodeToSubsidyAmountGrantedInFirstBatchOfCurrentYear,
-                output.getRhyCodeToSubsidyGrantedInFirstBatchOfCurrentYear());
+        assertThat(output.getRhyCodeToSubsidyGrantedInFirstBatchOfCurrentYear(),
+                equalTo(rhyCodeToSubsidyAmountGrantedInFirstBatchOfCurrentYear));
 
         final Map<String, BigDecimal> expectedMergedSubsidyAmountGrantedLastYear = ImmutableMap.of(
                 unchangedRhy.getOfficialCode(), currency(101),
                 newRhy.getOfficialCode(), currency(102 + 103));
 
-        assertEquals(expectedMergedSubsidyAmountGrantedLastYear, output.getRhyCodeToSubsidyGrantedLastYear());
+        assertThat(output.getRhyCodeToSubsidyGrantedLastYear(), equalTo(expectedMergedSubsidyAmountGrantedLastYear));
+    }
+
+    @Test
+    public void testCombineStatistics_unchangedRhy() {
+        final RhyAnnualStatistics stats1 = createRhyAnnualStatistics(unchangedRhy);
+        final RhyAnnualStatistics stats2 = createRhyAnnualStatistics(unchangedRhy);
+
+        populateWithMatchingSubsidyTotalQuantities(stats1, 500, 1, 20, 1, 2, 5, 2, 1, 1, 50, 500);
+        populateWithMatchingSubsidyTotalQuantities(stats2, 1_000, 2, 40, 2, 4, 10, 4, 2, 1, 50, 1_000);
+
+        final AnnualStatisticsExportDTO previousYearStatsDto = export(stats1);
+        final AnnualStatisticsExportDTO statsDto = export(stats2);
+
+        final List<AnnualStatisticsExportDTO> compoundStatistics = createResolver(subsidyYear)
+                .combine(asList(previousYearStatsDto), asList(statsDto));
+        assertThat(compoundStatistics, hasSize(1));
+
+        final Integer expectedRhyMembers = 500 + 1_000;
+        final Integer expectedHunterExamTrainingEvents = 1 + 2;
+        final Integer expectedOtherTrainingEvents = 20 + 40;
+        final Integer expectedStudentAndYouthTrainingEvents = 1 + 2;
+        final Integer expectedHuntingControlEvents = 2 + 4;
+        final Integer expectedSumOfLukeCalculations = 5 + 10;
+        final Integer expectedLukeCarnivoreContactPersons = 2 + 4;
+        final Integer expectedMooselikeTaxationPlanningEvents = 1 + 2;
+        final Integer expectedWolfTerritoryWorkgroups = 1 + 1;
+        final Integer expectedSrvaMooselikeEvents = 50 + 50;
+        final Integer expectedSoldMhLicenses = 500 + 1_000;
+
+        assertCalculatedSubsidyQuantities(compoundStatistics.get(0), expectedRhyMembers, expectedHunterExamTrainingEvents,
+                expectedOtherTrainingEvents, expectedStudentAndYouthTrainingEvents, expectedHuntingControlEvents,
+                expectedSumOfLukeCalculations, expectedLukeCarnivoreContactPersons, expectedMooselikeTaxationPlanningEvents,
+                expectedWolfTerritoryWorkgroups, expectedSrvaMooselikeEvents, expectedSoldMhLicenses);
+
+    }
+
+    @Test
+    public void testCombineStatistics_rhyIbanChange() {
+        final RhyAnnualStatistics stats1 = createRhyAnnualStatistics(unchangedRhy);
+        final RhyAnnualStatistics stats2 = createRhyAnnualStatistics(unchangedRhy);
+
+        assertThat(stats1.getOrCreateBasicInfo().getIban(), not(equalTo(stats2.getOrCreateBasicInfo().getIban())));
+
+        populateWithMatchingSubsidyTotalQuantities(stats1, 500, 1, 20, 1, 2, 5, 2, 1, 1, 50, 500);
+        populateWithMatchingSubsidyTotalQuantities(stats2, 1_000, 2, 40, 2, 4, 10, 4, 2, 1, 50, 1_000);
+
+        final AnnualStatisticsExportDTO previousYearStatsDto = export(stats1);
+        final AnnualStatisticsExportDTO statsDto = export(stats2);
+
+        final List<AnnualStatisticsExportDTO> compoundStatistics = createResolver(subsidyYear)
+                .combine(asList(previousYearStatsDto), asList(statsDto));
+
+        assertThat(compoundStatistics, hasSize(1));
+        assertThat(compoundStatistics.get(0).getBasicInfo().getIban(), equalTo(statsDto.getBasicInfo().getIban()));
+    }
+
+    @Test
+    public void testCombineStatistics_mergedRhy() {
+        final RhyAnnualStatistics stats1 = createRhyAnnualStatistics(oldRhy1);
+        final RhyAnnualStatistics stats2 = createRhyAnnualStatistics(newRhy);
+
+        populateWithMatchingSubsidyTotalQuantities(stats1, 500, 1, 20, 1, 2, 5, 2, 1, 1, 50, 500);
+        populateWithMatchingSubsidyTotalQuantities(stats2, 1_000, 2, 40, 2, 4, 10, 4, 2, 1, 50, 1_000);
+
+        final AnnualStatisticsExportDTO previousYearStatsDto = export(stats1);
+        final AnnualStatisticsExportDTO statsDto = export(stats2);
+
+        final List<AnnualStatisticsExportDTO> compoundStatistics = createResolver(subsidyYear)
+                .combine(asList(previousYearStatsDto), asList(statsDto));
+        assertThat(compoundStatistics, hasSize(2));
+
+        final Map<String, AnnualStatisticsExportDTO> dtosByOfficialCode = F.index(compoundStatistics, dto -> dto.getOrganisation().getOfficialCode());
+
+        final AnnualStatisticsExportDTO oldRhyDto = dtosByOfficialCode.get(oldRhy1.getOfficialCode());
+        final AnnualStatisticsExportDTO newRhyDto = dtosByOfficialCode.get(newRhy.getOfficialCode());
+
+        assertStatistics(oldRhyDto, previousYearStatsDto);
+        assertStatistics(newRhyDto, statsDto);
+
     }
 
     private RhySubsidyMergeResolver createResolver(final int subsidyYear) {

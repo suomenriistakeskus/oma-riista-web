@@ -27,7 +27,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +34,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static fi.riista.util.DateUtil.today;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 
 @Component
@@ -84,14 +84,14 @@ public class HuntingClubMemberInvitationFeature {
         final Set<Person> personsToBeInvited = findPersonsNotMembersAndNotHavingInvitations(club,
                 personsByHunterNumbers);
         if (!personsToBeInvited.isEmpty()) {
-            invitationRepository.save(personsToBeInvited.stream()
+            invitationRepository.saveAll(personsToBeInvited.stream()
                     .map(person -> new HuntingClubMemberInvitation(person, club, OccupationType.SEURAN_JASEN))
                     .collect(toSet()));
         }
         if (group != null) {
             final Set<Person> personsToAddToGroup = findPersonsNotHavingOccupation(group, personsByHunterNumbers);
             if (!personsToAddToGroup.isEmpty()) {
-                occupationRepository.save(personsToAddToGroup.stream()
+                occupationRepository.saveAll(personsToAddToGroup.stream()
                         .map(person -> new Occupation(person, group, OccupationType.RYHMAN_JASEN))
                         .collect(toSet()));
             }
@@ -164,9 +164,9 @@ public class HuntingClubMemberInvitationFeature {
                 person == null ? activeUser.isModeratorOrAdmin() : userAuthorizationHelper.isClubContact(club, person);
 
         if (!showInvitations) {
-            return Collections.emptyList();
+            return emptyList();
         }
-        final JpaSort sort = new JpaSort(Sort.Direction.ASC,
+        final JpaSort sort = JpaSort.of(Sort.Direction.ASC,
                 JpaSort.path(HuntingClubMemberInvitation_.person).dot(Person_.lastName),
                 JpaSort.path(HuntingClubMemberInvitation_.person).dot(Person_.byName));
         return HuntingClubMemberInvitationDTO.create(
@@ -183,7 +183,7 @@ public class HuntingClubMemberInvitationFeature {
             if (personId != null && activeUser.isModeratorOrAdmin()) {
                 person = personRepository.getOne(personId);
             } else {
-                return Collections.emptyList();
+                return emptyList();
             }
         }
 
@@ -221,6 +221,10 @@ public class HuntingClubMemberInvitationFeature {
     }
 
     private List<Person> findPersonsByHunterNumber(Set<String> hunterNumbers) {
+        if (hunterNumbers.isEmpty()) {
+            return emptyList();
+        }
+
         return personRepository.findFinnishPersonsByHunterNumber(hunterNumbers);
     }
 }

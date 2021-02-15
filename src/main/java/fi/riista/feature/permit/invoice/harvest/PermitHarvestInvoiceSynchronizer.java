@@ -79,11 +79,6 @@ public class PermitHarvestInvoiceSynchronizer {
             throw new IllegalArgumentException(format("Decision for permit %s is missing", permit.getPermitNumber()));
         }
 
-        if (permit.getOriginalContactPerson().getAddress() == null) {
-            throw new IllegalStateException(
-                    format("Address of original contact person of permit %s is missing", permit.getPermitNumber()));
-        }
-
         final Optional<PermitHarvestInvoice> harvestInvoiceOpt =
                 permitHarvestInvoiceRepository.findBySpeciesAmount(speciesAmount);
 

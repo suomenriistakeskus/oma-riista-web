@@ -34,11 +34,11 @@ public class RkaListFeature {
         // criteria for this type of organisations.
         final List<Organisation> areas = organisationRepository.findByOrganisationType(
                 OrganisationType.RKA,
-                new JpaSort(Organisation_.officialCode, Organisation_.id));
+                JpaSort.of(Organisation_.officialCode, Organisation_.id));
 
         final List<Organisation> rhys = organisationRepository.findByOrganisationType(
                 OrganisationType.RHY,
-                new JpaSort(Organisation_.officialCode, Organisation_.id));
+                JpaSort.of(Organisation_.officialCode, Organisation_.id));
 
         return mapToDtos(areas, rhys, locale);
     }
@@ -49,18 +49,18 @@ public class RkaListFeature {
         // criteria for this type of organisations.
         final List<Organisation> areas = organisationRepository.findActiveByOrganisationType(
                 OrganisationType.RKA,
-                new JpaSort(Organisation_.officialCode, Organisation_.id));
+                JpaSort.of(Organisation_.officialCode, Organisation_.id));
 
         List<Organisation> rhys = organisationRepository.findActiveByOrganisationType(
                 OrganisationType.RHY,
-                new JpaSort(Organisation_.officialCode, Organisation_.id));
+                JpaSort.of(Organisation_.officialCode, Organisation_.id));
 
         return mapToDtos(areas, rhys, locale);
     }
 
-    private List<RkaListOrganisationDTO> mapToDtos(final List<Organisation> areas,
-                                                   final List<Organisation> rhys,
-                                                   final Locale locale) {
+    private static List<RkaListOrganisationDTO> mapToDtos(final List<Organisation> areas,
+                                                          final List<Organisation> rhys,
+                                                          final Locale locale) {
         final Map<Organisation, Set<Organisation>> rkaToRhy = rhys.stream()
                 .collect(
                         groupingBy(Organisation::getParentOrganisation,
@@ -70,14 +70,14 @@ public class RkaListFeature {
                 .build()).collect(toList());
     }
 
-    private List<RkaListOrganisationDTO> mapRhysToDtos(final Set<Organisation> rhys, final Locale locale) {
+    private static List<RkaListOrganisationDTO> mapRhysToDtos(final Set<Organisation> rhys, final Locale locale) {
         return rhys.stream()
                 .map(rhy -> toDTO(rhy, locale).build())
                 .sorted(comparing(RkaListOrganisationDTO::getName))
                 .collect(Collectors.toList());
     }
 
-    private RkaListOrganisationDTO.Builder toDTO(final Organisation organisation, final Locale locale) {
+    private static RkaListOrganisationDTO.Builder toDTO(final Organisation organisation, final Locale locale) {
         return RkaListOrganisationDTO.Builder.builder()
                 .withName(organisation.getNameLocalisation().getAnyTranslation(locale))
                 .withOfficialCode(organisation.getOfficialCode())

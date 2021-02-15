@@ -87,6 +87,12 @@
                 copy: {
                     method: 'POST',
                     url: apiPrefix + '/copy'
+                },
+                importFromPersonalArea: {
+                    method: 'POST',
+                    url: apiPrefix + '/import-personal/:personalAreaId',
+                    params: {personalAreaId: '@personalAreaId'},
+                    isArray: false
                 }
             });
         })
@@ -261,7 +267,8 @@
             },
             controller: function ($q, $scope, $window, ActiveRoleService, ClubAreas,
                                   FetchAndSaveBlob, TranslatedBlockUI,
-                                  ClubAreaFormSidebar, ClubAreaCopyModal, ClubAreaImportModal, MapPdfModal) {
+                                  ClubAreaFormSidebar, ClubAreaCopyModal, ClubAreaImportModal,
+                                  ClubAreaImportFromPersonalAreaModal, MapPdfModal) {
                 var $ctrl = this;
 
                 $ctrl.isContactPerson = function () {
@@ -282,6 +289,10 @@
 
                 $ctrl.importArea = function () {
                     ClubAreaImportModal.importArea($ctrl.area).then(notifyAreaChange);
+                };
+
+                $ctrl.importPersonalArea = function () {
+                    ClubAreaImportFromPersonalAreaModal.importPersonalArea($ctrl.area).then(notifyAreaChange);
                 };
 
                 $ctrl.printArea = function () {
@@ -550,7 +561,78 @@
                     $uibModalInstance.dismiss();
                 };
             }
-        });
+        })
+        .service('ClubAreaImportFromPersonalAreaModal', function ($q, $filter, $translate, $uibModal, dialogs, NotificationService) {
+            this.importPersonalArea = function (area) {
+                return confirmAreaImport(area).then(function () {
+                    return $uibModal.open({
+                        templateUrl: 'club/area/personal-area-import.html',
+                        size: 'md',
+                        controller: ModalController,
+                        controllerAs: '$ctrl',
+                        bindToController: true,
+                        resolve: {
+                            areaId: _.constant(area.id)
+                        }
+                    }).result.then(function (area) {
+                        NotificationService.showMessage('club.area.importPersonal.success', 'success');
+                        return area;
+                    });
+                });
+            };
 
+            function confirmAreaImport(area) {
+                if (!area.zoneId) {
+                    return $q.when(true);
+                }
+
+                var i18nFilter = $filter('rI18nNameFilter');
+                var dialogTitle = $translate.instant('club.area.import.confirmTitle');
+                var dialogMessage = $translate.instant('club.area.importPersonal.confirmBody', {
+                    areaName: i18nFilter(area)
+                });
+
+                return dialogs.confirm(dialogTitle, dialogMessage).result;
+            }
+
+            function ModalController($uibModalInstance, ClubAreas, AccountAreas, areaId) {
+                var $ctrl = this;
+
+                $ctrl.$onInit = function () {
+                    $ctrl.areaExternalId = null;
+                    $ctrl.selectedArea = null;
+                    $ctrl.error = null;
+                };
+
+                $ctrl.search = function () {
+                    $ctrl.selectedArea = null;
+                    $ctrl.error = null;
+                    AccountAreas.findByExternalId({areaExternalId: $ctrl.areaExternalId}).$promise.then(
+                        function (area) {
+                            $ctrl.selectedArea = area;
+                        }, function (error) {
+                            $ctrl.error = error;
+                        });
+                };
+
+                $ctrl.close = function () {
+                    $uibModalInstance.dismiss();
+                };
+
+                $ctrl.removeSelection = function () {
+                    $ctrl.selectedArea = null;
+                };
+
+                $ctrl.doImport = function () {
+                    return ClubAreas.importFromPersonalArea({
+                        id: areaId
+                    }, {
+                        personalAreaId: $ctrl.selectedArea.id
+                    }).$promise.then(function (area) {
+                        $uibModalInstance.close(area);
+                    });
+                };
+            }
+        });
 })();
 

@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/v1/organisation", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/organisation", produces = MediaType.APPLICATION_JSON_VALUE)
 public class OrganisationEventApiResource {
 
     @Resource

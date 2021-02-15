@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyCalculation.roundToEvenEuros;
 import static fi.riista.util.NumberUtils.currencySum;
 import static java.util.Comparator.comparing;
@@ -19,7 +20,7 @@ import static java.util.stream.Collectors.toList;
 
 public final class SubsidyAllocationStage4Rounding {
 
-    public static List<Stage4RoundingResultDTO> roundCompensatedSubsidies(
+    public static List<RhySubsidyRoundingStage4DTO> roundCompensatedSubsidies(
             @Nonnull final SubsidyAllocationCompensationResultDTO compensationResult) {
 
         requireNonNull(compensationResult);
@@ -40,11 +41,11 @@ public final class SubsidyAllocationStage4Rounding {
         final Map<Boolean, List<ComparableSubsidyAfterCompensation>> partitionByDownscaling =
                 comparableCompensationResults.stream().collect(partitioningBy(s -> s.downscaled));
 
-        final Stream<Stage4RoundingResultDTO> roundingResultsForDownscaled =
+        final Stream<RhySubsidyRoundingStage4DTO> roundingResultsForDownscaled =
                 allocateRemainderAndDoRounding(partitionByDownscaling.get(true), remainderEuros);
 
-        final Stream<Stage4RoundingResultDTO> roundingResultsForOthers =
-                partitionByDownscaling.get(false).stream().map(s -> s.toRoundingResult());
+        final Stream<RhySubsidyRoundingStage4DTO> roundingResultsForOthers =
+                partitionByDownscaling.get(false).stream().map(s -> s.toRoundingResult(0));
 
         return Stream.concat(roundingResultsForDownscaled, roundingResultsForOthers).collect(toList());
     }
@@ -57,27 +58,27 @@ public final class SubsidyAllocationStage4Rounding {
             final String rhyCode = lastRoundOutput.getRhyCode();
 
             final BigDecimal beforeCompensation = compensationResult.getCalculatedSubsidyBeforeCompensation(rhyCode);
-            final BigDecimal afterCompensation = lastRoundOutput.getCalculatedSubsidyForSecondBatch();
+            final BigDecimal afterCompensation = lastRoundOutput.getCalculatedSubsidy();
 
             return new ComparableSubsidyAfterCompensation(
                     rhyCode, beforeCompensation, afterCompensation, lastRoundOutput.isDownscaled());
         });
     }
 
-    private static Stream<Stage4RoundingResultDTO> allocateRemainderAndDoRounding(
+    private static Stream<RhySubsidyRoundingStage4DTO> allocateRemainderAndDoRounding(
             final List<ComparableSubsidyAfterCompensation> rhysToShareRemainder, final int remainderEuros) {
 
         final int numRemainderSharers = rhysToShareRemainder.size();
         final int numberOfEurosGivenToAllSharers = remainderEuros / numRemainderSharers;
         final int numSharersGivenOneEuroMore = remainderEuros - numRemainderSharers * numberOfEurosGivenToAllSharers;
 
-        final Stream<Stage4RoundingResultDTO> firstPartition = rhysToShareRemainder
+        final Stream<RhySubsidyRoundingStage4DTO> firstPartition = rhysToShareRemainder
                 .stream()
                 .sorted(ComparableSubsidyAfterCompensation.COMPARATOR)
                 .limit(numSharersGivenOneEuroMore)
                 .map(sharer -> sharer.toRoundingResult(numberOfEurosGivenToAllSharers + 1));
 
-        final Stream<Stage4RoundingResultDTO> secondPartition = rhysToShareRemainder
+        final Stream<RhySubsidyRoundingStage4DTO> secondPartition = rhysToShareRemainder
                 .stream()
                 .sorted(ComparableSubsidyAfterCompensation.COMPARATOR)
                 .skip(numSharersGivenOneEuroMore)
@@ -114,16 +115,16 @@ public final class SubsidyAllocationStage4Rounding {
                     roundToEvenEuros(subsidyAfterCompensation, BigDecimal.ROUND_DOWN);
         }
 
-        public Stage4RoundingResultDTO toRoundingResult() {
-            return new Stage4RoundingResultDTO(
-                    rhyCode, subsidyAfterCompensation, subsidyAfterCompensationRoundedToEvenEuros, 0);
-        }
+        public RhySubsidyRoundingStage4DTO toRoundingResult(final int givenRemainderEuros) {
+            checkArgument(givenRemainderEuros >= 0, "Remainder must not be negative");
 
-        public Stage4RoundingResultDTO toRoundingResult(final int givenRemainderEuros) {
-            final BigDecimal finalSubsidy =
-                    subsidyAfterCompensationRoundedToEvenEuros.add(new BigDecimal(givenRemainderEuros));
+            final BigDecimal resultSubsidy = givenRemainderEuros == 0
+                    ? subsidyAfterCompensationRoundedToEvenEuros
+                    : subsidyAfterCompensationRoundedToEvenEuros.add(new BigDecimal(givenRemainderEuros));
 
-            return new Stage4RoundingResultDTO(rhyCode, subsidyAfterCompensation, finalSubsidy, givenRemainderEuros);
+            return new RhySubsidyRoundingStage4DTO(
+                    rhyCode,
+                    new SubsidyRoundingDTO(subsidyAfterCompensation, resultSubsidy, givenRemainderEuros));
         }
     }
 

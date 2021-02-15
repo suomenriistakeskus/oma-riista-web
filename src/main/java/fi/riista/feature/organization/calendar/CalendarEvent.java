@@ -3,7 +3,6 @@ package fi.riista.feature.organization.calendar;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.util.DateUtil;
-import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
@@ -20,6 +19,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
@@ -31,8 +31,6 @@ import static fi.riista.util.DateUtil.today;
 @Entity
 @Access(value = AccessType.FIELD)
 public class CalendarEvent extends LifecycleEntity<Long> {
-
-    public static final Days DAYS_OF_EVENT_MODIFIABLE_AFTER_CREATION = Days.ONE;
 
     private Long id;
 
@@ -74,10 +72,14 @@ public class CalendarEvent extends LifecycleEntity<Long> {
     private boolean excludedFromStatistics;
 
     @Column
+    @Min(0)
     private Integer participants;
 
     @OneToMany(mappedBy = "calendarEvent")
     private Set<AdditionalCalendarEvent> additionalCalendarEvents = new HashSet<>();
+
+    @Column(nullable = false)
+    private boolean remoteEvent;
 
     public CalendarEvent() {
     }
@@ -94,17 +96,11 @@ public class CalendarEvent extends LifecycleEntity<Long> {
 
     @Transient
     public boolean isLockedAsPastCalendarEvent() {
-        if (calendarEventType == null) {
+        if (calendarEventType == null || calendarEventType.isShootingTest()) {
             return false;
         }
-        final LocalDate today = today();
 
-        if (today.isAfter(getDateAsLocalDate())) {
-            final LocalDate creationDate = DateUtil.toLocalDateNullSafe(getCreationTime());
-            return creationDate.plus(CalendarEvent.DAYS_OF_EVENT_MODIFIABLE_AFTER_CREATION).isBefore(today);
-        }
-
-        return false;
+        return today().isAfter(getDateAsLocalDate()) && participants != null && participants > 0;
     }
 
     @Transient
@@ -228,5 +224,13 @@ public class CalendarEvent extends LifecycleEntity<Long> {
 
     Set<AdditionalCalendarEvent> getAdditionalCalendarEvents() {
         return additionalCalendarEvents;
+    }
+
+    public boolean isRemoteEvent() {
+        return remoteEvent;
+    }
+
+    public void setRemoteEvent(final boolean remoteEvent) {
+        this.remoteEvent = remoteEvent;
     }
 }

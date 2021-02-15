@@ -53,7 +53,7 @@ angular.module('app.common.species', ['ngResource'])
             cs('GAME_MAMMAL', 47329, false, null, 'pesukarhu', 'tvättbjörn', 'raccoon'),
             cs('GAME_MAMMAL', 47348, false, 8, 'karhu', 'björn', 'brown bear'),
             cs('GAME_MAMMAL', 47476, false, null, 'saksanhirvi', 'kronhjort', 'red deer'),
-            cs('GAME_MAMMAL', 47479, false, null, 'japaninhirvi', 'sikahjort', 'sika deer'),
+            cs('GAME_MAMMAL', 47479, false, null, 'japaninpeura', 'sikahjort', 'sika deer'),
             cs('GAME_MAMMAL', 47484, false, 5, 'kuusipeura', 'dovhjort', 'fallow deer'),
             cs('GAME_MAMMAL', 47503, false, 1, 'hirvi', 'älg', 'moose'),
             cs('GAME_MAMMAL', 47507, false, 3, 'metsäkauris', 'rådjur', 'roe deer'),
@@ -76,6 +76,8 @@ angular.module('app.common.species', ['ngResource'])
 
         var speciesMapping = _.keyBy(speciesList, 'code');
 
+        var alienSpecies = [46564, 47243, 50336, 47329, 48537];
+
         this.getSpeciesMapping = function () {
             return speciesMapping;
         };
@@ -89,6 +91,50 @@ angular.module('app.common.species', ['ngResource'])
         this.getBirdPermitSpecies = function () {
             return _.filter(speciesList, function (v) {
                 return v.code !== 53004 && (v.category === 'FOWL' || v.category === 'UNPROTECTED');
+            });
+        };
+
+        this.isBirdPermitSpecies = function (speciesCode) {
+            var birds = this.getBirdPermitSpecies();
+            return _.findIndex(birds, function (bird) {
+                return bird.code === speciesCode;
+            }) !== -1;
+        };
+
+        this.getMammalPermitSpecies = function () {
+            return _.filter(speciesList, function (v) {
+                return v.category === 'GAME_MAMMAL';
+            });
+        };
+
+        this.getCarnivoreSpecies = function () {
+            return _.filter(speciesList, function (v) {
+                return GameSpeciesCodes.isCarnivoreSpecies(v.code);
+            });
+        };
+
+        this.getMooselikeSpecies = function () {
+            return _.filter(speciesList, function (v) {
+                return GameSpeciesCodes.isMooselike(v.code);
+            });
+        };
+
+        this.getNestRemovalPermitSpecies = function () {
+            return _.filter(speciesList, function (v) {
+                return _.indexOf(alienSpecies, v.code) === -1 && v.code !== 53004;
+            });
+        };
+
+        this.getLawSectionTenPermitSpecies = function () {
+            return _.filter(speciesList, function (v) {
+                return v.code === 200555 || v.code === 27048 || v.code === 48251;
+            });
+        };
+
+        this.getAllPermitSpecies = function () {
+            // Wild cat is not applicable to any permit
+            return _.filter(speciesList, function (v) {
+                return v.code !== 53004;
             });
         };
 
@@ -148,7 +194,9 @@ angular.module('app.common.species', ['ngResource'])
         }
     })
 
-    .service('GameSpeciesCodes', function () {
+    .service('GameSpeciesCodes', function (HuntingYearService) {
+        var self = this;
+
         var BEAR = 47348;
         var FALLOW_DEER = 47484;
         var GREY_SEAL = 47282;
@@ -160,10 +208,17 @@ angular.module('app.common.species', ['ngResource'])
         var WILD_FOREST_REINDEER = 200556;
         var WOLF = 46549;
         var WOLVERINE = 47212;
+        var OTTER = 47169;
 
+        var LONG_TAILED_DUCK = 26427;
         var BEAN_GOOSE = 26287;
 
-        _.assign(this, {
+        var EUROPEAN_BEAVER = 48251;
+        var BROWN_HARE = 50386;
+
+        var RINGED_SEAL = 200555;
+
+        _.assign(self, {
             'BEAR': BEAR,
             'FALLOW_DEER': FALLOW_DEER,
             'GREY_SEAL': GREY_SEAL,
@@ -175,7 +230,12 @@ angular.module('app.common.species', ['ngResource'])
             'WILD_FOREST_REINDEER': WILD_FOREST_REINDEER,
             'WOLF': WOLF,
             'WOLVERINE': WOLVERINE,
-            'BEAN_GOOSE': BEAN_GOOSE
+            'BEAN_GOOSE': BEAN_GOOSE,
+            'LONG_TAILED_DUCK': LONG_TAILED_DUCK,
+            'OTTER': OTTER,
+            'EUROPEAN_BEAVER': EUROPEAN_BEAVER,
+            'BROWN_HARE': BROWN_HARE,
+            'RINGED_SEAL': RINGED_SEAL
         });
 
         var deerCodes = [FALLOW_DEER, ROE_DEER, WHITE_TAILED_DEER, WILD_FOREST_REINDEER];
@@ -183,43 +243,70 @@ angular.module('app.common.species', ['ngResource'])
         var permitBasedDeerCodes = [FALLOW_DEER, WHITE_TAILED_DEER, WILD_FOREST_REINDEER];
         var permitBasedMooselikeCodes = [FALLOW_DEER, MOOSE, WHITE_TAILED_DEER, WILD_FOREST_REINDEER];
 
-        this.isMoose = function (gameSpeciesCode) {
+        self.isMoose = function (gameSpeciesCode) {
             return gameSpeciesCode === MOOSE;
         };
 
-        this.isDeer = function (gameSpeciesCode) {
+        self.isDeer = function (gameSpeciesCode) {
             return _.includes(deerCodes, gameSpeciesCode);
         };
 
-        this.isMooselike = function (gameSpeciesCode) {
+        self.isMooselike = function (gameSpeciesCode) {
             return _.includes(mooselikeCodes, gameSpeciesCode);
         };
 
-        this.isPermitBasedDeer = function (gameSpeciesCode) {
+        self.isPermitBasedDeer = function (gameSpeciesCode) {
             return _.includes(permitBasedDeerCodes, gameSpeciesCode);
         };
 
-        this.isPermitBasedMooselike = function (gameSpeciesCode) {
+        self.isPermitBasedMooselike = function (gameSpeciesCode) {
             return _.includes(permitBasedMooselikeCodes, gameSpeciesCode);
         };
 
-        this.isWildBoar = function (gameSpeciesCode) {
+        self.isWildBoar = function (gameSpeciesCode) {
             return gameSpeciesCode === WILD_BOAR;
         };
 
-        this.isRoeDeer = function (gameSpeciesCode) {
+        self.isRoeDeer = function (gameSpeciesCode) {
             return gameSpeciesCode === ROE_DEER;
         };
 
-        this.isGreySeal = function (gameSpeciesCode) {
+        self.isGreySeal = function (gameSpeciesCode) {
             return gameSpeciesCode === GREY_SEAL;
         };
 
-        this.isCarnivoreSpecies = function (gameSpeciesCode) {
-            return gameSpeciesCode === this.BEAR ||
-                gameSpeciesCode === this.WOLF ||
-                gameSpeciesCode === this.LYNX ||
-                gameSpeciesCode === this.WOLVERINE;
+        self.isOtter = function (gameSpeciesCode) {
+            return gameSpeciesCode === OTTER;
+        };
+
+        self.isCarnivoreSpecies = function (gameSpeciesCode) {
+            return gameSpeciesCode === self.BEAR ||
+                gameSpeciesCode === self.WOLF ||
+                gameSpeciesCode === self.LYNX ||
+                gameSpeciesCode === self.WOLVERINE;
+        };
+
+        self.isWhiteTailedDeer = function (gameSpeciesCode) {
+            return gameSpeciesCode === WHITE_TAILED_DEER;
+        };
+
+        self.isEuropeanBeaver = function (gameSpeciesCode) {
+            return gameSpeciesCode === EUROPEAN_BEAVER;
+        };
+
+        self.isRingedSeal = function (gameSpeciesCode) {
+            return gameSpeciesCode === RINGED_SEAL;
+        };
+
+        // TODO Remove `isDeerPilotUser` parameter when deer pilot 2020 is over.
+        self.isSpeciesHavingExtendedFields = function (gameSpeciesCode, isDeerPilotUser) {
+            var huntingYear = HuntingYearService.getCurrent();
+
+            if (huntingYear < 2020 || !isDeerPilotUser) {
+                return self.isPermitBasedMooselike(gameSpeciesCode);
+            }
+
+            return self.isMooselike(gameSpeciesCode) || self.isWildBoar(gameSpeciesCode);
         };
     })
 

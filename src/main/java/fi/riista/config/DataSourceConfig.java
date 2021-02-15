@@ -1,7 +1,8 @@
 package fi.riista.config;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.services.rds.AmazonRDSClient;
+import com.amazonaws.services.rds.AmazonRDS;
+import com.amazonaws.services.rds.AmazonRDSClientBuilder;
 import com.querydsl.sql.SQLQueryFactory;
 import com.querydsl.sql.SQLTemplates;
 import com.querydsl.sql.spatial.GeoDBTemplates;
@@ -21,10 +22,16 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 
 import javax.sql.DataSource;
+import java.util.Optional;
 
 @Configuration
 @Import(DataSourceProperties.class)
 public class DataSourceConfig {
+
+    interface DataSourceContext {
+        Optional<String[]> getMappingResources();
+    }
+
 
     @Bean
     public SQLQueryFactory sqlQueryFactory(DataSource dataSource, SQLTemplates templates) {
@@ -35,7 +42,7 @@ public class DataSourceConfig {
 
     @Configuration
     @StandardDatabase
-    static class StandardDatabaseConfiguration {
+    static class StandardDatabaseConfiguration implements DataSourceContext {
         @Bean(destroyMethod = "close")
         public DataSource dataSource(DataSourceProperties dataSourceProperties) {
             return new HikariDataSource(dataSourceProperties.buildStandardPoolConfig());
@@ -45,39 +52,62 @@ public class DataSourceConfig {
         public SQLTemplates queryDslSqlTemplates() {
             return PostGISTemplates.DEFAULT;
         }
+
+
+        @Override
+        public Optional<String[]> getMappingResources() {
+            return Optional.empty();
+        }
     }
 
     @Configuration
     @AmazonDatabase
-    static class AmazonDatabaseConfiguration {
+    static class AmazonDatabaseConfiguration implements DataSourceContext {
         @Bean(destroyMethod = "close")
         public DataSource dataSource(
                 final DataSourceProperties dataSourceProperties,
                 final AWSCredentialsProvider credentialsProvider,
                 final RegionProvider regionProvider) {
-            final AmazonRDSClient amazonRds = new AmazonRDSClient(credentialsProvider);
-            amazonRds.setRegion(regionProvider.getRegion());
+            final AmazonRDS amazonRds = AmazonRDSClientBuilder.standard()
+                    .withCredentials(credentialsProvider)
+                    .withRegion(regionProvider.getRegion().getName())
+                    .build();
 
             return new HikariDataSource(dataSourceProperties.buildAmazonPoolConfig(amazonRds));
+
         }
 
         @Bean
         public SQLTemplates queryDslSqlTemplates() {
             return PostGISTemplates.DEFAULT;
         }
+
+        @Override
+        public Optional<String[]> getMappingResources() {
+            return Optional.empty();
+        }
     }
 
     @Configuration
     @EmbeddedDatabase
-    static class TestDatabaseConfiguration {
+    static class TestDatabaseConfiguration implements DataSourceContext {
         @Bean(destroyMethod = "shutdown")
         public DataSource dataSource() {
-            return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2).build();
+            return new EmbeddedDatabaseBuilder()
+                    .setType(EmbeddedDatabaseType.H2)
+                    // TODO: Enable PostgreSQL compatibility when Liquibase maps number-column correctly
+                    //.setName("testdb;MODE=PostgreSQL")
+                    .build();
         }
 
         @Bean
         public SQLTemplates queryDslSqlTemplates() {
             return GeoDBTemplates.DEFAULT;
+        }
+
+        @Override
+        public Optional<String[]> getMappingResources() {
+            return Optional.of(new String[] { "META-INF/orm-embeddedDatabaseTest.xml" });
         }
     }
 }

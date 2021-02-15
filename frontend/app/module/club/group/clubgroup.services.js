@@ -72,6 +72,10 @@ angular.module('app.clubgroup.services', [])
             'editObservationLocation': {
                 method: 'POST',
                 url: 'api/v1/club/group/observation/:observationId/editlocation'
+            },
+            'acceptDeerObservation': {
+                method: 'POST',
+                url: 'api/v1/club/group/:id/acceptobservationwithindeerhunting'
             }
         });
     })

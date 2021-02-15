@@ -6,5 +6,10 @@ import org.joda.time.Interval;
 import java.util.List;
 
 public interface ObservationRepositoryCustom {
-    List<Observation> findGroupObservations(HuntingClubGroup huntingClubGroup, Interval interval);
+    List<Observation> findGroupObservations(HuntingClubGroup huntingClubGroup,
+                                            ObservationCategory observationCategory,
+                                            Interval interval);
+
+    List<HuntingClubGroup> findGroupCandidatesForDeerObservation(final Observation observation);
+
 }

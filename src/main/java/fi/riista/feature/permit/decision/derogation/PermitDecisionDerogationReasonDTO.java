@@ -8,14 +8,16 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonType.REASON_POPULATION_PRESERVATION;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 public class PermitDecisionDerogationReasonDTO {
 
-    public static List<PermitDecisionDerogationReasonDTO> toDTOsForBird(final Collection<PermitDecisionDerogationReasonType> iterable) {
+    public static List<PermitDecisionDerogationReasonDTO> toDTOs(final Collection<PermitDecisionDerogationReasonType> iterable, final DerogationLawSection section) {
 
         // Map all enumeration values, set checked flag based on entity collection
         return Arrays.stream(PermitDecisionDerogationReasonType.values())
+                .filter(val -> section == val.getLawSection())
                 .filter(val -> val != REASON_POPULATION_PRESERVATION)
                 .map(val -> new PermitDecisionDerogationReasonDTO(val, iterable.contains(val)))
                 .collect(toList());
@@ -50,7 +52,7 @@ public class PermitDecisionDerogationReasonDTO {
     }
 
     public PermitDecisionDerogationReasonDTO(PermitDecisionDerogationReasonType type, boolean checked) {
-        this.reasonType = type;
+        this.reasonType = requireNonNull(type);
         this.checked = checked;
     }
 

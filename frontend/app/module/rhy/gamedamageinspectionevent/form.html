@@ -1,0 +1,402 @@
+<form name="form" role="form" class="form form-horizontal r-event-form" ng-submit="$ctrl.save()">
+
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 ng-if="!$ctrl.event.id" class="modal-title" translate="rhy.gameDamageInspectionEvent.titleAdd"></h3>
+    <h3 ng-if="$ctrl.event.id" class="modal-title" translate="rhy.gameDamageInspectionEvent.titleEdit"></h3>
+</div>
+
+<div class="modal-body">
+    <uib-tabset type="pills" justified="true" active="$ctrl.activeTabIndex">
+        <uib-tab index="0" select="$ctrl.selectTab()">
+
+            <uib-tab-heading>
+                <span translate="rhy.gameDamageInspectionEvent.eventInfo"></span>
+            </uib-tab-heading>
+
+            <div class="form-group row" style="margin-top: 20px" show-errors>
+                <label for="damageType" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.damageType"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <select class="form-control"
+                            name="damageType" id="damageType"
+                            ng-model="$ctrl.gameDamageType"
+                            ng-options="('rhy.gameDamageInspectionEvent.type.'+o|translate) for o in $ctrl.damageTypes"
+                            ng-change="$ctrl.onGameDamageTypeChanged()"
+                            required></select>
+                </div>
+            </div>
+
+            <div ng-if="$ctrl.gameDamageType" class="form-group row" show-errors>
+                <label for="species" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.species"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <select class="form-control text-capitalize"
+                            name="species" id="species"
+                            ng-model="$ctrl.event.gameSpeciesCode"
+                            ng-options="species.code as $ctrl.translateSpecies(species) for species in $ctrl.speciesList"
+                            required></select>
+                </div>
+            </div>
+
+            <div class="form-group row" show-errors>
+                <label for="inspectorName" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.inspectorName"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <input type="text" class="form-control"
+                           name="inspectorName" id="inspectorName"
+                           ng-model="$ctrl.event.inspectorName"
+                           required/>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="map" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.formLocation"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <leaflet class="r-cursor-pointer"
+                             id="map"
+                             defaults="$ctrl.leaflet.mapDefaults"
+                             layers="$ctrl.leaflet.mapDefaults.mmlLayers"
+                             controls="$ctrl.leaflet.mapDefaults.controls"
+                             bounds="$ctrl.leaflet.bounds"
+                             geojson="$ctrl.leaflet.mapFeatures"
+                             geojson-watch-options="$ctrl.leaflet.mapDefaults.geojsonWatchOptions"
+                             r-geolocation-marker="$ctrl.event.geoLocation"
+                             r-geolocation-marker-force-finland="true"
+                             r-geolocation-editable="true"
+                             height="400px">
+                    </leaflet>
+                    <div r-geolocation-input="$ctrl.event.geoLocation">
+                    </div>
+                    <div class="alert alert-danger"
+                         ng-if="!$ctrl.inRhyArea"
+                         translate="rhy.gameDamageInspectionEvent.notInRhyArea"></div>
+                </div>
+            </div>
+
+            <div class="form-group row" show-errors>
+                <label for="date" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.date"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" class="form-control"
+                               name="date" id="date"
+                               ng-model="$ctrl.event.date"
+                               required
+                               uib-datepicker-popup is-open="isDatePickerOpen"/>
+
+                        <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" tabindex="-1"
+                                        ng-click="toggleDatePopup($event)">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </button>
+                            </span>
+                    </div>
+
+                    <div class="alert alert-danger"
+                         ng-if="$ctrl.isDateTooFarInThePast()"
+                         translate="rhy.gameDamageInspectionEvent.dateTooFarInThePast"></div>
+                    <div class="alert alert-danger"
+                         ng-if="$ctrl.isDateInTheFuture()"
+                         translate="rhy.gameDamageInspectionEvent.dateInTheFuture"></div>
+                </div>
+            </div>
+
+            <div class="form-group row" show-errors>
+                <label for="beginTime" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.beginTime"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-2">
+                    <input type="text" class="form-control"
+                           name="beginTime" id="beginTime"
+                           finnish-time
+                           ng-model="$ctrl.event.beginTime"
+                           ng-change="$ctrl.onDurationChanged()"
+                           ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
+                           required/>
+                </div>
+            </div>
+
+            <div class="form-group row" show-errors>
+                <label for="endTime" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.endTime"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-2">
+                    <input type="text" class="form-control"
+                           name="endTime" id="endTime"
+                           finnish-time
+                           ng-model="$ctrl.event.endTime"
+                           ng-change="$ctrl.onDurationChanged()"
+                           ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
+                           required/>
+                </div>
+            </div>
+
+            <div class="row" style="padding-left: 15px" ng-if="!$ctrl.isBeginTimeBeforeEndTime()">
+                <label for="endTimeAlert" class="col-xs-4 control-label">
+                </label>
+                <div name="endTimeAlert" id="endTimeAlert" class="col-xs-8 alert alert-danger"
+                     translate="rhy.gameDamageInspectionEvent.endTimeBeforeBeginTime"></div>
+            </div>
+
+            <div class="form-group row">
+                <label for="duration" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.duration"></span>
+                </label>
+
+                <div name="duration"
+                     id="duration"
+                     class="col-xs-2 r-gamedamageinspectionevent-computed-value"
+                     ng-bind="$ctrl.durationText">
+                </div>
+            </div>
+
+            <div class="form-group row" show-errors>
+                <label for="description" class="col-xs-4 control-label" translate="rhy.gameDamageInspectionEvent.description"></label>
+
+                <div class="col-xs-8">
+                        <textarea class="form-control"
+                                  name="description" id="description"
+                                  rows="10"
+                                  ng-model="$ctrl.event.description">
+                        </textarea>
+                </div>
+            </div>
+
+        </uib-tab>
+
+        <uib-tab index="1">
+            <uib-tab-heading>
+                <span translate="rhy.gameDamageInspectionEvent.eventExpenses"></span>
+            </uib-tab-heading>
+
+            <div class="form-group row" style="margin-top: 20px" show-errors>
+                <label for="hourlyExpensesUnit" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.hourlyExpensesUnit"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <input type="number" class="form-control"
+                           name="hourlyExpensesUnit" id="hourlyExpensesUnit"
+                           number
+                           step="0.01"
+                           min="0"
+                           ng-model="$ctrl.event.hourlyExpensesUnit"
+                           ng-change="$ctrl.onRhyExpensesChanged()"
+                           ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
+                           required/>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="rhyExpenses" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.rhyExpenses"></span>
+                </label>
+
+                <div name="rhyExpenses"
+                     id="rhyExpenses"
+                     class="col-xs-2 r-gamedamageinspectionevent-computed-value"
+                     ng-bind="$ctrl.rhyExpenses | number: 2">
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="row">
+                <span class="col-xs-4" style="text-align: right" translate="rhy.gameDamageInspectionEvent.kmExpenseTitle"></span>
+            </div>
+
+            <div ng-repeat="kmExpenses in $ctrl.event.gameDamageInspectionKmExpenses">
+                <div class="form-group row">
+                    <label class="col-xs-4 control-label">
+                    </label>
+
+                    <div class="col-xs-8">
+                        <span translate="rhy.gameDamageInspectionEvent.kmExpenses.expenseType"></span>
+                        <span>{{$index + 1}}</span>
+                    </div>
+                </div>
+
+                <div class="form-group row" show-errors>
+                    <label for="expenseType-{{$index}}" class="col-xs-4 control-label">
+                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                    </label>
+
+                    <div class="col-xs-5">
+                        <select class="form-control"
+                                name="expenseType-{{$index}}" id="expenseType-{{$index}}"
+                                ng-model="kmExpenses.expenseType"
+                                ng-options="('rhy.gameDamageInspectionEvent.kmExpenses.expenseTypes.'+o|translate) for o in $ctrl.gameDamageInspectionExpenseTypes"
+                                required></select>
+                    </div>
+
+                    <div class="col-xs-3">
+                        <button class="btn btn-danger btn-block"
+                                type="button"
+                                ng-click="$ctrl.removeKmExpenses($index)"
+                                translate="rhy.gameDamageInspectionEvent.kmExpenses.remove"
+                                ng-disabled="$ctrl.event.gameDamageInspectionKmExpenses.length === 1"></button>
+                    </div>
+                </div>
+
+                <div ng-if="kmExpenses.expenseType === 'MUU'" class="form-group row" show-errors>
+                    <label for="additionalInfo-{{$index}}" class="col-xs-4 control-label">
+                        <span translate="rhy.gameDamageInspectionEvent.kmExpenses.additionalInfo"></span>
+                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                    </label>
+
+                    <div class="col-xs-8">
+                        <input type="text" class="form-control"
+                               name="additionalInfo-{{$index}}" id="additionalInfo-{{$index}}"
+                               ng-model="kmExpenses.additionalInfo"
+                               required/>
+                    </div>
+                </div>
+
+                <div ng-if="kmExpenses.expenseType">
+                    <div class="form-group row" show-errors>
+                        <label for="kilometers-{{$index}}" class="col-xs-4 control-label">
+                            <span translate="rhy.gameDamageInspectionEvent.kmExpenses.kilometers"></span>
+                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        </label>
+
+                        <div class="col-xs-8">
+                            <input type="number" class="form-control"
+                                   name="kilometers-{{$index}}" id="kilometers-{{$index}}"
+                                   number
+                                   step="1"
+                                   min="0"
+                                   ng-model="kmExpenses.kilometers"
+                                   ng-change="$ctrl.onKilometerExpensesChanged()"
+                                   ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
+                                   required/>
+                        </div>
+                    </div>
+
+                    <div class="form-group row" show-errors>
+                        <label for="kilometerExpensesUnit-{{$index}}" class="col-xs-4 control-label">
+                            <span translate="rhy.gameDamageInspectionEvent.kmExpenses.kilometerExpensesUnit"></span>
+                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        </label>
+
+                        <div class="col-xs-8">
+                            <input type="number" class="form-control"
+                                   name="kilometerExpensesUnit-{{$index}}" id="kilometerExpensesUnit-{{$index}}"
+                                   number
+                                   step="0.01"
+                                   min="0"
+                                   ng-model="kmExpenses.expenseUnit"
+                                   ng-change="$ctrl.onKilometerExpensesChanged()"
+                                   ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
+                                   required/>
+                        </div>
+                    </div>
+
+                    <div ng-if="$index === $ctrl.event.gameDamageInspectionKmExpenses.length - 1" class="form-group row">
+                        <label class="col-xs-4 control-label">
+                        </label>
+
+                        <div class="col-xs-8">
+                            <button class="btn btn-primary btn-block"
+                                    type="button"
+                                    ng-click="$ctrl.addKmExpenses()"
+                                    translate="rhy.gameDamageInspectionEvent.kmExpenses.add"></button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="kilometerExpenses" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.kilometerExpenses"></span>
+                </label>
+
+                <div name="kilometerExpenses"
+                     id="kilometerExpenses"
+                     class="col-xs-2 r-gamedamageinspectionevent-computed-value"
+                     ng-bind="$ctrl.kilometerExpenses | number: 2">
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="form-group row" show-errors>
+                <label for="dailyAllowance" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.dailyAllowance"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <input type="number" class="form-control"
+                           name="dailyAllowance" id="dailyAllowance"
+                           number
+                           step="0.01"
+                           min="0"
+                           ng-model="$ctrl.event.dailyAllowance"
+                           ng-change="$ctrl.onTravelExpensesChanged()"
+                           ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
+                           required/>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="travelExpenses" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.travelExpenses"></span>
+                </label>
+
+                <div name="travelExpenses"
+                     id="travelExpenses"
+                     class="col-xs-2 r-gamedamageinspectionevent-computed-value"
+                     ng-bind="$ctrl.travelExpenses | number: 2">
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="totalExpenses" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.totalExpenses"></span>
+                </label>
+
+                <div name="totalExpenses"
+                     id="totalExpenses"
+                     class="col-xs-2 r-gamedamageinspectionevent-computed-value"
+                     ng-bind="$ctrl.totalExpenses | number: 2">
+                </div>
+            </div>
+
+
+        </uib-tab>
+
+    </uib-tabset>
+</div>
+
+<div class="modal-footer">
+    <button ng-if="$ctrl.activeTabIndex === 1" type="button" class="btn btn-default" ng-click="$ctrl.previous()" translate="global.pager.previous"></button>
+    <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()" translate="global.button.cancel"></button>
+    <button ng-if="$ctrl.activeTabIndex === 1" type="submit" class="btn btn-primary" ng-disabled="form.$invalid || !$ctrl.isFormValid()" translate="global.button.save"></button>
+    <button ng-if="$ctrl.activeTabIndex === 0" type="button" class="btn btn-primary" ng-click="$ctrl.next()()" translate="global.pager.next"></button>
+</div>
+
+</form>
+

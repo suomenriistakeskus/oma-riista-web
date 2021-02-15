@@ -129,8 +129,9 @@ angular.module('app.clubhunting', [])
 
         // View state
         $ctrl.isModerator = ActiveRoleService.isModerator();
-        $ctrl.mooseGroupSelected = false;
         $ctrl.activeTabIndex = 0;
+        $ctrl.observationsViable = ClubHuntingViewData.isObservationsViable();
+        $ctrl.selectedSpeciesCode = ClubHuntingViewData.getSelectedSpeciesCode();
 
         // Filter view component output variables
         $ctrl.filteredHuntingDays = [];
@@ -232,8 +233,10 @@ angular.module('app.clubhunting', [])
 
         $ctrl.onFilterChange = function (filter) {
             $ctrl.filteredHuntingDays = ClubHuntingViewData.filterHuntingDays(filter.beginDate, filter.endDate);
-            $ctrl.filteredDiary = ClubHuntingViewData.filterDiary(filter.beginDate, filter.endDate, filter.onlyRejected);
-            $ctrl.mooseGroupSelected = ClubHuntingViewData.isMooseGroupSelected();
+            $ctrl.filteredDiary = ClubHuntingViewData.filterDiary(
+                filter.beginDate, filter.endDate, filter.onlyRejected, filter.showHarvests, filter.showObservations);
+            $ctrl.observationsViable = ClubHuntingViewData.isObservationsViable();
+            $ctrl.selectedSpeciesCode = ClubHuntingViewData.getSelectedSpeciesCode();
 
             // This will trigger sidebar open for previously selected entry
             var selectedItem = ClubHuntingActiveEntry.clearSelectedItem();

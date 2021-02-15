@@ -6,6 +6,8 @@ import fi.riista.feature.gamediary.observation.ObservationDTO;
 import fi.riista.feature.gamediary.observation.ObservationDTOTransformerBase;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenOps;
+import fi.riista.util.DateUtil;
+import fi.riista.util.F;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -22,7 +24,7 @@ public class AdminSummaryObservationDTOTransformer extends ObservationDTOTransfo
     @Override
     protected List<ObservationDTO> transform(@Nonnull final List<Observation> observations) {
         final Function<Observation, GameSpecies> observationToSpecies =
-                getGameDiaryEntryToSpeciesMapping(observations);
+                getObservationToSpeciesMapping(observations);
 
         final Map<Observation, List<ObservationSpecimen>> groupedSpecimens =
                 getSpecimensGroupedByObservations(observations);
@@ -39,14 +41,34 @@ public class AdminSummaryObservationDTOTransformer extends ObservationDTOTransfo
                                             final List<ObservationSpecimen> specimens) {
 
         final ObservationDTO dto = ObservationDTO.builder()
-                .populateWith(observation, false)
-                .populateWith(species)
+                .withIdAndRev(observation)
+
+                .withGeoLocation(observation.getGeoLocation())
+                .withPointOfTime(DateUtil.toLocalDateTimeNullSafe(observation.getPointOfTime()))
+
+                .withGameSpeciesCode(species.getOfficialCode())
+                .withObservationCategory(observation.getObservationCategory())
+                .withObservationType(observation.getObservationType())
+
+                .withDeerHuntingType(observation.getDeerHuntingType())
+                .withDeerHuntingTypeDescription(observation.getDeerHuntingTypeDescription())
+
+                .withAmount(observation.getAmount())
+                .withMooselikeAmountsFrom(observation)
                 .populateSpecimensWith(specimens)
+
                 .build();
 
-        dto.setDescription(null);
         dto.setPack(ObservationSpecimenOps.isPack(species.getOfficialCode(), observation.getAmount()));
         dto.setLitter(ObservationSpecimenOps.isLitter(species.getOfficialCode(), specimens));
+
+        dto.setRhyId(F.getId(observation.getRhy()));
+        dto.setHuntingDayId(F.getId(observation.getHuntingDayOfGroup()));
+        dto.setPointOfTimeApprovedToHuntingDay(
+                DateUtil.toLocalDateTimeNullSafe(observation.getPointOfTimeApprovedToHuntingDay()));
+
+        dto.setModeratorOverride(observation.isModeratorOverride());
+        dto.setUpdateableOnlyByCarnivoreAuthority(observation.isAnyLargeCarnivoreFieldPresent());
 
         return dto;
     }

@@ -4,8 +4,8 @@ import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.common.entity.PersistableEnumConverter;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.validation.PhoneNumber;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.persistence.Access;
@@ -27,8 +27,11 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TimeZone;
+
+import static com.google.common.base.Preconditions.checkState;
 
 @Entity
 @Access(value = AccessType.FIELD)
@@ -155,6 +158,13 @@ public class SystemUser extends LifecycleEntity<Long> {
 
     public String getFullName() {
         return String.format("%s %s", getFirstName(), getLastName());
+    }
+
+    public Person requirePerson() {
+        checkState(role == SystemUser.Role.ROLE_USER, "Active user has incorrect role");
+
+        return Optional.ofNullable(person)
+                .orElseThrow(() -> new IllegalStateException("Active user is not associated with person"));
     }
 
     public void addPrivilege(SystemUserPrivilege value) {

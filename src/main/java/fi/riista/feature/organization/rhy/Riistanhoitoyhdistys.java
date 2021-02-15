@@ -4,19 +4,24 @@ import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
+import org.joda.time.LocalDate;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.validation.constraints.Size;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import java.util.Set;
 
 @Entity
 @Access(value = AccessType.FIELD)
 @DiscriminatorValue("RHY")
 public class Riistanhoitoyhdistys extends Organisation {
+
+    public static final int ANNUAL_STATISTICS_FIRST_YEAR = 2017;
+    public static final int ANNUAL_STATISTICS_DEFAULT_LAST_YEAR = 2020; // TODO Update when new annual statistics opened
 
     public static final String RHY_OFFICIAL_CODE_HELSINKI = "602";
 
@@ -29,23 +34,26 @@ public class Riistanhoitoyhdistys extends Organisation {
     private static final String RHY_SUFFIX_FI = "riistanhoitoyhdistys";
     private static final String RHY_SUFFIX_SV = "jaktvårdsförening";
 
-    @Size(max = 255)
-    @Column
-    private String poronhoitoalueId;
-
-    @Size(max = 255)
-    @Column
-    private String hallialueId;
-
     @Column(name = "is_at_coast")
     private Boolean atCoast;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "rhy_srva_rotation")
+    private SrvaRotation srvaRotation;
+
+    @Column(name="rhy_srva_rotation_start")
+    private LocalDate rotationStart;
+
     public static String shortenRhySuffixFi(final String input) {
-        return input.endsWith(RHY_SUFFIX_FI) ? input.substring(0, input.length() - RHY_SUFFIX_FI.length()) + "RHY" : input;
+        return input.endsWith(RHY_SUFFIX_FI)
+                ? input.substring(0, input.length() - RHY_SUFFIX_FI.length()) + "RHY"
+                : input;
     }
 
     public static String shortenRhySuffixSv(final String input) {
-        return input.endsWith(RHY_SUFFIX_SV) ? input.substring(0, input.length() - RHY_SUFFIX_SV.length()) + "JVF" : input;
+        return input.endsWith(RHY_SUFFIX_SV)
+                ? input.substring(0, input.length() - RHY_SUFFIX_SV.length()) + "JVF"
+                : input;
     }
 
     public Riistanhoitoyhdistys() {
@@ -69,22 +77,6 @@ public class Riistanhoitoyhdistys extends Organisation {
         parentOrganisation = alue;
     }
 
-    public String getPoronhoitoalueId() {
-        return poronhoitoalueId;
-    }
-
-    public void setPoronhoitoalueId(String poronhoitoalueId) {
-        this.poronhoitoalueId = poronhoitoalueId;
-    }
-
-    public String getHallialueId() {
-        return hallialueId;
-    }
-
-    public void setHallialueId(String hallialueId) {
-        this.hallialueId = hallialueId;
-    }
-
     public Boolean getAtCoast() {
         return atCoast;
     }
@@ -95,5 +87,21 @@ public class Riistanhoitoyhdistys extends Organisation {
 
     public boolean isFreeHuntingMunicipality() {
         return FREE_HUNTING_MUNICIPALITY.contains(getOfficialCode());
+    }
+
+    public SrvaRotation getSrvaRotation() {
+        return srvaRotation;
+    }
+
+    public void setSrvaRotation(final SrvaRotation srvaRotation) {
+        this.srvaRotation = srvaRotation;
+    }
+
+    public LocalDate getRotationStart() {
+        return rotationStart;
+    }
+
+    public void setRotationStart(final LocalDate rotationStart) {
+        this.rotationStart = rotationStart;
     }
 }

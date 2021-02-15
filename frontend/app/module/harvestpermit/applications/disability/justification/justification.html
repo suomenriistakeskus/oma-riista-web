@@ -1,0 +1,49 @@
+<form name="disabilityJustificationForm" r-force-show-errors-check-validity>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="h3">
+                <span translate="harvestpermit.wizard.disability.justification.title"></span>
+            </div>
+        </div>
+    </div>
+
+    <disability-vehicles vehicles="$ctrl.justification.vehicles"
+                         add-vehicle="$ctrl.addVehicle()"
+                         remove-vehicle="$ctrl.removeVehicle(keyValue)"></disability-vehicles>
+
+    <hr class="invisible"/>
+
+    <disability-hunting-type-infos hunting-type-infos="$ctrl.justification.huntingTypeInfos"
+                                   add-hunting-type-info="$ctrl.addHuntingTypeInfo()"
+                                   remove-hunting-type-info="$ctrl.removeHuntingTypeInfo(keyValue)"></disability-hunting-type-infos>
+
+    <hr class="invisible"/>
+
+    <div class="row">
+        <div class="col-xs-12 form-group" show-errors>
+            <label for="justification" class="control-label">
+                <h4 translate="harvestpermit.wizard.disability.justification.justification"></h4>
+            </label>
+            <textarea class="form-control" rows="10"
+                      name="justification"
+                      id="justification"
+                      ng-model="$ctrl.justification.justification"
+                      minlength="5"
+                      required></textarea>
+
+            <p class="help-block has-error"
+               ng-show="disabilityJustificationForm.justification.$invalid"
+               ng-messages="disabilityJustificationForm.justification.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+</form>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(disabilityJustificationForm)"
+        previous="$ctrl.previous(disabilityJustificationForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(disabilityJustificationForm)">
+</permit-application-wizard-navigation>

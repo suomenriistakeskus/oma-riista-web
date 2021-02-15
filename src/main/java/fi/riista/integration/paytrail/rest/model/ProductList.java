@@ -1,6 +1,6 @@
 package fi.riista.integration.paytrail.rest.model;
 
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 
 import javax.validation.Valid;
 import javax.xml.bind.annotation.XmlAccessType;

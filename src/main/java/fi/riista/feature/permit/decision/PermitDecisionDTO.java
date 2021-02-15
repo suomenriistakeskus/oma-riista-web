@@ -1,7 +1,9 @@
 package fi.riista.feature.permit.decision;
 
+import fi.riista.feature.common.decision.AppealStatus;
+import fi.riista.feature.common.decision.DecisionStatus;
+import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.common.dto.BaseEntityDTO;
-import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
@@ -17,6 +19,7 @@ import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -27,9 +30,9 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
     private Integer applicationNumber;
     private String permitTypeCode;
     private HarvestPermitCategory harvestPermitCategory;
-    private Long harvestPermitId;
-    private String harvestPermitNumber;
-    private PermitDecision.Status status;
+    private List<PermitDecisionPermitDTO> permits;
+    private String permitDecisionNumber;
+    private DecisionStatus status;
     private PersonWithNameDTO handler;
     private boolean userIsHandler;
 
@@ -47,15 +50,15 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
     private boolean deliveryByMail;
     private DeliveryAddressDTO deliveryAddress;
     private DecisionType decisionType;
-    private PermitDecision.GrantStatus grantStatus;
-    private PermitDecision.AppealStatus appealStatus;
+    private GrantStatus grantStatus;
+    private AppealStatus appealStatus;
     private HarvestPermitApplication.Status applicationStatus;
     private boolean hasDecisionInvoice;
     private boolean hasHarvestInvoices;
 
     public static PermitDecisionDTO create(final @Nonnull PermitDecision decision,
                                            final @Nonnull PermitDecisionDocument document,
-                                           final HarvestPermit harvestPermit,
+                                           final List<PermitDecisionPermitDTO> permits,
                                            final boolean userIsHandler) {
         final PermitDecisionDTO dto = new PermitDecisionDTO();
 
@@ -104,14 +107,13 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
         dto.setHuntingClub(Optional.ofNullable(decision.getHuntingClub())
                 .map(OrganisationNameDTO::createWithOfficialCode).orElse(null));
 
-        if (harvestPermit != null) {
-            dto.setHarvestPermitId(harvestPermit.getId());
-            dto.setHarvestPermitNumber(harvestPermit.getPermitNumber());
-        }
+        dto.setPermitDecisionNumber(decision.createPermitNumber());
+        dto.setPermits(permits);
 
         dto.setHasDecisionInvoice(NumberUtils.bigDecimalIsPositive(decision.getPaymentAmount()));
 
-        dto.setHasHarvestInvoices(decision.getGrantStatus() != PermitDecision.GrantStatus.REJECTED
+        dto.setHasHarvestInvoices(decision.getGrantStatus() != GrantStatus.REJECTED
+                && decision.getDecisionType() == DecisionType.HARVEST_PERMIT
                 && application.getHarvestPermitCategory().isMooselike());
 
         return dto;
@@ -137,11 +139,11 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
         this.rev = rev;
     }
 
-    public PermitDecision.Status getStatus() {
+    public DecisionStatus getStatus() {
         return status;
     }
 
-    public void setStatus(final PermitDecision.Status status) {
+    public void setStatus(final DecisionStatus status) {
         this.status = status;
     }
 
@@ -177,20 +179,21 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
         this.harvestPermitCategory = harvestPermitCategory;
     }
 
-    public Long getHarvestPermitId() {
-        return harvestPermitId;
+
+    public List<PermitDecisionPermitDTO> getPermits() {
+        return permits;
     }
 
-    public void setHarvestPermitId(final Long harvestPermitId) {
-        this.harvestPermitId = harvestPermitId;
+    public void setPermits(final List<PermitDecisionPermitDTO> permits) {
+        this.permits = permits;
     }
 
-    public String getHarvestPermitNumber() {
-        return harvestPermitNumber;
+    public String getPermitDecisionNumber() {
+        return permitDecisionNumber;
     }
 
-    public void setHarvestPermitNumber(final String harvestPermitNumber) {
-        this.harvestPermitNumber = harvestPermitNumber;
+    public void setPermitDecisionNumber(final String permitDecisionNumber) {
+        this.permitDecisionNumber = permitDecisionNumber;
     }
 
     public PersonWithNameDTO getHandler() {
@@ -313,19 +316,19 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
         this.decisionType = decisionType;
     }
 
-    public PermitDecision.GrantStatus getGrantStatus() {
+    public GrantStatus getGrantStatus() {
         return grantStatus;
     }
 
-    public void setGrantStatus(final PermitDecision.GrantStatus grantStatus) {
+    public void setGrantStatus(final GrantStatus grantStatus) {
         this.grantStatus = grantStatus;
     }
 
-    public PermitDecision.AppealStatus getAppealStatus() {
+    public AppealStatus getAppealStatus() {
         return appealStatus;
     }
 
-    public void setAppealStatus(final PermitDecision.AppealStatus appealStatus) {
+    public void setAppealStatus(final AppealStatus appealStatus) {
         this.appealStatus = appealStatus;
     }
 

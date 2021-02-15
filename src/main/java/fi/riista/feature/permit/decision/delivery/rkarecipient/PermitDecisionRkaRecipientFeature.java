@@ -89,6 +89,6 @@ public class PermitDecisionRkaRecipientFeature {
     @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
     public void delete(final long id) {
-        permitDecisionRkaRecipientRepository.delete(id);
+        permitDecisionRkaRecipientRepository.deleteById(id);
     }
 }

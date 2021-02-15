@@ -1,13 +1,11 @@
 package fi.riista.feature.gamediary.srva;
 
-import fi.riista.feature.gamediary.srva.method.SrvaMethodService;
-import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.feature.gamediary.srva.SrvaEventDTO;
-import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
-import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.method.SrvaMethod;
+import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodRepository;
+import fi.riista.feature.gamediary.srva.method.SrvaMethodService;
+import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 

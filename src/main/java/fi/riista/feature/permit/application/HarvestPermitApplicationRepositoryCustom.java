@@ -10,6 +10,7 @@ import org.springframework.data.domain.Slice;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 public interface HarvestPermitApplicationRepositoryCustom {
     Slice<HarvestPermitApplication> search(HarvestPermitApplicationSearchDTO dto, Pageable pageRequest);
@@ -26,6 +27,10 @@ public interface HarvestPermitApplicationRepositoryCustom {
                                                                         HarvestPermitApplication secondApplication);
 
     List<HarvestPermitApplication> listPostalQueue();
+
+    List<HarvestPermitApplication> listByAnnualPermitsToRenew(final Long handlerId);
+
+    Map<Long, Integer> getAnnualPermitsToRenewByHandlerId();
 
     List<Harvest> findNonEdibleHarvestsByPermit(HarvestPermit original);
 

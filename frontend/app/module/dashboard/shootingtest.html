@@ -1,21 +1,35 @@
 <table class="table table-bordered table-striped">
     <tbody>
     <tr>
-        <td width="50%">Ampumakoesuorituksia yhteensä</td>
+        <td width="50%" translate="reporting.dashboard.shootingTestTab.allAttempts"></td>
         <td>
             <span ng-bind="$ctrl.metrics.countOfTotalAttempts"></span>
             <span translate="global.pcs"></span>
+            (
+            <span ng-bind="$ctrl.metrics.countOfQualifiedAttempts"></span>
+            <span translate="shootingTest.result.QUALIFIED"></span>
+            /
+            <span ng-bind="$ctrl.metrics.countOfTotalAttempts - $ctrl.metrics.countOfQualifiedAttempts"></span>
+            <span translate="shootingTest.result.UNQUALIFIED"></span>
+            )
         </td>
     </tr>
     <tr>
-        <td>Suljettuja ampumakoetapahtumia yhteensä</td>
+        <td translate="reporting.dashboard.shootingTestTab.qualifiedAttempts"></td>
+        <td>
+            <span ng-bind="$ctrl.metrics.countOfQualifiedParticipants"></span>
+            <span translate="global.personUnit"></span>
+        </td>
+    </tr>
+    <tr>
+        <td translate="reporting.dashboard.shootingTestTab.closedEvents"></td>
         <td>
             <span ng-bind="$ctrl.metrics.countOfClosedEvents"></span>
             <span translate="global.pcs"></span>
         </td>
     </tr>
     <tr>
-        <td>RHY:t joissa sähköinen kirjaus otettu käyttöön</td>
+        <td translate="reporting.dashboard.shootingTestTab.activeRhys"></td>
         <td>
             <span ng-bind="$ctrl.metrics.countOfActiveRhy"></span>
             /

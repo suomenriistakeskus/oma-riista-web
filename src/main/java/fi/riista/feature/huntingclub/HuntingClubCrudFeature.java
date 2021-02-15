@@ -6,8 +6,8 @@ import fi.riista.feature.common.entity.FinnishBusinessIdEntity;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gis.GISQueryService;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
-import fi.riista.feature.gis.hta.HirvitalousalueDTO;
 import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
+import fi.riista.feature.gis.hta.HirvitalousalueDTO;
 import fi.riista.feature.huntingclub.members.HuntingClubOccupationDTOTransformer;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.Occupation;
@@ -91,6 +91,9 @@ public class HuntingClubCrudFeature extends AbstractCrudFeature<Long, HuntingClu
                     }
                     break;
                 case RY:
+                    if (dto.getBusinessId() != null) {
+                        club.setBusinessId(new FinnishBusinessIdEntity(dto.getBusinessId()));
+                    }
                     club.setAssociationRegistryNumber(dto.getAssociationRegistryNumber());
                     break;
                 default:

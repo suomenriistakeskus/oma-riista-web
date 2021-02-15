@@ -16,8 +16,8 @@
                     controllerAs: '$ctrl',
                     wideLayout: false,
                     resolve: {
-                        availableYears: function (AnnualStatisticsAvailableYears) {
-                            return AnnualStatisticsAvailableYears.get();
+                        availableYears: function (JhtAnnualStatisticsYears) {
+                            return JhtAnnualStatisticsYears.get();
                         },
                         year: function ($stateParams, availableYears) {
                             var yearParam = $stateParams.year;
@@ -86,6 +86,15 @@
             };
         })
 
+        .service('JhtAnnualStatisticsYears', function (AnnualStatisticsLastAvailableYear) {
+            this.get = function () {
+                return _.range(2017, AnnualStatisticsLastAvailableYear.LAST_YEAR + 1);
+
+                // TODO uncomment after annual statistics locking logic is implemented.
+                //return _.range(2017, new Date().getFullYear() + 1);
+            };
+        })
+
         .controller('AnnualStatisticsDashboardController', function ($location, $state, ExportSubsidyAllocationModal,
                                                                      RhyAnnualStatisticsJhtService,
                                                                      RhyAnnualStatisticsState,
@@ -146,7 +155,7 @@
                 $ctrl.isBatchApproveButtonDisabled = $ctrl.approvableStatistics.length === 0;
 
                 $ctrl.isExportSubsidyAllocationButtonVisible =
-                    $ctrl.year === 2018 && $ctrl.activeState === RhyAnnualStatisticsState.APPROVED;
+                    ($ctrl.year > 2017 && $ctrl.year <= 2020) && $ctrl.activeState === RhyAnnualStatisticsState.APPROVED;
 
                 // TODO Switch to outcommented logic.
                 $ctrl.isExportSubsidyAllocationButtonDisabled = $ctrl.unsentStatistics.length > 0;

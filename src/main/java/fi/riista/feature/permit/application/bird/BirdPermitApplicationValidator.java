@@ -6,7 +6,7 @@ import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
 import fi.riista.feature.permit.application.bird.area.BirdPermitApplicationProtectedArea;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCause;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethods;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
 import fi.riista.feature.permit.application.validation.ValidationUtil;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
@@ -42,8 +42,7 @@ public class BirdPermitApplicationValidator {
         requireNonNull(application);
         requireNonNull(birdApplication);
 
-        ValidationUtil.validateSpeciesAmounts(application);
-        ValidationUtil.validateCommonContent(application);
+        ValidationUtil.validateCommonHarvestPermitContent(application);
 
         assertPermitHolderInformationValid(application);
         assertAreaInformationValid(birdApplication);
@@ -52,7 +51,11 @@ public class BirdPermitApplicationValidator {
         assertMethodsInformationValid(birdApplication, application.getSpeciesAmounts());
         assertDamagesInformationValid(application.getSpeciesAmounts());
         assertPopulationInformationValid(application.getSpeciesAmounts());
-        assertAttachmentsValid(application.getAttachments());
+
+        // If description is not given, assert that some area attachment is present
+        if (StringUtils.isEmpty(birdApplication.getAreaDescription())) {
+            assertAttachmentsValid(application.getAttachments());
+        }
     }
 
     static void assertPermitHolderInformationValid(HarvestPermitApplication application) {
@@ -108,7 +111,7 @@ public class BirdPermitApplicationValidator {
             return;
         }
 
-        failValidation("No cause selected");
+        failValidation("No reasons selected");
     }
 
     static void assertPeriodInformationValid(BirdPermitApplication birdApplication,
@@ -130,7 +133,7 @@ public class BirdPermitApplicationValidator {
 
     static void assertMethodsInformationValid(BirdPermitApplication birdApplication,
                                               List<HarvestPermitApplicationSpeciesAmount> speciesAmounts) {
-        final BirdPermitApplicationForbiddenMethods forbiddenMethods = birdApplication.getForbiddenMethods();
+        final DerogationPermitApplicationForbiddenMethods forbiddenMethods = birdApplication.getForbiddenMethods();
         requireNonNull(forbiddenMethods);
 
         if (forbiddenMethods.isTapeRecorders() ||

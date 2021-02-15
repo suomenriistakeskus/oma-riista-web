@@ -6,6 +6,7 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.GameSpeciesRepository;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
@@ -50,7 +51,6 @@ public class CoordinatorClubHarvestFeature {
                 ? harvestRepository.findHarvestsLinkedToHuntingDayWithinAreaOfRhy(rhy, species, interval)
                 : harvestRepository.findHarvestsLinkedToHuntingDayAndPermitOfRhy(rhy, species, interval);
 
-        return coordinatorHarvestDTOTransformer.apply(harvestList);
+        return coordinatorHarvestDTOTransformer.apply(harvestList, HarvestSpecVersion.CURRENTLY_SUPPORTED);
     }
-
 }

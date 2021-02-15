@@ -83,9 +83,10 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
         assertCoordinatorCanNotEditCoordinator(entity.getOccupationType(), dto.getOccupationType());
         assertCoordinatorCannotModifyJHTOccupation(entity.getOccupationType(), dto.getOccupationType());
 
+        final Organisation organisation = getOrganisation(dto);
+
         if (entity.isNew()) {
             // Organisation and Person should not be modified after creation
-            final Organisation organisation = getOrganisation(dto);
             final Person person = personRepository.getOne(dto.getPerson().getId());
 
             assertCanNotCreateForDeceased(person);
@@ -100,6 +101,7 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
         entity.setBeginDate(dto.getBeginDate());
         entity.setCallOrder(dto.getCallOrder());
         entity.setAdditionalInfo(dto.getAdditionalInfo());
+        entity.setBoardRepresentation(dto.getBoardRepresentation());
 
         if (dto.getPerson() != null) {
             updatePersonInformation(entity.getPerson(), dto.getPerson());
@@ -107,6 +109,18 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
             if (dto.getPerson().getAddress() != null) {
                 updatePersonAddress(entity.getPerson(), dto.getPerson().getAddress());
             }
+        }
+
+        final PersonContactInfoDTO substitute = dto.getSubstitute();
+        assertCanCreateSubstituteOnlyForRhyBoard(organisation, dto, substitute);
+        assertRhyBoardMemberMustHaveSubstitute(organisation, dto, substitute);
+        if (substitute != null) {
+
+            final Person substitutePerson = personRepository.getOne(substitute.getId());
+
+            assertCanNotCreateForDeceased(substitutePerson);
+
+            entity.setSubstitute(substitutePerson);
         }
     }
 
@@ -206,6 +220,28 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
         if (!organisation.getOrganisationType().allowListOccupations()) {
             throw new AccessDeniedException("Cannot list occupations for organisationType "
                     + organisation.getOrganisationType());
+        }
+    }
+
+    private static void assertCanCreateSubstituteOnlyForRhyBoard(final Organisation organisation,
+                                                                 final OccupationDTO occupation,
+                                                                 final PersonContactInfoDTO substitute) {
+        if (substitute != null &&
+                !(organisation.getOrganisationType() == OrganisationType.RHY &&
+                        occupation.getOccupationType().isBoardSpecific() &&
+                        occupation.getOccupationType() != OccupationType.HALLITUKSEN_VARAJASEN)) {
+                throw new AccessDeniedException("Board member substitute can be created only for RHY board members");
+        }
+    }
+
+    private static void assertRhyBoardMemberMustHaveSubstitute(final Organisation organisation,
+                                                                final OccupationDTO occupation,
+                                                                final PersonContactInfoDTO substitute) {
+        if (organisation.getOrganisationType() == OrganisationType.RHY &&
+                occupation.getOccupationType().isBoardSpecific() &&
+                occupation.getOccupationType() != OccupationType.HALLITUKSEN_VARAJASEN &&
+                substitute == null) {
+            throw new AccessDeniedException("RHY board member must have substitute");
         }
     }
 

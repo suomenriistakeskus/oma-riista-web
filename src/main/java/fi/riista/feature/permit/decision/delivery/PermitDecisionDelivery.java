@@ -2,7 +2,7 @@ package fi.riista.feature.permit.decision.delivery;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.permit.decision.PermitDecision;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.persistence.Access;

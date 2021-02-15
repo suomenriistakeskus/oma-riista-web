@@ -10,6 +10,8 @@ public final class BankAccountNumbers {
     // For payment of hunting permit
     public static final String PERMIT_DECISION_FEE_NORDEA = "FI5710253000227630";
     public static final String MOOSELIKE_HARVEST_FEE_OP_POHJOLA = "FI2950000121502875";
+    public static final String MOOSELIKE_HARVEST_FEE_DANSKE = "FI1081299710011453";
+    public static final String MOOSELIKE_HARVEST_FEE_NORDEA = "FI3318043000015388";
 
     private BankAccountNumbers() {
         throw new AssertionError();

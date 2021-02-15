@@ -58,7 +58,7 @@ public class CodeStyleTest {
         assertEmpty(foundFiles, "The following files contain combining diaeresis (looks like umlaut but is not): ");
     }
 
-    private List<String> find(final String toFind, final Charset charset) throws IOException {
+    private static List<String> find(final String toFind, final Charset charset) throws IOException {
         final List<String> foundFiles = new ArrayList<>();
         final Iterator<File> iter = FileUtils.iterateFiles(new File("src"), new CodeStyleFileFilter(), TrueFileFilter.INSTANCE);
 

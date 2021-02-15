@@ -13,16 +13,23 @@ import fi.riista.feature.gis.metsahallitus.MetsahallitusMaterialYear;
 import fi.riista.feature.gis.metsahallitus.MetsahallitusPienriistaRepository;
 import fi.riista.feature.gis.rhy.GISRiistanhoitoyhdistys;
 import fi.riista.feature.gis.rhy.GISRiistanhoitoyhdistysRepository;
+import fi.riista.feature.harvestpermit.season.GISHarvestAreaRepository;
+import fi.riista.feature.harvestpermit.season.HarvestArea;
+import fi.riista.feature.harvestpermit.season.HarvestAreaRepository;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.integration.mml.dto.MMLRekisteriyksikonTietoja;
 import fi.riista.integration.mml.service.MMLBuildingUnitService;
 import fi.riista.integration.mml.service.MMLRekisteriyksikonTietojaService;
+import fi.riista.util.F;
 import fi.riista.util.GISFinnishEconomicZoneUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,13 +37,18 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Set;
+
+import static fi.riista.util.Collect.entriesToMap;
+import static java.util.Objects.requireNonNull;
+import static java.util.Optional.empty;
 
 @Service
 @PostGisDatabase
@@ -73,53 +85,69 @@ public class LocalGISQueryService implements GISQueryService {
     @Resource
     private MetsahallitusMaterialYear metsahallitusMaterialYear;
 
-    private JdbcTemplate jdbcTemplate;
+    @Resource
+    private HarvestAreaRepository harvestAreaRepository;
+
+    @Resource
+    private GISHarvestAreaRepository gisHarvestAreaRepository;
+
+    private NamedParameterJdbcOperations namedParameterJdbcTemplate;
 
     @Autowired
     public void setDataSource(DataSource dataSource) {
-        this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(new JdbcTemplate(dataSource));
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public Riistanhoitoyhdistys findRhyByLocation(@Nonnull GeoLocation geoLocation) {
         return findRhyByLocation(GISPoint.create(geoLocation));
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public Riistanhoitoyhdistys findRhyForEconomicZone(@Nonnull GeoLocation geoLocation) {
         final boolean insideEconomicZone = GISFinnishEconomicZoneUtil.getInstance().containsLocation(geoLocation);
 
         // OR-479 Map grey seal on economic zone to Helsinki RHY
-        return insideEconomicZone ? rhyRepository.findByOfficialCode(Riistanhoitoyhdistys.RHY_OFFICIAL_CODE_HELSINKI) : null;
+        return insideEconomicZone ?
+                rhyRepository.findByOfficialCode(Riistanhoitoyhdistys.RHY_OFFICIAL_CODE_HELSINKI) : null;
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public MetsahallitusAreaLookupResult findMetsahallitusAreas(final @Nonnull GeoLocation geoLocation) {
         final int latestHirviYear = metsahallitusMaterialYear.getLatestHirviYear();
         final int latestPienriistaYear = metsahallitusMaterialYear.getLatestPienriistaYear();
 
         final Integer hirviAlueId = metsahallitusHirviRepository.findGid(geoLocation, latestHirviYear);
-        final Integer pienriistaAlueId = metsahallitusPienriistaRepository.findPienriistaAlueId(geoLocation, latestPienriistaYear);
+        final Integer pienriistaAlueId =
+                metsahallitusPienriistaRepository.findPienriistaAlueId(geoLocation, latestPienriistaYear);
 
         return new MetsahallitusAreaLookupResult(hirviAlueId, pienriistaAlueId);
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public Riistanhoitoyhdistys findRhyByLocation(@Nonnull GISPoint gisPoint) {
-        final GISRiistanhoitoyhdistys gisResult = singleResultOrNull(gisPoint);
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Riistanhoitoyhdistys findRhyByLocation(final @Nonnull GISPoint gisPoint) {
 
-        if (gisResult != null) {
-            return getSameOrganisation(gisResult);
-        }
-
-        return null;
+        return singleRhyByLocation(gisPoint)
+                .map(this::getSameOrganisation)
+                .orElse(null);
     }
 
-    private Riistanhoitoyhdistys getSameOrganisation(GISRiistanhoitoyhdistys gisResult) {
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Optional<HarvestArea> findHarvestAreaByLocation(
+            final @Nonnull HarvestArea.HarvestAreaType areaType, final @Nonnull GeoLocation geoLocation) {
+
+        final GISPoint gisPoint = GISPoint.create(requireNonNull(geoLocation));
+        final List<Long> ids = gisHarvestAreaRepository.queryAreaIdByPoint(areaType, gisPoint);
+
+        return singleResultFrom(ids, gisPoint).flatMap(harvestAreaRepository::findById);
+    }
+
+    private Riistanhoitoyhdistys getSameOrganisation(final GISRiistanhoitoyhdistys gisResult) {
         final Riistanhoitoyhdistys rhy = rhyRepository.findByOfficialCode(gisResult.getOfficialCode());
 
         if (rhy == null) {
@@ -129,19 +157,23 @@ public class LocalGISQueryService implements GISQueryService {
         return rhy;
     }
 
-    private GISRiistanhoitoyhdistys singleResultOrNull(GISPoint geoLocation) {
+    private Optional<GISRiistanhoitoyhdistys> singleRhyByLocation(final GISPoint geoLocation) {
         final List<GISRiistanhoitoyhdistys> intersectingRhy = rhyGisRepository.queryByPoint(geoLocation);
 
-        if (intersectingRhy.isEmpty()) {
-            LOG.warn("No matches for geoLocation{}", geoLocation);
-            return null;
+        return singleResultFrom(intersectingRhy, geoLocation);
+    }
 
-        } else if (intersectingRhy.size() > 1) {
+    private <T> Optional<T> singleResultFrom(final Collection<T> collection, final GISPoint geoLocation) {
+        if (collection.isEmpty()) {
+            LOG.warn("No matches for geoLocation{}", geoLocation);
+            return empty();
+
+        } else if (collection.size() > 1) {
             LOG.warn("Multiple matches for geoLocation={}", geoLocation);
-            return null;
+            return empty();
 
         } else {
-            return intersectingRhy.iterator().next();
+            return collection.stream().findFirst();
         }
     }
 
@@ -189,34 +221,51 @@ public class LocalGISQueryService implements GISQueryService {
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public Municipality findMunicipality(@Nonnull GeoLocation geoLocation) {
         return municipalityRepository.findMunicipality(geoLocation.getLatitude(), geoLocation.getLongitude());
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public List<Long> findZonesWithChanges() {
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Map<Long, Boolean> findZonesWithChanges(final @Nonnull Set<Long> zoneIds) {
+        requireNonNull(zoneIds);
+
+        if (zoneIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        final MapSqlParameterSource params = new MapSqlParameterSource("zoneIds", zoneIds);
+
         // Changed flag is only updated manually during source material update
-        final List<Long> palstaChanges = jdbcTemplate.queryForList(
-                "SELECT DISTINCT zone_id FROM zone_palsta WHERE is_changed IS TRUE", Long.class);
+        final List<Long> palstaChanges = namedParameterJdbcTemplate.queryForList(
+                "SELECT DISTINCT zone_id\n" +
+                        "FROM zone_palsta\n" +
+                        "WHERE zone_id IN (:zoneIds)\n" +
+                        "AND is_changed IS TRUE",
+                params, Long.class);
 
-        // MH hunting year can get out of sync only when material for next hunting year is not yet available at the
-        // begin of the season.
-        final List<Long> metsahallitusChanges = jdbcTemplate.queryForList("SELECT DISTINCT zone.zone_id\n" +
-                "FROM hunting_club_area area\n" +
-                "JOIN zone ON (area.zone_id = zone.zone_id)\n" +
-                "JOIN zone_mh_hirvi zmh ON (zmh.zone_id = zone.zone_id)\n" +
-                "JOIN mh_hirvi mh ON (zmh.mh_hirvi_id = mh.gid)\n" +
-                "WHERE area.metsahallitus_year <> mh.vuosi", Long.class);
+        // MH hunting year can get out of sync only when material for next hunting year is not yet available
+        // at the beginning of the season.
+        final List<Long> metsahallitusChanges = namedParameterJdbcTemplate.queryForList(
+                "SELECT DISTINCT zone.zone_id\n" +
+                        "FROM hunting_club_area area\n" +
+                        "JOIN zone ON (area.zone_id = zone.zone_id)\n" +
+                        "JOIN zone_mh_hirvi zmh ON (zmh.zone_id = zone.zone_id)\n" +
+                        "JOIN mh_hirvi mh ON (zmh.mh_hirvi_id = mh.gid)\n" +
+                        "WHERE area.zone_id IN (:zoneIds)\n" +
+                        "AND area.metsahallitus_year <> mh.vuosi",
+                params, Long.class);
 
-        return Stream.concat(palstaChanges.stream(), metsahallitusChanges.stream())
-                .distinct()
-                .collect(Collectors.toList());
+        return zoneIds.stream()
+                .map(zoneId ->
+                        F.entry(zoneId, palstaChanges.contains(zoneId) || metsahallitusChanges.contains(zoneId)))
+                .collect(entriesToMap());
     }
 
+
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public GISHirvitalousalue findHirvitalousalue(@Nonnull GeoLocation geoLocation) {
         return hirvitalousalueRepository.findByPoint(geoLocation);
     }

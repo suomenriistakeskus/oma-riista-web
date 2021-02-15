@@ -1,6 +1,5 @@
 package fi.riista.integration.koiratutka;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gis.geojson.FeatureCollectionWithProperties;
@@ -16,6 +15,7 @@ import fi.riista.util.PolygonConversionUtil;
 import org.apache.commons.lang.StringUtils;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

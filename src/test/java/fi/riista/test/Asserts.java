@@ -6,6 +6,7 @@ import fi.riista.util.F;
 import io.vavr.collection.HashMap;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
+import org.hamcrest.Matcher;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,48 +15,75 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.google.common.collect.Ordering.usingToString;
+import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
 public final class Asserts {
 
     private static final String DEFAULT_JOINED_ITEM_SEPARATOR = "\n    ";
 
+    public static <T> void assertThat(final T actual, @Nonnull final Matcher<? super T> matcher) {
+        org.hamcrest.MatcherAssert.assertThat(actual, matcher);
+    }
+
+    public static <T> void assertThat(final T actual, @Nonnull final Matcher<? super T> matcher, final String reason) {
+        org.hamcrest.MatcherAssert.assertThat(reason, actual, matcher);
+    }
+
     public static <T> void assertEmpty(@Nonnull final Stream<T> stream, @Nonnull final String onNotEmptyMessage) {
-        assertEmpty(stream.sorted(usingToString()).collect(toList()), onNotEmptyMessage);
+        assertThat(stream.sorted(usingToString()).collect(toList()), is(empty()), onNotEmptyMessage);
     }
 
+    /**
+     * Asserts that given collection is empty.
+     *
+     * @deprecated Since August 2020 {@link org.hamcrest.Matchers#empty()
+     *             Matchers.empty} can be used to verify that your collection is
+     *             empty.
+     */
+    @Deprecated
     public static void assertEmpty(@Nonnull final Collection<?> coll) {
-        Objects.requireNonNull(coll);
-        assertTrue(String.format("Expected empty collection but had %d elements", coll.size()), coll.isEmpty());
+        assertThat(coll, is(empty()),
+                format("Expected empty collection but had %d elements", coll.size()));
     }
 
+    /**
+     * Asserts that given collection is empty.
+     *
+     * @deprecated Since August 2020 {@link org.hamcrest.Matchers#empty()
+     *             Matchers.empty} can be used to verify that your collection is
+     *             empty.
+     */
+    @Deprecated
     public static void assertEmpty(@Nonnull final Collection<?> coll, @Nonnull final String onNotEmptyMessage) {
-        assertFalse(consructErrorMessage(
-                onNotEmptyMessage, coll, DEFAULT_JOINED_ITEM_SEPARATOR), coll.iterator().hasNext());
+        assertThat(coll, is(empty()),
+                consructErrorMessage(onNotEmptyMessage, coll, DEFAULT_JOINED_ITEM_SEPARATOR));
     }
 
     public static <T, U> void assertEqualAfterTransformation(@Nonnull final Iterable<T> first,
                                                              @Nonnull final Iterable<T> second,
                                                              @Nonnull final Function<? super T, U> transformation) {
 
-        Objects.requireNonNull(first, "first is null");
-        Objects.requireNonNull(second, "second is null");
-        Objects.requireNonNull(transformation, "transformation is null");
+        requireNonNull(first, "first is null");
+        requireNonNull(second, "second is null");
+        requireNonNull(transformation, "transformation is null");
 
-        assertEquals(
-                F.stream(first).map(transformation).collect(toList()),
-                F.stream(second).map(transformation).collect(toList()));
+        final List<U> firstTransformed = F.stream(first).map(transformation).collect(toList());
+        final List<U> secondTransformed = F.stream(second).map(transformation).collect(toList());
+
+        assertThat(firstTransformed, is(equalTo(secondTransformed)));
     }
 
     public static <K, V1, V2> void assertEqualMapsAfterValueTransformation(
@@ -63,33 +91,38 @@ public final class Asserts {
             @Nonnull final Map<K, V1> second,
             @Nonnull final Function<? super V1, V2> valueMapper) {
 
-        Objects.requireNonNull(first, "first is null");
-        Objects.requireNonNull(second, "second is null");
-        Objects.requireNonNull(valueMapper, "valueMapper is null");
+        requireNonNull(first, "first is null");
+        requireNonNull(second, "second is null");
+        requireNonNull(valueMapper, "valueMapper is null");
 
-        assertEquals(HashMap.ofAll(first).mapValues(valueMapper), HashMap.ofAll(second).mapValues(valueMapper));
+        final HashMap<K, V2> firstTransformed = HashMap.ofAll(first).mapValues(valueMapper);
+        final HashMap<K, V2> secondTransformed = HashMap.ofAll(second).mapValues(valueMapper);
+
+        assertThat(firstTransformed, is(equalTo(secondTransformed)));
     }
 
     public static <T> void assertSuccess(@Nonnull final Try<T> tryObj, @Nonnull final Consumer<T> assertions) {
         if (tryObj.isFailure()) {
             fail("Expected success, but was: " + tryObj.getCause());
+        } else {
+            assertions.accept(tryObj.get());
         }
-        assertions.accept(tryObj.get());
     }
 
     public static <T> void assertSuccess(@Nullable final T expectedValue, @Nonnull final Try<T> tryObj) {
-        assertSuccess(tryObj, value -> assertEquals(expectedValue, value));
+        assertSuccess(tryObj, value -> assertThat(value, is(equalTo(expectedValue))));
     }
 
     public static <T> void assertFailure(@Nonnull final Try<T> tryObj, @Nonnull final Consumer<Throwable> assertions) {
         if (tryObj.isSuccess()) {
             fail("Expected failure, but was: " + tryObj.get());
+        } else {
+            assertions.accept(tryObj.getCause());
         }
-        assertions.accept(tryObj.getCause());
     }
 
     public static void assertFailure(@Nonnull final Class<?> expectedThrowableType, @Nonnull final Try<?> tryObj) {
-        assertFailure(tryObj, throwable -> assertEquals(expectedThrowableType, throwable.getClass()));
+        assertFailure(tryObj, throwable -> assertThat(throwable.getClass(), is(equalTo(expectedThrowableType))));
     }
 
     public static <T> void assertValid(@Nonnull final Validation<?, T> validation,
@@ -97,15 +130,16 @@ public final class Asserts {
 
         if (!validation.isValid()) {
             fail("Validation should have passed, but got: " + validation.getError());
+        } else {
+            assertions.accept(validation.get());
         }
-        assertions.accept(validation.get());
     }
 
     public static <T> void assertValidationError(@Nonnull final Validation<String, T> validation,
                                                  @Nonnull final String expectedMessage) {
 
         validation.peek(t -> fail("Validation should have failed"))
-                .swap().peek(errMsg -> assertEquals(expectedMessage, errMsg));
+                .swap().peek(errMsg -> assertThat(errMsg, is(equalTo(expectedMessage))));
     }
 
     public static <T> void assertValidationErrors(@Nonnull final Validation<List<String>, T> validation,
@@ -124,7 +158,8 @@ public final class Asserts {
                                                   @Nonnull final List<String> expectedMessages) {
 
         validation.peek(t -> fail("Validation should have failed"))
-                .swap().peek(errors -> assertEquals(expectedMessages, errors));
+                .swap()
+                .peek(errors -> assertThat(errors, is(equalTo(expectedMessages))));
     }
 
     public static <T, N extends Number & Comparable<N>> void assertNumericFieldValidationError(
@@ -132,15 +167,17 @@ public final class Asserts {
             @Nonnull final Function<? super T, Validation<List<String>, T>> validationFunction,
             @Nonnull final NumericFieldMeta<T, N> field) {
 
-        final String onValidMsg = String.format(
-                "Validation should have failed when '%s'=%s", field.getNameFinnish(), field.apply(object));
+        final String onValidMsg =
+                format("Validation should have failed when '%s'=%s", field.getNameFinnish(), field.apply(object));
 
         final Validation<String, Optional<N>> fieldValidation = field.validate(object);
-        assertTrue(onValidMsg, fieldValidation.isInvalid());
+
+        assertThat(fieldValidation.isInvalid(), is(true), onValidMsg);
 
         validationFunction.apply(object)
                 .peek(t -> fail(onValidMsg))
-                .swap().peek(errors -> assertEquals(Collections.singletonList(fieldValidation.getError()), errors));
+                .swap()
+                .peek(errors -> assertThat(errors, contains(fieldValidation.getError())));
     }
 
     public static <T> void assertNumericFieldValidationErrors(
@@ -154,11 +191,10 @@ public final class Asserts {
     }
 
     public static <T> String getValidationError(@Nonnull final T object, @Nonnull final NumericFieldMeta<T, ?> field) {
-        final String onValidMsg = String.format(
-                "Validation should have failed when '%s'=%s", field.getNameFinnish(), field.apply(object));
-
         final Validation<String, ?> validation = field.validate(object);
-        assertTrue(onValidMsg, validation.isInvalid());
+
+        assertThat(validation.isInvalid(), is(true),
+                format("Validation should have failed when '%s'=%s", field.getNameFinnish(), field.apply(object)));
 
         return validation.getError();
     }
@@ -166,13 +202,13 @@ public final class Asserts {
     private static String consructErrorMessage(
             final String message, final Iterable<?> failingItems, final String separator) {
 
-        Objects.requireNonNull(failingItems, "failingItems is null");
+        requireNonNull(failingItems, "failingItems is null");
 
         return consructErrorMessage(message, join(failingItems, separator), separator);
     }
 
     private static String consructErrorMessage(final String message, final String joinedItems, final String separator) {
-        Objects.requireNonNull(message, "message is null");
+        requireNonNull(message, "message is null");
 
         return new StringBuilder(message)
                 .append(separator)

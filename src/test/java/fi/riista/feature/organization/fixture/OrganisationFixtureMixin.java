@@ -1,6 +1,7 @@
 package fi.riista.feature.organization.fixture;
 
 import fi.riista.feature.common.fixture.FixtureMixin;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
@@ -17,8 +18,12 @@ public interface OrganisationFixtureMixin extends FixtureMixin {
         consumer.accept(getEntitySupplier().newRiistanhoitoyhdistys());
     }
 
+    default void withRhy(final String officialCode, final RiistakeskuksenAlue rka, final Consumer<Riistanhoitoyhdistys> consumer) {
+        consumer.accept(getEntitySupplier().newRiistanhoitoyhdistys(rka, officialCode));
+    }
+
     default void withPerson(final Consumer<Person> consumer) {
-        consumer.accept(getEntitySupplier().newPerson());
+        consumer.accept(getEntitySupplier().newPersonWithAddress());
     }
 
     default void withForeignPerson(final Consumer<Person> consumer) {

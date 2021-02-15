@@ -8,6 +8,7 @@ import fi.riista.feature.permit.application.PermitHolderDTO;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
 import fi.riista.feature.permit.application.mooselike.MooselikePermitApplicationSpeciesAmountDTO;
 import fi.riista.feature.permit.area.hta.HarvestPermitAreaHtaDTO;
+import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerDTO;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhyDTO;
 import org.joda.time.DateTime;
 
@@ -49,12 +50,19 @@ public class MooselikePermitApplicationPdfDTO {
     private final List<String> shooterLists;
     private final List<String> otherAttachments;
 
+    private final String unionAreaId;
+    private final List<HarvestPermitAreaPartnerDTO> areaPartners;
+    private final String locale;
+
     public MooselikePermitApplicationPdfDTO(final @Nonnull HarvestPermitApplication application,
                                             final @Nonnull List<MooselikePermitApplicationSpeciesAmountDTO> speciesAmounts,
                                             final @Nonnull List<OrganisationNameDTO> partners,
                                             final @Nonnull List<HarvestPermitAreaRhyDTO> rhys,
                                             final @Nonnull List<HarvestPermitAreaHtaDTO> htas,
-                                            final @Nonnull GISZoneSizeDTO areaSize) {
+                                            final @Nonnull GISZoneSizeDTO areaSize,
+                                            final @Nonnull String unionAreaId,
+                                            final @Nonnull List<HarvestPermitAreaPartnerDTO> areaPartners,
+                                            final @Nonnull String locale) {
         this.huntingYear = application.getApplicationYear();
         this.submitDate = application.getSubmitDate();
         this.applicationNumber = application.getApplicationNumber();
@@ -86,6 +94,10 @@ public class MooselikePermitApplicationPdfDTO {
         this.mhAreaPermits = application.getAttachmentFilenames(HarvestPermitApplicationAttachment.Type.MH_AREA_PERMIT);
         this.shooterLists = application.getAttachmentFilenames(HarvestPermitApplicationAttachment.Type.SHOOTER_LIST);
         this.otherAttachments = application.getAttachmentFilenames(HarvestPermitApplicationAttachment.Type.OTHER);
+
+        this.unionAreaId = unionAreaId;
+        this.areaPartners = areaPartners;
+        this.locale = locale;
     }
 
     public int getHuntingYear() {
@@ -186,5 +198,17 @@ public class MooselikePermitApplicationPdfDTO {
 
     public List<String> getOtherAttachments() {
         return otherAttachments;
+    }
+
+    public String getUnionAreaId() {
+        return unionAreaId;
+    }
+
+    public List<HarvestPermitAreaPartnerDTO> getAreaPartners() {
+        return areaPartners;
+    }
+
+    public String getLocale() {
+        return locale;
     }
 }

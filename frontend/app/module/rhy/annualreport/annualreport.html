@@ -1,0 +1,27 @@
+<div>
+    <div class="r-annualreport-heading">
+        <h3 translate="rhy.annualReport.heading"></h3>
+    </div>
+    <div class="row">
+        <div class="col-xs-6 text-right">
+            <div class="form-group">
+                <label for="yearSelection" class="control-label">
+                    <span translate="global.year"></span>
+                </label>
+
+                <select name="yearSelection" id="yearSelection"
+                        class="form-control r-annualreport-year-selection"
+                        ng-model="$ctrl.calendarYear"
+                        ng-options="year for year in $ctrl.availableYears">
+
+                    <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-xs-6">
+            <button type="button" ng-click="$ctrl.exportAnnualReport()" class="btn btn-primary">
+                <span translate="rhy.annualReport.button"></span>
+            </button>
+        </div>
+    </div>
+</div>

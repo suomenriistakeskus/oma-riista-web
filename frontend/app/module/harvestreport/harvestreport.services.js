@@ -52,8 +52,7 @@ angular.module('app.harvestreport.services', ['ngResource'])
         };
     })
 
-    .service('HarvestReportFieldsAndSeasons', function ($q, $filter, $translate, $http, Helpers,
-                                                        ActiveRoleService, HarvestFieldsService) {
+    .service('HarvestReportFieldsAndSeasons', function ($filter, $http, $translate, ActiveRoleService, Helpers) {
         var i18nNameFilter = $filter('rI18nNameFilter');
 
         function namePermitHarvest() {

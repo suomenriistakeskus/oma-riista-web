@@ -1,0 +1,142 @@
+<div class="decision-attachment-modal">
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="decision.attachment.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <uib-tabset type="pills" justified="true" active="$ctrl.activeTabIndex">
+            <uib-tab>
+                <uib-tab-heading>
+                    <span class="fa fa-fw fa-list"></span>
+                    <span translate="decision.attachment.listing.title"></span>
+                </uib-tab-heading>
+
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th class="col-xs-1" translate="decision.attachment.listing.order"></th>
+                            <th class="col-xs-5" translate="decision.attachment.listing.description"></th>
+                            <th class="col-xs-3"
+                                translate="decision.attachment.listing.asNumberedInDecision"></th>
+                            <th>&nbsp;</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="a in $ctrl.decisionAttachments track by a.id">
+                            <td>
+                                <a ng-click="$ctrl.moveAttachment(a.id, 1)">
+                                    <span class="fa fa-2x fa-chevron-down"></span>
+                                </a>
+                                <a ng-click="$ctrl.moveAttachment(a.id, -1)">
+                                    <span class="fa fa-2x fa-chevron-up"></span>
+                                </a>
+                            </td>
+                            <td>
+                                <a ng-click="$ctrl.downloadAttachment(a.id)" ng-bind="::a.description"></a>
+                            </td>
+                            <td>
+                                <label ng-switch="!!a.hasOrdering" class="checkbox-inline">
+                                    <input type="checkbox" ng-model="a.hasOrdering"
+                                           ng-change="$ctrl.attachmentChanged = true">
+                                    <span ng-switch-when="true" translate="global.yes"></span>
+                                    <span ng-switch-when="false" translate="global.no"></span>
+                                </label>
+                            </td>
+                            <td class="col-xs-1 text-right vcenter">
+                                <a ng-click="$ctrl.deleteAttachment(a.id)">
+                                    <span class="fa fa-2x fa-remove text-danger"></span>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr ng-show="!$ctrl.decisionAttachments || $ctrl.decisionAttachments.length === 0">
+                            <td colspan="2">
+                                <span class="text-muted"
+                                      translate="decision.attachment.listing.noAttachments"></span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-warning"
+                     ng-show="$ctrl.attachmentChanged"
+                     translate="decision.attachment.listing.reminder"></div>
+            </uib-tab>
+
+            <uib-tab>
+                <uib-tab-heading>
+                    <span class="fa fa-fw fa-upload"></span>
+                    <span translate="decision.attachment.upload.title"></span>
+                </uib-tab-heading>
+
+                <hr class="invisible">
+
+                <div ng-if="$ctrl.errors.incompatibleFileType"
+                     class="alert alert-danger">
+                    <span translate="harvestpermit.wizard.attachments.incompatibleFileType"></span>
+                </div>
+
+                <div class="form-horizontal">
+
+                    <div class="form-group row">
+                        <label class="control-label col-xs-3"
+                               translate="decision.attachment.upload.file"></label>
+
+                        <div class="col-xs-9">
+                            <form method="post" enctype="multipart/form-data"
+                                  class="dropzone"
+                                  ng-dropzone
+                                  dropzone="$ctrl.dropzone"
+                                  dropzone-config="$ctrl.dropzoneConfig"
+                                  event-handlers="$ctrl.dropzoneEventHandlers">
+                                <input type="hidden" spring-csrf-cookie/>
+                                <input type="hidden" name="description" ng-value="$ctrl.attachmentDescription">
+
+                                <div class="dz-message" translate="harvestpermit.wizard.attachments.uploadButton"></div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <form name="attachmentForm">
+                        <div class="form-group row" show-errors>
+                            <label class="control-label col-xs-3" for="attachmentDescription"
+                                   translate="decision.attachment.upload.description"></label>
+
+                            <div class="col-xs-6">
+                                <textarea class="form-control" name="attachmentDescription" id="attachmentDescription"
+                                          required
+                                          rows="4"
+                                          minlength="5"
+                                          maxlength="255"
+                                          ng-model="$ctrl.attachmentDescription"></textarea>
+
+                                <p class="help-block has-error"
+                                   ng-show="attachmentForm.attachmentDescription.$invalid"
+                                   ng-messages="attachmentForm.attachmentDescription.$error">
+                                    <span ng-messages-include="common/errorMessages.html"></span>
+                                </p>
+                            </div>
+
+                            <div class="col-xs-3">
+                                <button type="button" class="attachment-upload-button"
+                                        ng-disabled="$ctrl.uploadDisabled(attachmentForm)"
+                                        ng-click="$ctrl.uploadAttachment()">
+                                    <span translate="global.button.submit"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </uib-tab>
+        </uib-tabset>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                translate="global.button.save"></button>
+    </div>
+
+</div>

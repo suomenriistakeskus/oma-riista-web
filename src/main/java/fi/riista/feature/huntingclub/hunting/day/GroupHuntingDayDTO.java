@@ -53,6 +53,8 @@ public class GroupHuntingDayDTO extends BaseEntityDTO<Long> {
 
     private Integer numberOfHounds;
 
+    private Boolean createdBySystem;
+
     // Builder methods
 
     public GroupHuntingDayDTO withNumberOfHounds(final Integer numberOfHounds) {
@@ -168,5 +170,13 @@ public class GroupHuntingDayDTO extends BaseEntityDTO<Long> {
 
     public void setNumberOfHunters(Integer numberOfHunters) {
         this.numberOfHunters = numberOfHunters;
+    }
+
+    public Boolean getCreatedBySystem() {
+        return createdBySystem;
+    }
+
+    public void setCreatedBySystem(final Boolean createdBySystem) {
+        this.createdBySystem = createdBySystem;
     }
 }

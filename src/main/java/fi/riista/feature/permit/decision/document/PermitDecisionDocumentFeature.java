@@ -34,8 +34,7 @@ public class PermitDecisionDocumentFeature {
     @Transactional
     public void updateDecisionDocument(final long id, final PermitDecisionDocumentSectionDTO dto) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(id, EntityPermission.UPDATE);
-        decision.assertStatus(PermitDecision.Status.DRAFT);
-        decision.assertHandler(activeUserService.requireActiveUser());
+        decision.assertEditableBy(activeUserService.requireActiveUser());
 
         decision.getDocument().updateContent(dto.getSectionId(), dto.getContent());
     }
@@ -49,8 +48,7 @@ public class PermitDecisionDocumentFeature {
     @Transactional
     public void setSectionCompletionStatus(final long id, final PermitDecisionDocumentSectionDTO dto) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(id, EntityPermission.UPDATE);
-        decision.assertStatus(PermitDecision.Status.DRAFT);
-        decision.assertHandler(activeUserService.requireActiveUser());
+        decision.assertEditableBy(activeUserService.requireActiveUser());
 
         decision.getCompleteStatus().updateStatus(dto.getSectionId(), dto.getComplete());
     }
@@ -61,33 +59,40 @@ public class PermitDecisionDocumentFeature {
         decision.assertHandler(activeUserService.requireActiveUser());
 
         switch (sectionId) {
-            case application:
+            case APPLICATION:
                 return permitDecisionTextService.generateApplicationSummary(decision);
-            case applicationReasoning:
+            case APPLICATION_REASONING:
                 return permitDecisionTextService.generateApplicationReasoning(decision);
-            case decision:
+            case DECISION:
                 return permitDecisionTextService.generateDecision(decision);
-            case restriction:
+            case RESTRICTION:
                 return permitDecisionTextService.generateRestriction(decision);
-            case processing:
+            case PROCESSING:
                 return permitDecisionTextService.generateProcessing(decision);
-            case decisionReasoning:
+            case DECISION_REASONING:
                 return permitDecisionTextService.generateDecisionReasoning(decision);
-            case legalAdvice:
+            case LEGAL_ADVICE:
                 return permitDecisionTextService.generateLegalAdvice(decision);
-            case notificationObligation:
+            case NOTIFICATION_OBLIGATION:
                 return permitDecisionTextService.generateNotificationObligation(decision);
-            case appeal:
+            case APPEAL:
                 return permitDecisionTextService.generateAppeal(decision);
-            case additionalInfo:
+            case ADDITIONAL_INFO:
                 return permitDecisionTextService.generateAdditionalInfo(decision);
-            case delivery:
+            case DELIVERY:
                 return permitDecisionTextService.generateDelivery(decision);
-            case adjustedAreaSizeAction:
-                return permitDecisionTextService.generateAdjustedAreaSizeText(decision);
+            case DECISION_EXTRA:
+                return permitDecisionTextService.generateDecisionExtra(decision);
             default:
                 return "";
         }
+    }
+
+    @Transactional(readOnly = true)
+    public String generateAreaActionText(final long id){
+        final PermitDecision decision = requireEntityService.requirePermitDecision(id, EntityPermission.READ);
+        decision.assertHandler(activeUserService.requireActiveUser());
+        return permitDecisionTextService.generateAdjustedAreaSizeText(decision);
     }
 
     @Transactional(readOnly = true)
@@ -99,8 +104,7 @@ public class PermitDecisionDocumentFeature {
     @Transactional
     public void updatePayment(final UpdateDecisionPaymentDTO dto) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(dto.getId(), EntityPermission.UPDATE);
-        decision.assertStatus(PermitDecision.Status.DRAFT);
-        decision.assertHandler(activeUserService.requireActiveUser());
+        decision.assertEditableBy(activeUserService.requireActiveUser());
 
         decision.setPaymentAmount(dto.getPaymentAmount());
         decision.getDocument().setPayment(permitDecisionTextService.generatePayment(decision));

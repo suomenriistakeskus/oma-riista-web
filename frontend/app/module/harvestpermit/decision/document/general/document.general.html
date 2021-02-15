@@ -1,16 +1,16 @@
 <p class="decision-section-title"
-   translate="harvestpermit.decision.sectionId.general"></p>
+   translate="decision.document.general"></p>
 
 <table class="table" style="table-layout: fixed; margin-top: 15px">
     <tbody>
     <tr>
-        <th style="width: 40%" translate="harvestpermit.decision.settings.document.decisionType"></th>
+        <th style="width: 40%" translate="decision.settings.document.decisionType"></th>
         <td>
-            <strong translate="harvestpermit.decision.decisionType.{{$ctrl.decision.decisionType}}"></strong>
+            <strong translate="decision.decisionType.{{$ctrl.decision.decisionType}}"></strong>
         </td>
     </tr>
     <tr>
-        <th translate="harvestpermit.decision.settings.document.locale"></th>
+        <th translate="decision.settings.document.locale"></th>
         <td>
             <span ng-bind="$ctrl.decision.locale === 'sv_FI' ? 'ruotsi' : 'suomi'"></span>
         </td>
@@ -19,9 +19,9 @@
         <th translate="harvestpermit.admin.application.appealStatus"></th>
         <td>
                     <span ng-if="$ctrl.decision.appealStatus === null"
-                          translate="harvestpermit.decision.settings.appeal.noAppeal"></span>
+                          translate="decision.settings.appeal.noAppeal"></span>
             <span ng-if="$ctrl.decision.appealStatus !== null"
-                  translate="harvestpermit.decision.appealStatus.{{$ctrl.decision.appealStatus}}"></span>
+                  translate="decision.appealStatus.{{$ctrl.decision.appealStatus}}"></span>
         </td>
     </tr>
     </tbody>
@@ -31,14 +31,14 @@
     <div class="col-xs-4 col-xs-offset-4">
         <a class="btn btn-default btn-block" ng-click="$ctrl.editPublishSettings()">
             <span class="fa fa-fw fa-calendar"></span>
-            <span translate="harvestpermit.decision.settings.publish.title"></span>
+            <span translate="decision.settings.publish.title"></span>
         </a>
     </div>
 
     <div class="col-xs-4">
         <a class="btn btn-primary btn-block" ng-click="$ctrl.editDocumentSettings()">
             <span class="fa fa-fw fa-cog"></span>
-            <span translate="harvestpermit.decision.settings.document.title"></span>
+            <span translate="decision.settings.document.title"></span>
         </a>
     </div>
 </div>

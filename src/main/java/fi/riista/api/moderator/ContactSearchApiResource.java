@@ -2,6 +2,11 @@ package fi.riista.api.moderator;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.harvestpermit.contactsearch.HarvestPermitContactSearchFeature;
+import fi.riista.feature.harvestpermit.contactsearch.PermitContactSearchConditionDTO;
+import fi.riista.feature.harvestpermit.contactsearch.PermitContactSearchExcelView;
+import fi.riista.feature.harvestpermit.contactsearch.PermitContactSearchResultDTO;
 import fi.riista.feature.organization.occupation.search.ContactSearchAreaListFeature;
 import fi.riista.feature.organization.occupation.search.ContactSearchFeature;
 import fi.riista.feature.organization.occupation.search.OccupationContactSearchDTO;
@@ -13,9 +18,12 @@ import fi.riista.feature.organization.occupation.search.RhyContactSearchResultDT
 import fi.riista.feature.pub.occupation.PublicOrganisationDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
+
+import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -27,9 +35,10 @@ import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 
 @RestController
-@RequestMapping(value = "/api/v1/contactsearch", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/contactsearch", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ContactSearchApiResource {
 
     @Resource
@@ -37,6 +46,12 @@ public class ContactSearchApiResource {
 
     @Resource
     private ContactSearchAreaListFeature contactSearchAreaListFeature;
+
+    @Resource
+    private HarvestPermitContactSearchFeature harvestPermitContactSearchFeature;
+
+    @Resource
+    private MessageSource messageSource;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/areas", method = RequestMethod.GET)
@@ -83,4 +98,15 @@ public class ContactSearchApiResource {
         return modelAndView;
     }
 
+    @PostMapping(value = "/permit", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<PermitContactSearchResultDTO> searchPermits(@RequestBody @Valid final List<PermitContactSearchConditionDTO> searchParams,
+                                                            final Locale locale) {
+        return harvestPermitContactSearchFeature.searchPermitContacts(searchParams, locale);
+    }
+
+    @PostMapping(value = "/permit/excel", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ModelAndView searchPermitsExcel(@RequestBody @Valid final List<PermitContactSearchConditionDTO> searchParams, final Locale locale) {
+        final List<PermitContactSearchResultDTO> results = harvestPermitContactSearchFeature.searchPermitContacts(searchParams, locale);
+        return new ModelAndView(new PermitContactSearchExcelView(results, new EnumLocaliser(messageSource, locale)));
+    }
 }

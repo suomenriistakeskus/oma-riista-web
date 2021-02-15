@@ -9,13 +9,13 @@ import fi.riista.feature.mail.MailService;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.util.Locales;
 import fi.riista.util.LocalisedString;
+import org.joda.time.DateTime;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,7 +37,7 @@ public class HarvestReportReminderEmailService {
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void sendMails(final Harvest harvest, final Set<String> emailReceivers) {
         final GameSpeciesDTO dto = GameSpeciesDTO.create(harvest.getSpecies());
-        final Date pointOfTime = harvest.getPointOfTime();
+        final DateTime pointOfTime = harvest.getPointOfTime();
         final PersonContactInfoDTO author = PersonContactInfoDTO.create(harvest.getAuthor());
         final PersonContactInfoDTO hunter = PersonContactInfoDTO.create(harvest.getActualShooter());
 

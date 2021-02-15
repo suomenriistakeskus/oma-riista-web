@@ -4,12 +4,15 @@ import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.huntingclub.moosedatacard.DateAndLocation;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardObservationValidator;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.util.DateUtil;
 import org.joda.time.LocalTime;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static fi.riista.feature.gamediary.observation.ObservationCategory.MOOSE_HUNTING;
 
 public abstract class MooseDataCardObservationConverter<T extends DateAndLocation>
         implements Function<T, Stream<Observation>> {
@@ -35,9 +38,9 @@ public abstract class MooseDataCardObservationConverter<T extends DateAndLocatio
         observation.setAuthor(contactPerson);
         observation.setObserver(contactPerson);
         observation.setFromMobile(false);
-        observation.setWithinMooseHunting(true);
+        observation.setObservationCategory(MOOSE_HUNTING);
         observation.setGeoLocation(source.getGeoLocation());
-        observation.setPointOfTime(source.getDate().toLocalDateTime(DEFAULT_ENTRY_TIME).toDate());
+        observation.setPointOfTime(DateUtil.toDateTimeNullSafe(source.getDate(), DEFAULT_ENTRY_TIME));
         return observation;
     }
 }

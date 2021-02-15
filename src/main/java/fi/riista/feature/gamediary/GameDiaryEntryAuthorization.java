@@ -105,7 +105,7 @@ public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry>
     }
 
     private List<HuntingClubGroup> findCandidateGroups(@Nonnull final GameDiaryEntry diaryEntry) {
-        final LocalDate diaryEntryDate = DateUtil.toLocalDateNullSafe(diaryEntry.getPointOfTime());
+        final LocalDate diaryEntryDate = diaryEntry.getPointOfTime().toLocalDate();
         final int huntingYearOfDiaryEntry = DateUtil.huntingYearContaining(diaryEntryDate);
 
         return huntingClubGroupRepository
@@ -120,19 +120,19 @@ public abstract class GameDiaryEntryAuthorization<T extends GameDiaryEntry>
                                                                     final HuntingClubGroup group) {
         return diaryEntry.getType().apply(diaryEntry,
                 harvest -> harvest.getSpecies().equals(group.getSpecies()),
-                Observation::observedWithinMooseHunting);
+                Observation::observedWithinHunting); // TODO: must be divided by category (i.e. no deer-hunting in moose view)
     }
 
     private boolean groupPermitIsValidDuringPointOfTime(final GameDiaryEntry diaryEntry,
                                                         final HuntingClubGroup huntingClubGroup) {
         return harvestPermitSpeciesAmountRepository.findByHuntingClubGroupPermit(huntingClubGroup)
-                .map(speciesAmount -> speciesAmount.containsDate(DateUtil.toLocalDateNullSafe(diaryEntry.getPointOfTime())))
+                .map(speciesAmount -> speciesAmount.containsDate(diaryEntry.getPointOfTime().toLocalDate()))
                 .orElse(false);
     }
 
     private boolean authorOrActorHasValidClubAndGroupRole(final GameDiaryEntry diaryEntry,
                                                           final HuntingClubGroup group) {
-        final LocalDate validOn = DateUtil.toLocalDateNullSafe(diaryEntry.getPointOfTime());
+        final LocalDate validOn = diaryEntry.getPointOfTime().toLocalDate();
 
         return diaryEntry.getAuthor() != null && personHasValidClubAndGroupRole(diaryEntry.getAuthor(), group, validOn) ||
                 diaryEntry.getActor() != null && personHasValidClubAndGroupRole(diaryEntry.getActor(), group, validOn);

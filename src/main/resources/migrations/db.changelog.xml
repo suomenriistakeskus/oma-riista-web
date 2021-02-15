@@ -3,7 +3,7 @@
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <include file="db.initial.xml" relativeToChangelogFile="true" />
     <include file="db.changelog-2014.xml" relativeToChangelogFile="true"/>
@@ -12,6 +12,8 @@
     <include file="db.changelog-2017.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-2018.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-2019.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-2020.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-2021.xml" relativeToChangelogFile="true"/>
 
     <include file="db.h2.xml" relativeToChangelogFile="true" />
     <include file="db.audit.xml" relativeToChangelogFile="true" />

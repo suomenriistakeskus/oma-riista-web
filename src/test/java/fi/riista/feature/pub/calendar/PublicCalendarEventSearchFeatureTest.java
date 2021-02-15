@@ -1,9 +1,11 @@
 package fi.riista.feature.pub.calendar;
 
+import com.google.common.collect.Lists;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.calendar.CalendarEvent;
+import fi.riista.feature.organization.calendar.CalendarEventGroupType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
@@ -17,8 +19,23 @@ import org.junit.Test;
 import org.springframework.context.i18n.LocaleContextHolder;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
+import static fi.riista.feature.organization.calendar.CalendarEventGroupType.KILPAILUT;
+import static fi.riista.feature.organization.calendar.CalendarEventGroupType.KOULUTUSTILAISUUDET;
+import static fi.riista.feature.organization.calendar.CalendarEventGroupType.MUUT_TAPAHTUMAT;
+import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKILPAILU;
+import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKOULUTUS;
+import static fi.riista.feature.organization.calendar.CalendarEventType.ERATAPAHTUMA;
+import static fi.riista.feature.organization.calendar.CalendarEventType.HARJOITUSAMMUNTA;
+import static fi.riista.feature.organization.calendar.CalendarEventType.METSASTYKSENJOHTAJA_HIRVIELAIMET;
+import static fi.riista.feature.organization.calendar.CalendarEventType.NUORISOTAPAHTUMA;
+import static fi.riista.feature.organization.calendar.CalendarEventType.PETOYHDYSHENKILO_KOULUTUS;
+import static fi.riista.feature.organization.calendar.CalendarEventType.RIISTAPOLKUKILPAILU;
+import static fi.riista.feature.organization.calendar.CalendarEventType.YLIMAARAINEN_KOKOUS;
 import static fi.riista.util.DateUtil.today;
 
 import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKOE;
@@ -28,7 +45,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class PublicCalendarEventSearchFeatureTest extends EmbeddedDatabaseTest {
@@ -79,7 +96,7 @@ public class PublicCalendarEventSearchFeatureTest extends EmbeddedDatabaseTest {
         params.setBegin(novemberDate.minusWeeks(1));
         params.setEnd(novemberDate.plusWeeks(1));
         params.setAreaId(rkaCode);
-        params.setRhyId(rhyCode);
+        params.setRhyId(Collections.singletonList(rhyCode));
         final PublicCalendarEventSearchResultDTO result = publicCalendarEventSearchFeature.findCalendarEvents(params);
 
         assertFalse(result.isTooManyResults());
@@ -96,7 +113,7 @@ public class PublicCalendarEventSearchFeatureTest extends EmbeddedDatabaseTest {
         final PublicCalendarEventSearchDTO params = new PublicCalendarEventSearchDTO();
         params.setBegin(novemberDate.minusWeeks(1));
         params.setEnd(novemberDate.plusWeeks(1));
-        params.setRhyId(rhyWithEventsCode);
+        params.setRhyId(Collections.singletonList(rhyWithEventsCode));
         final PublicCalendarEventSearchResultDTO result = publicCalendarEventSearchFeature.findCalendarEvents(params);
 
         assertFalse(result.isTooManyResults());
@@ -212,7 +229,7 @@ public class PublicCalendarEventSearchFeatureTest extends EmbeddedDatabaseTest {
         params.setBegin(novemberDate);
         params.setEnd(novemberDate);
         params.setAreaId(rka2Code);
-        params.setRhyId(rhyWithEventsCode);
+        params.setRhyId(Collections.singletonList(rhyWithEventsCode));
         final PublicCalendarEventSearchResultDTO result = publicCalendarEventSearchFeature.findCalendarEvents(params);
 
         assertFalse(result.isTooManyResults());
@@ -271,7 +288,7 @@ public class PublicCalendarEventSearchFeatureTest extends EmbeddedDatabaseTest {
         final PublicCalendarEventSearchDTO params = new PublicCalendarEventSearchDTO();
         params.setBegin(novemberDate.minusWeeks(1));
         params.setEnd(decemberDate.plusWeeks(1));
-        params.setCalendarEventType(METSASTAJATUTKINTO);
+        params.setCalendarEventType(CalendarEventGroupType.METSASTAJATUTKINTO);
         final PublicCalendarEventSearchResultDTO result = publicCalendarEventSearchFeature.findCalendarEvents(params);
 
         assertFalse(result.isTooManyResults());
@@ -521,4 +538,76 @@ public class PublicCalendarEventSearchFeatureTest extends EmbeddedDatabaseTest {
         assertEquals(event2Date, events.get(1).getDate());
         assertEquals(additionalEventDate, events.get(2).getDate());
     }
+
+    @Test
+    public void testCalendarEvents_ByMultipleRhys() {
+
+        final Collection<Riistanhoitoyhdistys> rhys = Lists.newArrayList(
+                model().newRiistanhoitoyhdistys(rka),
+                model().newRiistanhoitoyhdistys(rka),
+                model().newRiistanhoitoyhdistys(rka));
+
+        Collection<String> rhyIds = new ArrayList<>();
+
+        for (Riistanhoitoyhdistys rhy : rhys) {
+            model().newCalendarEvent(rhy, AMPUMAKOE, date.plusDays(2));
+            model().newCalendarEvent(rhy, METSASTAJATUTKINTO, date.minusDays(3));
+            model().newCalendarEvent(rhy, METSASTAJATUTKINTO, novemberDate);
+
+            rhyIds.add(rhy.getOfficialCode());
+        }
+
+        persistInNewTransaction();
+
+        final PublicCalendarEventSearchDTO params = new PublicCalendarEventSearchDTO();
+        params.setRhyId(rhyIds);
+        params.setCalendarEventType(CalendarEventGroupType.METSASTAJATUTKINTO);
+        params.setBegin(date.minusWeeks(1));
+        params.setEnd(date.plusWeeks(1));
+
+        final PublicCalendarEventSearchResultDTO result = publicCalendarEventSearchFeature.findCalendarEvents(params);
+
+        assertThat(result.getEvents(), hasSize(3));
+        assertEquals(METSASTAJATUTKINTO, result.getEvents().get(0).getCalendarEventType().getCalendarEventType());
+    }
+
+    @Test
+    public void testCalendarEvents_ByGroupType() {
+        model().newCalendarEvent(rhy, AMPUMAKOE, novemberDate);
+
+        model().newCalendarEvent(rhy, RIISTAPOLKUKILPAILU, novemberDate);
+        model().newCalendarEvent(rhy, AMPUMAKILPAILU, novemberDate);
+
+        model().newCalendarEvent(rhy, AMPUMAKOULUTUS, novemberDate);
+        model().newCalendarEvent(rhy, METSASTYKSENJOHTAJA_HIRVIELAIMET, novemberDate);
+        model().newCalendarEvent(rhy, PETOYHDYSHENKILO_KOULUTUS, novemberDate);
+
+        model().newCalendarEvent(rhy, YLIMAARAINEN_KOKOUS, novemberDate);
+        model().newCalendarEvent(rhy, NUORISOTAPAHTUMA, novemberDate);
+        model().newCalendarEvent(rhy, ERATAPAHTUMA, novemberDate);
+        model().newCalendarEvent(rhy, HARJOITUSAMMUNTA, novemberDate);
+
+        persistInNewTransaction();
+
+        final PublicCalendarEventSearchDTO params = new PublicCalendarEventSearchDTO();
+
+        params.setCalendarEventType(CalendarEventGroupType.AMPUMAKOE);
+        PublicCalendarEventSearchResultDTO result = publicCalendarEventSearchFeature.findCalendarEvents(params);
+        assertThat(result.getEvents(), hasSize(1));
+
+        params.setCalendarEventType(KILPAILUT);
+        result = publicCalendarEventSearchFeature.findCalendarEvents(params);
+        assertThat(result.getEvents(), hasSize(2));
+
+        params.setCalendarEventType(KOULUTUSTILAISUUDET);
+        result = publicCalendarEventSearchFeature.findCalendarEvents(params);
+        assertThat(result.getEvents(), hasSize(3));
+
+        params.setCalendarEventType(MUUT_TAPAHTUMAT);
+        result = publicCalendarEventSearchFeature.findCalendarEvents(params);
+        assertThat(result.getEvents(), hasSize(4));
+    }
+
 }
+
+

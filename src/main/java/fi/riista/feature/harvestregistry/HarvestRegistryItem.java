@@ -8,8 +8,8 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.util.LocalisedString;
 import fi.riista.validation.FinnishHunterNumber;
-import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
+import org.joda.time.DateTime;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -24,14 +24,13 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Date;
+import java.util.Optional;
 
 import static fi.riista.feature.gamediary.harvest.Harvest.MAX_AMOUNT;
 import static fi.riista.feature.gamediary.harvest.Harvest.MIN_AMOUNT;
@@ -64,9 +63,11 @@ public class HarvestRegistryItem extends LifecycleEntity<Long> {
     private String shooterHunterNumber;
 
     @NotNull
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date pointOfTime;
+    private DateTime pointOfTime;
+
+    @Column
+    private Boolean timeOfDayValid = true;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -185,12 +186,21 @@ public class HarvestRegistryItem extends LifecycleEntity<Long> {
         this.shooterHunterNumber = shooterHunterNumber;
     }
 
-    public Date getPointOfTime() {
+    public DateTime getPointOfTime() {
         return pointOfTime;
     }
 
-    public void setPointOfTime(final Date pointOfTime) {
+    public void setPointOfTime(final DateTime pointOfTime) {
         this.pointOfTime = pointOfTime;
+    }
+
+    public boolean isTimeOfDayValid() {
+        // For items where flag is not set, interpret as valid
+        return Optional.ofNullable(timeOfDayValid).orElse(true);
+    }
+
+    public void setTimeOfDayValid(final Boolean timeOfDayValid) {
+        this.timeOfDayValid = timeOfDayValid;
     }
 
     public GameSpecies getSpecies() {

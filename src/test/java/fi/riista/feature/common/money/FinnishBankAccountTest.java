@@ -29,8 +29,8 @@ public class FinnishBankAccountTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testFromIban_withUnknownBank() {
-        FinnishBankAccount.fromIban(Iban.valueOf("FI7747722260000694"));
+    public void testFromIban_withForeignBank() {
+        FinnishBankAccount.fromIban(Iban.valueOf("FR7630006000011234567890189"));
     }
 
     @Test(expected = Iban4jException.class)

@@ -14,7 +14,6 @@ import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.jpa.JpaSubQuery;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +25,7 @@ import static fi.riista.util.jpa.JpaSpecs.equal;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.comparingLong;
 import static java.util.stream.Collectors.toList;
-import static org.springframework.data.jpa.domain.Specifications.where;
+import static org.springframework.data.jpa.domain.Specification.where;
 
 @Component
 public class HarvestPermitListFeature {
@@ -76,19 +75,19 @@ public class HarvestPermitListFeature {
                 .collect(toList());
     }
 
-    private static Specifications<HarvestPermit> spec(final HuntingClub club, final int huntingYear, int speciesCode) {
+    private static Specification<HarvestPermit> spec(final HuntingClub club, final int huntingYear, int speciesCode) {
         return clubPredicate(club)
                 .and(HarvestPermitSpecs.validWithinHuntingYear(huntingYear))
                 .and(HarvestPermitSpecs.IS_MOOSELIKE_PERMIT)
                 .and(HarvestPermitSpecs.withSpeciesCode(speciesCode));
     }
 
-    private static Specifications<HarvestPermit> clubPredicate(final HuntingClub club) {
+    private static Specification<HarvestPermit> clubPredicate(final HuntingClub club) {
         final Specification<HarvestPermit> clubIsPermitHolder = equal(HarvestPermit_.huntingClub, club);
         final Specification<HarvestPermit> clubIsPermitPartner =
                 JpaSubQuery.of(HarvestPermit_.permitPartners).exists((root, cb) -> cb.equal(root, club));
 
-        return Specifications.where(clubIsPermitHolder).or(clubIsPermitPartner);
+        return Specification.where(clubIsPermitHolder).or(clubIsPermitPartner);
     }
 
     @Transactional(readOnly = true)

@@ -5,6 +5,7 @@ import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.address.AddressRepository;
 import fi.riista.feature.permit.application.DeliveryAddress;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.invoice.CreditorReferenceCalculator;
 import fi.riista.feature.permit.invoice.Invoice;
@@ -57,7 +58,7 @@ public class PermitDecisionInvoiceSynchronizer {
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void synchronizeProcessingInvoice(@Nonnull final PermitDecision decision) throws IOException {
         requireNonNull(decision);
-        decision.assertStatus(PermitDecision.Status.PUBLISHED);
+        decision.assertStatus(DecisionStatus.PUBLISHED);
 
         final Optional<PermitDecisionInvoice> existingInvoice = permitDecisionInvoiceRepository.findByDecision(decision);
 

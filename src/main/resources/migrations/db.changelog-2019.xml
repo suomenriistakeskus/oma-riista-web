@@ -3,7 +3,7 @@
 <databaseChangeLog
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd"
         logicalFilePath="migrations/db.changelog.xml">
 
     <changeSet id="2019-01-03-decision-delivery-address-for-application" author="vincit-terole">
@@ -1426,7 +1426,7 @@
     <changeSet id="2019-06-25-add-hunter_exam_training_participants_overridden-to-rhy_annual_statistics" author="vincit-mikkori">
         <addColumn tableName="rhy_annual_statistics">
             <column name="hunter_exam_training_participants_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
 
@@ -1510,7 +1510,7 @@
     <changeSet id="2019-06-26-add-hunter-training-statistics-override-fields-to-rhy_annual_statistics" author="vincit-mikkori">
         <addColumn tableName="rhy_annual_statistics">
             <column name="mooselike_hunting_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
@@ -1550,12 +1550,12 @@
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="srva_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="srva_training_participants_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
@@ -1600,27 +1600,27 @@
     <changeSet id="2019-06-27-add-youth-training-override-fields-to-rhy_annual_statistics" author="vincit-mikkori">
         <addColumn tableName="rhy_annual_statistics">
             <column name="school_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="school_training_participants_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="college_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="college_training_participants_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="other_youth_targeted_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
@@ -1642,7 +1642,7 @@
     <changeSet id="2019-06-27-add-jht-training-override-fields-to-rhy_annual_statistics" author="vincit-mikkori">
         <addColumn tableName="rhy_annual_statistics">
             <column name="jht_shooting_test_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
@@ -1652,27 +1652,27 @@
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="jht_hunter_exam_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="jht_hunter_exam_training_participants_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="jht_game_damage_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="jht_game_damage_training_participants_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="jht_hunting_control_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
@@ -1706,12 +1706,12 @@
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="game_counting_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="game_counting_training_participants_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
@@ -1736,7 +1736,7 @@
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="other_gamekeeping_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
@@ -1746,22 +1746,22 @@
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="shooting_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="shooting_training_participants_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="tracker_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
         <addColumn tableName="rhy_annual_statistics">
             <column name="tracker_training_participants_overridden" type="BOOLEAN" defaultValueBoolean="false">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
         </addColumn>
 
@@ -1873,7 +1873,7 @@
 
         <addForeignKeyConstraint baseTableName="additional_calendar_event" baseColumnNames="calendar_event_id"
                                  constraintName="fk_additional_calendar_event_calendar_event"
-                                 referencedTableName="calendar_event"  referencedColumnNames="calendar_event_id"
+                                 referencedTableName="calendar_event" referencedColumnNames="calendar_event_id"
                                  onDelete="CASCADE" onUpdate="NO ACTION"/>
 
         <addForeignKeyConstraint baseTableName="additional_calendar_event" baseColumnNames="venue_id"
@@ -2196,4 +2196,529 @@
         ]]></sql>
     </changeSet>
 
+    <changeSet id="2019-10-09-occupation_board_representation_roles" author="vincit-mikkori">
+        <createTable tableName="occupation_board_representation_role">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="METSAHALLITUKSEN_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="MAANOMISTAJIEN_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="METSAHALLITUKSEN_VARAEDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="MAANOMISTAJIEN_VARAEDUSTAJA"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2019-10-09-add-board_representation-to-occupation" author="vincit-mikkori">
+        <addColumn tableName="occupation">
+            <column name="board_representation" type="VARCHAR(255)">
+                <constraints references="occupation_board_representation_role(name)"
+                             foreignKeyName="fk_occupation_board_representation_role"/>
+            </column>
+        </addColumn>
+
+        <addUniqueConstraint tableName="occupation"
+                             columnNames="board_representation, organisation_id"
+                             constraintName="uk_board_representation"/>
+    </changeSet>
+
+    <changeSet id="2019-09-17-add-mammal-category" author="vincit-terole">
+        <insert tableName="harvest_permit_category">
+            <column name="name" value="MAMMAL"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2019-09-19-mammal-permit-application-table" author="vincit-terole">
+        <createTable tableName="mammal_permit_application">
+            <column autoIncrement="true" name="mammal_permit_application_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="mammal_permit_application_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="harvest_permit_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_mammal_permit_application_application_id"
+                             unique="true"
+                             uniqueConstraintName="uk_mammal_permit_application_parent"/>
+            </column>
+            <column name="area_size" type="INT"/>
+            <column name="latitude" type="INT"/>
+            <column name="longitude" type="INT"/>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)"/>
+            <column name="area_description" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2019-09-19-mammal-application-extended-period-grounds" author="vincit-terole">
+        <addColumn tableName="mammal_permit_application">
+            <column name="extended_period_grounds" type="VARCHAR(255)"></column>
+            <column name="extended_period_grounds_description" type="TEXT"></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2019-09-24-add-cause-fields-to-mammal-application" author="vincit-terole">
+        <addColumn tableName="mammal_permit_application">
+            <column name="deviate_section_32" type="TEXT"/>
+            <column name="deviate_section_33" type="TEXT"/>
+            <column name="deviate_section_34" type="TEXT"/>
+            <column name="deviate_section_35" type="TEXT"/>
+            <column name="deviate_section_51" type="TEXT"/>
+            <column name="use_traps" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="use_tape_recorders" type="BOOLEAN" defaultValueBoolean="false"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2019-09-30-add-protected-area-name-for-mammal-application" author="vincit-terole">
+        <addColumn tableName="mammal_permit_application">
+            <column name="protected_area_name" type="TEXT"/>
+        </addColumn>
+    </changeSet>
+
+
+    <changeSet id="2019-10-02-mammal-application-reasons" author="vincit-terole">
+
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_FLORA_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_FAUNA_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_CROPS_DAMAGE_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_CATTLE_DAMAGE_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_FOREST_DAMAGE_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_FISHING_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_WATER_SYSTEM_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_OTHER_PROPERTY_DAMAGE_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_PUBLIC_HEALTH_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_PUBLIC_SAFETY_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_OTHER_COMMON_INTEREST_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_RESEARCH_41A"/>
+        </insert>
+
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_FLORA_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_FAUNA_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_CROPS_DAMAGE_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_CATTLE_DAMAGE_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_FOREST_DAMAGE_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_FISHING_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_WATER_SYSTEM_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_OTHER_PROPERTY_DAMAGE_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_PUBLIC_HEALTH_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_PUBLIC_SAFETY_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_OTHER_COMMON_INTEREST_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_RESEARCH_41C"/>
+        </insert>
+
+        <createTable tableName="derogation_permit_application_reason">
+            <column autoIncrement="true" name="derogation_permit_application_reason_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="derogation_permit_application_reason_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="harvest_permit_application_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="harvest_permit_application(harvest_permit_application_id)"
+                             foreignKeyName="fk_derogation_permit_application_reason_decision_id"/>
+            </column>
+            <column name="reason_type" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="permit_decision_derogation_reason_type(name)"
+                             foreignKeyName="fk_derogation_permit_application_reason_reason_type"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="derogation_permit_application_reason"
+                     indexName="uk_derogation_permit_application_reason"
+                     unique="true">
+            <column name="harvest_permit_application_id"/>
+            <column name="reason_type"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="2019-10-30-add-new-mammal-application-reasons" author="vincit-terole">
+
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_REINDEER_HUSBANDRY_41A"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_REINDEER_HUSBANDRY_41C"/>
+        </insert>
+        <insert tableName="permit_decision_derogation_reason_type">
+            <column name="name" value="REASON_GAME_HUSBANDRY_41C"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2019-11-04-game_damage_inspection_event" author="vincit-mikkori">
+        <createTable tableName="game_damage_inspection_event">
+            <column autoIncrement="true" name="game_damage_inspection_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="game_damage_inspection_event_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="rhy_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_game_damage_inspection_event_rhy"/>
+            </column>
+
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="game_species(game_species_id)"
+                             foreignKeyName="fk_game_damage_species"/>
+            </column>
+            <column name="inspector_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="latitude" type="INT"/>
+            <column name="longitude" type="INT"/>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)"/>
+            <column name="geom" type="GEOMETRY"/>
+
+            <column name="date" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="begin_time" type="TIME WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="TIME WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+
+            <column name="hourly_expenses_unit" type="NUMERIC(7,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kilometers" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kilometer_expenses_unit" type="NUMERIC(7,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="daily_allowance" type="NUMERIC(7,2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2019-11-12-add-damage-inspection-locations-overridden-to-rhy_annual_statistics" author="vincit-mikkori">
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="mooselike_damage_inspection_locations_overridden" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="large_carnivore_damage_inspection_locations_overridden" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE rhy_annual_statistics SET mooselike_damage_inspection_locations_overridden = true WHERE mooselike_damage_inspection_locations IS NOT NULL;
+            UPDATE rhy_annual_statistics SET large_carnivore_damage_inspection_locations_overridden = true WHERE large_carnivore_damage_inspection_locations IS NOT NULL;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2019-12-02-change-data-type-of-population-amount" author="vincit-terole">
+        <modifyDataType tableName="harvest_permit_application_species_amount"
+                        columnName="population_amount"
+                        newDataType="TEXT"/>
+    </changeSet>
+
+    <changeSet id="2019-11-25-add-substitute_id-to-occupation" author="vincit-mikkori">
+        <addColumn tableName="occupation">
+            <column name="substitute_id" type="BIGINT">
+                <constraints references="person(person_id)"
+                             foreignKeyName="fk_occupation_substitute_person_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2019-12-12-drop-uk_board_representation" author="vincit-mikkori">
+        <dropUniqueConstraint tableName="occupation" constraintName="uk_board_representation"/>
+    </changeSet>
+
+    <changeSet id="2020-01-03-add-srva-other-game-species-statistics-to-rhy_annual_statistics" author="vincit-mikkori">
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="srva_other_species_accidents" type="INT"/>
+            <column name="srva_other_species_deportations" type="INT"/>
+            <column name="srva_other_species_injuries" type="INT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2019-11-29-add-hunting_control_cooperation_type" author="vincit-mikkori">
+        <createTable tableName="hunting_control_cooperation_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="hunting_control_cooperation_type">
+            <column name="name" value="POLIISI"/>
+        </insert>
+        <insert tableName="hunting_control_cooperation_type">
+            <column name="name" value="RAJAVARTIOSTO"/>
+        </insert>
+        <insert tableName="hunting_control_cooperation_type">
+            <column name="name" value="MH"/>
+        </insert>
+        <insert tableName="hunting_control_cooperation_type">
+            <column name="name" value="OMA"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2019-11-29-add-hunting_control_event" author="vincit-mikkori">
+        <createTable tableName="hunting_control_event">
+            <column autoIncrement="true" name="hunting_control_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="hunting_control_event_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="rhy_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_hunting_control_event_rhy"/>
+            </column>
+
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="inspector_count" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cooperation_type" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="hunting_control_cooperation_type(name)"
+                             foreignKeyName="fk_hunting_control_event_cooperation_type"/>
+            </column>
+            <column name="wolf_territory" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="inspectors" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="latitude" type="INT"/>
+            <column name="longitude" type="INT"/>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)"/>
+            <column name="geom" type="GEOMETRY"/>
+
+            <column name="date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="begin_time" type="TIME WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="TIME WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="customers" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="proof_orders" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2019-12-05-add-hunting_control_attachment" author="vincit-mikkori">
+        <createTable tableName="hunting_control_attachment">
+            <column autoIncrement="true" name="hunting_control_attachment_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="hunting_control_attachment_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="hunting_control_event_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="hunting_control_event(hunting_control_event_id)"
+                             foreignKeyName="fk_hunting_control_attachment_event_id"/>
+            </column>
+
+            <column name="attachment_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             unique="true"
+                             references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_hunting_control_attachment_metadata_id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2019-12-17-add-hunting-control-statistics-overridden-to-rhy_annual_statistics" author="vincit-mikkori">
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="hunting_control_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="hunting_control_customers_overridden" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="proof_orders_overridden" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE rhy_annual_statistics SET hunting_control_events_overridden = true WHERE hunting_control_events IS NOT NULL;
+            UPDATE rhy_annual_statistics SET hunting_control_customers_overridden = true WHERE hunting_control_customers IS NOT NULL;
+            UPDATE rhy_annual_statistics SET proof_orders_overridden = true WHERE proof_orders IS NOT NULL;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2019-12-31-add-rhy-srva-rotation-fields" author="vincit-terole">
+        <createTable tableName="srva_rotation">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="srva_rotation">
+            <column name="name" value="DAILY"></column>
+        </insert>
+        <insert tableName="srva_rotation">
+            <column name="name" value="WEEKLY"></column>
+        </insert>
+        <insert tableName="srva_rotation">
+            <column name="name" value="MONTHLY"></column>
+        </insert>
+
+        <addColumn tableName="organisation">
+            <column type="VARCHAR(255)" name="rhy_srva_rotation">
+                <constraints references="srva_rotation(name)"
+                             foreignKeyName="fk_organisation_srva_rotation"/>
+            </column>
+            <column type="date" name="rhy_srva_rotation_start"></column>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

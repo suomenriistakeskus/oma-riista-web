@@ -18,7 +18,8 @@
             </div>
         </uib-accordion-heading>
 
-        <bird-application-summary-applicant application="$ctrl.application"></bird-application-summary-applicant>
+        <harvest-permit-application-summary-applicant
+                application="$ctrl.application"></harvest-permit-application-summary-applicant>
     </div>
 
     <div uib-accordion-group class="panel-default"
@@ -106,9 +107,9 @@
             </div>
         </uib-accordion-heading>
 
-        <carnivore-application-summary-attachments attachments="$ctrl.application.otherAttachments"
-                                                   base-uri="$ctrl.attachmentBaseUri">
-        </carnivore-application-summary-attachments>
+        <derogation-application-summary-attachments attachments="$ctrl.application.otherAttachments"
+                                                    base-uri="$ctrl.attachmentBaseUri">
+        </derogation-application-summary-attachments>
     </div>
 
     <div uib-accordion-group class="panel-default"
@@ -128,7 +129,7 @@
             </div>
         </uib-accordion-heading>
 
-        <carnivore-application-decision-delivery application="$ctrl.application">
-        </carnivore-application-decision-delivery>
+        <harvest-permit-application-decision-delivery application="$ctrl.application">
+        </harvest-permit-application-decision-delivery>
     </div>
 </uib-accordion>

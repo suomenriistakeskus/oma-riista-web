@@ -2,23 +2,23 @@
 
     <div class="modal-header">
         <button riista-modal-close></button>
-        <h3 class="modal-title" translate="harvestpermit.decision.delivery.title"></h3>
+        <h3 class="modal-title" translate="decision.delivery.title"></h3>
     </div>
 
     <div class="modal-body">
 
         <div class="btn-group btn-group-justified r-decision-delivery-tabs">
             <label class="btn btn-default" ng-model="$ctrl.selectedTab" uib-btn-radio="'a'">
-                <span translate="harvestpermit.decision.delivery.fromRka"></span>
+                <span translate="decision.delivery.fromRka"></span>
             </label>
 
             <label class="btn btn-default" ng-model="$ctrl.selectedTab" uib-btn-radio="'b'">
-                <span translate="harvestpermit.decision.delivery.addAdHoc"></span>
+                <span translate="decision.delivery.addAdHoc"></span>
             </label>
 
             <label class="btn btn-default" ng-model="$ctrl.selectedTab" uib-btn-radio="'c'"
                    ng-if="$ctrl.referenceEnabled">
-                <span translate="harvestpermit.decision.delivery.fromReference"></span>
+                <span translate="decision.delivery.fromReference"></span>
             </label>
         </div>
 
@@ -58,7 +58,7 @@
         <div ng-if="$ctrl.selectedTab === 'b'">
             <div class="form-group">
                 <label for="name" class="col-xs-2 control-label">
-                    <span translate="harvestpermit.decision.delivery.name"></span>
+                    <span translate="decision.delivery.name"></span>
                 </label>
 
                 <div class="col-xs-3" ng-class="{'has-error': form.name.$invalid}">
@@ -70,7 +70,7 @@
                            focus-me>
                 </div>
                 <label for="email" class="col-xs-2 control-label">
-                    <span translate="harvestpermit.decision.delivery.email"></span>
+                    <span translate="decision.delivery.email"></span>
                 </label>
                 <div class="col-xs-3" ng-class="{'has-error': form.email.$invalid}">
                     <input type="email" id="email" name="email"
@@ -103,14 +103,14 @@
                             ng-click="$ctrl.overwriteWithReference()"
                             ng-disabled="!$ctrl.referenceContent">
                         <span class="glyphicon glyphicon-arrow-left"></span>
-                        <span translate="harvestpermit.decision.section.overwrite"></span>
+                        <span translate="decision.section.overwrite"></span>
                     </button>
                 </div>
             </div>
             <div class="row">
                 <div class="col-xs-12 r-decision-delivery-content">
                     <permit-decision-delivery-listing
-                            deliveries="$ctrl.referenceReliveries"></permit-decision-delivery-listing>
+                            deliveries="$ctrl.referenceDeliveries"></permit-decision-delivery-listing>
                 </div>
             </div>
         </div>

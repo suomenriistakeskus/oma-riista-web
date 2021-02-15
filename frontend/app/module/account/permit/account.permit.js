@@ -64,11 +64,20 @@ angular.module('app.account.permit', [])
             permit: '<',
             todo: '<'
         },
-        controller: function ($state, AvailableRoleService, ActiveRoleService, LoginRedirectService) {
+        controller: function ($state, AvailableRoleService, ActiveRoleService, LoginRedirectService, PermitTypeCode) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
                 $ctrl.moderatorView = ActiveRoleService.isModerator();
+            };
+
+            $ctrl.hasSpeciesAmounts = function () {
+                return PermitTypeCode.hasSpeciesAmounts($ctrl.permit.permitTypeCode);
+            };
+
+
+            $ctrl.isNestRemovalPermit = function () {
+                return $ctrl.permit.permitTypeCode === '615';
             };
 
             $ctrl.requiresAction = function () {
@@ -85,6 +94,10 @@ angular.module('app.account.permit', [])
                 } else {
                     $state.go('permitmanagement.dashboard', {permitId: $ctrl.permit.id});
                 }
+            };
+
+            $ctrl.actionDisabled = function () {
+                return !PermitTypeCode.hasPermission($ctrl.permit.permitTypeCode);
             };
         }
     })
@@ -115,11 +128,15 @@ angular.module('app.account.permit', [])
             decision: '<',
             todo: '<'
         },
-        controller: function (FormPostService, HarvestPermitPdfUrl) {
+        controller: function (FormPostService, HarvestPermitPdfUrl, PermitTypeCode) {
             var $ctrl = this;
 
             $ctrl.pdf = function () {
                 FormPostService.submitFormUsingBlankTarget(HarvestPermitPdfUrl.get($ctrl.decision.permitNumber));
+            };
+
+            $ctrl.actionDisabled = function () {
+                return !PermitTypeCode.hasPermission($ctrl.decision.permitTypeCode);
             };
         }
     })
@@ -131,8 +148,18 @@ angular.module('app.account.permit', [])
         },
         controller: function ($state, $uibModal, ActiveRoleService, FetchAndSaveBlob,
                               HarvestPermitWizardSelectorService,
-                              HarvestPermitApplications, AccountApplicationSummaryModal, MapPdfModal) {
+                              HarvestPermitApplications, AccountApplicationSummaryModal, MapPdfModal,
+                              HarvestPermitCategoryType) {
             var $ctrl = this;
+
+            $ctrl.isNestRemovalApplication = function () {
+                return $ctrl.application.harvestPermitCategory === 'NEST_REMOVAL';
+            };
+
+            $ctrl.isHarvestApplication = function () {
+                return $ctrl.application.harvestPermitCategory !== 'WEAPON_TRANSPORTATION' &&
+                    $ctrl.application.harvestPermitCategory !== 'DISABILITY';
+            };
 
             $ctrl.edit = function () {
                 var harvestPermitCategory = $ctrl.application.harvestPermitCategory;
@@ -166,6 +193,10 @@ angular.module('app.account.permit', [])
 
             $ctrl.canDelete = function () {
                 return $ctrl.application.status === 'DRAFT' && $ctrl.application.harvestPermitCategory !== 'MOOSELIKE';
+            };
+
+            $ctrl.actionDisabled = function () {
+                return !HarvestPermitCategoryType.hasPermission($ctrl.application.harvestPermitCategory);
             };
         }
     });

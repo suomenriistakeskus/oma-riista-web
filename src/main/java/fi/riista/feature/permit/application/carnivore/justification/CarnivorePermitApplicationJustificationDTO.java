@@ -2,17 +2,14 @@ package fi.riista.feature.permit.application.carnivore.justification;
 
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
-
-import javax.validation.constraints.Size;
 
 import static java.util.Objects.requireNonNull;
 
 public class CarnivorePermitApplicationJustificationDTO {
 
     @NotBlank
-    @Size(max = 255)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String populationAmount;
 

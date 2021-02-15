@@ -2,12 +2,14 @@ package fi.riista.integration.metsastajarekisteri.person.foreign;
 
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.shootingtest.ShootingTestEvent;
 import fi.riista.feature.shootingtest.ShootingTestFixtureMixin;
 import fi.riista.integration.metsastajarekisteri.InnofactorConstants;
 import fi.riista.integration.metsastajarekisteri.person.DeletionCode;
 import fi.riista.integration.metsastajarekisteri.person.MetsastajaRekisteriPerson;
 import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.junit.Before;
@@ -43,7 +45,6 @@ public class MetsastajaRekisteriForeignPersonImportServiceTest extends EmbeddedD
     @Before
     public void initContent() {
         this.existingPerson = model().newForeignPerson();
-        persistInNewTransaction();
     }
 
     @Test
@@ -73,6 +74,7 @@ public class MetsastajaRekisteriForeignPersonImportServiceTest extends EmbeddedD
         mr.setLastName("Foreigner");
         mr.setDateOfBirth(new LocalDate(2000, 1, 1));
 
+        persistInNewTransaction();
         importService.updateForeignPersons(singletonList(mr), DateTime.now());
 
         runInTransaction(() -> {
@@ -106,10 +108,11 @@ public class MetsastajaRekisteriForeignPersonImportServiceTest extends EmbeddedD
     public void testExistingPerson_nameAndBirthDateUpdated() {
         final MetsastajaRekisteriPerson mr = create(existingPerson.getHunterNumber());
 
+        persistInNewTransaction();
         importService.updateForeignPersons(singletonList(mr), now());
 
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(existingPerson.getId());
+            final Person person = personRepository.findById(existingPerson.getId()).orElse(null);
 
             assertTrue("Name should change", hasSameName(mr, person));
             assertEquals("Date of birth should change", mr.getDateOfBirth(), person.getDateOfBirth());
@@ -138,12 +141,32 @@ public class MetsastajaRekisteriForeignPersonImportServiceTest extends EmbeddedD
         createParticipantWithOneAttempt(event, existingPerson);
         event.close();
 
+        testDeletion_softDelete(mr);
+    }
+
+    @Test
+    public void testExistingPerson_whenDeletedAndNoShootingTestParticipations_usingDeceasedCode() {
+        final MetsastajaRekisteriPerson mr = create(existingPerson);
+        mr.setDeletionCode(DeletionCode.DECEASED);
+
+        testDeletion_softDelete(mr);
+    }
+
+    @Test
+    public void testExistingPerson_whenDeletedAndNoShootingTestParticipations_usingOtherCode() {
+        final MetsastajaRekisteriPerson mr = create(existingPerson);
+        mr.setDeletionCode(DeletionCode.OTHER);
+
+        testDeletion_softDelete(mr);
+    }
+
+    private void testDeletion_softDelete(final MetsastajaRekisteriPerson mr) {
         persistInNewTransaction();
 
         importService.updateForeignPersons(singletonList(mr), now());
 
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(existingPerson.getId());
+            final Person person = personRepository.getOne(existingPerson.getId());
 
             assertNotNull("Foreign person should still exist", person);
             assertTrue("Name should not change", hasSameName(mr, person));
@@ -155,32 +178,10 @@ public class MetsastajaRekisteriForeignPersonImportServiceTest extends EmbeddedD
     }
 
     @Test
-    public void testExistingPerson_whenDeletedAndNoShootingTestParticipations_usingDeceasedCode() {
-        final MetsastajaRekisteriPerson mr = create(existingPerson);
-        mr.setDeletionCode(DeletionCode.DECEASED);
-
-        testDeletionWhenNoShootingTestParticipations(mr);
-    }
-
-    @Test
-    public void testExistingPerson_whenDeletedAndNoShootingTestParticipations_usingOtherCode() {
-        final MetsastajaRekisteriPerson mr = create(existingPerson);
-        mr.setDeletionCode(DeletionCode.OTHER);
-
-        testDeletionWhenNoShootingTestParticipations(mr);
-    }
-
-    private void testDeletionWhenNoShootingTestParticipations(final MetsastajaRekisteriPerson mr) {
-        importService.updateForeignPersons(singletonList(mr), now());
-
-        final Person person = personRepository.findOne(existingPerson.getId());
-        assertNull("Should not be found", person);
-    }
-
-    @Test
     public void testExistingPerson_whenDeletionReverted() {
+        persistInNewTransaction();
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(existingPerson.getId());
+            final Person person = personRepository.findById(existingPerson.getId()).orElse(null);
             person.setDeletionCode(Person.DeletionCode.D);
         });
 
@@ -189,7 +190,7 @@ public class MetsastajaRekisteriForeignPersonImportServiceTest extends EmbeddedD
         importService.updateForeignPersons(singletonList(mr), now());
 
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(existingPerson.getId());
+            final Person person = personRepository.findById(existingPerson.getId()).orElse(null);
 
             assertFalse("Deletion status should be removed", person.isDeleted());
         });
@@ -206,7 +207,7 @@ public class MetsastajaRekisteriForeignPersonImportServiceTest extends EmbeddedD
         importService.updateForeignPersons(singletonList(mr), now());
 
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(personWithSsn.getId());
+            final Person person = personRepository.findById(personWithSsn.getId()).orElse(null);
 
             assertFalse("Should still be Finnish person", person.isForeignPerson());
             assertEquals(mr.getFirstName(), person.getFirstName());
@@ -227,11 +228,61 @@ public class MetsastajaRekisteriForeignPersonImportServiceTest extends EmbeddedD
         importService.updateForeignPersons(singletonList(mr), now());
 
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(personWithSsn.getId());
+            final Person person = personRepository.findById(personWithSsn.getId()).orElse(null);
 
             assertNotNull(person);
             assertFalse("Should still be Finnish person", person.isForeignPerson());
             assertEquals(Person.DeletionCode.D, person.getDeletionCode());
+        });
+    }
+
+    @Test
+    public void testNewPerson_HunterFields_Updated() {
+        final MetsastajaRekisteriPerson mr = create(hunterNumber());
+
+        importService.updateForeignPersons(singletonList(mr), DateUtil.now());
+
+        runInTransaction(() -> {
+            final Person person = personRepository.findByHunterNumber(mr.getHunterNumber()).orElse(null);
+
+            assertSameHunterInformation(person, mr);
+            assertNull(person.getRhyMembership());
+        });
+    }
+
+    @Test
+    public void testNewPerson_HunterFields_HuntingCardExpired() {
+        existingPerson.setHuntingCardStart(today().minusMonths(1));
+        existingPerson.setHuntingCardEnd(today().plusMonths(1));
+        persistInNewTransaction();
+
+        final MetsastajaRekisteriPerson mr = create(existingPerson.getHunterNumber());
+        mr.setHuntingCardEnd(today().minusDays(1));
+
+        importService.updateForeignPersons(singletonList(mr), DateUtil.now());
+
+        runInTransaction(() -> {
+            final Person person = personRepository.findByHunterNumber(mr.getHunterNumber()).orElse(null);
+
+            assertNull(person.getHuntingCardStart());
+            assertNull(person.getHuntingCardEnd());
+        });
+    }
+
+    @Test
+    public void testNewPerson_HunterFields_RhyMembership() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        persistInNewTransaction();
+
+        final MetsastajaRekisteriPerson mr = create(existingPerson.getHunterNumber());
+        mr.setMembershipRhyOfficialCode(rhy.getOfficialCode());
+
+        importService.updateForeignPersons(singletonList(mr), DateUtil.now());
+
+        runInTransaction(() -> {
+            final Person person = personRepository.findByHunterNumber(mr.getHunterNumber()).orElse(null);
+
+            assertEquals(rhy, person.getRhyMembership());
         });
     }
 
@@ -261,6 +312,14 @@ public class MetsastajaRekisteriForeignPersonImportServiceTest extends EmbeddedD
         mr.setHunterNumber(hunterNumber);
         populateValidName(mr);
         populateValidDateOfBirth(mr);
+        mr.setHuntingCardStart(d(2014, 8, 1));
+        mr.setHuntingCardEnd(d(2099, 7, 31));
+        mr.setHunterExamDate(d(1996, 4, 12));
+        mr.setHunterExamExpirationDate(d(2099, 6, 23));
+        mr.setHuntingPaymentOneDay(d(2015, 1, 3));
+        mr.setHuntingPaymentOneYear(2014);
+        mr.setHuntingPaymentTwoDay(d(2013, 8, 3));
+        mr.setHuntingPaymentTwoYear(2013);
         return mr;
     }
 
@@ -271,4 +330,25 @@ public class MetsastajaRekisteriForeignPersonImportServiceTest extends EmbeddedD
         return Objects.equals(p1.getFirstName(), p2.getFirstName()) &&
                 Objects.equals(p1.getLastName(), p2.getLastName());
     }
+
+    private static LocalDate d(final int year, final int month, final int day) {
+        return new LocalDate(year, month, day);
+    }
+
+    private static void assertSameHunterInformation(final Person person, final MetsastajaRekisteriPerson mr) {
+        assertEquals(mr.getHunterNumber(), person.getHunterNumber());
+        assertEquals(mr.getHuntingCardStart(), person.getHuntingCardStart());
+        assertEquals(mr.getHuntingCardEnd(), person.getHuntingCardEnd());
+        assertEquals(mr.getHunterExamDate(), person.getHunterExamDate());
+        assertEquals(mr.getHunterExamExpirationDate(), person.getHunterExamExpirationDate());
+        assertEquals(mr.getHuntingPaymentOneDay(), person.getHuntingPaymentOneDay());
+        assertEquals(mr.getHuntingPaymentOneYear(), person.getHuntingPaymentOneYear());
+        assertEquals(mr.getHuntingPaymentTwoDay(), person.getHuntingPaymentTwoDay());
+        assertEquals(mr.getHuntingPaymentTwoYear(), person.getHuntingPaymentTwoYear());
+        assertEquals(mr.getInvoiceReferenceCurrent(), person.getInvoiceReferenceCurrent());
+        assertEquals(mr.getInvoiceReferencePrevious(), person.getInvoiceReferencePrevious());
+        assertEquals(mr.getInvoiceReferenceCurrentYear(), person.getInvoiceReferenceCurrentYear());
+        assertEquals(mr.getInvoiceReferencePreviousYear(), person.getInvoiceReferencePreviousYear());
+    }
+
 }

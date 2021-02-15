@@ -16,18 +16,18 @@
         </tbody>
     </table>
 
-    <div ng-if="$ctrl.showObservation">
+    <div ng-if="$ctrl.observationsViable">
         <hr/>
         <header translate="club.hunting.stats.observationsTitle"></header>
         <table>
             <tbody>
             <tr>
-                <th ng-repeat="key in $ctrl.mooseAmountFields">
+                <th ng-repeat="key in $ctrl.observationAmountFields">
                     {{ 'gamediary.mooselikeAbbrv.' + key | translate }}
                 </th>
             </tr>
             <tr>
-                <td class="col-xs-2" ng-repeat="key in $ctrl.mooseAmountFields">
+                <td ng-repeat="key in $ctrl.observationAmountFields">
                     {{ ($ctrl.harvestStats[key] || 0) }}
                 </td>
             </tr>

@@ -1,0 +1,18 @@
+<table class="table">
+    <thead>
+    <tr>
+        <th style="width: 30%"></th>
+        <th style="width: 50%"></th>
+        <th style="width: 10%" translate="harvestpermit.wizard.period.beginDate"></th>
+        <th style="width: 10%" translate="harvestpermit.wizard.period.endDate"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td translate="harvestpermit.wizard.weaponTransportation.reason.type.{{$ctrl.reason.reasonType}}""></td>
+        <td ng-bind="$ctrl.reason.reasonDescription"></td>
+        <td ng-bind="$ctrl.reason.beginDate | date:'dd.MM.yyyy'"></td>
+        <td ng-bind="$ctrl.reason.endDate | date:'dd.MM.yyyy'"> </td>
+    </tr>
+    </tbody>
+</table>

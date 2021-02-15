@@ -3,10 +3,12 @@ package fi.riista.feature.permit.application;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.util.F;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
-import org.springframework.util.StringUtils;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
@@ -21,13 +23,15 @@ import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+
+import static fi.riista.util.F.mapNullable;
+import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(AccessType.FIELD)
 public class HarvestPermitApplicationSpeciesAmount extends LifecycleEntity<Long> implements HasBeginAndEndDate {
-    private static final int MAX_SPECIES_AMOUNT = 100_000;
-    private static final int MIN_SPECIES_AMOUNT = 0;
+    private static final int MAX_AMOUNT_VALUE = 100_000;
+    private static final int MIN_AMOUNT_VALUE = 0;
 
     public static boolean checkValidityYears(final int validityYears, final boolean limitlessPermitAllowed) {
         return validityYears == 0 && limitlessPermitAllowed || validityYears >= 1 && validityYears <= 5;
@@ -45,8 +49,23 @@ public class HarvestPermitApplicationSpeciesAmount extends LifecycleEntity<Long>
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private GameSpecies gameSpecies;
 
-    @Column(nullable = false)
-    private float amount;
+    @Column(name = "amount")
+    private Float specimenAmount;
+
+    @Min(1)
+    @Max(MAX_AMOUNT_VALUE)
+    @Column
+    private Integer nestAmount;
+
+    @Min(1)
+    @Max(MAX_AMOUNT_VALUE)
+    @Column
+    private Integer eggAmount;
+
+    @Min(1)
+    @Max(MAX_AMOUNT_VALUE)
+    @Column
+    private Integer constructionAmount;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(columnDefinition = "TEXT")
@@ -86,9 +105,8 @@ public class HarvestPermitApplicationSpeciesAmount extends LifecycleEntity<Long>
     @Column(columnDefinition = "TEXT")
     private String evictionMeasureEffect;
 
-    @Size(max = 255)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String populationAmount;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
@@ -98,6 +116,10 @@ public class HarvestPermitApplicationSpeciesAmount extends LifecycleEntity<Long>
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(columnDefinition = "TEXT")
     private String forbiddenMethodJustification;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @Column(columnDefinition = "TEXT")
+    private String subSpeciesName;
 
     @Column
     private Boolean forbiddenMethodsUsed;
@@ -112,7 +134,7 @@ public class HarvestPermitApplicationSpeciesAmount extends LifecycleEntity<Long>
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 
@@ -120,23 +142,59 @@ public class HarvestPermitApplicationSpeciesAmount extends LifecycleEntity<Long>
         super();
     }
 
-    public HarvestPermitApplicationSpeciesAmount(final HarvestPermitApplication harvestPermitApplication,
-                                                 final GameSpecies gameSpecies,
-                                                 final float amount) {
+    public static HarvestPermitApplicationSpeciesAmount createForHarvest(final HarvestPermitApplication harvestPermitApplication,
+                                                                         final GameSpecies gameSpecies,
+                                                                         final float amount) {
+        final HarvestPermitApplicationSpeciesAmount spa =
+                new HarvestPermitApplicationSpeciesAmount(harvestPermitApplication, gameSpecies);
+        spa.setSpecimenAmount(amount);
+        return spa;
+    }
+
+    public static HarvestPermitApplicationSpeciesAmount createForNestRemoval(final HarvestPermitApplication harvestPermitApplication,
+                                                                             final GameSpecies gameSpecies,
+                                                                             final Integer nestAmount,
+                                                                             final Integer eggAmount,
+                                                                             final Integer constructionAmount) {
+        final HarvestPermitApplicationSpeciesAmount spa =
+                new HarvestPermitApplicationSpeciesAmount(harvestPermitApplication, gameSpecies);
+        spa.setNestAmount(nestAmount);
+        spa.setEggAmount(eggAmount);
+        spa.setConstructionAmount(constructionAmount);
+        return spa;
+    }
+
+    public static HarvestPermitApplicationSpeciesAmount createWithSpecimenOrEggs(final @Nonnull HarvestPermitApplication harvestPermitApplication,
+                                                                                 final @Nonnull GameSpecies gameSpecies,
+                                                                                 final @Nullable Integer specimenAmount,
+                                                                                 final @Nullable Integer eggAmount,
+                                                                                 final @Nullable String subSpeciesName) {
+        requireNonNull(harvestPermitApplication);
+        requireNonNull(gameSpecies);
+
+        final HarvestPermitApplicationSpeciesAmount spa =
+                new HarvestPermitApplicationSpeciesAmount(harvestPermitApplication, gameSpecies);
+        spa.setSpecimenAmount(mapNullable(specimenAmount, Float::valueOf));
+        spa.setEggAmount(eggAmount);
+        spa.setSubSpeciesName(subSpeciesName);
+        return spa;
+    }
+
+    private HarvestPermitApplicationSpeciesAmount(final HarvestPermitApplication harvestPermitApplication,
+                                                  final GameSpecies gameSpecies) {
         this.harvestPermitApplication = harvestPermitApplication;
         this.gameSpecies = gameSpecies;
-        this.amount = amount;
+    }
+
+    @AssertTrue
+    public boolean isAmountPresent() {
+        return F.anyNonNull(specimenAmount, nestAmount, eggAmount, constructionAmount);
     }
 
     @AssertTrue
     public boolean isValidAmount() {
-        return amount >= MIN_SPECIES_AMOUNT && amount < MAX_SPECIES_AMOUNT;
-    }
-
-    @AssertTrue
-    public boolean isJustificationPresentWhenForbiddenMethodsUsed() {
-        return forbiddenMethodsUsed == null ||
-                (!forbiddenMethodsUsed || StringUtils.hasText(forbiddenMethodJustification));
+        // Check specimen amount separately, other amount values are handled by Min/Max annotations
+        return specimenAmount == null || (specimenAmount >= MIN_AMOUNT_VALUE && specimenAmount < MAX_AMOUNT_VALUE);
     }
 
     public HarvestPermitApplication getHarvestPermitApplication() {
@@ -155,12 +213,36 @@ public class HarvestPermitApplicationSpeciesAmount extends LifecycleEntity<Long>
         this.gameSpecies = gameSpecies;
     }
 
-    public float getAmount() {
-        return amount;
+    public Float getSpecimenAmount() {
+        return specimenAmount;
     }
 
-    public void setAmount(final float amount) {
-        this.amount = amount;
+    public void setSpecimenAmount(final Float harvestAmount) {
+        this.specimenAmount = harvestAmount;
+    }
+
+    public Integer getNestAmount() {
+        return nestAmount;
+    }
+
+    public void setNestAmount(final Integer nestAmount) {
+        this.nestAmount = nestAmount;
+    }
+
+    public Integer getEggAmount() {
+        return eggAmount;
+    }
+
+    public void setEggAmount(final Integer eggAmount) {
+        this.eggAmount = eggAmount;
+    }
+
+    public Integer getConstructionAmount() {
+        return constructionAmount;
+    }
+
+    public void setConstructionAmount(final Integer constructionAmount) {
+        this.constructionAmount = constructionAmount;
     }
 
     public String getMooselikeDescription() {
@@ -257,15 +339,23 @@ public class HarvestPermitApplicationSpeciesAmount extends LifecycleEntity<Long>
         return forbiddenMethodJustification;
     }
 
-    public void setForbiddenMethodJustification(String forbiddenMethodJustification) {
+    public void setForbiddenMethodJustification(final String forbiddenMethodJustification) {
         this.forbiddenMethodJustification = forbiddenMethodJustification;
+    }
+
+    public String getSubSpeciesName() {
+        return subSpeciesName;
+    }
+
+    public void setSubSpeciesName(final String subSpeciesName) {
+        this.subSpeciesName = subSpeciesName;
     }
 
     public Boolean isForbiddenMethodsUsed() {
         return forbiddenMethodsUsed;
     }
 
-    public void setForbiddenMethodsUsed(Boolean forbiddenMethodsUsed) {
+    public void setForbiddenMethodsUsed(final Boolean forbiddenMethodsUsed) {
         this.forbiddenMethodsUsed = forbiddenMethodsUsed;
     }
 }

@@ -7,6 +7,7 @@ import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.report.excel.HarvestReportExcelDTO;
 import fi.riista.security.EntityPermission;
@@ -20,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,26 +49,28 @@ public class HarvestReportSearchFeature {
     private UserRepository userRepository;
 
     @Nonnull
-    private ArrayList<HarvestReportExcelDTO> exportExcel(final List<Harvest> harvestList) {
-        return F.mapNonNullsToList(harvestList, h -> HarvestReportExcelDTO.create(h, enumLocaliser));
+    private List<HarvestReportExcelDTO> exportExcel(final List<Harvest> harvestList, final boolean includeDetails) {
+        return F.mapNonNullsToList(harvestList, h -> HarvestReportExcelDTO.create(h, enumLocaliser, includeDetails));
     }
+
 
     // Contact person
 
     @Transactional(readOnly = true)
     public List<HarvestReportExcelDTO> listByPermitForExcel(final Long id) {
         final HarvestPermit harvestPermit = requireEntityService.requireHarvestPermit(id, EntityPermission.READ);
-        return exportExcel(harvestPermit.getAcceptedHarvestForEndOfHuntingReport());
+        return exportExcel(harvestPermit.getAcceptedHarvestForEndOfHuntingReport(), true);
     }
 
     // Moderator
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
-    public Slice<HarvestDTO> searchModerator(final HarvestReportSearchDTO params,
-                                             final Pageable pageRequest) {
+    public Slice<HarvestDTO> searchModerator(final HarvestReportSearchDTO params, final Pageable pageRequest) {
         final Slice<Harvest> harvestSlice = harvestReportSearchQueryFactory.queryForSlice(params, pageRequest);
-        final List<HarvestDTO> dtoList = harvestTransformer.apply(harvestSlice.getContent());
+
+        // TODO Update to currently supported HarvestSpecVersion.
+        final List<HarvestDTO> dtoList = harvestTransformer.apply(harvestSlice.getContent(), HarvestSpecVersion._7);
 
         resolveHarvestCreators(harvestSlice.getContent(), dtoList);
 
@@ -78,7 +80,7 @@ public class HarvestReportSearchFeature {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
     public List<HarvestReportExcelDTO> searchModeratorExcel(final HarvestReportSearchDTO params) {
-        return exportExcel(harvestReportSearchQueryFactory.queryForList(params));
+        return exportExcel(harvestReportSearchQueryFactory.queryForList(params), true);
     }
 
     private void resolveHarvestCreators(final List<Harvest> entityList, final List<HarvestDTO> dtoList) {
@@ -102,12 +104,17 @@ public class HarvestReportSearchFeature {
 
     @Transactional(readOnly = true)
     public List<HarvestDTO> searchCoordinator(final HarvestReportSearchDTO params) {
-        return harvestTransformer.apply(listCoordinator(params));
+        return F.mapNonNullsToList(harvestTransformer.apply(listCoordinator(params), HarvestSpecVersion.CURRENTLY_SUPPORTED),
+                dto -> {
+                    dto.setActorInfo(null);
+                    dto.setAuthorInfo(null);
+                    return dto;
+                });
     }
 
     @Transactional(readOnly = true)
     public List<HarvestReportExcelDTO> searchCoordinatorExcel(final HarvestReportSearchDTO params) {
-        return exportExcel(listCoordinator(params));
+        return exportExcel(listCoordinator(params), false);
     }
 
     private List<Harvest> listCoordinator(final HarvestReportSearchDTO dto) {

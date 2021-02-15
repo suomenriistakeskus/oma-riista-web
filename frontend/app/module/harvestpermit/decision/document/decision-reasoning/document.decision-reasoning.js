@@ -6,11 +6,11 @@ angular.module('app.harvestpermit.decision.document.decisionreasoning', [])
             url: '/decision-reasoning',
             templateUrl: 'harvestpermit/decision/document/decision-reasoning/document.decision-reasoning.html',
             controllerAs: '$ctrl',
-            controller: function (decision, reference) {
+            controller: function (PermitDecisionSection, decision, reference) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.sectionId = 'decisionReasoning';
+                    $ctrl.sectionId = PermitDecisionSection.DECISION_REASONING;
                     $ctrl.decision = decision;
                     $ctrl.reference = reference;
                 };

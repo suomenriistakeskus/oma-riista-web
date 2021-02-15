@@ -1,0 +1,179 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+    <div class="alert-content">
+            <p class="alert-title" translate="harvestpermit.wizard.dogdisturbance.eventDetails.{{$ctrl.eventType}}.instructionsTitle"></p>
+            <p translate="harvestpermit.wizard.dogdisturbance.eventDetails.{{$ctrl.eventType}}.instruction"></p>
+    </div>
+</div>
+
+<!-- Skip this step checkbox -->
+
+<div class="row form-group">
+    <div class="col-xs-12" ng-class="{ 'has-error': (!$ctrl.canBeSkipped && $ctrl.event.skipped) }">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" id="skipStep" ng-model="$ctrl.event.skipped">
+                <span translate="harvestpermit.wizard.dogdisturbance.eventDetails.{{$ctrl.eventType}}.skipStep"/>
+            </label>
+        </div>
+        <p class="help-block has-error"
+           ng-show="!$ctrl.canBeSkipped && $ctrl.event.skipped"
+           translate="harvestpermit.wizard.dogdisturbance.eventDetails.{{$ctrl.eventType}}.skipStepInstruction">
+        </p>
+    </div>
+</div>
+
+<!-- Contact persons -->
+
+<div ng-show="!$ctrl.event.skipped">
+
+    <div class="row r-dog-disturbance">
+        <span class="col-xs-4 mandatory-field"
+              translate="harvestpermit.wizard.dogdisturbance.eventDetails.contactName">
+        </span>
+        <span class="col-xs-3 mandatory-field"
+              translate="harvestpermit.wizard.dogdisturbance.eventDetails.contactPhone">
+        </span>
+        <span class="col-xs-3"
+              translate="harvestpermit.wizard.dogdisturbance.eventDetails.contactMail">
+        </span>
+    </div>
+
+    <hr>
+
+    <div ng-repeat="contact in $ctrl.event.contacts track by $index">
+        <r-dog-event-contact
+                contact="contact"
+                on-change="$ctrl.updateImportContactsEnabled()"
+                on-delete="$ctrl.onDelete($index)"
+                delete-enabled="$ctrl.deleteEnabled()"></r-dog-event-contact>
+    </div>
+
+    <button class="btn btn-primary" ng-click="$ctrl.addEmptyContact()">
+        <span class="glyphicon glyphicon-plus"></span>&nbsp;
+        <span translate="harvestpermit.wizard.dogdisturbance.eventDetails.addButton"></span>
+    </button>
+
+    <button class="btn btn-primary"
+            ng-if="$ctrl.importContactsEnabled"
+            ng-click="$ctrl.importContacts()">
+        <span class="glyphicon glyphicon-plus"></span>
+        <span translate="harvestpermit.wizard.dogdisturbance.eventDetails.importContactsButton"></span>
+    </button>
+
+    <hr class="invisible">
+
+    <!-- species and dates -->
+
+    <ng-form name="dogForm" class="r-dog-disturbance" r-force-show-errors-check-validity>
+        <div class="row">
+
+            <div class="col-xs-3 form-group">
+                <label for="species"
+                       class="mandatory-field"
+                       translate="global.species">
+                </label>
+                <select name="species" id="species" class="form-control" required
+                        ng-model="$ctrl.event.speciesCode"
+                        ng-options="(s | translateSpeciesCode | capitalize) for s in $ctrl.species track by s">
+                </select>
+            </div>
+
+            <div class="col-xs-3 form-group" ng-class="{ 'has-error': (dogForm.dogsAmount.$touched && dogForm.dogsAmount.$invalid) }">
+                <label for="dogsAmount"
+                       class="mandatory-field"
+                       translate="harvestpermit.wizard.dogdisturbance.eventDetails.dogsAmount"></label>
+                <input type="number" min="1" max="9999" required
+                       name="dogsAmount" id="dogsAmount"
+                       class="form-control has-feedback"
+                       ng-model="$ctrl.event.dogsAmount">
+                <div class="help-block has-error"
+                     ng-show="dogForm.dogsAmount.$touched && dogForm.dogsAmount.$invalid"
+                     ng-messages="dogForm.dogsAmount.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+
+            <div class="col-xs-3" ng-class="{ 'has-error': ((dogForm.beginDate.$touched || !!dogForm.beginDate.$modelValue) && dogForm.beginDate.$invalid) }">
+                <label for="beginDate"
+                       class="mandatory-field"
+                       translate="global.beginDate">
+                </label>
+                <div class="input-group r-dropdown-align-right" id="beginDate" ng-controller="DatePickerController">
+
+                    <input type="text" required
+                           name="beginDate" id="beginDateInput"
+                           class="form-control"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           datepicker-options="$ctrl.beginDateOptions"
+                           ng-model="$ctrl.event.beginDate"
+                           ng-change="$ctrl.updateDatePickerLimits()">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+                <div class="help-block has-error"
+                     ng-show="dogForm.beginDate.$touched && dogForm.beginDate.$invalid"
+                     ng-messages="dogForm.beginDate.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+
+            <div class="col-xs-3 required" ng-class="{ 'has-error': ((dogForm.endDate.$touched || !!dogForm.endDate.$modelValue) && dogForm.endDate.$invalid) }">
+                <label for="endDate"
+                       class="mandatory-field"
+                       translate="global.endDate">
+                </label>
+                <div class="input-group r-dropdown-align-right" id="endDate" ng-controller="DatePickerController">
+
+                    <input type="text" required
+                           name="endDate" id="endNameInput"
+                           class="form-control"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           datepicker-options="$ctrl.endDateOptions"
+                           ng-model="$ctrl.event.endDate"
+                           r-validate-greater-or-equal="$ctrl.event.beginDate">
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="help-block has-error"
+                     ng-show="dogForm.endDate.$touched && dogForm.endDate.$invalid"
+                     ng-messages="dogForm.endDate.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                    <div ng-message="greaterOrEqual">
+                        <span translate="harvestpermit.wizard.dogdisturbance.eventDetails.endDateInstruction"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12 required" ng-class="{ 'has-error': (dogForm.eventDescription.$touched && dogForm.eventDescription.$invalid) }">
+                <label for="eventDescription" class="mandatory-field"
+                       translate="harvestpermit.wizard.dogdisturbance.eventDetails.{{$ctrl.eventType}}.descriptionTitle"></label>
+                <div class="form-group" id="eventDescription">
+                    <textarea name="eventDescription" class="form-control" rows="6" required
+                              ng-model="$ctrl.event.eventDescription"></textarea>
+                    <div class="help-block has-error"
+                         ng-show="dogForm.eventDescription.$touched && dogForm.eventDescription.$invalid"
+                         ng-messages="dogForm.eventDescription.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-form>
+</div>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(dogForm)"
+        previous="$ctrl.previous(dogForm)"
+        next-disabled="$ctrl.isNextDisabled(dogForm)"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

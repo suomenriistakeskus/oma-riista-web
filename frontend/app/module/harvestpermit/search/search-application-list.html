@@ -52,12 +52,13 @@
             <span ng-show="application.handler" ng-bind="::application.handler.byName"></span>
         </td>
         <td>
-            <span translate="harvestpermit.decision.unifiedStatus.{{$ctrl.resolveUnifiedStatus(application)}}"></span>
+            <span translate="decision.unifiedStatus.{{$ctrl.resolveUnifiedStatus(application)}}"></span>
         </td>
         <td class="text-right">
             <button type="button"
                     class="btn btn-sm btn-primary"
-                    ng-click="$ctrl.openApplication(application)">
+                    ng-click="$ctrl.openApplication(application)"
+                    ng-disabled="!$ctrl.hasPermission(application)">
                 <span class="fa fa-lg fa-chevron-right"></span>
             </button>
         </td>

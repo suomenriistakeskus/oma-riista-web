@@ -3,6 +3,7 @@ package fi.riista.config;
 import com.querydsl.jpa.HQLTemplates;
 import com.querydsl.jpa.JPQLQueryFactory;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import fi.riista.config.jpa.CustomH2Dialect;
 import fi.riista.config.jpa.CustomPostgisDialect;
 import fi.riista.config.profile.AmazonDatabase;
 import fi.riista.config.profile.EmbeddedDatabase;
@@ -10,7 +11,6 @@ import fi.riista.config.profile.StandardDatabase;
 import fi.riista.config.properties.JPAProperties;
 import fi.riista.feature.common.repository.BaseRepositoryImpl;
 import org.hibernate.cfg.AvailableSettings;
-import org.hibernate.spatial.dialect.h2geodb.GeoDBDialect;
 import org.springframework.context.annotation.AdviceMode;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,6 +59,9 @@ public class JPAConfig {
         @Resource
         protected PapertrailConfig papertrailConfig;
 
+        @Resource
+        private DataSourceConfig.DataSourceContext dataSourceWrapper;
+
         @Bean
         public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
             final LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
@@ -68,6 +71,7 @@ public class JPAConfig {
             emf.setJpaPropertyMap(jpaProperties());
             emf.setPackagesToScan(Constants.APPLICATION_ROOT_PACKAGE);
             emf.setDataSource(dataSource);
+            emf.setMappingResources(dataSourceWrapper.getMappingResources().orElse(null));
 
             // Setup Papertrail before Liquibase
             papertrailConfig.configureAuditLogAppender();
@@ -109,13 +113,12 @@ public class JPAConfig {
     static class EmbeddedJpaConfiguration extends StandardJpaConfiguration {
         @Override
         public String getDatabasePlatform() {
-            return GeoDBDialect.class.getCanonicalName();
+            return CustomH2Dialect.class.getCanonicalName();
         }
 
         @Override
         protected Map<String, Object> jpaProperties() {
             final Map<String, Object> jpaProperties = this.jpaPropertiesBuilder.build();
-            jpaProperties.put(AvailableSettings.HBM2DDL_AUTO, "update");
             jpaProperties.put(AvailableSettings.GENERATE_STATISTICS, true);
             return jpaProperties;
         }

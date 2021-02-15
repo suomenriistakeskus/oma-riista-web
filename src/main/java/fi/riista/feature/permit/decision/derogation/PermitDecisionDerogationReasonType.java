@@ -5,28 +5,71 @@ import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCaus
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41A;
+import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41B;
+import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41C;
+import static fi.riista.feature.permit.decision.derogation.HabitatsConstants.HABITATS_REASON_TYPE_CROPS_OR_PROPERTY_DAMAGES;
+import static fi.riista.feature.permit.decision.derogation.HabitatsConstants.HABITATS_REASON_TYPE_FLORA_AND_FAUNA;
 import static fi.riista.feature.permit.decision.derogation.HabitatsConstants.HABITATS_REASON_TYPE_POPULATION_PRESERVATION;
+import static fi.riista.feature.permit.decision.derogation.HabitatsConstants.HABITATS_REASON_TYPE_PUBLIC_HEALTH;
+import static fi.riista.feature.permit.decision.derogation.HabitatsConstants.HABITATS_REASON_TYPE_RESEARCH;
 import static java.util.Objects.requireNonNull;
 
 public enum PermitDecisionDerogationReasonType implements PersistableEnum {
-    REASON_PUBLIC_HEALTH(1),
-    REASON_PUBLIC_SAFETY(1),
-    REASON_AVIATION_SAFETY(2),
-    REASON_CROPS_DAMAMGE(3),
-    REASON_DOMESTIC_PETS(3),
-    REASON_FOREST_DAMAGE(3),
-    REASON_FISHING(3),
-    REASON_WATER_SYSTEM(3),
-    REASON_FLORA(4),
-    REASON_FAUNA(4),
-    REASON_RESEARCH(5),
-    REASON_POPULATION_PRESERVATION(6);
 
+
+    // ML 41b§ Linnut
+    REASON_PUBLIC_HEALTH(SECTION_41B, 1),
+    REASON_PUBLIC_SAFETY(SECTION_41B, 1),
+    REASON_AVIATION_SAFETY(SECTION_41B, 2),
+    REASON_CROPS_DAMAMGE(SECTION_41B, 3),
+    REASON_DOMESTIC_PETS(SECTION_41B, 3),
+    REASON_FOREST_DAMAGE(SECTION_41B, 3),
+    REASON_FISHING(SECTION_41B, 3),
+    REASON_WATER_SYSTEM(SECTION_41B, 3),
+    REASON_FLORA(SECTION_41B, 4),
+    REASON_FAUNA(SECTION_41B, 4),
+    REASON_RESEARCH(SECTION_41B, 5),
+    REASON_POPULATION_PRESERVATION(SECTION_41A, 6),
+
+    REASON_FLORA_41A(SECTION_41A, 1),
+    REASON_FAUNA_41A(SECTION_41A, 1),
+    REASON_CROPS_DAMAGE_41A(SECTION_41A, 2),
+    REASON_CATTLE_DAMAGE_41A(SECTION_41A, 2),
+    REASON_FOREST_DAMAGE_41A(SECTION_41A, 2),
+    REASON_FISHING_41A(SECTION_41A, 2),
+    REASON_REINDEER_HUSBANDRY_41A(SECTION_41A, 2),
+    REASON_WATER_SYSTEM_41A(SECTION_41A, 2),
+    REASON_OTHER_PROPERTY_DAMAGE_41A(SECTION_41A, 2),
+    REASON_PUBLIC_HEALTH_41A(SECTION_41A, 3),
+    REASON_PUBLIC_SAFETY_41A(SECTION_41A, 3),
+    REASON_OTHER_COMMON_INTEREST_41A(SECTION_41A, 3),
+    REASON_RESEARCH_41A(SECTION_41A, 4),
+
+    REASON_FLORA_41C(SECTION_41C, 1),
+    REASON_FAUNA_41C(SECTION_41C, 1),
+    REASON_CROPS_DAMAGE_41C(SECTION_41C, 2),
+    REASON_CATTLE_DAMAGE_41C(SECTION_41C, 2),
+    REASON_FOREST_DAMAGE_41C(SECTION_41C, 2),
+    REASON_FISHING_41C(SECTION_41C, 2),
+    REASON_REINDEER_HUSBANDRY_41C(SECTION_41C, 2),
+    REASON_GAME_HUSBANDRY_41C(SECTION_41C, 2),
+    REASON_WATER_SYSTEM_41C(SECTION_41C, 2),
+    REASON_OTHER_PROPERTY_DAMAGE_41C(SECTION_41C, 2),
+    REASON_PUBLIC_HEALTH_41C(SECTION_41C, 3),
+    REASON_PUBLIC_SAFETY_41C(SECTION_41C, 3),
+    REASON_OTHER_COMMON_INTEREST_41C(SECTION_41C, 3),
+    REASON_RESEARCH_41C(SECTION_41C, 4);
+
+    private final DerogationLawSection lawSection;
     private final int lawSectionNumber;
 
-    PermitDecisionDerogationReasonType(final int lawSectionNumber) {
+    PermitDecisionDerogationReasonType(final DerogationLawSection lawSection, final int lawSectionNumber) {
+        this.lawSection = lawSection;
         this.lawSectionNumber = lawSectionNumber;
     }
 
@@ -35,16 +78,20 @@ public enum PermitDecisionDerogationReasonType implements PersistableEnum {
         return this.name();
     }
 
+    public DerogationLawSection getLawSection() {
+        return lawSection;
+    }
 
     public int getLawSectionNumber() {
         return lawSectionNumber;
     }
 
-    public static Stream<PermitDecisionDerogationReasonType> streamSelected(
+    public static Stream<PermitDecisionDerogationReasonType> streamSelectedForBird(
             final @Nonnull BirdPermitApplicationCause cause) {
         requireNonNull(cause);
 
         return Arrays.stream(PermitDecisionDerogationReasonType.values())
+                .filter(reasonType -> reasonType.getLawSection() == SECTION_41B)
                 .filter(reasonType -> reasonType.isSelected(cause));
     }
 
@@ -74,19 +121,52 @@ public enum PermitDecisionDerogationReasonType implements PersistableEnum {
                 return cause.isCauseFauna();
             case REASON_RESEARCH:
                 return cause.isCauseResearch();
-            case REASON_POPULATION_PRESERVATION:
-                return false;
             default:
-                throw new RuntimeException("Implementation is not complete");
+                return false;
         }
     }
 
-    public String getHabidesCodeForCarnivore() {
+    public String getHabidesCodeForMammals() {
         switch (this) {
             case REASON_POPULATION_PRESERVATION:
                 return HABITATS_REASON_TYPE_POPULATION_PRESERVATION;
+            case REASON_FLORA_41A:
+            case REASON_FLORA_41C:
+            case REASON_FAUNA_41A:
+            case REASON_FAUNA_41C:
+                return HABITATS_REASON_TYPE_FLORA_AND_FAUNA;
+            case REASON_CROPS_DAMAGE_41A:
+            case REASON_CROPS_DAMAGE_41C:
+            case REASON_CATTLE_DAMAGE_41A:
+            case REASON_CATTLE_DAMAGE_41C:
+            case REASON_FOREST_DAMAGE_41A:
+            case REASON_FOREST_DAMAGE_41C:
+            case REASON_FISHING_41A:
+            case REASON_FISHING_41C:
+            case REASON_REINDEER_HUSBANDRY_41A:
+            case REASON_REINDEER_HUSBANDRY_41C:
+            case REASON_GAME_HUSBANDRY_41C:
+            case REASON_WATER_SYSTEM_41A:
+            case REASON_WATER_SYSTEM_41C:
+            case REASON_OTHER_PROPERTY_DAMAGE_41A:
+            case REASON_OTHER_PROPERTY_DAMAGE_41C:
+                return HABITATS_REASON_TYPE_CROPS_OR_PROPERTY_DAMAGES;
+            case REASON_PUBLIC_HEALTH_41A:
+            case REASON_PUBLIC_HEALTH_41C:
+            case REASON_PUBLIC_SAFETY_41A:
+            case REASON_PUBLIC_SAFETY_41C:
+            case REASON_OTHER_COMMON_INTEREST_41A:
+            case REASON_OTHER_COMMON_INTEREST_41C:
+                return HABITATS_REASON_TYPE_PUBLIC_HEALTH;
+            case REASON_RESEARCH_41A:
+            case REASON_RESEARCH_41C:
+                return HABITATS_REASON_TYPE_RESEARCH;
             default:
-                throw new IllegalArgumentException("Invalid reason for carnivore: " + this.name());
+                throw new IllegalArgumentException("Invalid reason for mammal: " + this.name());
         }
+    }
+
+    public static List<PermitDecisionDerogationReasonType> valuesForLawSection(final DerogationLawSection lawSection) {
+        return Arrays.stream(values()).filter(t -> t.getLawSection() == lawSection).collect(Collectors.toList());
     }
 }

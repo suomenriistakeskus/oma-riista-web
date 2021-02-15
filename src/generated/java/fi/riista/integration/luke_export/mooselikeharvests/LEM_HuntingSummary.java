@@ -1,15 +1,14 @@
 
 package fi.riista.integration.luke_export.mooselikeharvests;
 
-import fi.riista.integration.support.LocalDateAdapter;
-import org.joda.time.LocalDate;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import fi.riista.integration.support.LocalDateAdapter;
+import org.joda.time.LocalDate;
 
 
 /**
@@ -26,8 +25,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *         &lt;element name="huntingFinished" type="{http://www.w3.org/2001/XMLSchema}boolean"/&gt;
  *         &lt;element name="totalHuntingArea" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="effectiveHuntingArea" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
- *         &lt;element name="effectiveHuntingAreaPercentage" type="{http://www.w3.org/2001/XMLSchema}double"
- *         minOccurs="0"/&gt;
+ *         &lt;element name="effectiveHuntingAreaPercentage" type="{http://www.w3.org/2001/XMLSchema}double" minOccurs="0"/&gt;
  *         &lt;element name="moosesRemainingInTotalHuntingArea" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="moosesRemainingInEffectiveHuntingArea" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="huntingAreaType" type="{http://riista.fi/integration/luke/export/mooselikeharvests/2016/07}mooseHuntingAreaType"/&gt;

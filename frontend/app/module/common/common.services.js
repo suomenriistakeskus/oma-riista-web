@@ -170,10 +170,10 @@ angular.module('app.common.services', [])
         }
 
         function doTransform(data, headersGetter, status) {
-            if (status === 200) {
-                var headers = headersGetter();
-                var contentType = headers['content-type'] || null;
+            var headers = headersGetter();
+            var contentType = headers['content-type'] || null;
 
+            if (status === 200) {
                 if (!contentType) {
                     console.log('Content-Type not set in response');
                 }
@@ -188,6 +188,11 @@ angular.module('app.common.services', [])
                 }
 
                 return blob;
+            }
+
+            if (data && contentType.indexOf("application/json") !== -1) {
+                var jsonStr = String.fromCharCode.apply(null, new Uint8Array(data));
+                return JSON.parse(jsonStr);
             }
 
             return null;
@@ -317,5 +322,44 @@ angular.module('app.common.services', [])
                 return name ? name.toLowerCase() : null;
             });
         };
+    })
+    .service('ConfirmationDialogService', function ($q, $uibModal) {
+        this.showConfimationDialogWithPrimaryAccept = function (titleKey, bodyKey) {
+            return doShow(titleKey, bodyKey, 'common/confirm-default-accept.html');
+        };
+
+        this.showConfimationDialogWithPrimaryReject = function (titleKey, bodyKey) {
+            return doShow(titleKey, bodyKey, 'common/confirm-default-reject.html');
+        };
+
+        function doShow(titleKey, bodyKey, template) {
+            return $uibModal.open({
+                templateUrl: template,
+                controller: ModalController,
+                controllerAs: '$ctrl',
+                resolve: {
+                    titleKey: _.constant(titleKey),
+                    bodyKey: _.constant(bodyKey)
+                }
+            }).result;
+        }
+
+        function ModalController($uibModalInstance, $translate, titleKey, bodyKey) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.reason = '';
+                $ctrl.modalTitle = $translate.instant(titleKey);
+                $ctrl.message = $translate.instant(bodyKey);
+            };
+
+            $ctrl.cancel = function () {
+                $uibModalInstance.dismiss('cancel');
+            };
+
+            $ctrl.ok = function () {
+                $uibModalInstance.close($ctrl.reason);
+            };
+        }
     })
 ;

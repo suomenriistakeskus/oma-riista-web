@@ -24,7 +24,6 @@ import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -233,7 +232,7 @@ public class UserAuthorizationHelper {
                                                                             @Nullable final DateTime beginTime,
                                                                             @Nullable final DateTime endTime) {
 
-        final Specification<Occupation> constraint = Specifications
+        final Specification<Occupation> constraint = Specification
                 .where(overlapsInterval(Occupation_.beginDate, Occupation_.endDate, beginTime, endTime))
                 .and(equal(Occupation_.person, person))
                 .and(notSoftDeleted());
@@ -304,7 +303,7 @@ public class UserAuthorizationHelper {
     public boolean isLeaderOfSomePermitHuntingGroup(
             final Person person, final HarvestPermit permit, final HuntingClub club, final GameSpecies species, final int huntingYear) {
 
-        final Specification<HuntingClubGroup> compoundGroupCriteria = Specifications
+        final Specification<HuntingClubGroup> compoundGroupCriteria = Specification
                 .where(equal(HuntingClubGroup_.species, species))
                 .and(equal(HuntingClubGroup_.huntingYear, huntingYear))
                 .and(equal(Organisation_.parentOrganisation, club))
@@ -320,7 +319,7 @@ public class UserAuthorizationHelper {
     public Optional<Person> getPerson(@Nullable final UserInfo userInfo) {
         return Optional.ofNullable(userInfo)
                 .map(UserInfo::getUserId)
-                .map(userRepository::findOne)
+                .flatMap(userRepository::findById)
                 .map(SystemUser::getPerson);
     }
 }

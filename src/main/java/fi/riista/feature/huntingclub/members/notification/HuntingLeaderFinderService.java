@@ -6,13 +6,13 @@ import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.QOccupation;
+import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -22,7 +22,7 @@ public class HuntingLeaderFinderService {
     private EntityManager entityManager;
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public List<Occupation> findChangedLeaders(final Date begin, final Date end, final int huntingYear) {
+    public List<Occupation> findChangedLeaders(final DateTime begin, final DateTime end, final int huntingYear) {
         final QHuntingClubGroup group = QHuntingClubGroup.huntingClubGroup;
         final QOccupation occupation = QOccupation.occupation;
 

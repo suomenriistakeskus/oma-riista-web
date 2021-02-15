@@ -24,8 +24,9 @@
                         <td num-pieces="::$ctrl.srva.otherAccidents"></td>
                     </tr>
                     <tr ng-repeat="species in ::$ctrl.speciesList">
-                        <td class="col-xs-9">
-                            <span>{{species.name | rI18nNameFilter | capitalize}}</span>
+                        <td class="col-xs-9" ng-switch="species.code">
+                            <span ng-switch-when="-1">{{species.name}}</span>
+                            <span ng-switch-default>{{species.name | rI18nNameFilter | capitalize}}</span>
                             &nbsp;
                             <span class="fa fa-bar-chart"></span>
                         </td>

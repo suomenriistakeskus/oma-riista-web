@@ -1,10 +1,9 @@
 package fi.riista.feature.permit.decision.publish;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
+import fi.riista.config.quartz.RunAsAdminJob;
 import io.sentry.Sentry;
 import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +16,7 @@ import java.util.Set;
         enabledProperty = "permit.decision.publishing.enabled",
         cronExpression = "${permit.decision.publishing.schedule}"
 )
-public class PermitDecisionPublishingJob implements Job {
+public class PermitDecisionPublishingJob extends RunAsAdminJob {
 
     private static final Logger LOG = LoggerFactory.getLogger(PermitDecisionPublishingJob.class);
 
@@ -25,7 +24,7 @@ public class PermitDecisionPublishingJob implements Job {
     private PermitDecisionPublishingFeature permitDecisionPublishingFeature;
 
     @Override
-    public void execute(final JobExecutionContext jobExecutionContext) {
+    public void executeAsAdmin() {
         LOG.info("Starting ...");
 
         final Set<Long> revisionIds = permitDecisionPublishingFeature.findDecisionRevisionsToPublish();

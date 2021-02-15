@@ -1,7 +1,7 @@
 <div class="form-group">
     <div class="col-xs-2">
         <div class="input-group" ng-controller="DatePickerController">
-            <input type="text" name="beginDate" id="beginDate"
+            <input type="text" name="harvestReportBeginDate" id="harvestReportBeginDate"
                    class="form-control r-wider-date-input"
                    uib-datepicker-popup is-open="isDatePickerOpen"
                    datepicker-append-to-body="true"
@@ -18,7 +18,7 @@
     </div>
     <div class="col-xs-2">
         <div class="input-group" ng-controller="DatePickerController">
-            <input type="text" name="endDate" id="endDate"
+            <input type="text" name="harvestReportEndDate" id="harvestReportEndDate"
                    class="form-control r-wider-date-input"
                    uib-datepicker-popup is-open="isDatePickerOpen"
                    datepicker-append-to-body="true"
@@ -35,7 +35,8 @@
     </div>
     <div class="col-xs-8">
         <form action="/api/v1/dashboard/harvestreport/excel" method="POST">
-            <span class="btn btn-primary" ng-click="$ctrl.updateResolvedHarvestReportMetrics()">Päivitä</span>
+            <span class="btn btn-primary" ng-click="$ctrl.updateResolvedHarvestReportMetrics()"
+                  translate="reporting.dashboard.otherItemsTab.update"></span>
 
             <input type="hidden" name="begin" value="{{$ctrl.postParams.begin}}"/>
             <input type="hidden" name="end" value="{{$ctrl.postParams.end}}"/>
@@ -54,26 +55,26 @@
 <table class="table table-bordered table-striped table-condensed" ng-show="$ctrl.resolvedHarvestReportMetrics">
     <thead>
     <tr>
-        <th>Alue</th>
-        <th>Eläin</th>
-        <th>Lupatyyppi</th>
-        <th>Lupatyypin<br/> tunniste</th>
-        <th>Kausi</th>
-        <th>Lupa</th>
-        <th>Käyttäjien<br/> lisäämiä</th>
-        <th>Ylläpidon<br/> lisäämiä</th>
-        <th>Ilmoituksia<br/> yhteensä</th>
+        <th translate="reporting.dashboard.otherItemsTab.harvestReports.area"></th>
+        <th translate="reporting.dashboard.otherItemsTab.harvestReports.species"></th>
+        <th translate="reporting.dashboard.otherItemsTab.harvestReports.permitType"></th>
+        <th translate="reporting.dashboard.otherItemsTab.harvestReports.permitTypeId"></th>
+        <th translate="reporting.dashboard.otherItemsTab.harvestReports.season"></th>
+        <th translate="reporting.dashboard.otherItemsTab.harvestReports.permit"></th>
+        <th translate="reporting.dashboard.otherItemsTab.harvestReports.addedByUser"></th>
+        <th translate="reporting.dashboard.otherItemsTab.harvestReports.addedByModerator"></th>
+        <th translate="reporting.dashboard.otherItemsTab.harvestReports.total"></th>
     </tr>
     </thead>
     <tr ng-repeat="row in $ctrl.resolvedHarvestReportMetrics">
-        <td>{{row.rka}}</td>
-        <td>{{row.species}}</td>
-        <td>{{row.permitType}}</td>
-        <td>{{row.permitTypeCode}}</td>
+        <td ng-bind="row.rka"></td>
+        <td ng-bind="row.species"></td>
+        <td ng-bind="row.permitType"></td>
+        <td ng-bind="row.permitTypeCode"></td>
         <td><span ng-show="row.season">X</span></td>
         <td><span ng-show="row.permit">X</span></td>
-        <td>{{row.userCount}}</td>
-        <td>{{row.moderatorCount}}</td>
-        <td>{{row.reportsTotal}}</td>
+        <td ng-bind="row.userCount"></td>
+        <td ng-bind="row.moderatorCount"></td>
+        <td ng-bind="row.reportsTotal"></td>
     </tr>
 </table>

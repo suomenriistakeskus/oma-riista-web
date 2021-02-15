@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class HunterTrainingStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<HunterTrainingStatistics>,
+        AnnualStatisticsManuallyEditableFields<HunterTrainingStatistics>,
         Serializable {
 
     public static final HunterTrainingStatistics reduce(@Nullable final HunterTrainingStatistics a,
@@ -173,6 +174,7 @@ public class HunterTrainingStatistics
     private boolean accidentPreventionTrainingParticipantsOverridden;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "hunter_trainings_last_modified")
     private DateTime lastModified;
 
@@ -262,47 +264,75 @@ public class HunterTrainingStatistics
     public void assignFrom(@Nonnull final HunterTrainingStatistics that) {
         // Includes manually updateable fields only.
 
+        if (!Objects.equals(this.mooselikeHuntingTrainingEvents, that.mooselikeHuntingTrainingEvents)) {
+            this.mooselikeHuntingTrainingEventsOverridden = true;
+        }
         this.mooselikeHuntingTrainingEvents = that.mooselikeHuntingTrainingEvents;
-        this.mooselikeHuntingTrainingEventsOverridden = that.mooselikeHuntingTrainingEventsOverridden;
 
+        if (!Objects.equals(this.mooselikeHuntingTrainingParticipants, that.mooselikeHuntingTrainingParticipants)) {
+            this.mooselikeHuntingTrainingParticipantsOverridden = true;
+        }
         this.mooselikeHuntingTrainingParticipants = that.mooselikeHuntingTrainingParticipants;
-        this.mooselikeHuntingTrainingParticipantsOverridden = that.mooselikeHuntingTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.mooselikeHuntingLeaderTrainingEvents, that.mooselikeHuntingLeaderTrainingEvents)) {
+            this.mooselikeHuntingLeaderTrainingEventsOverridden = true;
+        }
         this.mooselikeHuntingLeaderTrainingEvents = that.mooselikeHuntingLeaderTrainingEvents;
-        this.mooselikeHuntingLeaderTrainingEventsOverridden = that.mooselikeHuntingLeaderTrainingEventsOverridden;
 
+        if (!Objects.equals(this.mooselikeHuntingLeaderTrainingParticipants, that.mooselikeHuntingLeaderTrainingParticipants)) {
+            this.mooselikeHuntingLeaderTrainingParticipantsOverridden = true;
+        }
         this.mooselikeHuntingLeaderTrainingParticipants = that.mooselikeHuntingLeaderTrainingParticipants;
-        this.mooselikeHuntingLeaderTrainingParticipantsOverridden = that.mooselikeHuntingLeaderTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.carnivoreHuntingTrainingEvents, that.carnivoreHuntingTrainingEvents)) {
+            this.carnivoreHuntingTrainingEventsOverridden = true;
+        }
         this.carnivoreHuntingTrainingEvents = that.carnivoreHuntingTrainingEvents;
-        this.carnivoreHuntingTrainingEventsOverridden = that.carnivoreHuntingTrainingEventsOverridden;
 
+        if (!Objects.equals(this.carnivoreHuntingTrainingParticipants, that.carnivoreHuntingTrainingParticipants)) {
+            this.carnivoreHuntingTrainingParticipantsOverridden = true;
+        }
         this.carnivoreHuntingTrainingParticipants = that.carnivoreHuntingTrainingParticipants;
-        this.carnivoreHuntingTrainingParticipantsOverridden = that.carnivoreHuntingTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.carnivoreHuntingLeaderTrainingEvents, that.carnivoreHuntingLeaderTrainingEvents)) {
+            this.carnivoreHuntingLeaderTrainingEventsOverridden = true;
+        }
         this.carnivoreHuntingLeaderTrainingEvents = that.carnivoreHuntingLeaderTrainingEvents;
-        this.carnivoreHuntingLeaderTrainingEventsOverridden = that.carnivoreHuntingLeaderTrainingEventsOverridden;
 
+        if (!Objects.equals(this.carnivoreHuntingLeaderTrainingParticipants, that.carnivoreHuntingLeaderTrainingParticipants)) {
+            this.carnivoreHuntingLeaderTrainingParticipantsOverridden = true;
+        }
         this.carnivoreHuntingLeaderTrainingParticipants = that.carnivoreHuntingLeaderTrainingParticipants;
-        this.carnivoreHuntingLeaderTrainingParticipantsOverridden = that.carnivoreHuntingLeaderTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.srvaTrainingEvents, that.srvaTrainingEvents)) {
+            this.srvaTrainingEventsOverridden = true;
+        }
         this.srvaTrainingEvents = that.srvaTrainingEvents;
-        this.srvaTrainingEventsOverridden = that.srvaTrainingEventsOverridden;
 
+        if (!Objects.equals(this.srvaTrainingParticipants, that.srvaTrainingParticipants)) {
+            this.srvaTrainingParticipantsOverridden = true;
+        }
         this.srvaTrainingParticipants = that.srvaTrainingParticipants;
-        this.srvaTrainingParticipantsOverridden = that.srvaTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.carnivoreContactPersonTrainingEvents, that.carnivoreContactPersonTrainingEvents)) {
+            this.carnivoreContactPersonTrainingEventsOverridden = true;
+        }
         this.carnivoreContactPersonTrainingEvents = that.carnivoreContactPersonTrainingEvents;
-        this.carnivoreContactPersonTrainingEventsOverridden = that.carnivoreContactPersonTrainingEventsOverridden;
 
+        if (!Objects.equals(this.carnivoreContactPersonTrainingParticipants, that.carnivoreContactPersonTrainingParticipants)) {
+            this.carnivoreContactPersonTrainingParticipantsOverridden = true;
+        }
         this.carnivoreContactPersonTrainingParticipants = that.carnivoreContactPersonTrainingParticipants;
-        this.carnivoreContactPersonTrainingParticipantsOverridden = that.carnivoreContactPersonTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.accidentPreventionTrainingEvents, that.accidentPreventionTrainingEvents)) {
+            this.accidentPreventionTrainingEventsOverridden = true;
+        }
         this.accidentPreventionTrainingEvents = that.accidentPreventionTrainingEvents;
-        this.accidentPreventionTrainingEventsOverridden = that.accidentPreventionTrainingEventsOverridden;
 
+        if (!Objects.equals(this.accidentPreventionTrainingParticipants, that.accidentPreventionTrainingParticipants)) {
+            this.accidentPreventionTrainingParticipantsOverridden = true;
+        }
         this.accidentPreventionTrainingParticipants = that.accidentPreventionTrainingParticipants;
-        this.accidentPreventionTrainingParticipantsOverridden = that.accidentPreventionTrainingParticipantsOverridden;
     }
 
     @Override

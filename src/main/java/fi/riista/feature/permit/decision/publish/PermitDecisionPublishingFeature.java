@@ -7,6 +7,7 @@ import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionReposito
 import fi.riista.feature.permit.decision.revision.QPermitDecisionRevision;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ public class PermitDecisionPublishingFeature {
     @Resource
     private PermitDecisionInvoiceSynchronizer permitDecisionInvoiceSynchronizer;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public Set<Long> findDecisionRevisionsToPublish() {
         final QPermitDecisionRevision REV = QPermitDecisionRevision.permitDecisionRevision;
@@ -39,6 +41,7 @@ public class PermitDecisionPublishingFeature {
         return F.getUniqueIds(permitDecisionRevisionRepository.findAllAsList(pred));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional(rollbackFor = IOException.class)
     public void publishRevision(final long revisionId) throws IOException {
         final PermitDecisionRevision revision = permitDecisionRevisionRepository.getOne(revisionId);
@@ -50,6 +53,6 @@ public class PermitDecisionPublishingFeature {
         decision.setStatusPublished();
 
         permitDecisionInvoiceSynchronizer.synchronizeProcessingInvoice(decision);
-        permitDecisionNotificationService.emailRevisionReceivers(revisionId);
+        permitDecisionNotificationService.emailRevisionReceivers(decision, revisionId);
     }
 }

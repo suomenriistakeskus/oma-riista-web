@@ -1,8 +1,8 @@
 package fi.riista.feature.gis.verotuslohko;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.common.entity.HasID;
 import org.hibernate.annotations.Type;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.data.domain.Persistable;
 
 import javax.persistence.Access;
@@ -31,9 +31,12 @@ public class GISVerotusLohko implements Persistable<Integer>, HasID<Integer> {
     @Column(nullable = false)
     private String name;
 
-    @NotNull
     @Column(nullable = false)
-    @Type(type = "org.hibernate.spatial.GeometryType")
+    private int huntingYear;
+
+    @NotNull
+    @Type(type = "jts_geometry")
+    @Column(nullable = false, columnDefinition = "Geometry")
     private Geometry geom;
 
     @Column(nullable = false)
@@ -115,6 +118,14 @@ public class GISVerotusLohko implements Persistable<Integer>, HasID<Integer> {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public int getHuntingYear() {
+        return huntingYear;
+    }
+
+    public void setHuntingYear(final int huntingYear) {
+        this.huntingYear = huntingYear;
     }
 
     public Geometry getGeom() {

@@ -1,6 +1,7 @@
 package fi.riista.feature.pub.occupation;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import fi.riista.feature.organization.OrganisationType;
@@ -9,8 +10,13 @@ import fi.riista.feature.organization.QRiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.util.DateUtil;
+import fi.riista.util.F;
 import org.joda.time.LocalDate;
 
+import java.util.Collection;
+
+import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
 
 public final class PublicOccupationSearchParameters {
 
@@ -19,22 +25,22 @@ public final class PublicOccupationSearchParameters {
     private static final QOrganisation ORG = QOrganisation.organisation;
 
     private final String areaId;
-    private final String rhyId;
+    private final Collection<String> rhyIds;
     private final OrganisationType organisationType;
-    private final OccupationType occupationType;
+    private final ImmutableSet<OccupationType> occupationTypes;
     private final Integer pageSize;
     private final Integer pageNumber;
 
     private PublicOccupationSearchParameters(final String areaId,
-                                             final String rhyId,
+                                             final Collection<String> rhyIds,
                                              final OrganisationType organisationType,
-                                             final OccupationType occupationType,
+                                             final Collection<OccupationType> occupationTypes,
                                              final Integer pageSize,
                                              final Integer pageNumber) {
         this.areaId = areaId;
-        this.rhyId = rhyId;
+        this.rhyIds = ofNullable(rhyIds).orElse(emptyList());
         this.organisationType = organisationType;
-        this.occupationType = occupationType;
+        this.occupationTypes = occupationTypes != null ? ImmutableSet.copyOf(occupationTypes) : ImmutableSet.of();
         this.pageSize = pageSize;
         this.pageNumber = pageNumber;
     }
@@ -45,7 +51,7 @@ public final class PublicOccupationSearchParameters {
                 .and(organisationTypePredicate()).and(occupationTypePredicate());
     }
 
-    private BooleanExpression isPresentOccupationPredicate() {
+    private static BooleanExpression isPresentOccupationPredicate() {
         final LocalDate today = DateUtil.today();
 
         final BooleanExpression beginExpression = OCCUPATION.beginDate.loe(today).or(OCCUPATION.beginDate.isNull());
@@ -54,7 +60,7 @@ public final class PublicOccupationSearchParameters {
     }
 
     private BooleanExpression areaPredicate() {
-        if (rhyId == null && areaId != null) {
+        if (rhyIds.isEmpty() && areaId != null) {
             // If only rka is selected as search criteria, match events for rhys that have
             // the specified rka as their parent organisation.
             return OCCUPATION.organisation.eq(ORG).
@@ -67,10 +73,10 @@ public final class PublicOccupationSearchParameters {
     }
 
     private BooleanExpression rhyPredicate() {
-        return rhyId == null
+        return rhyIds.isEmpty()
                 ? OCCUPATION.occupationType.notIn(OccupationType.clubValues())
                 : OCCUPATION.organisation.eq(ORG).and(ORG.organisationType.eq(OrganisationType.RHY))
-                .and(ORG.officialCode.eq(rhyId));
+                .and(ORG.officialCode.in(rhyIds));
     }
 
     private final BooleanExpression organisationTypePredicate() {
@@ -80,9 +86,9 @@ public final class PublicOccupationSearchParameters {
     }
 
     private final BooleanExpression occupationTypePredicate() {
-        return occupationType == null
+        return F.isNullOrEmpty(occupationTypes)
                 ? null
-                : OCCUPATION.occupationType.eq(occupationType);
+                : OCCUPATION.occupationType.in(occupationTypes);
     }
 
 
@@ -90,16 +96,16 @@ public final class PublicOccupationSearchParameters {
         return areaId;
     }
 
-    public String getRhyId() {
-        return rhyId;
+    public Collection<String> getRhyIds() {
+        return rhyIds;
     }
 
     public OrganisationType getOrganisationType() {
         return organisationType;
     }
 
-    public OccupationType getOccupationType() {
-        return occupationType;
+    public ImmutableSet<OccupationType> getOccupationTypes() {
+        return occupationTypes;
     }
 
     public Integer getPageSize() {
@@ -116,9 +122,9 @@ public final class PublicOccupationSearchParameters {
 
     public static class Builder {
         private String areaId;
-        private String rhyId;
+        private Collection<String> rhyIds;
         private OrganisationType organisationType;
-        private OccupationType occupationType;
+        private Collection<OccupationType> occupationTypes;
 
 
         private Integer pageSize;
@@ -132,8 +138,8 @@ public final class PublicOccupationSearchParameters {
             return this;
         }
 
-        public Builder withRhyId(final String rhyId) {
-            this.rhyId = rhyId;
+        public Builder withRhyIds(final Collection<String> rhyIds) {
+            this.rhyIds = rhyIds;
             return this;
         }
 
@@ -142,8 +148,8 @@ public final class PublicOccupationSearchParameters {
             return this;
         }
 
-        public Builder withOccupationType(final OccupationType occupationType) {
-            this.occupationType = occupationType;
+        public Builder withOccupationType(final Collection<OccupationType> occupationTypes) {
+            this.occupationTypes = occupationTypes;
             return this;
         }
 
@@ -157,7 +163,7 @@ public final class PublicOccupationSearchParameters {
             return this;
         }
         public PublicOccupationSearchParameters build() {
-            if (organisationType == null && occupationType == null && rhyId == null &&
+            if (organisationType == null && F.isNullOrEmpty(occupationTypes) && rhyIds == null &&
                     areaId == null && pageSize == null && pageNumber == null) {
                 throw new IllegalArgumentException("Missing parameters");
             }
@@ -167,13 +173,13 @@ public final class PublicOccupationSearchParameters {
                         "pageSize and pageNumber must be both given or neither");
             }
 
-            if (organisationType != null || occupationType != null) {
-                Preconditions.checkArgument(organisationType != null && occupationType != null,
+            if (organisationType != null || !F.isNullOrEmpty(occupationTypes)) {
+                Preconditions.checkArgument(organisationType != null && !F.isNullOrEmpty(occupationTypes),
                         "organisationType and occupationType must be both given or neither");
             }
 
-            if (occupationType != null) {
-                Preconditions.checkArgument(!OccupationType.clubValues().contains(occupationType),
+            if (!F.isNullOrEmpty(occupationTypes)) {
+                Preconditions.checkArgument(!OccupationType.clubValues().contains(occupationTypes),
                         "Invalid occupationType");
             }
 
@@ -182,7 +188,7 @@ public final class PublicOccupationSearchParameters {
                         "Invalid organisationType");
             }
 
-            return new PublicOccupationSearchParameters(areaId, rhyId, organisationType, occupationType, pageSize, pageNumber);
+            return new PublicOccupationSearchParameters(areaId, rhyIds, organisationType, occupationTypes, pageSize, pageNumber);
         }
     }
 }

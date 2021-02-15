@@ -1,6 +1,6 @@
 package fi.riista.feature.gis.vector;
 
-import com.vividsolutions.jts.geom.Envelope;
+import org.locationtech.jts.geom.Envelope;
 
 public class VectorTileUtil {
 

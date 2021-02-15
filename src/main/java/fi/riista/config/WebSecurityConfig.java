@@ -5,7 +5,6 @@ import fi.riista.api.mobile.MobileVersionApiResource;
 import fi.riista.api.pub.AccountRegistrationApiResource;
 import fi.riista.api.pub.HealthCheckController;
 import fi.riista.api.pub.PasswordResetApiResource;
-import fi.riista.config.properties.SecurityConfigurationProperties;
 import fi.riista.config.web.SentryUserContextFilter;
 import fi.riista.security.aop.CustomWebSecurityExpressionHandler;
 import fi.riista.security.audit.LogoutAuditEventListener;
@@ -38,8 +37,13 @@ import org.springframework.security.web.csrf.LazyCsrfTokenRepository;
 import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.security.web.session.SessionManagementFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.annotation.Resource;
+
+import static java.util.Collections.singletonList;
 
 @Configuration
 @EnableWebSecurity
@@ -56,9 +60,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String PATTERN_EXPORT_API = "/api/v1/export/**";
     private static final String PATTERN_IMPORT_API = "/api/v1/import/**";
     private static final String PATTERN_ADMIN_API = "/api/v1/admin/**";
-
-    // IP address restricted API for uploading moose data cards
-    private static final String PATTERN_MOOSE_DATA_CARD_UPLOAD = "/api/v1/anon/moosedatacard/upload";
 
     // Login and logout
     private static final String URI_LOGIN = "/login";
@@ -78,6 +79,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
             // SAML attribute consumer service is protected using TRID parameter
             "/saml/acs",
+            "/saml/sls",
 
             // Login cannot be protected, because mobile client does not support CSRF currently
             URI_LOGIN,
@@ -94,9 +96,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             PATTERN_ANONYMOUS_API,
             PATTERN_MOBILE_API,
     };
-
-    @Resource
-    private SecurityConfigurationProperties securityConfigurationProperties;
 
     @Resource
     private CustomAuthenticationSuccessHandler authenticationSuccessHandler;
@@ -167,7 +166,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.NEVER)
                 .and()
-
+                .cors()
+                .configurationSource(corsConfigurationSource())
+                .and()
                 .httpBasic()
                 .authenticationEntryPoint(authenticationEntryPoint())
                 .and()
@@ -215,6 +216,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/v1/register/**",
                         "/saml/login",
                         "/saml/acs",
+                        "/saml/sls",
                         "/api/mobile/v2/area/vector/**",
 
                         PaytrailController.NOTIFY_PATH,
@@ -222,9 +224,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         HealthCheckController.URI_HEALTH_CHECK,
                         PATTERN_ANONYMOUS_API
                 ).permitAll()
-
-                .antMatchers(PATTERN_MOOSE_DATA_CARD_UPLOAD)
-                .hasIpAddress(securityConfigurationProperties.getIpWhitelistForMooseDataCardUpload())
 
                 .antMatchers(PATTERN_IMPORT_API).access("matchesWhiteList() and hasRole('ROLE_REST')")
                 .antMatchers(PATTERN_EXPORT_API).access("matchesWhiteList() and hasRole('ROLE_REST')")
@@ -234,5 +233,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(PATTERN_API).hasRole("USER")
 
                 .anyRequest().denyAll();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        final CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(singletonList("*"));
+        configuration.setAllowedMethods(singletonList("GET"));
+
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration(PATTERN_ANONYMOUS_API, configuration);
+
+        return source;
     }
 }

@@ -33,6 +33,21 @@ angular.module('app.reporting.contacts', [])
                         return Areas.query().$promise;
                     }
                 }
+            })
+            .state('reporting.contacts.permit', {
+                url: '/permit',
+                templateUrl: 'reporting/contacts/permits.html',
+                controllerAs: '$ctrl',
+                controller: 'PermitContactsSearchController',
+                resolve: {
+                    applicationTypes: function (HarvestPermitApplications, HarvestPermitCategoryType) {
+                        return HarvestPermitApplications.listTypes().$promise.then(function (results) {
+                            return _.filter(results, function (item) {
+                                return HarvestPermitCategoryType.hasPermission(item.category);
+                            });
+                        });
+                    }
+                }
             });
     })
 
@@ -46,6 +61,18 @@ angular.module('app.reporting.contacts', [])
     })
     .factory('RhyContactSearch', function ($resource) {
         return $resource('api/v1/contactsearch/rhy', {}, {
+            search: {
+                method: 'POST',
+                isArray: true,
+                params: {
+                    'harvestPermitCategory': '@harvestPermitCategory',
+                    'huntingYear': '@huntingYear'
+                }
+            }
+        });
+    })
+    .factory('PermitContactSearch', function ($resource) {
+        return $resource('api/v1/contactsearch/permit', {}, {
             search: {
                 method: 'POST',
                 isArray: true
@@ -256,4 +283,76 @@ angular.module('app.reporting.contacts', [])
         $ctrl.copyEmails = function (data, emailAttributeName) {
             showEmails(data, emailAttributeName);
         };
+    })
+
+    .controller('PermitContactsSearchController', function ($scope, FetchAndSaveBlob, PermitContactSearch, applicationTypes) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.applicationTypes = applicationTypes;
+
+            $ctrl.currentYear = new Date().getFullYear();
+            $ctrl.availableYears = _.range(2019, $ctrl.currentYear + 1);
+
+            $ctrl.opts = [
+                {harvestPermitCategory: $ctrl.applicationTypes[0].category, huntingYear: $ctrl.currentYear}
+            ];
+        };
+
+
+        $ctrl.addOpt = function (opt) {
+            var newOpt = {harvestPermitCategory: opt.harvestPermitCategory, huntingYear: opt.huntingYear};
+            var i = $ctrl.opts.indexOf(opt);
+            $ctrl.opts.splice(i + 1, 0, newOpt);
+        };
+
+        function remove(from, item) {
+            return _.filter(from, function (p) {
+                return p !== item;
+            });
+        }
+
+        $ctrl.removeOpt = function (opt) {
+            if ($ctrl.opts.length > 1) {
+                $ctrl.opts = remove($ctrl.opts, opt);
+            }
+        };
+
+        $ctrl.searchPermitContacts = function () {
+            PermitContactSearch.search(null, $ctrl.opts).$promise
+                .then(function (data) {
+                    $ctrl.pager = {
+                        currentPage: 1,
+                        pageSize: 100,
+                        total: data.length,
+                        data: data
+                    };
+                    updatePager();
+                });
+        };
+
+        $ctrl.getResultCount = function () {
+            if ($ctrl.pager) {
+                return {count: $ctrl.pager.total};
+            }
+        };
+
+        function updatePager() {
+            if (!$ctrl.pager) {
+                return;
+            }
+            var page = $ctrl.pager.currentPage - 1;
+            var begin = page * $ctrl.pager.pageSize;
+            var end = begin + $ctrl.pager.pageSize;
+            $ctrl.page = $ctrl.pager.data.slice(begin, end);
+        }
+
+        $scope.$watch('$ctrl.pager.currentPage', function () {
+            updatePager();
+        });
+
+        $ctrl.exportToExcel = function () {
+            FetchAndSaveBlob.post('api/v1/contactsearch/permit/excel', $ctrl.opts);
+        };
+
     });

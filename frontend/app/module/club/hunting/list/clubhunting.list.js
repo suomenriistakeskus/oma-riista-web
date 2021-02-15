@@ -19,6 +19,9 @@ angular.module('app.clubhunting.list', [])
             $ctrl.beginDate = null;
             $ctrl.endDate = null;
             $ctrl.onlyRejected = false;
+            $ctrl.showHarvests = true;
+            $ctrl.showObservations = true;
+            $ctrl.observationsViable = ClubHuntingViewData.isObservationsViable();
 
             $ctrl.$onInit = function () {
                 var huntingYear;
@@ -40,13 +43,15 @@ angular.module('app.clubhunting.list', [])
             };
 
             function filterContent() {
-                $ctrl.mooseGroupSelected = ClubHuntingViewData.isMooseGroupSelected();
-
+                $ctrl.observationsViable = ClubHuntingViewData.isObservationsViable();
+                
                 $ctrl.onFilterChange({
                     filter: {
                         beginDate: $ctrl.beginDate,
                         endDate: $ctrl.endDate,
-                        onlyRejected: $ctrl.onlyRejected
+                        onlyRejected: $ctrl.onlyRejected,
+                        showHarvests: $ctrl.showHarvests,
+                        showObservations: $ctrl.showObservations
                     }
                 });
             }
@@ -80,7 +85,7 @@ angular.module('app.clubhunting.list', [])
                 filterContent();
             };
 
-            $ctrl.onOnlyRejectedChange = function () {
+            $ctrl.onChangeFiltering = function () {
                 filterContent();
             };
 
@@ -104,14 +109,17 @@ angular.module('app.clubhunting.list', [])
         templateUrl: 'club/hunting/list/statistics.html',
         bindings: {
             diary: '<',
-            showObservation: '<'
+            observationsViable: '<',
+            selectedSpeciesCode: '<'
         },
-        controller: function (ObservationFieldRequirements) {
+        controller: function (ObservationFieldRequirements, GameSpeciesCodes) {
             var $ctrl = this;
 
-            $ctrl.mooseAmountFields = ObservationFieldRequirements.getAllMooseAmountFields();
-
             $ctrl.$onChanges = function (c) {
+                $ctrl.observationAmountFields = GameSpeciesCodes.isMoose($ctrl.selectedSpeciesCode)
+                    ? ObservationFieldRequirements.getAllMooseAmountFields()
+                    : ObservationFieldRequirements.getAllMooselikeAmountFields();
+
                 if (c.diary) {
                     $ctrl.harvestStats = _.reduce(c.diary.currentValue, collectStats, {});
                 } else {
@@ -130,9 +138,8 @@ angular.module('app.clubhunting.list', [])
                         });
                     }
                     // Count observations only of selected species.
-                    // Since observations are shown only for moose, count only moose observations
-                    if (entry.isMoose() && entry.isObservation() && entry.huntingDayId) {
-                        _.forEach($ctrl.mooseAmountFields, function (statsKey) {
+                    if (entry.gameSpeciesCode === $ctrl.selectedSpeciesCode && entry.isObservation() && entry.huntingDayId) {
+                        _.forEach($ctrl.observationAmountFields, function (statsKey) {
                             stats[statsKey] = (stats[statsKey] || 0) + (entry[statsKey] || 0);
                         });
                     }
@@ -151,7 +158,7 @@ angular.module('app.clubhunting.list', [])
             onCreateHuntingDay: '&',
             onEditHuntingDay: '&'
         },
-        controller: function ($scope, ClubHuntingViewData) {
+        controller: function ($scope, ClubHuntingViewData, GameSpeciesCodes) {
             var $ctrl = this;
 
             $scope.$on('huntingDaySelected', function (event, selected) {
@@ -189,13 +196,6 @@ angular.module('app.clubhunting.list', [])
                 };
             };
 
-            $ctrl.onEntryClick = function (entry, day) {
-                $ctrl.onSelectEntry({
-                    diaryEntry: entry,
-                    huntingDay: day
-                });
-            };
-
             $ctrl.showHuntingDayAsterisk = function (day) {
                 return !(day.id && _.every(day.gameEntries, 'huntingDayId'));
             };
@@ -219,5 +219,65 @@ angular.module('app.clubhunting.list', [])
             $ctrl.isMooseGroupSelected = function () {
                 return ClubHuntingViewData.isMooseGroupSelected();
             };
+
+            $ctrl.observationsViable = function () {
+                return ClubHuntingViewData.isObservationsViable();
+            };
+
+            $ctrl.getGroupType = function () {
+                if ($ctrl.isMooseGroupSelected()){
+                    return 'MOOSE_GROUP';
+                } else if (ClubHuntingViewData.isWhiteTailedDeerPilotGroup()) {
+                    return 'WHITE_TAILED_DEER_GROUP';
+                } else {
+                    return 'DEER_GROUP';
+                }
+            };
         }
-    });
+    })
+    .component('clubHuntingDayListMoose', {
+        templateUrl: 'club/hunting/list/moose-day.html',
+        bindings: {
+            huntingDay: '<',
+            onSelectEntry: '&'
+        },
+        controllerAs: '$ctrl'
+    })
+    .component('clubHuntingDayListDeer', {
+        templateUrl: 'club/hunting/list/deer-day.html',
+        bindings: {
+            huntingDay: '<',
+            onSelectEntry: '&'
+        },
+        controllerAs: '$ctrl'
+    })
+    .component('clubHuntingDayListWhiteTailedDeer', {
+        templateUrl: 'club/hunting/list/white-tailed-deer-day.html',
+        bindings: {
+            huntingDay: '<',
+            onSelectEntry: '&'
+        },
+        controllerAs: '$ctrl',
+        controller: function () {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.standHuntingEntries = _.filter($ctrl.huntingDay.gameEntries, ['deerHuntingType', 'STAND_HUNTING']) || [];
+                $ctrl.dogHuntingEntries = _.filter($ctrl.huntingDay.gameEntries, ['deerHuntingType', 'DOG_HUNTING']) || [];
+                $ctrl.otherHuntingEntries = _.concat(
+                    _.filter($ctrl.huntingDay.gameEntries, ['deerHuntingType', 'OTHER']),
+                    _.filter($ctrl.huntingDay.gameEntries, ['deerHuntingType', null])) || [];
+
+                $ctrl.standHuntingEntriesPresent = $ctrl.standHuntingEntries.length > 0;
+                $ctrl.dogHuntingEntriesPresent = $ctrl.dogHuntingEntries.length > 0;
+                $ctrl.otherHuntingEntriesPresent = $ctrl.otherHuntingEntries.length > 0;
+            };
+        }
+    })
+    .component('clubHuntingDayEntry', {
+        templateUrl: 'club/hunting/list/hunting-day-entry.html',
+        bindings: {
+            entry: '<'
+        },
+        controllerAs: '$ctrl'
+    })
+;

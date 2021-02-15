@@ -64,6 +64,7 @@ public class HarvestPermitSearchResultDTO extends BaseEntityDTO<Long> {
 
         dto.setPermitNumber(permit.getPermitNumber());
         dto.setPermitType(permit.getPermitType());
+        dto.setPermitTypeCode(permit.getPermitTypeCode());
         dto.setHarvestReportState(permit.getHarvestReportState());
         dto.setSpeciesAmounts(F.mapNonNullsToList(permit.getSpeciesAmounts(), HarvestPermitSpeciesAmountDTO::create));
         dto.setContactPersons(createContactPersonDTOs(permit));
@@ -97,6 +98,9 @@ public class HarvestPermitSearchResultDTO extends BaseEntityDTO<Long> {
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String permitType;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String permitTypeCode;
 
     @Override
     public Long getId() {
@@ -156,5 +160,13 @@ public class HarvestPermitSearchResultDTO extends BaseEntityDTO<Long> {
 
     public String getPermitType() {
         return permitType;
+    }
+
+    public String getPermitTypeCode() {
+        return permitTypeCode;
+    }
+
+    public void setPermitTypeCode(final String permitTypeCode) {
+        this.permitTypeCode = permitTypeCode;
     }
 }

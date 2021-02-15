@@ -1,0 +1,35 @@
+<div class="col-md-4 col-sm-6">
+    <div class="panel panel-permit-management">
+        <div class="panel-heading">
+            <p class="panel-title">
+                <span class="fa fa-2x fa-list"></span>
+                <span translate="harvestpermit.management.dashboard.permitUsage.title"></span>
+            </p>
+        </div>
+
+        <div class="panel-body">
+            <i ng-switch="!!$ctrl.lastModifier">
+                <div ng-switch-when="true">
+                    <span translate="harvestpermit.management.dashboard.permitUsage.modificationTime"></span>
+                    &nbsp;
+                    <span>{{($ctrl.lastModifier.timestamp | date:'d.M.yyyy HH:mm')}}</span>
+                    <div>
+                        <span ng-if="$ctrl.lastModifier.adminOrModerator" translate="global.organisationType.RK"></span>
+                        <span>{{$ctrl.lastModifier.firstName}}&nbsp{{$ctrl.lastModifier.lastName}}</span>
+                    </div>
+                </div>
+                <div ng-switch-default>
+                    <span translate="harvestpermit.management.dashboard.permitUsage.modificationTime"></span>
+                    &nbsp;
+                    <span>-</span>
+                </div>
+            </i>
+        </div>
+
+        <div class="panel-buttons">
+            <button class="btn btn-primary" ng-click="$ctrl.reportUsage()">
+                <span translate="harvestpermit.management.dashboard.permitUsage.button"></span>
+            </button>
+        </div>
+    </div>
+</div>

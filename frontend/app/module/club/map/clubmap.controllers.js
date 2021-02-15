@@ -53,7 +53,7 @@ angular.module('app.clubmap.controllers', [])
 
                 function checkAreaCalculated() {
                     return ClubAreas.get({id: huntingClubAreaId}).$promise.then(function (a) {
-                        return !!a.size ? $q.resolve() : $q.reject();
+                        return a.size.status !== 'PROCESSING' ? $q.resolve() : $q.reject();
                     });
                 }
 

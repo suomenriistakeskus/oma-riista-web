@@ -1,7 +1,6 @@
 package fi.riista.feature.huntingclub.statistics;
 
 import com.google.common.collect.ImmutableSet;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -10,13 +9,13 @@ import fi.riista.feature.huntingclub.QHuntingClub;
 import fi.riista.feature.huntingclub.area.QHuntingClubArea;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.huntingclub.members.invitation.QHuntingClubMemberInvitation;
-import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
-import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.QRiistakeskuksenAlue;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.occupation.QOccupation;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.util.LocalisedString;
 
 import java.util.List;

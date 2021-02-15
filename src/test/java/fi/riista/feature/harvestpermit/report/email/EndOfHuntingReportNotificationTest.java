@@ -4,9 +4,8 @@ import com.github.jknack.handlebars.Handlebars;
 import com.google.common.io.CharStreams;
 import fi.riista.config.Constants;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.gamediary.GameAge;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.fixture.HarvestSpecimenType;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
@@ -30,6 +29,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.regex.Pattern;
 
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_MALE;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -71,9 +72,9 @@ public class EndOfHuntingReportNotificationTest extends EmbeddedDatabaseTest {
         final HarvestPermit permit = model().newHarvestPermit("2016-1-043-00046-5");
         model().newHarvestPermitSpeciesAmount(permit, species, 2.0f);
 
-        createHarvestReport(species, user.getPerson(), permit, GameAge.ADULT, GameGender.MALE,
+        createHarvestReport(species, user.getPerson(), permit, ADULT_MALE,
                 new DateTime(2017, 1, 2, 3, 4));
-        createHarvestReport(species, user.getPerson(), permit, GameAge.YOUNG, GameGender.MALE,
+        createHarvestReport(species, user.getPerson(), permit, YOUNG_MALE,
                 new DateTime(2017, 5, 6, 7, 8));
 
         permit.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
@@ -89,11 +90,12 @@ public class EndOfHuntingReportNotificationTest extends EmbeddedDatabaseTest {
     private void createHarvestReport(GameSpecies species,
                                      Person hunter,
                                      HarvestPermit permit,
-                                     GameAge age,
-                                     GameGender gender, DateTime pointOfTime) {
+                                     HarvestSpecimenType specimenType,
+                                     DateTime pointOfTime) {
+
         final Harvest harvest = model().newHarvest(species, hunter);
-        model().newHarvestSpecimen(harvest, age, gender);
-        harvest.setPointOfTime(pointOfTime.toDate());
+        model().newHarvestSpecimen(harvest, specimenType);
+        harvest.setPointOfTime(pointOfTime);
         harvest.setHarvestReportState(HarvestReportState.APPROVED);
         harvest.setHarvestReportAuthor(hunter);
         harvest.setHarvestReportDate(DateUtil.now());

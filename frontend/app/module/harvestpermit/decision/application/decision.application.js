@@ -148,6 +148,14 @@ angular.module('app.harvestpermit.decision.application', [])
                             $state.reload();
                         });
                     };
+
+                    $ctrl.assignDecision = function () {
+                        return PermitDecision.assign({id: $ctrl.decision.id});
+                    };
+
+                    $ctrl.unassignDecision = function () {
+                        return PermitDecision.unassign({id: $ctrl.decision.id});
+                    };
                 }
             });
     });

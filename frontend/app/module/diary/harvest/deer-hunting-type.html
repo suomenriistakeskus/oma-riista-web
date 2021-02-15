@@ -1,0 +1,28 @@
+<div class="form-group">
+    <label for="deerHuntingType" class="control-label">
+        <span translate="gamediary.form.deerHuntingType"></span>
+    </label>
+    <div class="form-control-wrapper">
+        <select class="form-control"
+                id="deerHuntingType"
+                name="deerHuntingType"
+                ng-options="('gamediary.deerHuntingType.' + t | translate) for t in $ctrl.deerHuntingTypes"
+                ng-model="$ctrl.harvest.deerHuntingType">
+            <option value=""></option>
+        </select>
+    </div>
+</div>
+<div class="form-group" ng-if="$ctrl.harvest.deerHuntingType === 'OTHER'">
+    <label for="deerHuntingTypeDescription" class="control-label">
+        <span translate="gamediary.form.deerHuntingTypeDescription"></span>
+    </label>
+    <div class="form-control-wrapper">
+        <input class=" form-control"
+               id="deerHuntingTypeDescription"
+               name="deerHuntingTypeDescription"
+               maxlength="255"
+               ng-model="$ctrl.harvest.deerHuntingOtherTypeDescription">
+        <option value=""></option>
+        </input>
+    </div>
+</div>

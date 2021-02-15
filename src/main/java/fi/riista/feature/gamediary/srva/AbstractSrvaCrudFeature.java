@@ -1,5 +1,6 @@
 package fi.riista.feature.gamediary.srva;
 
+import fi.riista.config.Constants;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
@@ -83,7 +84,7 @@ public abstract class AbstractSrvaCrudFeature<DTO extends SrvaEventDTOBase>
         entity.setDescription(dto.getDescription());
         entity.setOtherMethodDescription(dto.getOtherMethodDescription());
         entity.setOtherTypeDescription(dto.getOtherTypeDescription());
-        entity.setPointOfTime(dto.getPointOfTime().toDate());
+        entity.setPointOfTime(dto.getPointOfTime().toDateTime(Constants.DEFAULT_TIMEZONE));
         entity.setTimeSpent(dto.getTimeSpent());
         entity.setEventResult(dto.getEventResult());
         entity.setSpecies(gameSpecies);

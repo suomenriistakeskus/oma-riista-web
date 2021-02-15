@@ -1,21 +1,79 @@
 package fi.riista.feature.permit.decision.document;
 
+import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.common.decision.authority.DecisionRkaAuthorityDetails;
 import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesService;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmountRepository;
+import fi.riista.feature.permit.application.PermitApplicationVehicleType;
 import fi.riista.feature.permit.application.amendment.AmendmentApplicationData;
 import fi.riista.feature.permit.application.amendment.AmendmentApplicationDataRepository;
+import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
+import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachmentRepository;
 import fi.riista.feature.permit.application.bird.BirdPermitApplication;
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationRepository;
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationSummaryDTO;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationRepository;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationSummaryDTO;
+import fi.riista.feature.permit.application.deportation.DeportationPermitApplication;
+import fi.riista.feature.permit.application.deportation.DeportationPermitApplicationRepository;
+import fi.riista.feature.permit.application.deportation.DeportationSummaryDTO;
+import fi.riista.feature.permit.application.derogation.reasons.DerogationPermitApplicationReasonService;
+import fi.riista.feature.permit.application.derogation.reasons.DerogationPermitApplicationReasonsDTO;
+import fi.riista.feature.permit.application.disability.DisabilityPermitApplication;
+import fi.riista.feature.permit.application.disability.DisabilityPermitApplicationRepository;
+import fi.riista.feature.permit.application.disability.justification.DisabilityPermitHuntingTypeInfo;
+import fi.riista.feature.permit.application.disability.justification.DisabilityPermitHuntingTypeInfoRepository;
+import fi.riista.feature.permit.application.disability.justification.DisabilityPermitVehicle;
+import fi.riista.feature.permit.application.disability.justification.DisabilityPermitVehicleRepository;
+import fi.riista.feature.permit.application.disability.justification.HuntingType;
+import fi.riista.feature.permit.application.disability.summary.DisabilityPermitSummaryDTO;
+import fi.riista.feature.permit.application.dogevent.DogEventApplication;
+import fi.riista.feature.permit.application.dogevent.DogEventApplicationRepository;
+import fi.riista.feature.permit.application.dogevent.DogEventDisturbance;
+import fi.riista.feature.permit.application.dogevent.DogEventDisturbanceContactRepository;
+import fi.riista.feature.permit.application.dogevent.DogEventDisturbanceRepository;
+import fi.riista.feature.permit.application.dogevent.DogEventUnleash;
+import fi.riista.feature.permit.application.dogevent.DogEventUnleashRepository;
+import fi.riista.feature.permit.application.dogevent.disturbance.DogEventDisturbanceDTO;
+import fi.riista.feature.permit.application.dogevent.summary.DogEventDisturbanceSummaryDTO;
+import fi.riista.feature.permit.application.dogevent.summary.DogEventUnleashSummaryDTO;
+import fi.riista.feature.permit.application.gamemanagement.GameManagementPermitApplication;
+import fi.riista.feature.permit.application.gamemanagement.GameManagementPermitApplicationRepository;
+import fi.riista.feature.permit.application.gamemanagement.summary.GameManagementSummaryDTO;
+import fi.riista.feature.permit.application.importing.ImportingPermitApplication;
+import fi.riista.feature.permit.application.importing.ImportingPermitApplicationRepository;
+import fi.riista.feature.permit.application.importing.ImportingPermitApplicationSummaryDTO;
+import fi.riista.feature.permit.application.lawsectionten.LawSectionTenPermitApplication;
+import fi.riista.feature.permit.application.lawsectionten.LawSectionTenPermitApplicationRepository;
+import fi.riista.feature.permit.application.lawsectionten.LawSectionTenPermitApplicationSummaryDTO;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplication;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationRepository;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationSummaryDTO;
+import fi.riista.feature.permit.application.nestremoval.NestRemovalPermitApplication;
+import fi.riista.feature.permit.application.nestremoval.NestRemovalPermitApplicationRepository;
+import fi.riista.feature.permit.application.nestremoval.NestRemovalPermitApplicationSummaryDTO;
+import fi.riista.feature.permit.application.research.ResearchPermitApplication;
+import fi.riista.feature.permit.application.research.ResearchPermitApplicationRepository;
+import fi.riista.feature.permit.application.research.ResearchSummaryDTO;
+import fi.riista.feature.permit.application.weapontransportation.WeaponTransportationPermitApplication;
+import fi.riista.feature.permit.application.weapontransportation.WeaponTransportationPermitApplicationRepository;
+import fi.riista.feature.permit.application.weapontransportation.justification.TransportedWeapon;
+import fi.riista.feature.permit.application.weapontransportation.justification.TransportedWeaponRepository;
+import fi.riista.feature.permit.application.weapontransportation.justification.TransportedWeaponType;
+import fi.riista.feature.permit.application.weapontransportation.justification.WeaponTransportationVehicle;
+import fi.riista.feature.permit.application.weapontransportation.justification.WeaponTransportationVehicleRepository;
+import fi.riista.feature.permit.application.weapontransportation.justification.WeaponTransportationVehicleType;
+import fi.riista.feature.permit.application.weapontransportation.reason.WeaponTransportationReasonType;
+import fi.riista.feature.permit.application.weapontransportation.summary.SummaryDTO;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionDocument;
@@ -23,6 +81,7 @@ import fi.riista.feature.permit.decision.action.PermitDecisionAction;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachment;
 import fi.riista.feature.permit.decision.authority.PermitDecisionAuthority;
 import fi.riista.feature.permit.decision.delivery.PermitDecisionDelivery;
+import fi.riista.feature.permit.decision.derogation.DerogationLawSection;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReason;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonRepository;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
@@ -46,25 +105,51 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static fi.riista.feature.common.decision.GrantStatus.UNCHANGED;
+import static fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment.Type.PROTECTED_AREA;
+import static fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment.Type.OTHER;
+import static fi.riista.feature.permit.application.dogevent.DogEventType.DOG_TEST;
+import static fi.riista.feature.permit.application.dogevent.DogEventType.DOG_TRAINING;
+import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41A;
+import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41B;
+import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41C;
+import static fi.riista.feature.permit.decision.document.PermitDecisionTextUtils.escape;
+import static fi.riista.feature.permit.PermitTypeCode.GAME_MANAGEMENT;
+import static fi.riista.feature.permit.PermitTypeCode.IMPORTING;
+import static fi.riista.feature.permit.PermitTypeCode.NEST_REMOVAL_BASED;
+import static fi.riista.util.DateUtil.DATE_FORMAT_FINNISH;
 import static java.util.Comparator.comparing;
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsLast;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 @Service
 public class PermitDecisionTextService {
 
-    private static final Comparator<PermitDecisionSpeciesAmount> COMPARATOR_MOOSELIKE =
-            comparing(PermitDecisionSpeciesAmount::getAmount).reversed();
+    private static final Comparator<PermitDecisionSpeciesAmount> COMPARATOR_AMOUNTS_DESC =
+            comparing(PermitDecisionSpeciesAmount::getSpecimenAmount).reversed();
 
     private static final Comparator<PermitDecisionSpeciesAmount> COMPARATOR_CARNIVORE =
-            comparing(PermitDecisionSpeciesAmount::getAmount);
+            comparing(PermitDecisionSpeciesAmount::getSpecimenAmount);
 
-    private static final Comparator<PermitDecisionSpeciesAmount> COMPARATOR_BIRD_SPECIES =
+    private static final Comparator<PermitDecisionSpeciesAmount> COMPARATOR_NEST_REMOVAL =
+            comparing(PermitDecisionSpeciesAmount::getNestAmount, nullsLast(naturalOrder()))
+                    .thenComparing(PermitDecisionSpeciesAmount::getEggAmount, nullsLast(naturalOrder()))
+                    .thenComparing(PermitDecisionSpeciesAmount::getConstructionAmount, nullsLast(naturalOrder()));
+
+    private static final Comparator<PermitDecisionSpeciesAmount> COMPARATOR_SPECIES_YEAR =
             comparing((PermitDecisionSpeciesAmount a) -> a.getGameSpecies().getOfficialCode())
                     .thenComparing((PermitDecisionSpeciesAmount a) -> a.getBeginDate().getYear());
+
+    private static final Comparator<PermitDecisionSpeciesAmount> COMPARATOR_DOES_NOTHING =
+            comparing((p) -> 0);
+
+    private static final DateTimeFormatter DF = DateTimeFormat.forPattern(DATE_FORMAT_FINNISH);
 
     @Nonnull
     private static String formatSpeciesName(final GameSpecies gameSpecies, final Locale locale) {
@@ -100,6 +185,51 @@ public class PermitDecisionTextService {
     private CarnivorePermitApplicationRepository carnivorePermitApplicationRepository;
 
     @Resource
+    private MammalPermitApplicationRepository mammalPermitApplicationRepository;
+
+    @Resource
+    private NestRemovalPermitApplicationRepository nestRemovalPermitApplicationRepository;
+
+    @Resource
+    private LawSectionTenPermitApplicationRepository lawSectionTenPermitApplicationRepository;
+
+    @Resource
+    private WeaponTransportationPermitApplicationRepository weaponTransportationPermitApplicationRepository;
+
+    @Resource
+    private DogEventApplicationRepository dogEventApplicationRepository;
+
+    @Resource
+    private DogEventDisturbanceRepository dogEventDisturbanceRepository;
+
+    @Resource
+    private DogEventDisturbanceContactRepository dogEventDisturbanceContactRepository;
+
+    @Resource
+    private DogEventUnleashRepository dogEventUnleashRepository;
+
+    @Resource
+    private TransportedWeaponRepository transportedWeaponRepository;
+
+    @Resource
+    private WeaponTransportationVehicleRepository weaponTransportationVehicleRepository;
+
+    @Resource
+    private DisabilityPermitApplicationRepository disabilityPermitApplicationRepository;
+
+    @Resource
+    private DisabilityPermitVehicleRepository disabilityPermitVehicleRepository;
+
+    @Resource
+    private DisabilityPermitHuntingTypeInfoRepository disabilityPermitHuntingTypeInfoRepository;
+
+    @Resource
+    private ImportingPermitApplicationRepository importingPermitApplicationRepository;
+
+    @Resource
+    private DerogationPermitApplicationReasonService derogationPermitApplicationReasonService;
+
+    @Resource
     private PermitDecisionSpeciesAmountRepository permitDecisionSpeciesAmountRepository;
 
     @Resource
@@ -107,6 +237,21 @@ public class PermitDecisionTextService {
 
     @Resource
     private GameSpeciesService gameSpeciesService;
+
+    @Resource
+    private HarvestPermitApplicationAttachmentRepository applicationAttachmentRepository;
+
+    @Resource
+    private DeportationPermitApplicationRepository deportationPermitApplicationRepository;
+
+    @Resource
+    private ResearchPermitApplicationRepository researchPermitApplicationRepository;
+
+    @Resource
+    private GameManagementPermitApplicationRepository gameManagementPermitApplicationRepository;
+
+    @Resource
+    private HarvestPermitApplicationSpeciesAmountRepository harvestPermitApplicationSpeciesAmountRepository;
 
     @Transactional(noRollbackFor = RuntimeException.class)
     public void generateDefaultTextSections(final PermitDecision decision,
@@ -122,6 +267,9 @@ public class PermitDecisionTextService {
         }
         doc.setProcessing(generateProcessing(decision));
         doc.setDecision(generateDecision(decision));
+        if (StringUtils.isBlank(doc.getDecisionExtra())) {
+            doc.setDecisionExtra(generateDecisionExtra(decision));
+        }
         doc.setRestriction(generateRestriction(decision));
         if (StringUtils.isBlank(doc.getDecisionReasoning())) {
             doc.setDecisionReasoning(generateDecisionReasoning(decision));
@@ -146,7 +294,7 @@ public class PermitDecisionTextService {
 
     @Transactional(readOnly = true, noRollbackFor = RuntimeException.class)
     public String generateApplicationSummary(final PermitDecision decision) {
-        final HarvestPermitApplication application = Objects.requireNonNull(decision.getApplication());
+        final HarvestPermitApplication application = requireNonNull(decision.getApplication());
         final Locale locale = decision.getLocale();
 
         switch (application.getHarvestPermitCategory()) {
@@ -164,6 +312,28 @@ public class PermitDecisionTextService {
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
                 return createCarnivoreApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case MAMMAL:
+                return createMammalApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case NEST_REMOVAL:
+                return createNestRemovalApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case LAW_SECTION_TEN:
+                return createLawSectionTenApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case WEAPON_TRANSPORTATION:
+                return createWeaponTransportationApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case DISABILITY:
+                return createDisabilityApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case DOG_DISTURBANCE:
+                return createDogDisturbanceApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case DOG_UNLEASH:
+                return createDogUnleashApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case DEPORTATION:
+                return createDeportationApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case RESEARCH:
+                return createResearchApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case IMPORTING:
+                return createImportingApplicationSummaryGenerator(application, locale).generateApplicationMain();
+            case GAME_MANAGEMENT:
+                return createGameManagementApplicationSummaryGenerator(application, locale).generateApplicationMain();
             default:
                 throw new IllegalArgumentException("Unsupported permit category: " +
                         application.getHarvestPermitCategory());
@@ -201,9 +371,183 @@ public class PermitDecisionTextService {
                 messageSource);
     }
 
+
+    @Nonnull
+    private PermitDecisionMammalApplicationSummaryGenerator createMammalApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final MammalPermitApplication mammalPermitApplication =
+                mammalPermitApplicationRepository.findByHarvestPermitApplication(application);
+        final DerogationPermitApplicationReasonsDTO derogationReasons =
+                derogationPermitApplicationReasonService.getDerogationReasons(application, locale);
+        final MammalPermitApplicationSummaryDTO dto =
+                MammalPermitApplicationSummaryDTO.create(application, mammalPermitApplication, derogationReasons);
+        return new PermitDecisionMammalApplicationSummaryGenerator(dto, locale, createSpeciesNames(locale),
+                messageSource);
+    }
+
+    @Nonnull
+    private PermitDecisionNestRemovalApplicationSummaryGenerator createNestRemovalApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final NestRemovalPermitApplication nestRemovalPermitApplication =
+                nestRemovalPermitApplicationRepository.findByHarvestPermitApplication(application);
+        final DerogationPermitApplicationReasonsDTO derogationReasons =
+                derogationPermitApplicationReasonService.getDerogationReasons(application, locale);
+        final NestRemovalPermitApplicationSummaryDTO dto =
+                NestRemovalPermitApplicationSummaryDTO.create(application, nestRemovalPermitApplication, derogationReasons);
+        return new PermitDecisionNestRemovalApplicationSummaryGenerator(dto, locale, createSpeciesNames(locale),
+                messageSource);
+    }
+
+    @Nonnull
+    private PermitDecisionLawSectionTenApplicationSummaryGenerator createLawSectionTenApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final LawSectionTenPermitApplication lawSectionTenPermitApplication =
+                lawSectionTenPermitApplicationRepository.findByHarvestPermitApplication(application);
+        final LawSectionTenPermitApplicationSummaryDTO dto =
+                LawSectionTenPermitApplicationSummaryDTO.create(application, lawSectionTenPermitApplication);
+        return new PermitDecisionLawSectionTenApplicationSummaryGenerator(dto, locale, createSpeciesNames(locale),
+                messageSource);
+    }
+
+    @Nonnull
+    private PermitDecisionWeaponTransportationApplicationSummaryGenerator createWeaponTransportationApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final WeaponTransportationPermitApplication transportApplication =
+                weaponTransportationPermitApplicationRepository.findByHarvestPermitApplication(application);
+        final List<TransportedWeapon> transportedWeapons =
+                transportedWeaponRepository.findByWeaponTransportationPermitApplicationOrderById(transportApplication);
+        final List<WeaponTransportationVehicle> vehicles =
+                weaponTransportationVehicleRepository.findByWeaponTransportationPermitApplicationOrderById(transportApplication);
+        final SummaryDTO dto =
+                SummaryDTO.create(application, transportApplication, transportedWeapons, vehicles);
+        return new PermitDecisionWeaponTransportationApplicationSummaryGenerator(dto, locale, messageSource);
+    }
+
+    @Nonnull
+    private PermitDecisionDisabilityApplicationSummaryGenerator createDisabilityApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final DisabilityPermitApplication disabilityPermitApplication =
+                disabilityPermitApplicationRepository.findByHarvestPermitApplication(application);
+        final List<DisabilityPermitVehicle> vehicles =
+                disabilityPermitVehicleRepository.findByDisabilityPermitApplicationOrderById(disabilityPermitApplication);
+        final List<DisabilityPermitHuntingTypeInfo> huntingTypeInfos =
+                disabilityPermitHuntingTypeInfoRepository.findByDisabilityPermitApplicationOrderById(disabilityPermitApplication);
+        final List<HarvestPermitApplicationAttachment> attachments =
+                applicationAttachmentRepository.findByHarvestPermitApplication(application);
+        final DisabilityPermitSummaryDTO dto =
+                DisabilityPermitSummaryDTO.create(application, disabilityPermitApplication, vehicles, huntingTypeInfos,
+                        application.getContactPerson(), attachments);
+        return new PermitDecisionDisabilityApplicationSummaryGenerator(dto, locale, messageSource);
+
+    }
+
+    @Nonnull
+    private PermitDecisionDogDisturbanceApplicationSummaryGenerator createDogDisturbanceApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final DogEventApplication dogEventApplication = dogEventApplicationRepository.findByHarvestPermitApplication(application);
+        final DogEventDisturbance trainingEvent =
+                dogEventDisturbanceRepository.findByHarvestPermitApplicationAndEventType(application, DOG_TRAINING);
+        final DogEventDisturbance testEvent =
+                dogEventDisturbanceRepository.findByHarvestPermitApplicationAndEventType(application, DOG_TEST);
+
+        final DogEventDisturbanceSummaryDTO dto = DogEventDisturbanceSummaryDTO.create(
+                application,
+                dogEventApplication,
+                createDogEventDisturbanceDTO(trainingEvent),
+                createDogEventDisturbanceDTO(testEvent));
+
+        return new PermitDecisionDogDisturbanceApplicationSummaryGenerator(dto, locale, createSpeciesNames(locale),
+                                                                           messageSource);
+    }
+
+    private DogEventDisturbanceDTO createDogEventDisturbanceDTO(final DogEventDisturbance event) {
+        return DogEventDisturbanceDTO.createFrom(
+                event,
+                dogEventDisturbanceContactRepository.findAllByEvent(event),
+                F.mapNullable(event.getGameSpecies(), GameSpecies::getOfficialCode));
+    }
+
+
+    @Nonnull
+    private PermitDecisionDogUnleashApplicationSummaryGenerator createDogUnleashApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final DogEventApplication dogEventApplication = dogEventApplicationRepository.findByHarvestPermitApplication(application);
+        final List<DogEventUnleash> dogEvents = dogEventUnleashRepository.findAllByHarvestPermitApplicationOrderByBeginDate(application);
+        final DogEventUnleashSummaryDTO dto = DogEventUnleashSummaryDTO.create(application, dogEventApplication, dogEvents);
+
+        return new PermitDecisionDogUnleashApplicationSummaryGenerator(dto, locale, messageSource);
+    }
+
+    @Nonnull
+    private PermitDecisionDeportationApplicationSummaryGenerator createDeportationApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final DeportationPermitApplication deportationPermitApplication =
+                deportationPermitApplicationRepository.findByHarvestPermitApplication(application);
+        final DerogationPermitApplicationReasonsDTO derogationReasons =
+                derogationPermitApplicationReasonService.getDerogationReasons(application, locale);
+        final DeportationSummaryDTO dto =
+                DeportationSummaryDTO.create(application, deportationPermitApplication, derogationReasons);
+        return new PermitDecisionDeportationApplicationSummaryGenerator(dto, locale, createSpeciesNames(locale),
+                messageSource);
+    }
+
+    @Nonnull
+    private PermitDecisionResearchApplicationSummaryGenerator createResearchApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final ResearchPermitApplication researchPermitApplication =
+                researchPermitApplicationRepository.findByHarvestPermitApplication(application);
+        final DerogationPermitApplicationReasonsDTO derogationReasons =
+                derogationPermitApplicationReasonService.getDerogationReasons(application, locale);
+        final ResearchSummaryDTO dto =
+                ResearchSummaryDTO.create(application, researchPermitApplication, derogationReasons);
+        return new PermitDecisionResearchApplicationSummaryGenerator(dto, locale, createSpeciesNames(locale),
+                messageSource);
+    }
+
+    @Nonnull
+    private PermitDecisionImportingApplicationSummaryGenerator createImportingApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final ImportingPermitApplication importingPermitApplication =
+                importingPermitApplicationRepository.findByHarvestPermitApplication(application);
+        final List<HarvestPermitApplicationAttachment> attachments = application.getAttachments();
+        final List<HarvestPermitApplicationAttachment> areaAttachments =
+                F.filterToList(attachments, a -> a.getAttachmentType() == PROTECTED_AREA);
+        final List<HarvestPermitApplicationAttachment> otherAttachments =
+                F.filterToList(attachments, a -> a.getAttachmentType() == OTHER);
+        final ImportingPermitApplicationSummaryDTO dto =
+                ImportingPermitApplicationSummaryDTO.from(
+                        application, importingPermitApplication, application.getSpeciesAmounts(), areaAttachments, otherAttachments);
+        return new PermitDecisionImportingApplicationSummaryGenerator(dto, locale, createSpeciesNames(locale),
+                messageSource);
+    }
+
+    @Nonnull
+    private PermitDecisionGameManagementApplicationSummaryGenerator createGameManagementApplicationSummaryGenerator(
+            final HarvestPermitApplication application, final Locale locale) {
+
+        final GameManagementPermitApplication gameManagementPermitApplication =
+                gameManagementPermitApplicationRepository.findByHarvestPermitApplication(application);
+        final List<HarvestPermitApplicationSpeciesAmount> speciesAmounts =
+                harvestPermitApplicationSpeciesAmountRepository.findByHarvestPermitApplication(application);
+        final GameManagementSummaryDTO dto =
+                GameManagementSummaryDTO.create(application, gameManagementPermitApplication, speciesAmounts);
+        return new PermitDecisionGameManagementApplicationSummaryGenerator(dto, locale, createSpeciesNames(locale),
+                messageSource);
+    }
+
     @Transactional(readOnly = true, noRollbackFor = RuntimeException.class)
     public String generateApplicationReasoning(final PermitDecision decision) {
-        final HarvestPermitApplication application = Objects.requireNonNull(decision.getApplication());
+        final HarvestPermitApplication application = requireNonNull(decision.getApplication());
         final Locale locale = decision.getLocale();
 
         switch (application.getHarvestPermitCategory()) {
@@ -218,20 +562,42 @@ public class PermitDecisionTextService {
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
                 return createCarnivoreApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case MAMMAL:
+                return createMammalApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case NEST_REMOVAL:
+                return createNestRemovalApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case LAW_SECTION_TEN:
+                return createLawSectionTenApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case WEAPON_TRANSPORTATION:
+                return createWeaponTransportationApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case DISABILITY:
+                return createDisabilityApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case DOG_DISTURBANCE:
+                return createDogDisturbanceApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case DOG_UNLEASH:
+                return createDogUnleashApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case DEPORTATION:
+                return createDeportationApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case RESEARCH:
+                return createResearchApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case IMPORTING:
+                return createImportingApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            case GAME_MANAGEMENT:
+                return createGameManagementApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
+            default:
+                return "";
         }
-
-        return "";
     }
 
-    private String generateApplicationReasoningForMooselike(final HarvestPermitApplication application,
-                                                            final Locale locale) {
+    private static String generateApplicationReasoningForMooselike(final HarvestPermitApplication application,
+                                                                   final Locale locale) {
         final StringBuilder sb = new StringBuilder();
 
         for (final HarvestPermitApplicationSpeciesAmount speciesAmount : application.getSpeciesAmounts()) {
             if (StringUtils.isNotBlank(speciesAmount.getMooselikeDescription())) {
                 sb.append(formatSpeciesName(speciesAmount, locale));
                 sb.append(": ");
-                sb.append(speciesAmount.getMooselikeDescription());
+                sb.append(escape(speciesAmount.getMooselikeDescription()));
                 sb.append("\n\n");
             }
         }
@@ -242,28 +608,40 @@ public class PermitDecisionTextService {
     private List<PermitDecisionSpeciesAmount> getSortedSpecies(final PermitDecision decision) {
         return permitDecisionSpeciesAmountRepository.findByPermitDecision(decision).stream()
                 .sorted(getSpeciesComparator(decision.getApplication().getHarvestPermitCategory()))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private static Comparator<PermitDecisionSpeciesAmount> getSpeciesComparator(final HarvestPermitCategory category) {
         switch (category) {
             case MOOSELIKE:
             case MOOSELIKE_NEW:
-                return COMPARATOR_MOOSELIKE;
+            case LAW_SECTION_TEN:
+                return COMPARATOR_AMOUNTS_DESC;
+            case MAMMAL:
             case BIRD:
-                return COMPARATOR_BIRD_SPECIES;
+            case DEPORTATION:
+            case RESEARCH:
+            case IMPORTING:
+            case GAME_MANAGEMENT:
+                return COMPARATOR_SPECIES_YEAR;
             case LARGE_CARNIVORE_BEAR:
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
                 return COMPARATOR_CARNIVORE;
+            case NEST_REMOVAL:
+                return COMPARATOR_NEST_REMOVAL;
             default:
-                throw new IllegalArgumentException("invalid category: " + category);
+                return COMPARATOR_DOES_NOTHING;
         }
     }
 
     private static String i18n(final PermitDecision decision, final String finnish, final String swedish) {
         return Locales.isSwedish(decision.getLocale()) ? swedish : finnish;
+    }
+
+    private String i18nKey(final PermitDecision decision, final String key) {
+        return messageSource.getMessage(key, null, decision.getLocale());
     }
 
     @Transactional(readOnly = true, noRollbackFor = RuntimeException.class)
@@ -276,11 +654,169 @@ public class PermitDecisionTextService {
             return i18n(decision,
                     "Hakemus jätetään tutkimatta.",
                     "Ansökan har avvisats utan prövning.");
+        } else if (decision.getDecisionType() == PermitDecision.DecisionType.CANCEL_ANNUAL_RENEWAL) {
+            return i18n(decision, "Ilmoitusmenettely perutaan", "Anmälningsförfarandet annulleras");
         }
 
+        if (PermitTypeCode.hasSpecies(decision.getPermitTypeCode())) {
+            return generateHarvestDecision(decision);
+        } else {
+            return generateDecisionWithoutSpecies(decision);
+        }
+    }
+
+    @Transactional(readOnly = true, noRollbackFor = RuntimeException.class)
+    public String generateDecisionExtra(final PermitDecision decision) {
+        final HarvestPermitCategory category = decision.getApplication().getHarvestPermitCategory();
+
+        switch (category) {
+            case WEAPON_TRANSPORTATION:
+                return generateWeaponTransportationExtra(decision);
+            case DISABILITY:
+                return generateDisabilityExtra(decision);
+            default:
+                return "";
+        }
+    }
+
+    private String generateWeaponTransportationExtra(final PermitDecision decision) {
+        final EnumLocaliser localiser = new EnumLocaliser(messageSource, decision.getLocale());
+
+        final WeaponTransportationPermitApplication transportApplication =
+                weaponTransportationPermitApplicationRepository.findByHarvestPermitApplication(decision.getApplication());
+
+        final StringBuilder sb = new StringBuilder();
+
+        final WeaponTransportationReasonType reasonType = transportApplication.getReasonType();
+        sb.append(i18n(decision, "Perustelut:", "Motiveringar:")).append("\n");
+        sb.append(localiser.getTranslation(reasonType));
+        if (reasonType == WeaponTransportationReasonType.MUU) {
+            sb.append(" - ").append(escape(transportApplication.getReasonDescription()));
+        }
+        sb.append(": ");
+
+        sb.append(DF.print(transportApplication.getBeginDate()))
+                .append(" - ")
+                .append(DF.print(transportApplication.getEndDate()));
+
+        sb.append("\n\n");
+
+        final List<WeaponTransportationVehicle> vehicles =
+                weaponTransportationVehicleRepository.findByWeaponTransportationPermitApplicationOrderById(transportApplication);
+        if (!vehicles.isEmpty()) {
+            sb.append(i18n(decision, "Ajoneuvotiedot:", "Fordonsinformation:")).append("\n");
+
+            vehicles.forEach(vehicle -> {
+                final WeaponTransportationVehicleType type = vehicle.getType();
+                sb.append("- ").append(localiser.getTranslation(type));
+                if (type == WeaponTransportationVehicleType.MUU) {
+                    sb.append(" - ").append(escape(vehicle.getDescription()));
+                }
+                if (!StringUtils.isBlank(vehicle.getRegisterNumber())) {
+                    sb.append(" ").append(escape(vehicle.getRegisterNumber()));
+                }
+                sb.append("\n");
+            });
+
+            sb.append("\n");
+        }
+
+        final List<TransportedWeapon> transportedWeapons =
+                transportedWeaponRepository.findByWeaponTransportationPermitApplicationOrderById(transportApplication);
+        if (!transportedWeapons.isEmpty()) {
+            sb.append(i18n(decision, "Asetiedot:", "Vapeninformation:")).append("\n");
+
+            transportedWeapons.forEach(transportedWeapon -> {
+                final TransportedWeaponType weaponType = transportedWeapon.getType();
+                sb.append("- ").append(localiser.getTranslation(weaponType));
+                if (weaponType == TransportedWeaponType.MUU) {
+                    sb.append(" - ").append(escape(transportedWeapon.getDescription()));
+                }
+                sb.append(": ").append(transportedWeapon.getAmount())
+                        .append(" ").append(i18nKey(decision, "pdf.application.pcs"));
+                if (!StringUtils.isBlank(transportedWeapon.getCaliber())) {
+                    sb.append(", ").append(i18n(decision, "Kaliiberi: ", "Kaliber: "))
+                            .append(escape(transportedWeapon.getCaliber()));
+                }
+                sb.append("\n");
+            });
+        }
+
+        return sb.toString();
+    }
+
+    private String generateDisabilityExtra(final PermitDecision decision) {
+        final EnumLocaliser localiser = new EnumLocaliser(messageSource, decision.getLocale());
+
+        final DisabilityPermitApplication disabilityApplication =
+                disabilityPermitApplicationRepository.findByHarvestPermitApplication(decision.getApplication());
+
+        final StringBuilder sb = new StringBuilder();
+
+        if (disabilityApplication.getUseMotorVehicle()) {
+            sb.append("- ").append(i18nKey(decision, "disability.application.useMotorVehicle")).append("\n");
+        }
+        if (disabilityApplication.getUseVehicleForWeaponTransport()) {
+            sb.append("- ").append(i18nKey(decision, "disability.application.useVehicleForWeaponTransport")).append("\n");
+        }
+        sb.append("\n");
+
+        sb.append(i18n(decision, "Aika: ", "Tid: "))
+                .append(DF.print(disabilityApplication.getBeginDate()))
+                .append(" - ")
+                .append(DF.print(disabilityApplication.getEndDate()))
+                .append("\n\n");
+
+        final List<DisabilityPermitVehicle> vehicles =
+                disabilityPermitVehicleRepository.findByDisabilityPermitApplicationOrderById(disabilityApplication);
+        if (!vehicles.isEmpty()) {
+            sb.append(i18n(decision, "Ajoneuvotiedot:", "Fordonsinformation:")).append("\n");
+
+            vehicles.forEach(vehicle -> {
+                final PermitApplicationVehicleType type = vehicle.getType();
+                sb.append("- ").append(localiser.getTranslation(type));
+                if (type == PermitApplicationVehicleType.MUU) {
+                    sb.append(" - ").append(escape(vehicle.getDescription()));
+                }
+                sb.append("\n");
+            });
+
+            sb.append("\n");
+        }
+
+        final List<DisabilityPermitHuntingTypeInfo> huntingTypeInfos =
+                disabilityPermitHuntingTypeInfoRepository.findByDisabilityPermitApplicationOrderById(disabilityApplication);
+        if (!huntingTypeInfos.isEmpty()) {
+            sb.append(i18n(decision, "Metsästysmuodot:", "Jaktformer:")).append("\n");
+
+            huntingTypeInfos.forEach(huntingTypeInfo -> {
+                final HuntingType huntingType = huntingTypeInfo.getHuntingType();
+                sb.append("- ").append(localiser.getTranslation(huntingType));
+                if (huntingType == HuntingType.MUU) {
+                    sb.append(" - ").append(escape(huntingTypeInfo.getHuntingTypeDescription()));
+                }
+                sb.append("\n");
+            });
+        }
+
+        return sb.toString();
+    }
+
+    private String generateDecisionWithoutSpecies(final PermitDecision decision) {
+        if (decision.getGrantStatus() != UNCHANGED) {
+            return i18n(decision,
+                    "Suomen riistakeskus on päättänyt hylätä hakemuksen.",
+                    "Finlands viltcentral har beslutat att avslå ansökan.");
+        }
+
+        return generateDecisionSectionTitle(decision);
+    }
+
+    private String generateHarvestDecision(final PermitDecision decision) {
         final List<PermitDecisionSpeciesAmount> speciesAmounts =
                 permitDecisionSpeciesAmountRepository.findByPermitDecision(decision);
-        final boolean allAmountsZero = speciesAmounts.stream().noneMatch(spa -> spa.getAmount() > 0);
+        final boolean allAmountsZero =
+                speciesAmounts.stream().noneMatch(PermitDecisionSpeciesAmount::hasGrantedSpecies);
 
         if (allAmountsZero) {
             return i18n(decision,
@@ -306,8 +842,53 @@ public class PermitDecisionTextService {
         sb.append("\n\n");
         sb.append(i18n(decision, "Poikkeusedellytys", "Förutsättning för undantag"));
         sb.append("\n");
+        if (decision.getPermitTypeCode().equals(NEST_REMOVAL_BASED)) {
+            sb.append(i18n(decision, "Metsästyslain 41 d§.", "Jaktlagen 41 d §."));
+            sb.append("\n");
+        }
 
-        if (hasLawSectionId(derogationReasonList, 1)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41A, 1)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 a §:n 1 momentin 1 kohta: luonnonvaraisen eläimistön tai kasviston " +
+                            "säilyttämiseksi",
+                    "Jaktlagen 41 a § 1 moment 1 punkten: i syfte att bevara vilda djur eller växter"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41A, 2)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 a §:n 1 momentin 2 kohta: viljelmille, karjankasvatukselle, metsätaloudelle, " +
+                            "kalataloudelle, porotaloudelle, vesistölle tai muulle omaisuudelle aiheutuvan erityisen " +
+                            "merkittävän vahingon ehkäisemiseksi",
+                    "Jaktlagen 41 a § 1 moment 2 punkten: i syfte att förebygga allvarlig skada på odlingar, " +
+                            "boskapsuppfödning, skogsbruk, fiskerinäring, renhushållning, vattendrag eller annan " +
+                            "egendom"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41A, 3)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 a §:n 1 momentin 3 kohta: kansanterveyden, yleisen turvallisuuden tai muun " +
+                            "erittäin tärkeän yleisen edun kannalta pakottavista syistä, mukaan lukien taloudelliset " +
+                            "ja sosiaaliset syyt, sekä jos poikkeamisesta on ensisijaisen merkittävää hyötyä " +
+                            "ympäristölle",
+                    "Jaktlagen 41 a § 1 moment 3 punkten: på grund av tvingande skäl med hänsyn till folkhälsan, den " +
+                            "allmänna säkerheten eller något annat mycket viktigt allmänt intresse, inbegripet " +
+                            "ekonomiska och sociala skäl, och om ett tillstånd till undantag medför synnerligen " +
+                            "betydande nytta för miljön"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41A, 4)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 a §:n 1 momentin 4 kohta: näiden lajien tutkimus-, koulutus-, " +
+                            "uudelleensijoittamis- ja istuttamistarkoituksessa taikka eläintautien ehkäisemiseksi",
+                    "Jaktlagen 41 a § 1 moment 4 punkten:  i forsknings-, utbildnings-, omplacerings- och " +
+                            "utplanteringssyfte eller för att förebygga djursjukdomar när det gäller arterna i fråga"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41B, 1)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 b §:n 1 momentin 1 kohta: kansanterveyden ja yleisen turvallisuuden " +
@@ -315,14 +896,14 @@ public class PermitDecisionTextService {
                     "Jaktlagen 41 b § 1 moment 1 punkten: för att trygga folkhälsan och den allmänna säkerheten"));
         }
 
-        if (hasLawSectionId(derogationReasonList, 2)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41B, 2)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 b §:n 1 momentin 2 kohta: lentoturvallisuuden takaamiseksi",
                     "Jaktlagen 41 b § 1 moment 2 punkten: för att trygga flygsäkerheten"));
         }
 
-        if (hasLawSectionId(derogationReasonList, 3)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41B, 3)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 b §:n 1 momentin 3 kohta: viljelmille, kotieläimille, metsille, kalavesille ja " +
@@ -331,14 +912,14 @@ public class PermitDecisionTextService {
                             "skogar, fiskevatten och vattendrag"));
         }
 
-        if (hasLawSectionId(derogationReasonList, 4)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41B, 4)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 b §:n 1 momentin 4 kohta: kasviston ja eläimistön suojelemiseksi",
                     "Jaktlagen 41 b § 1 moment 4 punkten: för att skydda växter och djur"));
         }
 
-        if (hasLawSectionId(derogationReasonList, 5)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41B, 5)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 b §:n 1 momentin 5 kohta:  tutkimus- ja koulutustarkoituksessa, kannan " +
@@ -348,7 +929,7 @@ public class PermitDecisionTextService {
                             "återinföra stammen samt möjliggöra uppfödning för nämnda syften"));
         }
 
-        if (hasLawSectionId(derogationReasonList, 6)) {
+        if (hasLawSectionId(derogationReasonList, SECTION_41A, 6)) {
             sb.append("\n");
             sb.append(i18n(decision,
                     "Metsästyslain 41 a §:n 3 momentin mukaisesti tarkoin valvotuissa oloissa valikoiden ja " +
@@ -356,17 +937,68 @@ public class PermitDecisionTextService {
                     "Enligt jaktlagen 41 a § 3 moment för att under strängt övervakade förhållanden, " +
                             "selektivt och begränsat fånga eller döda vissa djur."));
         }
+        if (hasLawSectionId(derogationReasonList, SECTION_41C, 1)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 c §:n 1 kohta: luonnonvaraisen eläimistön tai kasviston säilyttämiseksi",
+                    "Jaktlagen 41 c § 1 punkten:  i syfte att bevara vilda djur eller växter"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41C, 2)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 c §:n 2 kohta: viljelmille, karjankasvatukselle, metsätaloudelle, " +
+                            "kalataloudelle, porotaloudelle, riistataloudelle, vesistölle tai muulle omaisuudelle " +
+                            "aiheutuvan merkittävän vahingon ehkäisemiseksi",
+                    "Jaktlagen 41 c § 2 punkten:  i syfte att förebygga allvarlig skada på odlingar, " +
+                            "boskapsuppfödning, skogsbruk, fiskerinäring, renhushållning, vilthushållning, vattendrag" +
+                            " eller annan egendom"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41C, 3)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 c §:n 3 kohta: kansanterveyden, yleisen turvallisuuden tai muun erittäin " +
+                            "tärkeän yleisen edun kannalta pakottavista syistä, mukaan lukien taloudelliset ja " +
+                            "sosiaaliset syyt, sekä jos poikkeamisesta on ensisijaisen merkittävää hyötyä ympäristölle",
+                    "Jaktlagen 41 c § 3 punkten: av tvingande skäl med hänsyn till folkhälsan, den allmänna " +
+                            "säkerheten eller något annat mycket viktigt allmänt intresse, inbegripet ekonomiska och " +
+                            "sociala skäl, och om ett tillstånd till undantag medför synnerligen betydande nytta för " +
+                            "miljön"));
+        }
+
+        if (hasLawSectionId(derogationReasonList, SECTION_41C, 4)) {
+            sb.append("\n");
+            sb.append(i18n(decision,
+                    "Metsästyslain 41 c §:n 4 kohta: näiden lajien tutkimus-, koulutus-, uudelleensijoittamis- ja " +
+                            "istuttamistarkoituksessa taikka eläintautien ehkäisemiseksi",
+                    "Jaktlagen 41 c § 4 punkten: i forsknings-, utbildnings-, omplacerings- och utplanteringssyfte " +
+                            "eller för att förebygga djursjukdomar när det gäller arterna i fråga"));
+        }
         return sb.toString();
     }
 
     private static boolean hasLawSectionId(final List<PermitDecisionDerogationReason> derogationReasonList,
+                                           final DerogationLawSection lawSection,
                                            final int lawSectionId) {
-        return derogationReasonList.stream().anyMatch(d -> d.getReasonType().getLawSectionNumber() == lawSectionId);
+        return derogationReasonList.stream().filter(r -> r.getReasonType().getLawSection() == lawSection)
+                .anyMatch(d -> d.getReasonType().getLawSectionNumber() == lawSectionId);
     }
 
     private static String generateDecisionSectionTable(final PermitDecision decision,
                                                        final List<PermitDecisionSpeciesAmount> speciesAmounts) {
-        final DateTimeFormatter DF = DateTimeFormat.forPattern("dd.MM.YYYY");
+        switch (decision.getPermitTypeCode()) {
+            case NEST_REMOVAL_BASED:
+                return generateGrantedNestRemovalAmounts(decision, speciesAmounts);
+            case IMPORTING:
+            case GAME_MANAGEMENT:
+                return generateGrantedAmounts(decision, speciesAmounts);
+            default:
+                return generateGrantedHarvestAmounts(decision, speciesAmounts);
+        }
+    }
+
+    private static String generateGrantedHarvestAmounts(final PermitDecision decision, final List<PermitDecisionSpeciesAmount> speciesAmounts) {
         final DecimalFormat NF = new DecimalFormat("#.#", new DecimalFormatSymbols(Locales.FI));
         final long validityYears = speciesAmounts.stream()
                 .mapToInt(spa -> spa.getBeginDate().getYear())
@@ -383,12 +1015,13 @@ public class PermitDecisionTextService {
             }
 
             sb.append("|");
-            sb.append(NF.format(speciesAmount.getAmount()));
+            sb.append(NF.format(speciesAmount.getSpecimenAmount()));
             sb.append(" ");
             sb.append(i18n(decision, "kpl", "st."));
+
             sb.append("|");
 
-            if (speciesAmount.getAmount() > 0) {
+            if (speciesAmount.hasGrantedSpecies()) {
                 if (speciesAmount.getBeginDate() != null && speciesAmount.getEndDate() != null) {
                     sb.append(DF.print(speciesAmount.getBeginDate()));
                     sb.append(" - ");
@@ -399,6 +1032,126 @@ public class PermitDecisionTextService {
                     sb.append(",\n");
                     sb.append("|||");
 
+                    sb.append(DF.print(speciesAmount.getBeginDate2()));
+                    sb.append(" - ");
+                    sb.append(DF.print(speciesAmount.getEndDate2()));
+                }
+            }
+
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    private static String generateGrantedNestRemovalAmounts(final PermitDecision decision, final List<PermitDecisionSpeciesAmount> speciesAmounts) {
+        final DecimalFormat NF = new DecimalFormat("#.#", new DecimalFormatSymbols(Locales.FI));
+        final long validityYears = speciesAmounts.stream()
+                .mapToInt(spa -> spa.getBeginDate().getYear())
+                .distinct().count();
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append("---|---|---\n");
+
+        for (final PermitDecisionSpeciesAmount speciesAmount : speciesAmounts) {
+            sb.append(formatSpeciesName(speciesAmount, decision.getLocale()));
+
+            sb.append("|||");
+
+            if (speciesAmount.hasGrantedSpecies()) {
+                if (speciesAmount.getBeginDate() != null && speciesAmount.getEndDate() != null) {
+                    sb.append(DF.print(speciesAmount.getBeginDate()));
+                    sb.append(" - ");
+                    sb.append(DF.print(speciesAmount.getEndDate()));
+                }
+
+                if (speciesAmount.getBeginDate2() != null && speciesAmount.getEndDate2() != null) {
+                    sb.append(",\n");
+
+                    sb.append("||||");
+
+                    sb.append(DF.print(speciesAmount.getBeginDate2()));
+                    sb.append(" - ");
+                    sb.append(DF.print(speciesAmount.getEndDate2()));
+                }
+            }
+
+            sb.append("\n");
+            sb.append("||");
+            if (speciesAmount.getNestAmount() != null) {
+                sb.append(NF.format(speciesAmount.getNestAmount()));
+                sb.append(" ");
+                sb.append(i18n(decision, "pesää", "bo"));
+            }
+            sb.append("|");
+            if (speciesAmount.getConstructionAmount() != null) {
+                sb.append(NF.format(speciesAmount.getConstructionAmount()));
+                sb.append(" ");
+                sb.append(i18n(decision, "rakennelmaa", "konstruktion"));
+            }
+            sb.append("|");
+            if (speciesAmount.getEggAmount() != null) {
+                sb.append(NF.format(speciesAmount.getEggAmount()));
+                sb.append(" ");
+                sb.append(i18n(decision, "munaa", "ägg"));
+            }
+
+
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
+    private static String generateGrantedAmounts(final PermitDecision decision, final List<PermitDecisionSpeciesAmount> speciesAmounts) {
+        final DecimalFormat NF = new DecimalFormat("#.#", new DecimalFormatSymbols(Locales.FI));
+        final long validityYears = speciesAmounts.stream()
+                .mapToInt(spa -> spa.getBeginDate().getYear())
+                .distinct().count();
+
+        final StringBuilder sb = new StringBuilder();
+
+        // Table with four columns
+        sb.append("---|---|---|---\n");
+
+        for (final PermitDecisionSpeciesAmount speciesAmount : speciesAmounts) {
+
+            // First column: species
+            sb.append(formatSpeciesName(speciesAmount, decision.getLocale()));
+
+            if (validityYears > 1) {
+                sb.append(String.format(" (%d)", speciesAmount.getBeginDate().getYear()));
+            }
+
+            // Second column: number of specimen
+            sb.append("|");
+            if (speciesAmount.getSpecimenAmount() != null) {
+                sb.append(NF.format(speciesAmount.getSpecimenAmount()))
+                        .append(" ")
+                        .append(i18n(decision, "yksilöä", "individer"));
+            }
+
+            // Third column: number of eggs
+            sb.append("|");
+            if (speciesAmount.getEggAmount() != null){
+                    sb.append(NF.format(speciesAmount.getEggAmount()))
+                    .append(" ")
+                    .append(i18n(decision, "munaa", "ägg"));
+            }
+
+            // Fourth column: time period
+            sb.append("|");
+            if (speciesAmount.hasGrantedSpecies()) {
+                if (speciesAmount.getBeginDate() != null && speciesAmount.getEndDate() != null) {
+                    sb.append(DF.print(speciesAmount.getBeginDate()));
+                    sb.append(" - ");
+                    sb.append(DF.print(speciesAmount.getEndDate()));
+                }
+
+                // Append second time period onto separate row when present
+                if (speciesAmount.getBeginDate2() != null && speciesAmount.getEndDate2() != null) {
+                    sb.append(",\n");
+                    sb.append("||||");
                     sb.append(DF.print(speciesAmount.getBeginDate2()));
                     sb.append(" - ");
                     sb.append(DF.print(speciesAmount.getEndDate2()));
@@ -424,9 +1177,37 @@ public class PermitDecisionTextService {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case MAMMAL:
+            case NEST_REMOVAL:
+            case DEPORTATION:
+            case RESEARCH:
+            case GAME_MANAGEMENT:
                 return i18n(decision,
                         "Suomen riistakeskus on päättänyt myöntää poikkeusluvan seuraavasti:",
                         "Finlands viltcentral har beslutat att bevilja dispens enligt följande:");
+            case LAW_SECTION_TEN:
+                return i18n(decision,
+                        "Suomen riistakeskus on päättänyt myöntää pyyntiluvan seuraavasti:",
+                        "Finlands viltcentral har beslutat bevilja jaktlicens enligt följande:");
+            case WEAPON_TRANSPORTATION:
+                return i18n(decision,
+                        "Suomen riistakeskus on päättänyt myöntää aseenkuljetusluvan seuraavasti:",
+                        "Finlands viltcentral har beslutat att bevilja tillstånd för transport av vapen enligt följande:");
+            case DISABILITY:
+                return i18n(decision,
+                        "Suomen riistakeskus on päättänyt myöntää luvan moottoriajoneuvon käyttöön liikuntarajoitteisena seuraavasti:",
+                        "Suomen riistakeskus on päättänyt myöntää luvan moottoriajoneuvon käyttöön liikuntarajoitteisena seuraavasti:");
+            case DOG_DISTURBANCE:
+            case DOG_UNLEASH:
+                return i18n(decision,
+                        "Suomen riistakeskus on päättänyt myöntää luvan seuraavasti:",
+                        "Finlands viltcentral har beslutat att bevilja dispens enligt följande:");
+
+            case IMPORTING: {
+                return i18n(decision,
+                        "Suomen riistakeskus on päättänyt myöntää luvan maahantuontiin seuraavasti:",
+                        "Suomen riistakeskus on päättänyt myöntää luvan maahantuontiin seuraavasti:");
+            }
             default:
                 throw new IllegalArgumentException("Unsupported application category:" +
                         decision.getApplication().getHarvestPermitCategory());
@@ -456,7 +1237,7 @@ public class PermitDecisionTextService {
                     case AU:
                         sb.append(i18n(decision,
                                 "aikuista urosta",
-                                Math.round(speciesAmount.getAmount()) > 1 ? "tjurar" : "tjur"));
+                                Math.round(speciesAmount.getSpecimenAmount()) > 1 ? "tjurar" : "tjur"));
                         break;
                 }
                 sb.append(".\n");
@@ -537,15 +1318,15 @@ public class PermitDecisionTextService {
     public String generateAdditionalInfo(final PermitDecision decision) {
         final boolean deliveryByMail = Boolean.TRUE.equals(decision.getApplication().getDeliveryByMail());
 
-        final PermitDecisionAuthority presenter = F.firstNonNull(decision.getPresenter(), decision.getDecisionMaker());
-
+        final PermitDecisionAuthority authority = F.firstNonNull(decision.getPresenter(), decision.getDecisionMaker());
         final StringBuilder sb = new StringBuilder();
         sb.append(i18n(decision,
                 "Lisätietoja päätöksestä antaa",
                 "Tilläggsuppgifter om beslutet ges av"));
         sb.append(":");
 
-        if (presenter != null) {
+        if (authority != null) {
+            final DecisionRkaAuthorityDetails presenter = authority.getAuthorityDetails();
             sb.append("<br><br>\n\n");
             sb.append(presenter.getFirstName());
             sb.append(' ');
@@ -593,27 +1374,29 @@ public class PermitDecisionTextService {
     }
 
     private static PermitDecisionAuthority resolveSigner2(final PermitDecision decision) {
-        final PermitDecisionAuthority presenter = F.firstNonNull(decision.getPresenter(), decision.getDecisionMaker());
-        final PermitDecisionAuthority decisionMaker = F.firstNonNull(decision.getDecisionMaker(),
-                decision.getPresenter());
+        final PermitDecisionAuthority presenter =
+                F.firstNonNull(decision.getPresenter(), decision.getDecisionMaker());
+        final PermitDecisionAuthority decisionMaker =
+                F.firstNonNull(decision.getDecisionMaker(), decision.getPresenter());
         if (presenter == null && decisionMaker == null) {
             return null;
         }
         // both should be non-null, but can be same objects
-        if (Objects.requireNonNull(presenter).isSameAs(decisionMaker)) {
+        if (requireNonNull(presenter).isEqualTo(decisionMaker)) {
             return null;
         }
         return presenter;
     }
 
     private static void appendSignature(final StringBuilder sb, final PermitDecisionAuthority a) {
+        final DecisionRkaAuthorityDetails details = F.mapNullable(a, PermitDecisionAuthority::getAuthorityDetails);
         if (a != null) {
             sb.append("<br><br>\n\n");
-            sb.append(a.getFirstName());
+            sb.append(details.getFirstName());
             sb.append(' ');
-            sb.append(a.getLastName());
+            sb.append(details.getLastName());
             sb.append("<br>");
-            sb.append(a.getTitle());
+            sb.append(details.getTitle());
             sb.append("\n\n");
         }
     }
@@ -670,7 +1453,7 @@ public class PermitDecisionTextService {
                     }
 
                     if (a.getDescription() != null) {
-                        sb.append(a.getDescription());
+                        sb.append(escape(a.getDescription()));
                     }
 
                     return sb.toString();

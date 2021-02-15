@@ -4,7 +4,7 @@ import fi.riista.feature.sso.CheckExternalAuthenticationFeature;
 import fi.riista.feature.sso.dto.ExternalAuthenticationFailure;
 import fi.riista.feature.sso.dto.ExternalAuthenticationRequest;
 import fi.riista.util.Patterns;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

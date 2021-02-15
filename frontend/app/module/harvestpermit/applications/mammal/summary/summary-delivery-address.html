@@ -1,0 +1,11 @@
+<div>
+    <span>{{$ctrl.application.deliveryAddress.recipient}}</span><br>
+    <span>{{$ctrl.application.deliveryAddress.streetAddress}}</span><br>
+    <span>{{$ctrl.application.deliveryAddress.postalCode}}</span>
+    <span>{{$ctrl.application.deliveryAddress.city}}</span><br>
+    <div ng-if="$ctrl.application.deliveryAddress.country">
+        <span>{{$ctrl.application.deliveryAddress.country}}</span>
+    </div>
+</div>
+
+

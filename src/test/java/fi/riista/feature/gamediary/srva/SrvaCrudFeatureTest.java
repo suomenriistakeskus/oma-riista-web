@@ -1,5 +1,6 @@
 package fi.riista.feature.gamediary.srva;
 
+import fi.riista.config.Constants;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.error.NotFoundException;
@@ -30,7 +31,6 @@ import java.util.Objects;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
@@ -60,7 +60,7 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
                 assertNotNull(outputDto);
 
                 runInTransaction(() -> {
-                    final SrvaEvent savedSrvaEvent = srvaEventRepository.findOne(outputDto.getId());
+                    final SrvaEvent savedSrvaEvent = srvaEventRepository.findById(outputDto.getId()).get();
                     assertNotNull(savedSrvaEvent);
                     assertEquals(new Integer(0), savedSrvaEvent.getConsistencyVersion());
 
@@ -180,7 +180,7 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
             onSavedAndAuthenticated(createUser(person), () -> {
                 srvaCrudFeature.deleteSrvaEvent(srvaEvent.getId());
 
-                assertNull(srvaEventRepository.findOne(srvaEvent.getId()));
+                assertFalse(srvaEventRepository.findById(srvaEvent.getId()).isPresent());
             });
         });
     }
@@ -229,12 +229,12 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
             onSavedAndAuthenticated(createUser(person), () -> {
                 final SrvaEventSearchDTO searchDTO = getSearchDTOWithAllNamesAndStates(rhy1, rhy1);
                 for (int i = 0; i < eventsRhy1.size(); i++) {
-                    final Slice<SrvaEventDTO> slice = srvaCrudFeature.searchPage(searchDTO, new PageRequest(i, 1));
+                    final Slice<SrvaEventDTO> slice = srvaCrudFeature.searchPage(searchDTO, PageRequest.of(i, 1));
                     assertEquals(1, slice.getNumberOfElements());
                     final boolean shouldHaveNext = i < eventsRhy1.size() - 1;
                     assertEquals(shouldHaveNext ? true : false, slice.hasNext());
                 }
-                final Slice<SrvaEventDTO> slice = srvaCrudFeature.searchPage(searchDTO, new PageRequest(eventsRhy1.size(), 1));
+                final Slice<SrvaEventDTO> slice = srvaCrudFeature.searchPage(searchDTO, PageRequest.of(eventsRhy1.size(), 1));
                 assertEquals(0, slice.getNumberOfElements());
                 assertFalse(slice.hasNext());
             });
@@ -406,7 +406,7 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
             final List<SrvaEvent> eventsCurrentRhy = createContentForSearchTest(model().newPerson(), currentRhy);
 
             //Alter data so that there is one event
-            eventsCurrentRhy.get(0).setPointOfTime(today.minusDays(5).toDate());
+            eventsCurrentRhy.get(0).setPointOfTime(today.minusDays(5).toDateTimeAtStartOfDay(Constants.DEFAULT_TIMEZONE));
 
             onSavedAndAuthenticated(createUser(person), () -> {
 
@@ -472,13 +472,13 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
                 assertEquals(SrvaEventStateEnum.UNFINISHED, srvaEvent.getState());
 
                 srvaCrudFeature.changeState(srvaEvent.getId(), srvaEvent.getConsistencyVersion(), SrvaEventStateEnum.APPROVED);
-                SrvaEvent updatedEvent = srvaEventRepository.findOne(srvaEvent.getId());
+                SrvaEvent updatedEvent = srvaEventRepository.findById(srvaEvent.getId()).orElse(null);
                 assertEquals(SrvaEventStateEnum.APPROVED, updatedEvent.getState());
                 assertEquals(user.getId(), updatedEvent.getApproverAsUser().getId());
                 assertEquals(person.getId(), updatedEvent.getApproverAsPerson().getId());
 
                 srvaCrudFeature.changeState(srvaEvent.getId(), updatedEvent.getConsistencyVersion(), SrvaEventStateEnum.UNFINISHED);
-                updatedEvent = srvaEventRepository.findOne(srvaEvent.getId());
+                updatedEvent = srvaEventRepository.findById(srvaEvent.getId()).orElse(null);
                 assertEquals(SrvaEventStateEnum.UNFINISHED, updatedEvent.getState());
                 assertEquals(null, updatedEvent.getApproverAsUser());
                 assertEquals(null, updatedEvent.getApproverAsPerson());

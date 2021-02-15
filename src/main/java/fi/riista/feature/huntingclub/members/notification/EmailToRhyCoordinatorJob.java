@@ -1,9 +1,8 @@
 package fi.riista.feature.huntingclub.members.notification;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
+import fi.riista.config.quartz.RunAsAdminJob;
 import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +14,7 @@ import javax.annotation.Resource;
         enabledProperty = "email.hunting.leaders.to.rhy.coordinator.enabled",
         cronExpression = "${email.hunting.leaders.to.rhy.coordinator.schedule}"
 )
-public class EmailToRhyCoordinatorJob implements Job {
+public class EmailToRhyCoordinatorJob extends RunAsAdminJob {
     private static final Logger LOG = LoggerFactory.getLogger(EmailToRhyCoordinatorJob.class);
 
     @Resource
@@ -28,7 +27,7 @@ public class EmailToRhyCoordinatorJob implements Job {
     private HuntingLeaderEmailSenderService mailSender;
 
     @Override
-    public void execute(JobExecutionContext jobExecutionContext) {
+    public void executeAsAdmin() {
         try {
             LOG.info("Starting ...");
             runner.process(feature, mailSender);

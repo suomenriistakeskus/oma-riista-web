@@ -16,7 +16,8 @@
     <div uib-collapse="collapsed">
         <div class="permit-section-actions">
             <button type="button" class="btn btn-primary"
-                    ng-click="$ctrl.pdf()">
+                    ng-click="$ctrl.pdf()"
+                    ng-disabled="$ctrl.actionDisabled()">
                 <span translate="harvestpermit.mine.applications.pdfButton"></span>
             </button>
         </div>

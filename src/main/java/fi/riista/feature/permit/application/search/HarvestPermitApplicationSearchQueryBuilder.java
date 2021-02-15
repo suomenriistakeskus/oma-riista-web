@@ -11,7 +11,11 @@ import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
+import fi.riista.feature.permit.application.QHarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.bird.ProtectedAreaType;
+import fi.riista.feature.common.decision.AppealStatus;
+import fi.riista.feature.common.decision.DecisionStatus;
+import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonType;
@@ -49,12 +53,13 @@ public class HarvestPermitApplicationSearchQueryBuilder {
     private Long handlerId;
     private Set<HarvestPermitApplicationSearchDTO.StatusSearch> status;
     private Set<PermitDecision.DecisionType> decisionType;
-    private Set<PermitDecision.AppealStatus> appealStatus;
-    private Set<PermitDecision.GrantStatus> grantStatus;
+    private Set<AppealStatus> appealStatus;
+    private Set<GrantStatus> grantStatus;
     private Set<PermitDecisionDerogationReasonType> derogationReason;
     private Set<ProtectedAreaType> protectedArea;
     private Set<ForbiddenMethodType> forbiddenMethod;
     private Integer huntingYear;
+    private Integer validityYears;
     private HarvestPermitCategory harvestPermitCategory;
     private Integer gameSpeciesCode;
 
@@ -72,12 +77,12 @@ public class HarvestPermitApplicationSearchQueryBuilder {
         return this;
     }
 
-    public HarvestPermitApplicationSearchQueryBuilder withAppealStatus(final Set<PermitDecision.AppealStatus> value) {
+    public HarvestPermitApplicationSearchQueryBuilder withAppealStatus(final Set<AppealStatus> value) {
         this.appealStatus = value;
         return this;
     }
 
-    public HarvestPermitApplicationSearchQueryBuilder withGrantStatus(final Set<PermitDecision.GrantStatus> value) {
+    public HarvestPermitApplicationSearchQueryBuilder withGrantStatus(final Set<GrantStatus> value) {
         this.grantStatus = value;
         return this;
     }
@@ -99,6 +104,11 @@ public class HarvestPermitApplicationSearchQueryBuilder {
 
     public HarvestPermitApplicationSearchQueryBuilder withHuntingYear(final Integer huntingYear) {
         this.huntingYear = huntingYear;
+        return this;
+    }
+
+    public HarvestPermitApplicationSearchQueryBuilder withValidityYears(final Integer validityYears) {
+        this.validityYears = validityYears;
         return this;
     }
 
@@ -154,6 +164,25 @@ public class HarvestPermitApplicationSearchQueryBuilder {
             query.where(APPLICATION.applicationYear.goe(MINIMUM_LOCAL_APPLICATION_YEAR));
         }
 
+        if (validityYears != null) {
+            final QHarvestPermitApplicationSpeciesAmount SPA =
+                    QHarvestPermitApplicationSpeciesAmount.harvestPermitApplicationSpeciesAmount;
+
+            // Validity years is only set for categories with multiyear options
+            // So include nulls when searching single year applications
+            final BooleanExpression equalsExpression = validityYears == 1
+                    ? SPA.validityYears.isNull().or(SPA.validityYears.eq(1))
+                    : SPA.validityYears.eq(validityYears);
+
+            final BooleanExpression validityYearsMatch = JPAExpressions.selectOne()
+                    .from(SPA)
+                    .where(SPA.harvestPermitApplication.eq(APPLICATION))
+                    .where(equalsExpression)
+                    .exists();
+
+            query.where(validityYearsMatch);
+        }
+
         if (harvestPermitCategory != null) {
             query.where(APPLICATION.harvestPermitCategory.eq(harvestPermitCategory));
         }
@@ -168,23 +197,23 @@ public class HarvestPermitApplicationSearchQueryBuilder {
                 switch (s) {
                     case ACTIVE:
                         b.or(APPLICATION.status.eq(HarvestPermitApplication.Status.ACTIVE)
-                                .and(DECISION.isNull().or(DECISION.status.eq(PermitDecision.Status.DRAFT)))
+                                .and(DECISION.isNull().or(DECISION.status.eq(DecisionStatus.DRAFT)))
                                 .and(DECISION.handler.isNull())
                         );
                         break;
                     case DRAFT:
                         b.or(APPLICATION.status.ne(HarvestPermitApplication.Status.HIDDEN)
-                                .and(DECISION.status.eq(PermitDecision.Status.DRAFT))
+                                .and(DECISION.status.eq(DecisionStatus.DRAFT))
                                 .and(DECISION.handler.isNotNull()));
                         break;
                     case AMENDING:
                         b.or(APPLICATION.status.eq(HarvestPermitApplication.Status.AMENDING));
                         break;
                     case LOCKED:
-                        b.or(DECISION.status.eq(PermitDecision.Status.LOCKED));
+                        b.or(DECISION.status.eq(DecisionStatus.LOCKED));
                         break;
                     case PUBLISHED:
-                        b.or(DECISION.status.eq(PermitDecision.Status.PUBLISHED));
+                        b.or(DECISION.status.eq(DecisionStatus.PUBLISHED));
                         break;
                     default:
                         throw new IllegalArgumentException("Unknown status: " + s);

@@ -1,0 +1,37 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" ng-submit="$ctrl.save()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <div class="modal-title h3">
+            <span translate="club.area.form.titleCopy"></span>:
+            <span>{{$ctrl.area | rI18nNameFilter}}</span>
+        </div>
+    </div>
+
+    <div class="modal-body">
+        <div class="form-group" show-errors>
+            <label for="year" class="col-xs-3 control-label">
+                <span translate="global.year"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger small"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <input name="year" id="year" class="form-control"
+                       ng-model="$ctrl.areaCopyData.year"
+                       type="number"
+                       step="1"
+                       required>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="form.$invalid"
+                translate="global.button.ok"></button>
+    </div>
+</form>

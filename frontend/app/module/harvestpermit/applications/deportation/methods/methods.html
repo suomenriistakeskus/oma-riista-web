@@ -1,0 +1,141 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.deportation.methods.instructionTitle"></p>
+        <p translate="harvestpermit.wizard.deportation.methods.instruction"></p>
+    </div>
+</div>
+
+<form name="methodsForm" r-force-show-errors-check-validity>
+    <p>
+        <label for="deviateSection32" translate="harvestpermit.wizard.methods.deviate32Label"></label>
+    </p>
+
+    <derogation-application-method-toggle toggle="$ctrl.toggle32"></derogation-application-method-toggle>
+
+    <div ng-if="$ctrl.toggle32">
+        <label class="control-label" for="deviateSection32"
+               translate="harvestpermit.wizard.deportation.methods.deviateAdditionalDetails"></label>
+        <div class="form-group" show-errors>
+        <textarea class="form-control" rows="6"
+                  name="deviateSection32" id="deviateSection32"
+                  ng-model="$ctrl.forbiddenMethods.deviateSection32"
+                  required></textarea>
+
+            <p class="help-block has-error"
+               ng-show="methodsForm.deviateSection32.$invalid && methodsForm.deviateSection32.$touched"
+               ng-messages="methodsForm.deviateSection32.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+    <hr>
+
+    <p translate="harvestpermit.wizard.methods.deviate33Label"></p>
+
+    <derogation-application-method-toggle toggle="$ctrl.toggle33"></derogation-application-method-toggle>
+
+    <div ng-if="$ctrl.toggle33">
+
+        <div class="form-group" show-errors>
+            <label class="control-label" for="deviateSection33"
+                   translate="harvestpermit.wizard.deportation.methods.deviateAdditionalDetails"></label>
+            <textarea class="form-control" rows="6"
+                      name="deviateSection33" id="deviateSection33"
+                      ng-model="$ctrl.forbiddenMethods.deviateSection33"
+                      ng-required="!$ctrl.forbiddenMethods.tapeRecorders"></textarea>
+
+            <p class="help-block has-error"
+               ng-show="methodsForm.deviateSection33.$invalid && methodsForm.deviateSection33.$touched"
+               ng-messages="methodsForm.deviateSection33.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+    <hr>
+
+    <p>
+        <label for="deviateSection34" translate="harvestpermit.wizard.methods.deviate34Label"></label>
+    </p>
+
+    <derogation-application-method-toggle toggle="$ctrl.toggle34"></derogation-application-method-toggle>
+
+    <div ng-if="$ctrl.toggle34">
+
+        <div class="form-group" show-errors>
+            <label class="control-label" for="deviateSection34"
+                   translate="harvestpermit.wizard.deportation.methods.deviateAdditionalDetails"></label>
+
+            <textarea class="form-control" rows="6"
+                      name="deviateSection34" id="deviateSection34"
+                      ng-model="$ctrl.forbiddenMethods.deviateSection34"
+                      ng-required="!$ctrl.forbiddenMethods.traps"></textarea>
+
+            <p class="help-block has-error"
+               ng-show="methodsForm.deviateSection34.$invalid && methodsForm.deviateSection34.$touched"
+               ng-messages="methodsForm.deviateSection34.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+    <hr>
+
+    <p>
+        <label for="deviateSection35" translate="harvestpermit.wizard.methods.deviate35Label"></label>
+    </p>
+
+    <derogation-application-method-toggle toggle="$ctrl.toggle35"></derogation-application-method-toggle>
+
+    <div ng-if="$ctrl.toggle35">
+        <label class="control-label" for="deviateSection35"
+               translate="harvestpermit.wizard.deportation.methods.deviateAdditionalDetails"></label>
+        <div class="form-group" show-errors>
+        <textarea class="form-control" rows="6"
+                  name="deviateSection35" id="deviateSection35"
+                  ng-model="$ctrl.forbiddenMethods.deviateSection35"
+                  required></textarea>
+
+            <p class="help-block has-error"
+               ng-show="methodsForm.deviateSection35.$invalid && methodsForm.deviateSection35.$touched"
+               ng-messages="methodsForm.deviateSection35.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+
+    <hr>
+
+    <p>
+        <label for="deviateSection51" translate="harvestpermit.wizard.methods.deviate51Label"></label>
+    </p>
+
+    <derogation-application-method-toggle toggle="$ctrl.toggle51"></derogation-application-method-toggle>
+
+    <div ng-if="$ctrl.toggle51">
+        <label class="control-label" for="deviateSection51"
+               translate="harvestpermit.wizard.deportation.methods.deviateAdditionalDetails"></label>
+        <div class="form-group" show-errors>
+        <textarea class="form-control" rows="6"
+                  name="deviateSection51" id="deviateSection51"
+                  ng-model="$ctrl.forbiddenMethods.deviateSection51"
+                  required></textarea>
+
+            <p class="help-block has-error"
+               ng-show="methodsForm.deviateSection51.$invalid && methodsForm.deviateSection51.$touched"
+               ng-messages="methodsForm.deviateSection51.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+</form>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(methodsForm)"
+        previous="$ctrl.previous(methodsForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(methodsForm)">
+</permit-application-wizard-navigation>

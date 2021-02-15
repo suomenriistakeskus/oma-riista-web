@@ -1,6 +1,5 @@
 package fi.riista.feature.permit.area.pdf;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.zone.GISZoneRepository;
@@ -16,6 +15,7 @@ import fi.riista.security.EntityPermission;
 import fi.riista.util.F;
 import fi.riista.util.GISUtils;
 import fi.riista.util.LocalisedString;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 

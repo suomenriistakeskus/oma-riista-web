@@ -14,8 +14,6 @@ public class PermitDecisionDocumentSettingsDTO {
     @NotNull
     private Locale locale;
 
-    private PermitDecision.AppealStatus appealStatus;
-
     public Long getDecisionId() {
         return decisionId;
     }
@@ -38,13 +36,5 @@ public class PermitDecisionDocumentSettingsDTO {
 
     public void setLocale(final Locale locale) {
         this.locale = locale;
-    }
-
-    public PermitDecision.AppealStatus getAppealStatus() {
-        return appealStatus;
-    }
-
-    public void setAppealStatus(final PermitDecision.AppealStatus appealStatus) {
-        this.appealStatus = appealStatus;
     }
 }

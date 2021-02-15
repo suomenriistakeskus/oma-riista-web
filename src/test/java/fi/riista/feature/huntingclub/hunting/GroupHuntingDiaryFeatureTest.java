@@ -6,6 +6,7 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationDTO;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
@@ -29,6 +30,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.gamediary.observation.ObservationCategory.DEER_HUNTING;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.MOOSE_HUNTING;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_JASEN;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
@@ -96,9 +100,9 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implement
 
             final DateTime now = DateUtil.now();
             final Harvest harvest1 = newHarvest(group.getSpecies(), harvestAuthor, harvestShooter, location);
-            harvest1.setPointOfTime(now.toDate());
+            harvest1.setPointOfTime(now);
             final Harvest harvest2 = newHarvest(group.getSpecies(), harvestAuthor, harvestShooter, location);
-            harvest2.setPointOfTime(now.minusMinutes(1).toDate());
+            harvest2.setPointOfTime(now.minusMinutes(1));
 
             // This harvest should not exist in the results because author/shooter is not group member.
             newHarvest(group.getSpecies(), model().newPerson(), location);
@@ -149,7 +153,7 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implement
         final Occupation groupMemberOccupation = model().newHuntingClubGroupMember(clubMemberOccupation.getPerson(), group);
         final Harvest harvest = newHarvest(group.getSpecies(), groupMemberOccupation.getPerson(), location);
 
-        final LocalDate dayBeforeHarvest = LocalDate.fromDateFields(harvest.getPointOfTime()).minusDays(1);
+        final LocalDate dayBeforeHarvest = harvest.getPointOfTime().toLocalDate().minusDays(1);
         clubMemberOccupation.setEndDate(dayBeforeHarvest);
         groupMemberOccupation.setEndDate(dayBeforeHarvest);
 
@@ -335,7 +339,7 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implement
         final Person groupMember = newHuntingClubGroupMember(group);
         // sql fetching observations requires that club membership exists too
         model().newOccupation(group.getParentOrganisation(), groupMember, SEURAN_JASEN);
-        final Observation observation = observationSpecies == null ? null : newObservation(observationSpecies, location, groupMember, true);
+        final Observation observation = observationSpecies == null ? null : newObservation(observationSpecies, location, groupMember, MOOSE_HUNTING);
 
         onSavedAndAuthenticated(
                 createUser(groupMember),
@@ -348,12 +352,75 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implement
             // location is not in the group's area, rejected should still be found
             final GeoLocation location = geoLocation();
 
-            final Observation observation1 = newObservation(fixture.species, location, fixture.groupMember, true);
-            final Observation observation2 = newObservation(fixture.species, location, fixture.groupLeader, true);
+            final Observation observation1 = newObservation(fixture.species, location, fixture.groupMember, MOOSE_HUNTING);
+            final Observation observation2 = newObservation(fixture.species, location, fixture.groupLeader, MOOSE_HUNTING);
             model().newObservationRejection(fixture.group, observation1);
             model().newObservationRejection(fixture.group, observation2);
 
             onSavedAndAuthenticated(createUser(fixture.groupMember), () -> assertGroupMemberObservations(fixture.group, observation1, observation2));
+        });
+    }
+
+    // ****** DEER HUNTING ******
+
+    @Test
+    public void testGetObservationsOfGroupMembers_deerHunting_deerHuntingObservationsAreShown() {
+        withDeerHuntingGroupFixture(fixture -> {
+            model().newDeerPilot(fixture.permit);
+            final Observation observation = newObservation(fixture.species, fixture.zoneCentroid, fixture.groupMember, DEER_HUNTING);
+
+            onSavedAndAuthenticated(
+                    createUser(fixture.groupMember),
+                    () -> assertGroupMemberObservations(fixture.group, observation));
+        });
+    }
+
+    @Test
+    public void testGetObservationsOfGroupMembers_deerHunting_deerHuntingObservationsForNonPilotGroupsAreHidden() {
+        withDeerHuntingGroupFixture(fixture -> {
+            newObservation(fixture.species, fixture.zoneCentroid, fixture.groupMember, DEER_HUNTING);
+
+            onSavedAndAuthenticated(
+                    createUser(fixture.groupMember),
+                    () -> assertGroupMemberObservations(fixture.group));
+        });
+    }
+
+    @Test
+    public void testGetObservationsOfGroupMembers_deerHunting_normalObservationsAreHidden() {
+        withDeerHuntingGroupFixture(fixture -> {
+            model().newDeerPilot(fixture.permit);
+            newObservation(fixture.species, fixture.zoneCentroid, fixture.groupMember, NORMAL);
+
+            onSavedAndAuthenticated(
+                    createUser(fixture.groupMember),
+                    () -> assertGroupMemberObservations(fixture.group));
+        });
+    }
+
+    @Test
+    public void testGetObservationsOfGroupMembers_deerHunting_rejectedObservationsAreShown() {
+        withDeerHuntingGroupFixture(fixture -> {
+            model().newDeerPilot(fixture.permit);
+            final Observation observation = newObservation(fixture.species, fixture.zoneCentroid, fixture.groupMember, DEER_HUNTING);
+            model().newObservationRejection(fixture.group, observation);
+
+            onSavedAndAuthenticated(
+                    createUser(fixture.groupMember),
+                    () -> assertGroupMemberObservations(fixture.group, observation));
+        });
+    }
+
+    @Test
+    public void testGetObservationsOfGroupMembers_deerHunting_observationsNotInGroupAreaAreHidden() {
+        withDeerHuntingGroupFixture(fixture -> {
+            model().newDeerPilot(fixture.permit);
+            final GeoLocation location = geoLocation();
+            newObservation(fixture.species, location, fixture.groupMember, DEER_HUNTING);
+
+            onSavedAndAuthenticated(
+                    createUser(fixture.groupMember),
+                    () -> assertGroupMemberObservations(fixture.group));
         });
     }
 
@@ -406,9 +473,9 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implement
     private Observation newObservation(final GameSpecies species,
                                        final GeoLocation location,
                                        final Person member,
-                                       final Boolean withinMooseHunting) {
+                                       final ObservationCategory observationCategory) {
 
-        final Observation observation = model().newObservation(species, member, withinMooseHunting);
+        final Observation observation = model().newObservation(species, member, observationCategory);
         observation.setGeoLocation(location);
         return observation;
     }

@@ -2,21 +2,21 @@
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
-        <p class="alert-title" translate="harvestpermit.wizard.bird.methods.instruction1"></p>
-        <p translate="harvestpermit.wizard.bird.methods.instruction2"></p>
+        <p class="alert-title" translate="harvestpermit.wizard.methods.instruction1"></p>
+        <p translate="harvestpermit.wizard.methods.instruction2"></p>
     </div>
 </div>
 
 <form name="methodsForm" r-force-show-errors-check-validity>
     <p>
-        <label for="deviateSection32" translate="harvestpermit.wizard.bird.methods.deviate32Label"></label>
+        <label for="deviateSection32" translate="harvestpermit.wizard.methods.deviate32Label"></label>
     </p>
 
-    <bird-application-method-toggle toggle="$ctrl.toggle32"></bird-application-method-toggle>
+    <derogation-application-method-toggle toggle="$ctrl.toggle32"></derogation-application-method-toggle>
 
     <div ng-if="$ctrl.toggle32">
         <label class="control-label" for="deviateSection32"
-               translate="harvestpermit.wizard.bird.methods.deviateAdditionalDetails"></label>
+               translate="harvestpermit.wizard.methods.deviateAdditionalDetails"></label>
         <div class="form-group" show-errors>
         <textarea class="form-control" rows="6"
                   name="deviateSection32" id="deviateSection32"
@@ -33,23 +33,23 @@
 
     <hr>
 
-    <p translate="harvestpermit.wizard.bird.methods.deviate33Label"></p>
+    <p translate="harvestpermit.wizard.methods.deviate33Label"></p>
 
-    <bird-application-method-toggle toggle="$ctrl.toggle33"></bird-application-method-toggle>
+    <derogation-application-method-toggle toggle="$ctrl.toggle33"></derogation-application-method-toggle>
 
     <div ng-if="$ctrl.toggle33">
         <div class="form-group">
             <div class="checkbox">
                 <label>
                     <input type="checkbox" ng-model="$ctrl.forbiddenMethods.tapeRecorders">
-                    {{'harvestpermit.wizard.bird.methods.tapeRecorders' |translate}}
+                    {{'harvestpermit.wizard.methods.tapeRecorders' |translate}}
                 </label>
             </div>
         </div>
 
         <div class="form-group" show-errors>
             <label class="control-label" for="deviateSection33"
-                   translate="harvestpermit.wizard.bird.methods.otherMethod"></label>
+                   translate="harvestpermit.wizard.methods.otherMethod"></label>
             <textarea class="form-control" rows="6"
                       name="deviateSection33" id="deviateSection33"
                       ng-model="$ctrl.forbiddenMethods.deviateSection33"
@@ -66,24 +66,24 @@
     <hr>
 
     <p>
-        <label for="deviateSection34" translate="harvestpermit.wizard.bird.methods.deviate34Label"></label>
+        <label for="deviateSection34" translate="harvestpermit.wizard.methods.deviate34Label"></label>
     </p>
 
-    <bird-application-method-toggle toggle="$ctrl.toggle34"></bird-application-method-toggle>
+    <derogation-application-method-toggle toggle="$ctrl.toggle34"></derogation-application-method-toggle>
 
     <div ng-if="$ctrl.toggle34">
         <div class="form-group">
             <div class="checkbox">
                 <label>
                     <input type="checkbox" ng-model="$ctrl.forbiddenMethods.traps">
-                    {{'harvestpermit.wizard.bird.methods.traps' |translate}}
+                    {{'harvestpermit.wizard.methods.traps' |translate}}
                 </label>
             </div>
         </div>
 
         <div class="form-group" show-errors>
             <label class="control-label" for="deviateSection34"
-                   translate="harvestpermit.wizard.bird.methods.otherMethod"></label>
+                   translate="harvestpermit.wizard.methods.otherMethod"></label>
 
             <textarea class="form-control" rows="6"
                       name="deviateSection34" id="deviateSection34"
@@ -101,14 +101,14 @@
     <hr>
 
     <p>
-        <label for="deviateSection35" translate="harvestpermit.wizard.bird.methods.deviate35Label"></label>
+        <label for="deviateSection35" translate="harvestpermit.wizard.methods.deviate35Label"></label>
     </p>
 
-    <bird-application-method-toggle toggle="$ctrl.toggle35"></bird-application-method-toggle>
+    <derogation-application-method-toggle toggle="$ctrl.toggle35"></derogation-application-method-toggle>
 
     <div ng-if="$ctrl.toggle35">
         <label class="control-label" for="deviateSection35"
-               translate="harvestpermit.wizard.bird.methods.deviateAdditionalDetails"></label>
+               translate="harvestpermit.wizard.methods.deviateAdditionalDetails"></label>
         <div class="form-group" show-errors>
         <textarea class="form-control" rows="6"
                   name="deviateSection35" id="deviateSection35"
@@ -126,14 +126,14 @@
     <hr>
 
     <p>
-        <label for="deviateSection51" translate="harvestpermit.wizard.bird.methods.deviate51Label"></label>
+        <label for="deviateSection51" translate="harvestpermit.wizard.methods.deviate51Label"></label>
     </p>
 
-    <bird-application-method-toggle toggle="$ctrl.toggle51"></bird-application-method-toggle>
+    <derogation-application-method-toggle toggle="$ctrl.toggle51"></derogation-application-method-toggle>
 
     <div ng-if="$ctrl.toggle51">
         <label class="control-label" for="deviateSection51"
-               translate="harvestpermit.wizard.bird.methods.deviateAdditionalDetails"></label>
+               translate="harvestpermit.wizard.methods.deviateAdditionalDetails"></label>
         <div class="form-group" show-errors>
         <textarea class="form-control" rows="6"
                   name="deviateSection51" id="deviateSection51"
@@ -151,8 +151,8 @@
     <hr class="invisible">
 
     <div ng-if="$ctrl.showSpecies()">
-        <p><strong translate="harvestpermit.wizard.bird.methods.methodJustification1"></strong></p>
-        <p translate="harvestpermit.wizard.bird.methods.methodJustification2"></p>
+        <p><strong translate="harvestpermit.wizard.methods.methodJustification1"></strong></p>
+        <p translate="harvestpermit.wizard.methods.methodJustification2"></p>
 
         <div class="form-group"
              ng-repeat="a in $ctrl.forbiddenMethods.speciesJustifications"
@@ -169,7 +169,7 @@
                            ng-true-value="false"
                            ng-false-value="true"
                            ng-model="a.forbiddenMethodsUsed">
-                    {{'harvestpermit.wizard.bird.methods.methodsNotInUseForSpecies' |translate}}
+                    {{'harvestpermit.wizard.methods.methodsNotInUseForSpecies' |translate}}
                 </label>
             </div>
 

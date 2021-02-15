@@ -16,6 +16,7 @@ import org.joda.time.LocalTime;
 
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Size;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +56,8 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
 
         dto.setAdditionalCalendarEvents(additionalCalendarEvents);
 
+        dto.setRemoteEvent(event.isRemoteEvent());
+
         return dto;
     }
 
@@ -90,12 +93,26 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
 
     private boolean excludedFromStatistics;
 
+    @Min(0)
     private Integer participants;
 
     private Boolean lockedAsPastStatistics;
 
     @Valid
     private List<AdditionalCalendarEventDTO> additionalCalendarEvents;
+
+    private boolean remoteEvent;
+
+    @AssertTrue
+    public boolean isAdditionalEventsInfoValid() {
+        return F.isNullOrEmpty(additionalCalendarEvents)
+                || additionalEventsAllowedTypes().contains(calendarEventType);
+    }
+
+    @AssertTrue
+    public boolean isValidRemoteEvent() {
+        return !remoteEvent || calendarEventType.isRemoteEventAllowed();
+    }
 
     @Override
     public Long getId() {
@@ -229,9 +246,11 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         this.additionalCalendarEvents = additionalCalendarEvents;
     }
 
-    @AssertTrue
-    public boolean isAdditionalEventsInfoValid() {
-        return F.isNullOrEmpty(additionalCalendarEvents)
-                || additionalEventsAllowedTypes().contains(calendarEventType);
+    public boolean isRemoteEvent() {
+        return remoteEvent;
+    }
+
+    public void setRemoteEvent(final boolean remoteEvent) {
+        this.remoteEvent = remoteEvent;
     }
 }

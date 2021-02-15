@@ -6,12 +6,12 @@ angular.module('app.harvestpermit.decision.document.legaladvice', [])
             url: '/legal-advice',
             templateUrl: 'harvestpermit/decision/document/legal-advice/document.legal-advice.html',
             controllerAs: '$ctrl',
-            controller: function ($state, PermitDecisionUtils, PermitDecisionDocumentEditModal,
-                                  decision, reference) {
+            controller: function ($state, PermitDecisionUtils, DecisionDocumentEditTextModal,
+                                  PermitDecisionSection, decision, reference) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.sectionId = 'legalAdvice';
+                    $ctrl.sectionId = PermitDecisionSection.LEGAL_ADVICE;
                     $ctrl.decision = decision;
                     $ctrl.reference = reference;
                 };

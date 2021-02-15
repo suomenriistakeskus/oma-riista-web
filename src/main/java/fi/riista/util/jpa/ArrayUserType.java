@@ -1,7 +1,7 @@
 package fi.riista.util.jpa;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 
 import java.io.Serializable;
@@ -27,28 +27,24 @@ public abstract class ArrayUserType<T> implements UserType {
     protected abstract String arraySqlType();
 
     @Override
-    @SuppressWarnings(value = "unchecked")
-    public final T[] nullSafeGet(
-            final ResultSet resultSet,
-            final String[] names,
-            final SessionImplementor session,
-            final Object owner) throws HibernateException, SQLException {
+    public Object nullSafeGet(final ResultSet resultSet,
+                              final String[] names,
+                              final SharedSessionContractImplementor sharedSessionContractImplementor,
+                              final Object owner) throws HibernateException, SQLException {
         if (resultSet.wasNull()) {
             return null;
         }
 
         final Array array = resultSet.getArray(names[0]);
 
-        return (T[]) array.getArray();
+        return array.getArray();
     }
 
     @Override
-    @SuppressWarnings(value = "unchecked")
-    public final void nullSafeSet(final PreparedStatement statement,
-                                  final Object value,
-                                  final int index,
-                                  final SessionImplementor session) throws SQLException {
-
+    public void nullSafeSet(final PreparedStatement statement,
+                            final Object value,
+                            final int index,
+                            final SharedSessionContractImplementor sharedSessionContractImplementor) throws HibernateException, SQLException {
         if (value == null) {
             statement.setNull(index, SQL_TYPES[0]);
         } else {

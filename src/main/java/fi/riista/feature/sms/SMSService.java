@@ -26,7 +26,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -112,7 +111,7 @@ public class SMSService {
 
     @Transactional(readOnly = true)
     public List<SMSReceivedMessage> getIncomingMessages(int limit) {
-        final PageRequest pageRequest = new PageRequest(0, limit, Sort.Direction.DESC, "id");
+        final PageRequest pageRequest = PageRequest.of(0, limit, Sort.Direction.DESC, "id");
         final List<SMSPersistentMessage> receivedSmsList = smsMessageRepository.findByDirectionAndStatus(
                 SMSPersistentMessage.Direction.IN, SMSMessageStatus.PENDING, pageRequest);
 
@@ -124,21 +123,19 @@ public class SMSService {
         final List<SMSPersistentMessage> incomingMessages = smsGatewayProvider.pollForIncomingMessages();
 
         if (incomingMessages != null && !incomingMessages.isEmpty()) {
-            smsMessageRepository.save(incomingMessages);
+            smsMessageRepository.saveAll(incomingMessages);
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void acknowledgeMessages(final Set<Long> successful, final Map<Long, String> rejected) {
         for (final Long messageId : successful) {
-            final SMSPersistentMessage message = smsMessageRepository.findOne(messageId);
-
-            if (message != null) {
+            smsMessageRepository.findById(messageId).ifPresent(message -> {
                 message.setStatus(SMSMessageStatus.SUCCESSFUL, null);
-            }
+            });
         }
 
-        rejected.forEach((key, value) -> Optional.ofNullable(smsMessageRepository.findOne(key)).ifPresent(message -> {
+        rejected.forEach((key, value) -> smsMessageRepository.findById(key).ifPresent(message -> {
             message.setStatus(SMSMessageStatus.ERROR, value);
         }));
     }
@@ -148,6 +145,6 @@ public class SMSService {
         // Delete anything which has been processed and older than one week
         final DateTime before = DateTime.now().minusDays(purgeAfterDays);
 
-        smsMessageRepository.deleteByStatusAndTimestamp(SMSMessageStatus.SUCCESSFUL, before.toDate());
+        smsMessageRepository.deleteByStatusAndTimestamp(SMSMessageStatus.SUCCESSFUL, before);
     }
 }

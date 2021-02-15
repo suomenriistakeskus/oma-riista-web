@@ -1,10 +1,12 @@
 package fi.riista.feature.harvestpermit.download;
 
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.common.decision.DecisionStatus;
+import fi.riista.feature.common.decision.DecisionUtil;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitNotFoundException;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
-import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
 import fi.riista.feature.permit.decision.PermitDecision;
@@ -64,15 +66,20 @@ public class HarvestPermitDownloadDecisionFeature {
             final HarvestPermitApplication application = findApplication(permitNumber);
             final PermitDecision decision = permitDecisionRepository.findOneByApplication(application);
 
-            decision.assertStatus(PermitDecision.Status.PUBLISHED);
+            decision.assertStatus(DecisionStatus.PUBLISHED);
 
             return getDecisionPdfForDecision(permitNumber, decision);
         }
 
         activeUserService.assertHasPermission(harvestPermit, EntityPermission.READ);
 
-        if (harvestPermit.getPermitDecision() != null) {
-            return getDecisionPdfForDecision(permitNumber, harvestPermit.getPermitDecision());
+        final PermitDecision permitDecision = harvestPermit.getPermitDecision();
+        if (permitDecision != null) {
+            if (permitDecision.getStatus() == DecisionStatus.PUBLISHED) {
+                return getDecisionPdfForDecision(permitNumber, permitDecision);
+            } else {
+                throw new IllegalArgumentException("Decision is not published.");
+            }
         }
 
         if (StringUtils.isBlank(harvestPermit.getPrintingUrl())) {
@@ -80,14 +87,14 @@ public class HarvestPermitDownloadDecisionFeature {
         }
 
         LOG.info("userId:{} loading permitNumber:{} pdf", activeUserService.requireActiveUserId(), permitNumber);
-        final String filename = PermitDecision.getFileName(Locales.FI, permitNumber);
+        final String filename = DecisionUtil.getPermitDecisionFileName(Locales.FI, permitNumber);
 
         return new HarvestPermitDownloadDecisionDTO(filename, harvestPermit.getPrintingUrl());
     }
 
     private HarvestPermitApplication findApplication(final String permitNumber) {
         final HarvestPermitApplication application = harvestPermitApplicationRepository
-                .findByApplicationNumber(PermitNumberUtil.extractOrderNumber(permitNumber))
+                .findByApplicationNumber(DocumentNumberUtil.extractOrderNumber(permitNumber))
                 .orElseThrow(() -> new HarvestPermitNotFoundException(permitNumber));
 
         activeUserService.assertHasPermission(application, EntityPermission.READ);
@@ -103,7 +110,7 @@ public class HarvestPermitDownloadDecisionFeature {
             throw new IllegalArgumentException("Decision is not available");
         }
         LOG.info("userId:{} loading permitNumber:{} pdf", activeUserService.requireActiveUserId(), permitNumber);
-        final String filename = PermitDecision.getFileName(decision.getLocale(), permitNumber);
+        final String filename = DecisionUtil.getPermitDecisionFileName(decision.getLocale(), permitNumber);
         return new HarvestPermitDownloadDecisionDTO(filename, latestRevisionArchivePdfId);
     }
 

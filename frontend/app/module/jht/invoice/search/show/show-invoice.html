@@ -56,7 +56,8 @@
             <span translate="global.button.downloadPdf"></span>
         </button>
 
-        <button type="button" class="btn btn-default" ng-click="$ctrl.openPermitDecision()">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.openPermitDecision()"
+                ng-disabled="!$ctrl.hasPermission()">
             <span translate="jht.invoice.show.button.openPermitDecision"></span>
             <span class="fa fa-fw fa-chevron-right"></span>
         </button>

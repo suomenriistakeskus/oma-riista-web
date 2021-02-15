@@ -2,22 +2,26 @@
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <td>laji</td>
-        <td>saalis&shy;yksilöitä</td>
-        <td>havainto&shy;yksilöitä</td>
-        <td>lupa auki</td>
-        <td>lupa suljettu (massa&shy;tallennuksella)</td>
-        <td>HTK-ryhmien määrä</td>
+        <td translate="reporting.dashboard.mooselikeTab.mooselikeHunting.species"></td>
+        <td translate="reporting.dashboard.mooselikeTab.mooselikeHunting.harvests"></td>
+        <td translate="reporting.dashboard.mooselikeTab.mooselikeHunting.observations"></td>
+        <td translate="reporting.dashboard.mooselikeTab.mooselikeHunting.openPermits"></td>
+        <td translate="reporting.dashboard.mooselikeTab.mooselikeHunting.closedPermits"></td>
+        <td translate="reporting.dashboard.mooselikeTab.mooselikeHunting.groups"></td>
     </tr>
     </thead>
     <tbody>
-    <tr ng-repeat="c in $ctrl.metrics.mooselikeHuntingMetrics">
-        <td>{{c.speciesName}}</td>
-        <td>{{c.harvestCount}}</td>
-        <td>{{c.observationCount}}</td>
-        <td>{{c.openPermitCount}}</td>
-        <td>{{c.closedPermitCount}}&nbsp;&nbsp;({{c.moderatorClosedPermitCount}})</td>
-        <td>{{c.mooseDataCardGroupCount}}</td>
+    <tr ng-repeat="c in ::$ctrl.metrics.mooselikeHuntingMetrics">
+        <td ng-bind="::c.speciesName"></td>
+        <td ng-bind="::c.harvestCount"></td>
+        <td ng-bind="::c.observationCount"></td>
+        <td ng-bind="::c.openPermitCount"></td>
+        <td>
+            <span ng-bind="::c.closedPermitCount"></span>
+            &nbsp;&nbsp;
+            (<span ng-bind="::c.moderatorClosedPermitCount"></span>)
+        </td>
+        <td ng-bind="::c.mooseDataCardGroupCount"></td>
     </tr>
     </tbody>
 </table>

@@ -11,7 +11,7 @@ import fi.riista.feature.permit.invoice.search.InvoiceDeliveryType;
 import fi.riista.feature.permit.invoice.search.InvoiceDisplayState;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.validation.XssSafe;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.iban4j.Bic;
 import org.iban4j.Iban;
 import org.joda.time.LocalDate;

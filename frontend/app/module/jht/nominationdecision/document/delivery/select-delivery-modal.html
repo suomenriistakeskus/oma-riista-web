@@ -1,0 +1,125 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="decision.delivery.title"></h3>
+    </div>
+
+    <div class="modal-body">
+
+        <div class="btn-group btn-group-justified r-decision-delivery-tabs">
+            <label class="btn btn-default" ng-model="$ctrl.selectedTab" uib-btn-radio="'a'">
+                <span translate="decision.delivery.fromRka"></span>
+            </label>
+
+            <label class="btn btn-default" ng-model="$ctrl.selectedTab" uib-btn-radio="'b'">
+                <span translate="decision.delivery.addAdHoc"></span>
+            </label>
+
+            <label class="btn btn-default" ng-model="$ctrl.selectedTab" uib-btn-radio="'c'"
+                   ng-if="$ctrl.referenceEnabled">
+                <span translate="decision.delivery.fromReference"></span>
+            </label>
+        </div>
+
+        <div ng-if="$ctrl.selectedTab === 'a'">
+            <div class="form-group row">
+                <div class="col-xs-5">
+                    <select class="form-control"
+                            ng-model="$ctrl.rka"
+                            ng-options="r for r in $ctrl.rkas"
+                            ng-change="$ctrl.rkaSelected()">
+                    </select>
+                </div>
+                <div class="col-xs-5">
+                    <select class="form-control"
+                            ng-model="$ctrl.newDelivery"
+                            ng-disabled="!$ctrl.availableDeliveries.length"
+                            ng-options="d as d.name for d in $ctrl.availableDeliveries">
+                    </select>
+                </div>
+                <div class="col-xs-2">
+                    <button class="btn btn-primary btn-sm"
+                            ng-disabled="!$ctrl.newDelivery"
+                            ng-click="$ctrl.add($ctrl.newDelivery)">
+                        <span class="glyphicon glyphicon-plus"></span>
+                        <span translate="global.button.add"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="r-decision-delivery-content">
+                <permit-decision-delivery-listing deliveries="$ctrl.deliveries"
+                                                  remove="$ctrl.remove"></permit-decision-delivery-listing>
+            </div>
+        </div>
+
+        <div ng-if="$ctrl.selectedTab === 'b'">
+            <div class="form-group row">
+                <label for="name" class="col-xs-2 control-label">
+                    <span translate="decision.delivery.name"></span>
+                </label>
+
+                <div class="col-xs-3" ng-class="{'has-error': form.name.$invalid}">
+                    <input name="name" id="name" class="form-control"
+                           ng-model="$ctrl.adhoc.name"
+                           minlength="5"
+                           maxlength="255"
+                           ng-required="$ctrl.adhoc.name || $ctrl.adhoc.email"
+                           focus-me>
+                </div>
+                <label for="email" class="col-xs-2 control-label">
+                    <span translate="decision.delivery.email"></span>
+                </label>
+                <div class="col-xs-3" ng-class="{'has-error': form.email.$invalid}">
+                    <input type="email" id="email" name="email"
+                           class="form-control"
+                           ng-model="$ctrl.adhoc.email"
+                           ng-required="$ctrl.adhoc.name"
+                           ng-maxlength="255">
+                </div>
+                <div class="col-xs-2">
+                    <button class="btn btn-primary btn-sm"
+                            ng-disabled="!$ctrl.adhoc.name || !$ctrl.adhoc.email"
+                            ng-click="$ctrl.addAdhoc()">
+                        <span class="glyphicon glyphicon-plus"></span>
+                        <span translate="global.button.add"></span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="r-decision-delivery-content">
+                <permit-decision-delivery-listing deliveries="$ctrl.deliveries"
+                                                  remove="$ctrl.remove"></permit-decision-delivery-listing>
+            </div>
+
+        </div>
+
+        <div ng-if="$ctrl.selectedTab === 'c'">
+            <div class="form-group">
+                <button class="btn btn-default"
+                        ng-click="$ctrl.overwriteWithReference()"
+                        ng-disabled="!$ctrl.referenceContent">
+                    <span class="glyphicon glyphicon-arrow-left"></span>
+                    <span translate="decision.section.overwrite"></span>
+                </button>
+            </div>
+
+            <div class="r-decision-delivery-content">
+                <permit-decision-delivery-listing
+                        deliveries="$ctrl.referenceDeliveries"></permit-decision-delivery-listing>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                translate="global.button.save"></button>
+    </div>
+</form>

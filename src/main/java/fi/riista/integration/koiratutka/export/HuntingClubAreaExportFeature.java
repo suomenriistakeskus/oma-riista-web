@@ -2,6 +2,8 @@ package fi.riista.integration.koiratutka.export;
 
 import fi.riista.feature.account.area.PersonalArea;
 import fi.riista.feature.account.area.PersonalAreaRepository;
+import fi.riista.feature.account.area.union.PersonalAreaUnion;
+import fi.riista.feature.account.area.union.PersonalAreaUnionRepository;
 import fi.riista.feature.account.audit.AuditService;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.gis.zone.GISZoneWithoutGeometryDTO;
@@ -16,6 +18,7 @@ import fi.riista.util.MediaTypeExtras;
 import fi.riista.util.RandomStringUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.joda.time.DateTime;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +30,6 @@ import org.springframework.web.context.request.WebRequest;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -47,13 +49,16 @@ public class HuntingClubAreaExportFeature {
     private ModeratorAreaRepository moderatorAreaRepository;
 
     @Resource
+    private PersonalAreaUnionRepository personalAreaUnionRepository;
+
+    @Resource
     private GISZoneRepository zoneRepository;
 
     @Resource
     private AuditService auditService;
 
-    private static Date getLatest(final @Nonnull Date first, final @Nonnull Date second) {
-        return first.after(second) ? first : second;
+    private static DateTime getLatest(final @Nonnull DateTime first, final @Nonnull DateTime second) {
+        return first.isAfter(second) ? first : second;
     }
 
     @PreAuthorize("hasPrivilege('EXPORT_HUNTINGCLUB_AREA')")
@@ -73,27 +78,28 @@ public class HuntingClubAreaExportFeature {
 
                     final long zoneId = area.getZoneId();
                     final GISZoneWithoutGeometryDTO zoneDTO = getZoneDTO(zoneId);
-                    final Date latestModificationTime = getLatest(
+                    final DateTime latestModificationTime = getLatest(
                             area.getAreaModificationTime(),
                             zoneDTO.getModificationTime());
 
                     // Check HTTP modification time header
-                    if (webRequest.checkNotModified(latestModificationTime.getTime())) {
+                    if (webRequest.checkNotModified(latestModificationTime.getMillis())) {
                         return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
-                                .lastModified(latestModificationTime.getTime())
+                                .lastModified(latestModificationTime.getMillis())
                                 .build();
                     }
 
                     // Audit (only if content is actually returned to ignore refresh attempts)
                     auditService.log("exportClubMap", request.getExternalId(), request.getAuditExtraInfo());
 
-                    final GeoJsonMetadata geoJsonMetadata = new GeoJsonMetadata(zoneDTO.getSize(), area, latestModificationTime);
+                    final GeoJsonMetadata geoJsonMetadata = new GeoJsonMetadata(zoneDTO.getSize(), area,
+                            latestModificationTime);
                     final FeatureCollection featureCollection = getFeatures(zoneId, geoJsonMetadata);
 
                     return ResponseEntity.ok()
                             .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePrivate().mustRevalidate())
                             .eTag(area.getResponseEtag())
-                            .lastModified(latestModificationTime.getTime())
+                            .lastModified(latestModificationTime.getMillis())
                             .contentType(MediaTypeExtras.APPLICATION_GEOJSON)
                             .body(featureCollection);
 
@@ -116,6 +122,12 @@ public class HuntingClubAreaExportFeature {
 
         if (clubAreaOptional.isPresent()) {
             return Optional.of(AreaExportDTO.create(clubAreaOptional.get()));
+        }
+
+        final Optional<PersonalAreaUnion> areaUnionOptional = personalAreaUnionRepository.findByExternalId(externalId);
+
+        if (areaUnionOptional.isPresent()) {
+            return AreaExportDTO.create(areaUnionOptional.get());
         }
 
         final Optional<HarvestPermitArea> permitAreaOptional = harvestPermitAreaRepository.findByExternalId(externalId);
@@ -146,7 +158,8 @@ public class HuntingClubAreaExportFeature {
 
     @Nonnull
     private FeatureCollection getFeatures(final long zoneId, final GeoJsonMetadata geoJsonMetadata) {
-        final FeatureCollection featureCollection = zoneRepository.getCombinedFeatures(Collections.singleton(zoneId), GISUtils.SRID.WGS84);
+        final FeatureCollection featureCollection = zoneRepository.getCombinedFeatures(Collections.singleton(zoneId),
+                GISUtils.SRID.WGS84);
 
         for (Feature feature : featureCollection) {
             geoJsonMetadata.updateFeature(feature);

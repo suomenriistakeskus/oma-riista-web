@@ -1,328 +1,334 @@
-RK;850;;;Suomen riistakeskus;Finlands viltcentral;389845;6676980;;;
-RKA;000;RK;850;Suomen riistakeskus, Etelä-Häme;Finlands viltcentral, Södra Tavastland;369883;6757163;;;
-RKA;050;RK;850;Suomen riistakeskus, Etelä-Savo;Finlands viltcentral, Södra Savolax;534815;6847128;;;
-RKA;100;RK;850;Suomen riistakeskus, Keski-Suomi;Finlands viltcentral, Mellersta Finland;422860;6936091;;;
-RKA;150;RK;850;Suomen riistakeskus, Kaakkois-Suomi;Finlands viltcentral, Sydöstra Finland;540813;6758164;;;
-RKA;200;RK;850;Suomen riistakeskus, Lappi;Finlands viltcentral, Lappland;474837;7511861;;;
-RKA;250;RK;850;Suomen riistakeskus, Oulu;Finlands viltcentral, Uleåborg;467840;7202984;;;
-RKA;300;RK;850;Suomen riistakeskus, Pohjanmaa;Finlands viltcentral, Österbotten;287914;6965079;;;
-RKA;350;RK;850;Suomen riistakeskus, Pohjois-Häme;Finlands viltcentral, Norra Tavastland;352889;6848126;;;
-RKA;400;RK;850;Suomen riistakeskus, Pohjois-Karjala;Finlands viltcentral, Norra Karelen;649768;6987072;;;
-RKA;450;RK;850;Suomen riistakeskus, Pohjois-Savo;Finlands viltcentral, Norra Savolax;534814;6972077;;;
-RKA;500;RK;850;Suomen riistakeskus, Rannikko-Pohjanmaa;Finlands viltcentral, Kust Österbotten;229937;7007061;;;
-RKA;550;RK;850;Suomen riistakeskus, Satakunta;Finlands viltcentral, Satakunda;249931;6837130;;;
-RKA;600;RK;850;Suomen riistakeskus, Uusimaa;Finlands viltcentral, Nyland;389875;6677196;;;
-RKA;650;RK;850;Suomen riistakeskus, Varsinais-Suomi;Finlands viltcentral, Egentliga Finland;238936;6710181;;;
-RKA;700;RK;850;Suomen riistakeskus, Kainuu;Finlands viltcentral, Kajanaland;569799;7157003;;;
-VRN;850;RK;850;Valtakunnallinen riistaneuvosto;Nationella viltrådet;;;;;
-ARN;000;RKA;000;Alueellinen riistaneuvosto, Etelä-Häme;Regionala viltrådet, Södra Tavastland;;;;;
-ARN;050;RKA;050;Alueellinen riistaneuvosto, Etelä-Savo;Regionala viltrådet, Södra Savolax;;;;;
-ARN;100;RKA;100;Alueellinen riistaneuvosto, Keski-Suomi;Regionala viltrådet, Mellersta Finland;;;;;
-ARN;150;RKA;150;Alueellinen riistaneuvosto, Kaakkois-Suomi;Regionala viltrådet, Sydöstra Finland;;;;;
-ARN;200;RKA;200;Alueellinen riistaneuvosto, Lappi;Regionala viltrådet, Lappland;;;;;
-ARN;250;RKA;250;Alueellinen riistaneuvosto, Oulu;Regionala viltrådet, Uleåborg;;;;;
-ARN;300;RKA;300;Alueellinen riistaneuvosto, Pohjanmaa;Regionala viltrådet, Österbotten;;;;;
-ARN;350;RKA;350;Alueellinen riistaneuvosto, Pohjois-Häme;Regionala viltrådet, Norra Tavastland;;;;;
-ARN;400;RKA;400;Alueellinen riistaneuvosto, Pohjois-Karjala;Regionala viltrådet, Norra Karelen;;;;;
-ARN;450;RKA;450;Alueellinen riistaneuvosto, Pohjois-Savo;Regionala viltrådet, Norra Savolax;;;;;
-ARN;500;RKA;500;Alueellinen riistaneuvosto, Rannikko-Pohjanmaa;Regionala viltrådet, Kust Österbotten;;;;;
-ARN;550;RKA;550;Alueellinen riistaneuvosto, Satakunta;Regionala viltrådet, Satakunda;;;;;
-ARN;600;RKA;600;Alueellinen riistaneuvosto, Uusimaa;Regionala viltrådet, Nyland;;;;;
-ARN;650;RKA;650;Alueellinen riistaneuvosto, Varsinais-Suomi;Regionala viltrådet, Egentliga Finland;;;;;
-ARN;700;RKA;700;Alueellinen riistaneuvosto, Kainuu;Regionala viltrådet, Kajanaland;;;;;
-RHY;001;RKA;000;Asikkalan riistanhoitoyhdistys;Asikkala jaktvårdsförening;421861;6787151;;;
-RHY;002;RKA;000;Forssan-Tammelan riistanhoitoyhdistys;Forssa-Tammela jaktvårdsförening;329899;6745168;;;
-RHY;003;RKA;000;Hattulan-Kalvolan riistanhoitoyhdistys;Hattula-Kalvola jaktvårdsförening;343893;6769158;;;
-RHY;004;RKA;000;Hauhon-Tuuloksen riistanhoitoyhdistys;Hauho-Tuulos jaktvårdsförening;373881;6782153;;;
-RHY;005;RKA;000;Hausjärven-Riihimäen riistanhoitoyhdistys;Hausjärvi-Riihimäki jaktvårdsförening;383877;6735172;;;
-RHY;006;RKA;000;Hämeenlinnan riistanhoitoyhdistys;Tavastehus jaktvårdsförening;363885;6764160;;;
-RHY;007;RKA;000;Janakkalan riistanhoitoyhdistys;Janakkala jaktvårdsförening;374881;6753165;;;
-RHY;008;RKA;000;Jokiläänin riistanhoitoyhdistys;Jokilääni jaktvårdsförening;301910;6751165;;;
-RHY;009;RKA;000;Lahden seudun riistanhoitoyhdistys;Lahtisnejdens jaktvårdsförening;411865;6760162;;;
-RHY;010;RKA;000;Lammin riistanhoitoyhdistys;Lammi jaktvårdsförening;393873;6777155;;;
-RHY;011;RKA;000;Lopen riistanhoitoyhdistys;Loppi jaktvårdsförening;354889;6730174;;;
-RHY;012;RKA;000;Padasjoen riistanhoitoyhdistys;Padasjoki jaktvårdsförening;403869;6804144;;;
-RHY;013;RKA;000;Rengon riistanhoitoyhdistys;Renko jaktvårdsförening;351890;6749166;;;
-RHY;016;RKA;000;Urjalan riistanhoitoyhdistys;Urjala jaktvårdsförening;306908;6778154;;;
-RHY;051;RKA;050;Anttolan riistanhoitoyhdistys;Anttola jaktvårdsförening;537814;6828136;;;
-RHY;052;RKA;050;Enonkosken riistanhoitoyhdistys;Enonkoski jaktvårdsförening;598789;6890111;;;
-RHY;053;RKA;050;Hartolan riistanhoitoyhdistys;Hartola jaktvårdsförening;452848;6828135;;;
-RHY;055;RKA;050;Heinolan seudun riistanhoitoyhdistys;Heinolanejdens jaktvårdsförening;454848;6794149;;;
-RHY;056;RKA;050;Heinäveden riistanhoitoyhdistys;Heinävesi jaktvårdsförening;588793;6924097;;;
-RHY;057;RKA;050;Joroisten riistanhoitoyhdistys;Jorois jaktvårdsförening;540812;6894109;;;
-RHY;058;RKA;050;Juvan riistanhoitoyhdistys;Jockas jaktvårdsförening;542812;6858124;;;
-RHY;059;RKA;050;Jäppilän riistanhoitoyhdistys;Jäppilä jaktvårdsförening;524819;6918099;;;
-RHY;060;RKA;050;Kangaslammin riistanhoitoyhdistys;Kangaslampi jaktvårdsförening;569800;6906104;;;
-RHY;061;RKA;050;Kangasniemen riistanhoitoyhdistys;Kangasniemi jaktvårdsförening;482836;6878115;;;
-RHY;062;RKA;050;Kerimäen riistanhoitoyhdistys;Kerimäki jaktvårdsförening;620780;6875117;;;
-RHY;063;RKA;050;Mikkelin riistanhoitoyhdistys;S:t Michels jaktvårdsförening;512824;6848128;;;
-RHY;064;RKA;050;Mäntyharjun-Hirvensalmen riistanhoitoyhdistys;Mäntyharju-Hirvensalmi jaktvårdsförening;490833;6816140;;;
-RHY;065;RKA;050;Pertunmaan riistanhoitoyhdistys;Pertunmaa jaktvårdsförening;470841;6817140;;;
-RHY;066;RKA;050;Pieksämäen riistanhoitoyhdistys;Pieksämäki jaktvårdsförening;500828;6909103;;;
-RHY;068;RKA;050;Puumalan riistanhoitoyhdistys;Puumala jaktvårdsförening;565803;6824138;;;
-RHY;069;RKA;050;Rantasalmen riistanhoitoyhdistys;Rantasalmi jaktvårdsförening;658801;6881114;;;
-RHY;070;RKA;050;Ristiinan riistanhoitoyhdistys;Kristina jaktvårdsförening;519821;6817140;;;
-RHY;071;RKA;050;Savonrannan riistanhoitoyhdistys;Savonranta jaktvårdsförening;613783;6905105;;;
-RHY;072;RKA;050;Sulkavan riistanhoitoyhdistys;Sulkava jaktvårdsförening;572800;6847128;;;
-RHY;073;RKA;050;Sysmän riistanhoitoyhdistys;Sysmä jaktvårdsförening;430858;6819139;;;
-RHY;076;RKA;050;Haukivuori-Virtasalmi riistanhoitoyhdistys;Haukivuori-Virtasalmi jaktvårdsförening;507826;6880115;;;
-RHY;077;RKA;050;Savonlinnan riistanhoitoyhdistys;Savonlinnan jaktvårdsförening;595790;6856125;;;
-RHY;078;RKA;050;Etelä-Soisalon riistanhoitoyhdistys;Etelä-Soisalo jaktvårdsförening;585662;6920116;;;
-RHY;101;RKA;100;Ala-Keiteleen riistanhoitoyhdistys;Ala-Keitele jaktvårdsförening;437854;6958082;;;
-RHY;102;RKA;100;Hankasalmen riistanhoitoyhdistys;Hankasalmi jaktvårdsförening;474839;6916100;;;
-RHY;103;RKA;100;Itä-Päijänteen riistanhoitoyhdistys;Östra Päijänne jaktvårdsförening;452848;6856124;;;
-RHY;104;RKA;100;Jyväskylän seudun riistanhoitoyhdistys;Jyväskylänejdens jaktvårdsförening;434855;6907103;;;
-RHY;105;RKA;100;Jämsän seudun riistanhoitoyhdistys;Jämsänejdens jaktvårdsförening;404868;6867119;;;
-RHY;106;RKA;100;Kannonkosken-Kivijärven riistanhoitoyhdistys;Kannonkoski-Kivijärvi jaktvårdsförening;409865;6994068;;;
-RHY;107;RKA;100;Karstulan-Kyyjärven riistanhoitoyhdistys;Karstula-Kyyjärvi jaktvårdsförening;380877;6981073;;;
-RHY;108;RKA;100;Keuruun riistanhoitoyhdistys;Keuruu jaktvårdsförening;374879;6909102;;;
-RHY;109;RKA;100;Kinnulan riistanhoitoyhdistys;Kinnula jaktvårdsförening;400868;7024056;;;
-RHY;110;RKA;100;Konneveden riistanhoitoyhdistys;Konnevesi jaktvårdsförening;465842;6948087;;;
-RHY;111;RKA;100;Laukaan riistanhoitoyhdistys;Laukaa jaktvårdsförening;444851;6922097;;;
-RHY;112;RKA;100;Multian riistanhoitoyhdistys;Multia jaktvårdsförening;389873;6928094;;;
-RHY;113;RKA;100;Petäjäveden riistanhoitoyhdistys;Petäjävesi jaktvårdsförening;409865;6909102;;;
-RHY;114;RKA;100;Pihtiputaan riistanhoitoyhdistys;Pihtipudas jaktvårdsförening;428857;7028054;;;
-RHY;115;RKA;100;Pylkönmäen riistanhoitoyhdistys;Pylkönmäki jaktvårdsförening;387874;6951085;;;
-RHY;116;RKA;100;Saarijärven riistanhoitoyhdistys;Saarijärvi jaktvårdsförening;412864;6953084;;;
-RHY;117;RKA;100;Suolahden-Sumiaisten riistanhoitoyhdistys;Suolahti-Sumiainen jaktvårdsförening;450848;6951085;;;
-RHY;118;RKA;100;Toivakan riistanhoitoyhdistys;Toivakka jaktvårdsförening;451848;6885112;;;
-RHY;119;RKA;100;Uuraisten riistanhoitoyhdistys;Uurainen jaktvårdsförening;417862;6926095;;;
-RHY;120;RKA;100;Korpilahden riistanhoitoyhdistys;Korpilahti jaktvårdsförening;423860;6877115;;;
-RHY;121;RKA;100;Viitasaaren riistanhoitoyhdistys;Viitasaari jaktvårdsförening;442851;6994068;;;
-RHY;151;RKA;150;Anjalan riistanhoitoyhdistys;Anjala jaktvårdsförening;484836;6732174;;3;
-RHY;152;RKA;150;Elimäen riistanhoitoyhdistys;Elimä jaktvårdsförening;472841;6733174;;3;
-RHY;153;RKA;150;Etelä-Saimaan riistanhoitoyhdistys;Södra Saimen jaktvårdsförening;566803;6761163;;3;
-RHY;154;RKA;150;Iitin riistanhoitoyhdistys;Itis jaktvårdsförening;461845;6755165;;3;
-RHY;155;RKA;150;Jaalan-Kuusankosken riistanhoitoyhdistys;Jaala-Kuusankoski jaktvårdsförening;472841;6773158;;3;
-RHY;156;RKA;150;Joutsenon riistanhoitoyhdistys;Joutseno jaktvårdsförening;584795;6779156;;3;
-RHY;157;RKA;150;Kymin-Karhulan riistanhoitoyhdistys;Kymi-Karhula jaktvårdsförening;493833;6714182;;3;t
-RHY;158;RKA;150;Lemin-Taipalsaaren riistanhoitoyhdistys;Lemi-Taipalsaari jaktvårdsförening;553808;6782155;;3;
-RHY;159;RKA;150;Luumäen riistanhoitoyhdistys;Luumäki jaktvårdsförening;530817;6755165;;3;
-RHY;160;RKA;150;Miehikkälän riistanhoitoyhdistys;Miehikkälä jaktvårdsförening;536815;6731175;;3;
-RHY;161;RKA;150;Pyhtään riistanhoitoyhdistys;Pyttis jaktvårdsförening;479838;6706185;;3;t
-RHY;162;RKA;150;Rautjärven riistanhoitoyhdistys;Rautjärvi jaktvårdsförening;619781;6806145;;3;
-RHY;163;RKA;150;Ruokolahden-Imatran riistanhoitoyhdistys;Ruokolahti-Imatra jaktvårdsförening;597790;6804146;;3;
-RHY;164;RKA;150;Savitaipaleen-Suomenniemen riistanhoitoyhdistys;Savitaipale-Suomenniemi jaktvårdsförening;529817;6789151;;3;
-RHY;165;RKA;150;Sippolan riistanhoitoyhdistys;Sippola jaktvårdsförening;501829;6740171;;3;
-RHY;166;RKA;150;Valkealan-Kouvolan riistanhoitoyhdistys;Valkeala-Kouvola jaktvårdsförening;495831;6765161;;3;
-RHY;167;RKA;150;Parikkalan riistanhoitoyhdistys;Parikkala jaktvårdsförening;640772;6837133;;3;
-RHY;168;RKA;150;Vehkalahden-Haminan riistanhoitoyhdistys;Veckelax-Fredrikshamn jaktvårdsförening;510826;6722179;;3;t
-RHY;169;RKA;150;Virolahden riistanhoitoyhdistys;Vederlax jaktvårdsförening;532817;6714182;;3;t
-RHY;170;RKA;150;Ylämaan riistanhoitoyhdistys;Ylämaa jaktvårdsförening;553808;6741171;;3;
-RHY;201;RKA;200;Enontekiön riistanhoitoyhdistys;Enontekis jaktvårdsförening;331895;7606823;2;1;
-RHY;202;RKA;200;Inarin riistanhoitoyhdistys;Enare jaktvårdsförening;504826;7651804;1;1;
-RHY;203;RKA;200;Kemijärven riistanhoitoyhdistys;Kemijärvi jaktvårdsförening;514821;7391908;2;1;
-RHY;204;RKA;200;Keminmaan riistanhoitoyhdistys;Keminmaa jaktvårdsförening;397868;7303944;;1;t
-RHY;205;RKA;200;Kittilän riistanhoitoyhdistys;Kittilä jaktvårdsförening;417860;7522856;2;1;
-RHY;206;RKA;200;Kolarin riistanhoitoyhdistys;Kolari jaktvårdsförening;375877;7464879;2;1;
-RHY;207;RKA;200;Muonion riistanhoitoyhdistys;Muonio jaktvårdsförening;358884;7525855;2;1;
-RHY;208;RKA;200;Pelkosenniemen riistanhoitoyhdistys;Pelkosenniemi jaktvårdsförening;524817;7441888;1;1;
-RHY;209;RKA;200;Pellon riistanhoitoyhdistys;Pello jaktvårdsförening;382874;7403904;2;1;
-RHY;210;RKA;200;Posion riistanhoitoyhdistys;Posio jaktvårdsförening;544809;7331932;2;1;
-RHY;211;RKA;200;Ranuan riistanhoitoyhdistys;Ranua jaktvårdsförening;474837;7321936;2;1;
-RHY;212;RKA;200;Rovaniemen riistanhoitoyhdistys;Rovaniemi jaktvårdsförening;454845;7391908;2;1;
-RHY;213;RKA;200;Sallan riistanhoitoyhdistys;Salla jaktvårdsförening;576796;7411900;1;1;
-RHY;214;RKA;200;Savukosken riistanhoitoyhdistys;Savukoski jaktvårdsförening;563802;7491868;1;1;
-RHY;215;RKA;200;Simon riistanhoitoyhdistys;Simo jaktvårdsförening;416860;7292948;2;1;t
-RHY;216;RKA;200;Sodankylän riistanhoitoyhdistys;Sodankylä jaktvårdsförening;494829;7511861;1;1;
-RHY;217;RKA;200;Tervolan riistanhoitoyhdistys;Tervola jaktvårdsförening;408864;7332932;2;1;
-RHY;218;RKA;200;Tornion riistanhoitoyhdistys;Torneå jaktvårdsförening;378876;7324935;;1;t
-RHY;219;RKA;200;Utsjoen riistanhoitoyhdistys;Utsjoki jaktvårdsförening;494830;7730772;1;1;
-RHY;220;RKA;200;Ylitornion riistanhoitoyhdistys;Övertorneå jaktvårdsförening;380875;7373916;2;1;
-RHY;251;RKA;250;Haapajärven-Reisjärven riistanhoitoyhdistys;Haapajärvi-Reisjärvi jaktvårdsförening;409864;7071037;;1;
-RHY;252;RKA;250;Haapaveden riistanhoitoyhdistys;Haapavesi jaktvårdsförening;420859;7115019;;1;
-RHY;253;RKA;250;Hailuodon riistanhoitoyhdistys;Karlö jaktvårdsförening;392870;7212980;;1;t
-RHY;254;RKA;250;Haukiputaan riistanhoitoyhdistys;Haukipudas jaktvårdsförening;430855;7231972;;1;t
-RHY;256;RKA;250;Iin seudun riistanhoitoyhdistys;Ijonejdens jaktvårdsförening;438852;7266959;2;1;t
-RHY;258;RKA;250;Kalajoen-Alavieskan riistanhoitoyhdistys;Kalajoki-Alavieska jaktvårdsförening;362883;7122016;;1;t
-RHY;259;RKA;250;Kempeleen-Oulunsalon riistanhoitoyhdistys;Kempele-Oulunsalo jaktvårdsförening;426856;7200985;;1;t
-RHY;260;RKA;250;Kiimingin-Ylikiimingin riistanhoitoyhdistys;Kiiminki-Ylikiiminki jaktvårdsförening;454845;7228977;2;1;
-RHY;262;RKA;250;Kuusamon riistanhoitoyhdistys;Kuusamo jaktvårdsförening;600786;7316938;1;1;
-RHY;263;RKA;250;Kärsämäen riistanhoitoyhdistys;Kärsämäki jaktvårdsförening;438852;7092027;;1;
-RHY;264;RKA;250;Limingan seudun riistanhoitoyhdistys;Limingonejdens jaktvårdsförening;434853;7173995;;1;t
-RHY;265;RKA;250;Muhoksen riistanhoitoyhdistys;Muhos jaktvårdsförening;459843;7179993;;1;
-RHY;266;RKA;250;Nivalan riistanhoitoyhdistys;Nivala jaktvårdsförening;407865;7092028;;1;
-RHY;267;RKA;250;Oulaisten riistanhoitoyhdistys;Oulainen jaktvårdsförening;396869;7134011;;1;
-RHY;268;RKA;250;Oulun riistanhoitoyhdistys;Uleåborg jaktvårdsförening;436852;7207982;;1;t
-RHY;270;RKA;250;Piippolan seudun riistanhoitoyhdistys;Piippolanejdens jaktvårdsförening;462842;7122016;;1;
-RHY;271;RKA;250;Pudasjärven riistanhoitoyhdistys;Pudasjärvi jaktvårdsförening;508823;7257962;2;1;
-RHY;273;RKA;250;Pyhäjärven riistanhoitoyhdistys;Pyhäjärvi jaktvårdsförening;448848;7058042;;1;
-RHY;274;RKA;250;Raahen seudun riistanhoitoyhdistys;Brahestadsnejdens jaktvårdsförening;382874;7157002;;1;t
-RHY;275;RKA;250;Sievin riistanhoitoyhdistys;Sievi jaktvårdsförening;385874;7083032;;1;
-RHY;276;RKA;250;Siikajokilaakson riistanhoitoyhdistys;Siikajokidalens jaktvårdsförening;419859;7162000;;1;t
-RHY;279;RKA;250;Taivalkosken riistanhoitoyhdistys;Taivalkoski jaktvårdsförening;563801;7269957;2;1;
-RHY;280;RKA;250;Tyrnävän riistanhoitoyhdistys;Tyrnävä jaktvårdsförening;439851;7171991;;1;
-RHY;281;RKA;250;Utajärven riistanhoitoyhdistys;Utajärvi jaktvårdsförening;490831;7191989;2;1;
-RHY;282;RKA;250;Vaalan riistanhoitoyhdistys;Vaala jaktvårdsförening;493830;7152005;;1;
-RHY;283;RKA;250;Ylivieskan riistanhoitoyhdistys;Ylivieska jaktvårdsförening;385874;7104023;;1;
-RHY;301;RKA;300;Alajärven riistanhoitoyhdistys;Alajärvi jaktvårdsförening;343891;6993068;;1;
-RHY;302;RKA;300;Alavuden-Töysän riistanhoitoyhdistys;Alavo-Töysä jaktvårdsförening;324899;6943088;;1;
-RHY;303;RKA;300;Evijärven-Kortesjärven riistanhoitoyhdistys;Evijärvi-Kortesjärvi jaktvårdsförening;316902;7029053;;1;
-RHY;304;RKA;300;Halsuan riistanhoitoyhdistys;Halsua jaktvårdsförening;363883;7037050;;1;
-RHY;305;RKA;300;Himangan riistanhoitoyhdistys;Himanka jaktvårdsförening;341891;7109021;;1;t
-RHY;306;RKA;300;Härmän riistanhoitoyhdistys;Härmä jaktvårdsförening;289913;7017058;;1;
-RHY;307;RKA;300;Ilmajoen riistanhoitoyhdistys;Ilmajoki jaktvårdsförening;273920;6963079;;1;
-RHY;308;RKA;300;Isojoen-Karijoen riistanhoitoyhdistys;Storå-Bötom jaktvårdsförening;233937;6902104;;1;
-RHY;309;RKA;300;Jalasjärven riistanhoitoyhdistys;Jalasjärvi jaktvårdsförening;264916;6931092;;1;
-RHY;310;RKA;300;Jurvan riistanhoitoyhdistys;Jurva jaktvårdsförening;242932;6962079;;1;
-RHY;311;RKA;300;Kannuksen riistanhoitoyhdistys;Kannus jaktvårdsförening;351887;7092028;;1;
-RHY;312;RKA;300;Kauhajoen riistanhoitoyhdistys;Kauhajoki jaktvårdsförening;254928;6923095;;1;
-RHY;313;RKA;300;Kauhavan riistanhoitoyhdistys;Kauhava jaktvårdsförening;304907;7004063;;1;
-RHY;314;RKA;300;Kaustisen riistanhoitoyhdistys;Kaustby jaktvårdsförening;339893;7056042;;1;
-RHY;315;RKA;300;Kuortaneen riistanhoitoyhdistys;Kuortane jaktvårdsförening;322900;6967078;;1;
-RHY;316;RKA;300;Kurikan riistanhoitoyhdistys;Kurikka jaktvårdsförening;261925;6949085;;1;
-RHY;317;RKA;300;Kyrönmaan riistanhoitoyhdistys;Kyrönmaa jaktvårdsförening;259925;6995066;;1;
-RHY;318;RKA;300;Kälviän-Ullavan riistanhoitoyhdistys;Kälviä-Ullava jaktvårdsförening;341892;7072036;;1;t
-RHY;319;RKA;300;Laihian riistanhoitoyhdistys;Laihia jaktvårdsförening;246931;6984071;;1;
-RHY;320;RKA;300;Lappajärven-Vimpelin riistanhoitoyhdistys;Lappajärvi-Vimpeli jaktvårdsförening;333895;7011060;;1;
-RHY;321;RKA;300;Lapuan riistanhoitoyhdistys;Lappo jaktvårdsförening;305907;6986070;;1;
-RHY;322;RKA;300;Lehtimäen-Soinin riistanhoitoyhdistys;Lehtimäki-Soini jaktvårdsförening;356886;6973076;;1;
-RHY;323;RKA;300;Lestijärven riistanhoitoyhdistys;Lestijärvi jaktvårdsförening;384874;7045047;;1;
-RHY;324;RKA;300;Lohtajan riistanhoitoyhdistys;Lochteå jaktvårdsförening;329896;7101024;;1;t
-RHY;326;RKA;300;Perhon riistanhoitoyhdistys;Perho jaktvårdsförening;373879;7015059;;1;
-RHY;327;RKA;300;Peräseinäjoen riistanhoitoyhdistys;Peräseinäjoki jaktvårdsförening;302908;6937090;;1;
-RHY;329;RKA;300;Teuvan riistanhoitoyhdistys;Östermark jaktvårdsförening;230937;6943087;;1;
-RHY;330;RKA;300;Toholammin riistanhoitoyhdistys;Toholampi jaktvårdsförening;365882;7069037;;1;
-RHY;331;RKA;300;Vetelin riistanhoitoyhdistys;Vetil jaktvårdsförening;344891;7036050;;1;
-RHY;332;RKA;300;Ylistaron riistanhoitoyhdistys;Ylistaro jaktvårdsförening;278918;6990068;;1;
-RHY;333;RKA;300;Ähtärin riistanhoitoyhdistys;Etseri jaktvårdsförening;359885;6942088;;1;
-RHY;334;RKA;300;Lakeuden riistanhoitoyhdistys;Lakeuden jaktvårdsförening;290678;6966711;;1;
-RHY;352;RKA;350;Jalannin riistanhoitoyhdistys;Jalanti jaktvårdsförening;325900;6781153;;;
-RHY;354;RKA;350;Kangasalan riistanhoitoyhdistys;Kangasala jaktvårdsförening;344892;6817139;;;
-RHY;356;RKA;350;Kuhmalahden-Sahalahden riistanhoitoyhdistys;Kuhmalahti-Sahalahti jaktvårdsförening;369882;6819138;;;
-RHY;358;RKA;350;Kuhmoisten riistanhoitoyhdistys;Kuhmoinen jaktvårdsförening;403868;6829134;;;
-RHY;360;RKA;350;Kurun riistanhoitoyhdistys;Kuru jaktvårdsförening;322901;6871117;;;
-RHY;362;RKA;350;Lempäälän seudun riistanhoitoyhdistys;Lempäälänejdens jaktvårdsförening;318903;6801145;;;
-RHY;364;RKA;350;Längelmäveden riistanhoitoyhdistys;Längelmävesi jaktvårdsförening;369882;6844128;;;
-RHY;366;RKA;350;Mäntän seudun riistanhoitoyhdistys;Mänttänejdens jaktvårdsförening;369882;6879114;;;
-RHY;368;RKA;350;Nokian seudun riistanhoitoyhdistys;Nokianejdens jaktvårdsförening;314904;6827135;;;
-RHY;370;RKA;350;Pälkäneen ja Luopioisten riistanhoitoyhdistys;Pälkäne och Luopioinen jaktvårdsförening;369882;6807143;;;
-RHY;372;RKA;350;Ruoveden riistanhoitoyhdistys;Ruovesi jaktvårdsförening;345891;6876115;;;
-RHY;374;RKA;350;Sääksmäen-Valkeakosken riistanhoitoyhdistys;Sääksmäki-Valkeakoski jaktvårdsförening;341894;6789150;;;
-RHY;376;RKA;350;Tampereen riistanhoitoyhdistys;Tammerfors jaktvårdsförening;329898;6822137;;;
-RHY;378;RKA;350;Teiskon riistanhoitoyhdistys;Teisko jaktvårdsförening;334896;6842129;;;
-RHY;380;RKA;350;Virtain riistanhoitoyhdistys;Virdois jaktvårdsförening;327898;6908102;;;
-RHY;401;RKA;400;Enon riistanhoitoyhdistys;Eno jaktvårdsförening;665761;6967080;;;
-RHY;402;RKA;400;Ilomantsin riistanhoitoyhdistys;Ilomants jaktvårdsförening;699747;6967081;;;
-RHY;403;RKA;400;Joensuun seudun riistanhoitoyhdistys;Joensuunejdens jaktvårdsförening;644770;6951087;;;
-RHY;404;RKA;400;Juuan riistanhoitoyhdistys;Juuka jaktvårdsförening;609784;7007064;;;
-RHY;405;RKA;400;Kesälahden riistanhoitoyhdistys;Kesälahti jaktvårdsförening;649768;6867121;;;
-RHY;406;RKA;400;Kiteen riistanhoitoyhdistys;Kides jaktvårdsförening;654766;6881115;;;
-RHY;407;RKA;400;Liperin riistanhoitoyhdistys;Libelits jaktvårdsförening;621779;6937092;;;
-RHY;408;RKA;400;Nurmeksen riistanhoitoyhdistys;Nurmes jaktvårdsförening;604785;7051046;;;
-RHY;409;RKA;400;Outokummun riistanhoitoyhdistys;Outokumpu jaktvårdsförening;594790;6957084;;;
-RHY;410;RKA;400;Lieksan riistanhoitoyhdistys;Lieksa jaktvårdsförening;649767;7027056;;;
-RHY;411;RKA;400;Polvijärven riistanhoitoyhdistys;Polvijärvi jaktvårdsförening;617781;6967080;;;
-RHY;412;RKA;400;Rääkkylän riistanhoitoyhdistys;Rääkkylä jaktvårdsförening;629776;6907104;;;
-RHY;413;RKA;400;Tohmajärvi-Värtsilän riistanhoitoyhdistys;Tohmajärvi-Värtsilä jaktvårdsförening;669756;6902107;;;
-RHY;414;RKA;400;Tuupovaaran riistanhoitoyhdistys;Tuupovaara jaktvårdsförening;683750;6927097;;;
-RHY;415;RKA;400;Valtimon riistanhoitoyhdistys;Valtimo jaktvårdsförening;583794;7061042;;;
-RHY;451;RKA;450;Iisalmen riistanhoitoyhdistys;Idensalmi jaktvårdsförening;509824;7047047;;;
-RHY;452;RKA;450;Juankosken riistanhoitoyhdistys;Juankoski jaktvårdsförening;569800;6997068;;;
-RHY;453;RKA;450;Kaavin riistanhoitoyhdistys;Kaavi jaktvårdsförening;579796;6987072;;;
-RHY;454;RKA;450;Karttulan riistanhoitoyhdistys;Karttula jaktvårdsförening;509824;6977075;;;
-RHY;455;RKA;450;Keiteleen riistanhoitoyhdistys;Keitele jaktvårdsförening;469840;7017064;;;
-RHY;456;RKA;450;Kiuruveden riistanhoitoyhdistys;Kiuruvesi jaktvårdsförening;479836;7057043;;;
-RHY;457;RKA;450;Kuopion riistanhoitoyhdistys;Kuopio jaktvårdsförening;534814;6972077;;;
-RHY;458;RKA;450;Lapinlahden riistanhoitoyhdistys;Lapinlahti jaktvårdsförening;524818;7027055;;;
-RHY;459;RKA;450;Leppävirran-Varkauden riistanhoitoyhdistys;Leppävirta-Varkaus jaktvårdsförening;539812;6927096;;;
-RHY;460;RKA;450;Maaningan riistanhoitoyhdistys;Maaninka jaktvårdsförening;514822;6997067;;;
-RHY;461;RKA;450;Nilsiän riistanhoitoyhdistys;Nilsiä jaktvårdsförening;554806;7007063;;;
-RHY;462;RKA;450;Pielaveden riistanhoitoyhdistys;Pielavesi jaktvårdsförening;489832;7012061;;;
-RHY;463;RKA;450;Rautalammin riistanhoitoyhdistys;Rautalampi jaktvårdsförening;489833;6952085;;;
-RHY;464;RKA;450;Rautavaaran riistanhoitoyhdistys;Rautavaara jaktvårdsförening;564802;7042049;;;
-RHY;465;RKA;450;Riistaveden riistanhoitoyhdistys;Riistavesi jaktvårdsförening;554806;6977076;;;
-RHY;466;RKA;450;Siilinjärven riistanhoitoyhdistys;Siilinjärvi jaktvårdsförening;534814;6997067;;;
-RHY;467;RKA;450;Sonkajärven riistanhoitoyhdistys;Sonkajärvi jaktvårdsförening;524818;7057043;;;
-RHY;468;RKA;450;Suonenjoen riistanhoitoyhdistys;Suonenjoki jaktvårdsförening;504827;6977089;;;
-RHY;469;RKA;450;Tervon riistanhoitoyhdistys;Tervo jaktvårdsförening;489832;6987071;;;
-RHY;470;RKA;450;Tuusniemen riistanhoitoyhdistys;Tuusniemi jaktvårdsförening;574798;6967080;;;
-RHY;471;RKA;450;Varpaisjärven riistanhoitoyhdistys;Varpaisjärvi jaktvårdsförening;539812;7027055;;;
-RHY;472;RKA;450;Vehmersalmen riistanhoitoyhdistys;Vehmersalmi jaktvårdsförening;554806;6962082;;;
-RHY;473;RKA;450;Vesannon riistanhoitoyhdistys;Vesanto jaktvårdsförening;469840;6977075;;;
-RHY;474;RKA;450;Vieremän riistanhoitoyhdistys;Vieremä jaktvårdsförening;499828;7067039;;;
-RHY;501;RKA;500;Kokkolan seudun riistanhoitoyhdistys;Karlebynejdens jaktvårdsförening;319901;7064039;;1;t
-RHY;502;RKA;500;Pietarsaaren seudun riistanhoitoyhdistys;Pedersörenejdens jaktvårdsförening;289913;7065038;;1;t
-RHY;503;RKA;500;Uudenkaarlepyyn seudun riistanhoitoyhdistys;Nykarlebynejdens jaktvårdsförening;274919;7049045;;1;t
-RHY;504;RKA;500;Vöyrin seudun riistanhoitoyhdistys;Vörånejdens jaktvårdsförening;261924;7015058;;1;t
-RHY;505;RKA;500;Vaasan seudun riistanhoitoyhdistys;Vasanejdens jaktvårdsförening;232936;7009060;;1;t
-RHY;506;RKA;500;Maalahden seudun riistanhoitoyhdistys;Malaxnejdens jaktvårdsförening;221941;6990068;;1;t
-RHY;507;RKA;500;Närpiön seudun riistanhoitoyhdistys;Närpesnejdens jaktvårdsförening;208946;6949084;;1;t
-RHY;508;RKA;500;Lapväärtin seudun riistanhoitoyhdistys;Lappfjärdsnejdens jaktvårdsförening;212945;6905102;;1;t
-RHY;551;RKA;550;Ala-Satakunnan riistanhoitoyhdistys;Nedre Satakunda jaktvårdsförening;268923;6790149;;2;
-RHY;553;RKA;550;Euran seudun riistanhoitoyhdistys;Euranejdens jaktvårdsförening;234937;6785151;;2;
-RHY;554;RKA;550;Harjavallan riistanhoitoyhdistys;Harjavalta jaktvårdsförening;240934;6806142;;2;
-RHY;555;RKA;550;Hämeenkyrön-Viljakkalan riistanhoitoyhdistys;Hämeenkyrö-Viljakkala jaktvårdsförening;297911;6843128;;2;
-RHY;556;RKA;550;Ikaalisten-Jämijärven riistanhoitoyhdistys;Ikaalinen-Jämijärvi jaktvårdsförening;285916;6864119;;2;
-RHY;557;RKA;550;Kihniön riistanhoitoyhdistys;Kihniö jaktvårdsförening;301909;6906102;;2;
-RHY;558;RKA;550;Kokemäen-Kauvatsan riistanhoitoyhdistys;Kokemäki-Kauvatsa jaktvårdsförening;253929;6805143;;2;
-RHY;559;RKA;550;Lavian seudun riistanhoitoyhdistys;Lavianejdens jaktvårdsförening;267923;6833132;;2;
-RHY;560;RKA;550;Lounais-Satakunnan riistanhoitoyhdistys;Sydvästra Satakunda jaktvårdsförening;198946;6799147;;2;t
-RHY;561;RKA;550;Merikarvian riistanhoitoyhdistys;Sastmola jaktvårdsförening;212944;6877114;;2;t
-RHY;562;RKA;550;Mouhijärven piirin riistanhoitoyhdistys;Mouhijärvi distrikts jaktvårdsförening;287915;6826135;;2;
-RHY;563;RKA;550;Noormarkun seudun riistanhoitoyhdistys;Norrmarknejdens jaktvårdsförening;235936;6846126;;2;t
-RHY;564;RKA;550;Parkanon-Karvian riistanhoitoyhdistys;Parkano-Karvia jaktvårdsförening;291913;6882112;;2;
-RHY;565;RKA;550;Pohjois-Satakunnan riistanhoitoyhdistys;Norra Satakunda jaktvårdsförening;255928;6866118;;2;
-RHY;566;RKA;550;Porin riistanhoitoyhdistys;Björneborgs jaktvårdsförening;220945;6839129;;2;t
-RHY;567;RKA;550;Punkalaitumen riistanhoitoyhdistys;Punkalaidun jaktvårdsförening;289915;6781153;;2;
-RHY;568;RKA;550;Sastamalan riistanhoitoyhdistys;Sastamala jaktvårdsförening;280918;6805143;;2;
-RHY;569;RKA;550;Siikaisten riistanhoitoyhdistys;Siikainen jaktvårdsförening;233937;6869117;;2;
-RHY;570;RKA;550;Säkylän-Köyliön riistanhoitoyhdistys;Säkylä-Kjulo jaktvårdsförening;250931;6780153;;2;
-RHY;571;RKA;550;Ulvilan piirin riistanhoitoyhdistys;Ulvsby distrikts jaktvårdsförening;230938;6822136;;2;t
-RHY;601;RKA;600;Askolan-Pukkilan riistanhoitoyhdistys;Askola-Pukkila jaktvårdsförening;421862;6717180;;3;
-RHY;602;RKA;600;Helsingin riistanhoitoyhdistys;Helsingfors jaktvårdsförening;389875;6677196;;3;t
-RHY;603;RKA;600;Hyvinkään riistanhoitoyhdistys;Hyvinge jaktvårdsförening;381878;6722177;;3;
-RHY;604;RKA;600;Karjalohjan riistanhoitoyhdistys;Karislojo jaktvårdsförening;319903;6684192;;3;
-RHY;605;RKA;600;Keski-Uusimaan riistanhoitoyhdistys;Mellersta Nylands jaktvårdsförening;390874;6704185;;3;
-RHY;606;RKA;600;Lapinjärven riistanhoitoyhdistys;Lappträsk jaktvårdsförening;459846;6722178;;3;
-RHY;607;RKA;600;Lohjan riistanhoitoyhdistys;Lojo jaktvårdsförening;339895;6687191;;3;
-RHY;608;RKA;600;Myrskylä-Artjärven riistanhoitoyhdistys;Mörskom-Artsjö jaktvårdsförening;440854;6732174;;3;
-RHY;609;RKA;600;Mäntsälän riistanhoitoyhdistys;Mäntsälä jaktvårdsförening;409866;6727175;;3;
-RHY;610;RKA;600;Nummi-Pusulan riistanhoitoyhdistys;Nummi-Pusula jaktvårdsförening;333897;6708183;;3;
-RHY;611;RKA;600;Nurmijärven riistanhoitoyhdistys;Nurmijärvi jaktvårdsförening;376880;6705184;;3;
-RHY;612;RKA;600;Orimattilan riistanhoitoyhdistys;Orimattila jaktvårdsförening;431857;6741170;;3;
-RHY;613;RKA;600;Pornaisten riistanhoitoyhdistys;Borgnäs jaktvårdsförening;410866;6706184;;3;
-RHY;614;RKA;600;Ruotsinpyhtään riistanhoitoyhdistys;Strömfors jaktvårdsförening;466843;6705185;;3;t
-RHY;615;RKA;600;Sammatin riistanhoitoyhdistys;Sammatti jaktvårdsförening;324901;6692189;;3;
-RHY;616;RKA;600;Vihdin ja Karkkilan riistanhoitoyhdistys;Vichtis och Högfors jaktvårdsförening;354889;6705184;;3;
-RHY;617;RKA;600;Porvoon riistanhoitoyhdistys;Borgå jaktvårdsförening;427859;6696188;;3;t
-RHY;619;RKA;600;Tammisaaren riistanhoitoyhdistys;Ekenäsnejdens jaktvårdsförening;299911;6651206;;3;t
-RHY;620;RKA;600;Espoo-Kauniaisten riistanhoitoyhdistys;Esbo-Grankulla jaktvårdsförening;369883;6681194;;3;t
-RHY;621;RKA;600;Hankoniemen riistanhoitoyhdistys;Hangöudds jaktvårdsförening;274922;6639210;;3;t
-RHY;622;RKA;600;Vantaan riistanhoitoyhdistys;Vanda jaktvårdsförening;385876;6688191;;3;
-RHY;623;RKA;600;Inkoo-Snappertunan riistanhoitoyhdistys;Ingå-Snappertuna jaktvårdsförening;329899;6657203;;3;t
-RHY;624;RKA;600;Karjaan riistanhoitoyhdistys;Karis jaktvårdsförening;319903;6667199;;3;
-RHY;625;RKA;600;Kirkkonummen riistanhoitoyhdistys;Kyrkslätt jaktvårdsförening;359887;6667199;;3;t
-RHY;626;RKA;600;Liljendalin riistanhoitoyhdistys;Liljendal jaktvårdsförening;447851;6715181;;3;
-RHY;627;RKA;600;Loviisan riistanhoitoyhdistys;Lovisa jaktvårdsförening;449850;6702186;;3;t
-RHY;628;RKA;600;Pohjan riistanhoitoyhdistys;Pojo jaktvårdsförening;307908;6668199;;3;
-RHY;629;RKA;600;Sipoon riistanhoitoyhdistys;Sibbo jaktvårdsförening;403869;6694189;;3;t
-RHY;630;RKA;600;Siuntion riistanhoitoyhdistys;Sjundeå jaktvårdsförening;344893;6674197;;3;t
-RHY;631;RKA;600;Tenholan riistanhoitoyhdistys;Tenala jaktvårdsförening;287916;6661202;;3;t
-RHY;651;RKA;650;Alastaron riistanhoitoyhdistys;Alastaro jaktvårdsförening;273921;6765159;;2;
-RHY;652;RKA;650;Kalannin seudun riistanhoitoyhdistys;Kalantinejdens jaktvårdsförening;187956;6762160;;2;t
-RHY;653;RKA;650;Kemiönsaaren riistanhoitoyhdistys;Kimitoöns jaktvårdsförening;247933;6652205;;2;t
-RHY;654;RKA;650;Kiskon piirin riistanhoitoyhdistys;Kisko distrikts jaktvårdsförening;308908;6696187;;2;
-RHY;655;RKA;650;Laitilan seudun riistanhoitoyhdistys;Laitilanejdens jaktvårdsförening;206949;6769157;;2;t
-RHY;656;RKA;650;Loimaan seudun riistanhoitoyhdistys;Loimaanejdens jaktvårdsförening;282918;6752165;;2;
-RHY;657;RKA;650;Marttilan seudun riistanhoitoyhdistys;Marttilanejdens jaktvårdsförening;282918;6727175;;2;
-RHY;658;RKA;650;Maskun seudun riistanhoitoyhdistys;Maskunejdens jaktvårdsförening;235937;6728174;;2;t
-RHY;659;RKA;650;Mynämäen alueen riistanhoitoyhdistys;Mynämäkiområdets jaktvårdsförening;223942;6740169;;2;t
-RHY;660;RKA;650;Paimionlahden riistanhoitoyhdistys;Pemarvikens jaktvårdsförening;262926;6700186;;2;t
-RHY;661;RKA;650;Paraisten riistanhoitoyhdistys;Pargas jaktvårdsförening;238936;6689190;;2;t
-RHY;662;RKA;650;Perniön seudun riistanhoitoyhdistys;Bjärnånejdens  jaktvårdsförening;282918;6679194;;2;t
-RHY;663;RKA;650;Pöytyän seudun riistanhoitoyhdistys;Pöytisnejdens jaktvårdsförening;257928;6751165;;2;
-RHY;664;RKA;650;Rymättylän-Merimaskun riistanhoitoyhdistys;Rimito-Merimasku jaktvårdsförening;216945;6703184;;2;t
-RHY;665;RKA;650;Salon seudun riistanhoitoyhdistys;Salonejdens jaktvårdsförening;286916;6705184;;2;t
-RHY;666;RKA;650;Turun seudun riistanhoitoyhdistys;Åbonejdens jaktvårdsförening;246933;6713180;;2;t
-RHY;667;RKA;650;Vakka-Suomen riistanhoitoyhdistys;Vakka-Suomi jaktvårdsförening;192955;6732172;;2;t
-RHY;668;RKA;650;Turunmaan saariston riistanhoitoyhdistys;Åbolands skärgårds jaktvårdsförening;198952;6674196;;2;t
-RHY;669;RKA;650;Someron riistanhoitoyhdistys;Somero jaktvårdsförening;311906;6728174;;2;
-RHY;701;RKA;700;Hyrynsalmen-Ristijärven riistanhoitoyhdistys;Hyrynsalmi-Ristijärvi jaktvårdsförening;569799;7166999;2;;
-RHY;702;RKA;700;Kajaanin riistanhoitoyhdistys;Kajana jaktvårdsförening;529815;7119018;;;
-RHY;703;RKA;700;Kuhmon riistanhoitoyhdistys;Kuhmo jaktvårdsförening;619779;7119018;;;
-RHY;704;RKA;700;Paltamon riistanhoitoyhdistys;Paltamo jaktvårdsförening;527816;7147007;;;
-RHY;705;RKA;700;Puolangan riistanhoitoyhdistys;Puolanka jaktvårdsförening;529815;7184992;2;;
-RHY;706;RKA;700;Sotkamon riistanhoitoyhdistys;Sotkamo jaktvårdsförening;564801;7107023;;;
-RHY;707;RKA;700;Suomussalmen riistanhoitoyhdistys;Suomussalmi jaktvårdsförening;579795;7211981;1;;
-RHY;708;RKA;700;Vuolijoen riistanhoitoyhdistys;Vuolijoki jaktvårdsförening;499827;7107023;;;
+RK;850;;;Suomen riistakeskus;Finlands viltcentral;389845;6676980;;t
+RKA;000;RK;850;Suomen riistakeskus, Etelä-Häme;Finlands viltcentral, Södra Tavastland;369883;6757163;;t
+RKA;050;RK;850;Suomen riistakeskus, Etelä-Savo;Finlands viltcentral, Södra Savolax;534815;6847128;;t
+RKA;100;RK;850;Suomen riistakeskus, Keski-Suomi;Finlands viltcentral, Mellersta Finland;422860;6936091;;t
+RKA;150;RK;850;Suomen riistakeskus, Kaakkois-Suomi;Finlands viltcentral, Sydöstra Finland;540813;6758164;;t
+RKA;200;RK;850;Suomen riistakeskus, Lappi;Finlands viltcentral, Lappland;474837;7511861;;t
+RKA;250;RK;850;Suomen riistakeskus, Oulu;Finlands viltcentral, Uleåborg;467840;7202984;;t
+RKA;300;RK;850;Suomen riistakeskus, Pohjanmaa;Finlands viltcentral, Österbotten;287914;6965079;;t
+RKA;350;RK;850;Suomen riistakeskus, Pohjois-Häme;Finlands viltcentral, Norra Tavastland;352889;6848126;;t
+RKA;400;RK;850;Suomen riistakeskus, Pohjois-Karjala;Finlands viltcentral, Norra Karelen;649768;6987072;;t
+RKA;450;RK;850;Suomen riistakeskus, Pohjois-Savo;Finlands viltcentral, Norra Savolax;534814;6972077;;t
+RKA;500;RK;850;Suomen riistakeskus, Rannikko-Pohjanmaa;Finlands viltcentral, Kust Österbotten;229937;7007061;;t
+RKA;550;RK;850;Suomen riistakeskus, Satakunta;Finlands viltcentral, Satakunda;249931;6837130;;t
+RKA;600;RK;850;Suomen riistakeskus, Uusimaa;Finlands viltcentral, Nyland;389875;6677196;;t
+RKA;650;RK;850;Suomen riistakeskus, Varsinais-Suomi;Finlands viltcentral, Egentliga Finland;238936;6710181;;t
+RKA;700;RK;850;Suomen riistakeskus, Kainuu;Finlands viltcentral, Kajanaland;569799;7157003;;t
+VRN;850;RK;850;Valtakunnallinen riistaneuvosto;Nationella viltrådet;;;;t
+ARN;000;RKA;000;Alueellinen riistaneuvosto, Etelä-Häme;Regionala viltrådet, Södra Tavastland;;;;t
+ARN;050;RKA;050;Alueellinen riistaneuvosto, Etelä-Savo;Regionala viltrådet, Södra Savolax;;;;t
+ARN;100;RKA;100;Alueellinen riistaneuvosto, Keski-Suomi;Regionala viltrådet, Mellersta Finland;;;;t
+ARN;150;RKA;150;Alueellinen riistaneuvosto, Kaakkois-Suomi;Regionala viltrådet, Sydöstra Finland;;;;t
+ARN;200;RKA;200;Alueellinen riistaneuvosto, Lappi;Regionala viltrådet, Lappland;;;;t
+ARN;250;RKA;250;Alueellinen riistaneuvosto, Oulu;Regionala viltrådet, Uleåborg;;;;t
+ARN;300;RKA;300;Alueellinen riistaneuvosto, Pohjanmaa;Regionala viltrådet, Österbotten;;;;t
+ARN;350;RKA;350;Alueellinen riistaneuvosto, Pohjois-Häme;Regionala viltrådet, Norra Tavastland;;;;t
+ARN;400;RKA;400;Alueellinen riistaneuvosto, Pohjois-Karjala;Regionala viltrådet, Norra Karelen;;;;t
+ARN;450;RKA;450;Alueellinen riistaneuvosto, Pohjois-Savo;Regionala viltrådet, Norra Savolax;;;;t
+ARN;500;RKA;500;Alueellinen riistaneuvosto, Rannikko-Pohjanmaa;Regionala viltrådet, Kust Österbotten;;;;t
+ARN;550;RKA;550;Alueellinen riistaneuvosto, Satakunta;Regionala viltrådet, Satakunda;;;;t
+ARN;600;RKA;600;Alueellinen riistaneuvosto, Uusimaa;Regionala viltrådet, Nyland;;;;t
+ARN;650;RKA;650;Alueellinen riistaneuvosto, Varsinais-Suomi;Regionala viltrådet, Egentliga Finland;;;;t
+ARN;700;RKA;700;Alueellinen riistaneuvosto, Kainuu;Regionala viltrådet, Kajanaland;;;;t
+RHY;001;RKA;000;Asikkalan riistanhoitoyhdistys;Asikkala jaktvårdsförening;421861;6787151;;t
+RHY;002;RKA;000;Forssan-Tammelan riistanhoitoyhdistys;Forssa-Tammela jaktvårdsförening;329899;6745168;;t
+RHY;003;RKA;000;Hattulan-Kalvolan riistanhoitoyhdistys;Hattula-Kalvola jaktvårdsförening;343893;6769158;;t
+RHY;004;RKA;000;Hauhon-Tuuloksen riistanhoitoyhdistys;Hauho-Tuulos jaktvårdsförening;373881;6782153;;t
+RHY;005;RKA;000;Hausjärven-Riihimäen riistanhoitoyhdistys;Hausjärvi-Riihimäki jaktvårdsförening;383877;6735172;;t
+RHY;006;RKA;000;Hämeenlinnan riistanhoitoyhdistys;Tavastehus jaktvårdsförening;363885;6764160;;f
+RHY;007;RKA;000;Janakkalan riistanhoitoyhdistys;Janakkala jaktvårdsförening;374881;6753165;;t
+RHY;008;RKA;000;Jokiläänin riistanhoitoyhdistys;Jokilääni jaktvårdsförening;301910;6751165;;t
+RHY;009;RKA;000;Lahden seudun riistanhoitoyhdistys;Lahtisnejdens jaktvårdsförening;411865;6760162;;t
+RHY;010;RKA;000;Lammin riistanhoitoyhdistys;Lammi jaktvårdsförening;393873;6777155;;t
+RHY;011;RKA;000;Lopen riistanhoitoyhdistys;Loppi jaktvårdsförening;354889;6730174;;t
+RHY;012;RKA;000;Padasjoen riistanhoitoyhdistys;Padasjoki jaktvårdsförening;403869;6804144;;t
+RHY;013;RKA;000;Rengon riistanhoitoyhdistys;Renko jaktvårdsförening;351890;6749166;;f
+RHY;016;RKA;000;Urjalan riistanhoitoyhdistys;Urjala jaktvårdsförening;306908;6778154;;t
+RHY;017;RKA;000;Rengon seudun riistanhoitoyhdistys;Rengon seutu jaktvårdsförening;353792;6756709;;t
+RHY;051;RKA;050;Anttolan riistanhoitoyhdistys;Anttola jaktvårdsförening;537814;6828136;;t
+RHY;052;RKA;050;Enonkosken riistanhoitoyhdistys;Enonkoski jaktvårdsförening;598789;6890111;;t
+RHY;053;RKA;050;Hartolan riistanhoitoyhdistys;Hartola jaktvårdsförening;452848;6828135;;t
+RHY;055;RKA;050;Heinolan seudun riistanhoitoyhdistys;Heinolanejdens jaktvårdsförening;454848;6794149;;t
+RHY;056;RKA;050;Heinäveden riistanhoitoyhdistys;Heinävesi jaktvårdsförening;588793;6924097;;f
+RHY;057;RKA;050;Joroisten riistanhoitoyhdistys;Jorois jaktvårdsförening;540812;6894109;;t
+RHY;058;RKA;050;Juvan riistanhoitoyhdistys;Jockas jaktvårdsförening;542812;6858124;;t
+RHY;059;RKA;050;Jäppilän riistanhoitoyhdistys;Jäppilä jaktvårdsförening;524819;6918099;;t
+RHY;060;RKA;050;Kangaslammin riistanhoitoyhdistys;Kangaslampi jaktvårdsförening;569800;6906104;;f
+RHY;061;RKA;050;Kangasniemen riistanhoitoyhdistys;Kangasniemi jaktvårdsförening;482836;6878115;;t
+RHY;062;RKA;050;Kerimäen riistanhoitoyhdistys;Kerimäki jaktvårdsförening;620780;6875117;;t
+RHY;063;RKA;050;Mikkelin riistanhoitoyhdistys;S:t Michels jaktvårdsförening;512824;6848128;;t
+RHY;064;RKA;050;Mäntyharjun-Hirvensalmen riistanhoitoyhdistys;Mäntyharju-Hirvensalmi jaktvårdsförening;490833;6816140;;t
+RHY;065;RKA;050;Pertunmaan riistanhoitoyhdistys;Pertunmaa jaktvårdsförening;470841;6817140;;t
+RHY;066;RKA;050;Pieksämäen riistanhoitoyhdistys;Pieksämäki jaktvårdsförening;500828;6909103;;t
+RHY;068;RKA;050;Puumalan riistanhoitoyhdistys;Puumala jaktvårdsförening;565803;6824138;;t
+RHY;069;RKA;050;Rantasalmen riistanhoitoyhdistys;Rantasalmi jaktvårdsförening;658801;6881114;;t
+RHY;070;RKA;050;Ristiinan riistanhoitoyhdistys;Kristina jaktvårdsförening;519821;6817140;;t
+RHY;071;RKA;050;Savonrannan riistanhoitoyhdistys;Savonranta jaktvårdsförening;613783;6905105;;t
+RHY;072;RKA;050;Sulkavan riistanhoitoyhdistys;Sulkava jaktvårdsförening;572800;6847128;;t
+RHY;073;RKA;050;Sysmän riistanhoitoyhdistys;Sysmä jaktvårdsförening;430858;6819139;;t
+RHY;076;RKA;050;Haukivuori-Virtasalmi riistanhoitoyhdistys;Haukivuori-Virtasalmi jaktvårdsförening;507826;6880115;;t
+RHY;077;RKA;050;Savonlinnan riistanhoitoyhdistys;Savonlinnan jaktvårdsförening;595790;6856125;;t
+RHY;078;RKA;050;Etelä-Soisalon riistanhoitoyhdistys;Etelä-Soisalo jaktvårdsförening;585662;6920116;;t
+RHY;101;RKA;100;Ala-Keiteleen riistanhoitoyhdistys;Ala-Keitele jaktvårdsförening;437854;6958082;;t
+RHY;102;RKA;100;Hankasalmen riistanhoitoyhdistys;Hankasalmi jaktvårdsförening;474839;6916100;;t
+RHY;103;RKA;100;Itä-Päijänteen riistanhoitoyhdistys;Östra Päijänne jaktvårdsförening;452848;6856124;;t
+RHY;104;RKA;100;Jyväskylän seudun riistanhoitoyhdistys;Jyväskylänejdens jaktvårdsförening;434855;6907103;;t
+RHY;105;RKA;100;Jämsän seudun riistanhoitoyhdistys;Jämsänejdens jaktvårdsförening;404868;6867119;;t
+RHY;106;RKA;100;Kannonkosken-Kivijärven riistanhoitoyhdistys;Kannonkoski-Kivijärvi jaktvårdsförening;409865;6994068;;t
+RHY;107;RKA;100;Karstulan-Kyyjärven riistanhoitoyhdistys;Karstula-Kyyjärvi jaktvårdsförening;380877;6981073;;t
+RHY;108;RKA;100;Keuruun riistanhoitoyhdistys;Keuruu jaktvårdsförening;374879;6909102;;t
+RHY;109;RKA;100;Kinnulan riistanhoitoyhdistys;Kinnula jaktvårdsförening;400868;7024056;;t
+RHY;110;RKA;100;Konneveden riistanhoitoyhdistys;Konnevesi jaktvårdsförening;465842;6948087;;t
+RHY;111;RKA;100;Laukaan riistanhoitoyhdistys;Laukaa jaktvårdsförening;444851;6922097;;t
+RHY;112;RKA;100;Multian riistanhoitoyhdistys;Multia jaktvårdsförening;389873;6928094;;t
+RHY;113;RKA;100;Petäjäveden riistanhoitoyhdistys;Petäjävesi jaktvårdsförening;409865;6909102;;t
+RHY;114;RKA;100;Pihtiputaan riistanhoitoyhdistys;Pihtipudas jaktvårdsförening;428857;7028054;;t
+RHY;115;RKA;100;Pylkönmäen riistanhoitoyhdistys;Pylkönmäki jaktvårdsförening;387874;6951085;;t
+RHY;116;RKA;100;Saarijärven riistanhoitoyhdistys;Saarijärvi jaktvårdsförening;412864;6953084;;t
+RHY;117;RKA;100;Suolahden-Sumiaisten riistanhoitoyhdistys;Suolahti-Sumiainen jaktvårdsförening;450848;6951085;;t
+RHY;118;RKA;100;Toivakan riistanhoitoyhdistys;Toivakka jaktvårdsförening;451848;6885112;;t
+RHY;119;RKA;100;Uuraisten riistanhoitoyhdistys;Uurainen jaktvårdsförening;417862;6926095;;t
+RHY;120;RKA;100;Korpilahden riistanhoitoyhdistys;Korpilahti jaktvårdsförening;423860;6877115;;t
+RHY;121;RKA;100;Viitasaaren riistanhoitoyhdistys;Viitasaari jaktvårdsförening;442851;6994068;;t
+RHY;151;RKA;150;Anjalan riistanhoitoyhdistys;Anjala jaktvårdsförening;484836;6732174;;t
+RHY;152;RKA;150;Elimäen riistanhoitoyhdistys;Elimä jaktvårdsförening;472841;6733174;;t
+RHY;153;RKA;150;Etelä-Saimaan riistanhoitoyhdistys;Södra Saimen jaktvårdsförening;566803;6761163;;t
+RHY;154;RKA;150;Iitin riistanhoitoyhdistys;Itis jaktvårdsförening;461845;6755165;;t
+RHY;155;RKA;150;Jaalan-Kuusankosken riistanhoitoyhdistys;Jaala-Kuusankoski jaktvårdsförening;472841;6773158;;t
+RHY;156;RKA;150;Joutsenon riistanhoitoyhdistys;Joutseno jaktvårdsförening;584795;6779156;;t
+RHY;157;RKA;150;Kymin-Karhulan riistanhoitoyhdistys;Kymi-Karhula jaktvårdsförening;493833;6714182;t;t
+RHY;158;RKA;150;Lemin-Taipalsaaren riistanhoitoyhdistys;Lemi-Taipalsaari jaktvårdsförening;553808;6782155;;t
+RHY;159;RKA;150;Luumäen riistanhoitoyhdistys;Luumäki jaktvårdsförening;530817;6755165;;t
+RHY;160;RKA;150;Miehikkälän riistanhoitoyhdistys;Miehikkälä jaktvårdsförening;536815;6731175;;t
+RHY;161;RKA;150;Pyhtään riistanhoitoyhdistys;Pyttis jaktvårdsförening;479838;6706185;t;t
+RHY;162;RKA;150;Rautjärven riistanhoitoyhdistys;Rautjärvi jaktvårdsförening;619781;6806145;;t
+RHY;163;RKA;150;Ruokolahden-Imatran riistanhoitoyhdistys;Ruokolahti-Imatra jaktvårdsförening;597790;6804146;;t
+RHY;164;RKA;150;Savitaipaleen-Suomenniemen riistanhoitoyhdistys;Savitaipale-Suomenniemi jaktvårdsförening;529817;6789151;;t
+RHY;165;RKA;150;Sippolan riistanhoitoyhdistys;Sippola jaktvårdsförening;501829;6740171;;t
+RHY;166;RKA;150;Valkealan-Kouvolan riistanhoitoyhdistys;Valkeala-Kouvola jaktvårdsförening;495831;6765161;;t
+RHY;167;RKA;150;Parikkalan riistanhoitoyhdistys;Parikkala jaktvårdsförening;640772;6837133;;t
+RHY;168;RKA;150;Vehkalahden-Haminan riistanhoitoyhdistys;Veckelax-Fredrikshamn jaktvårdsförening;510826;6722179;t;t
+RHY;169;RKA;150;Virolahden riistanhoitoyhdistys;Vederlax jaktvårdsförening;532817;6714182;t;t
+RHY;170;RKA;150;Ylämaan riistanhoitoyhdistys;Ylämaa jaktvårdsförening;553808;6741171;;t
+RHY;201;RKA;200;Enontekiön riistanhoitoyhdistys;Enontekis jaktvårdsförening;331895;7606823;;t
+RHY;202;RKA;200;Inarin riistanhoitoyhdistys;Enare jaktvårdsförening;504826;7651804;;t
+RHY;203;RKA;200;Kemijärven riistanhoitoyhdistys;Kemijärvi jaktvårdsförening;514821;7391908;;t
+RHY;204;RKA;200;Keminmaan riistanhoitoyhdistys;Keminmaa jaktvårdsförening;397868;7303944;t;t
+RHY;205;RKA;200;Kittilän riistanhoitoyhdistys;Kittilä jaktvårdsförening;417860;7522856;;t
+RHY;206;RKA;200;Kolarin riistanhoitoyhdistys;Kolari jaktvårdsförening;375877;7464879;;t
+RHY;207;RKA;200;Muonion riistanhoitoyhdistys;Muonio jaktvårdsförening;358884;7525855;;t
+RHY;208;RKA;200;Pelkosenniemen riistanhoitoyhdistys;Pelkosenniemi jaktvårdsförening;524817;7441888;;t
+RHY;209;RKA;200;Pellon riistanhoitoyhdistys;Pello jaktvårdsförening;382874;7403904;;t
+RHY;210;RKA;200;Posion riistanhoitoyhdistys;Posio jaktvårdsförening;544809;7331932;;t
+RHY;211;RKA;200;Ranuan riistanhoitoyhdistys;Ranua jaktvårdsförening;474837;7321936;;t
+RHY;212;RKA;200;Rovaniemen riistanhoitoyhdistys;Rovaniemi jaktvårdsförening;454845;7391908;;t
+RHY;213;RKA;200;Sallan riistanhoitoyhdistys;Salla jaktvårdsförening;576796;7411900;;t
+RHY;214;RKA;200;Savukosken riistanhoitoyhdistys;Savukoski jaktvårdsförening;563802;7491868;;t
+RHY;215;RKA;200;Simon riistanhoitoyhdistys;Simo jaktvårdsförening;416860;7292948;t;t
+RHY;216;RKA;200;Sodankylän riistanhoitoyhdistys;Sodankylä jaktvårdsförening;494829;7511861;;t
+RHY;217;RKA;200;Tervolan riistanhoitoyhdistys;Tervola jaktvårdsförening;408864;7332932;;t
+RHY;218;RKA;200;Tornion riistanhoitoyhdistys;Torneå jaktvårdsförening;378876;7324935;t;t
+RHY;219;RKA;200;Utsjoen riistanhoitoyhdistys;Utsjoki jaktvårdsförening;494830;7730772;;t
+RHY;220;RKA;200;Ylitornion riistanhoitoyhdistys;Övertorneå jaktvårdsförening;380875;7373916;;t
+RHY;251;RKA;250;Haapajärven-Reisjärven riistanhoitoyhdistys;Haapajärvi-Reisjärvi jaktvårdsförening;409864;7071037;;t
+RHY;252;RKA;250;Haapaveden riistanhoitoyhdistys;Haapavesi jaktvårdsförening;420859;7115019;;t
+RHY;253;RKA;250;Hailuodon riistanhoitoyhdistys;Karlö jaktvårdsförening;392870;7212980;t;t
+RHY;254;RKA;250;Haukiputaan riistanhoitoyhdistys;Haukipudas jaktvårdsförening;430855;7231972;t;t
+RHY;256;RKA;250;Iin seudun riistanhoitoyhdistys;Ijonejdens jaktvårdsförening;438852;7266959;t;t
+RHY;258;RKA;250;Kalajoen-Alavieskan riistanhoitoyhdistys;Kalajoki-Alavieska jaktvårdsförening;362883;7122016;t;t
+RHY;259;RKA;250;Kempeleen-Oulunsalon riistanhoitoyhdistys;Kempele-Oulunsalo jaktvårdsförening;426856;7200985;t;t
+RHY;260;RKA;250;Kiimingin-Ylikiimingin riistanhoitoyhdistys;Kiiminki-Ylikiiminki jaktvårdsförening;454845;7228977;;t
+RHY;262;RKA;250;Kuusamon riistanhoitoyhdistys;Kuusamo jaktvårdsförening;600786;7316938;;t
+RHY;263;RKA;250;Kärsämäen riistanhoitoyhdistys;Kärsämäki jaktvårdsförening;438852;7092027;;t
+RHY;264;RKA;250;Limingan seudun riistanhoitoyhdistys;Limingonejdens jaktvårdsförening;434853;7173995;t;t
+RHY;265;RKA;250;Muhoksen riistanhoitoyhdistys;Muhos jaktvårdsförening;459843;7179993;;t
+RHY;266;RKA;250;Nivalan riistanhoitoyhdistys;Nivala jaktvårdsförening;407865;7092028;;t
+RHY;267;RKA;250;Oulaisten riistanhoitoyhdistys;Oulainen jaktvårdsförening;396869;7134011;;t
+RHY;268;RKA;250;Oulun riistanhoitoyhdistys;Uleåborg jaktvårdsförening;436852;7207982;t;t
+RHY;270;RKA;250;Piippolan seudun riistanhoitoyhdistys;Piippolanejdens jaktvårdsförening;462842;7122016;;t
+RHY;271;RKA;250;Pudasjärven riistanhoitoyhdistys;Pudasjärvi jaktvårdsförening;508823;7257962;;t
+RHY;273;RKA;250;Pyhäjärven riistanhoitoyhdistys;Pyhäjärvi jaktvårdsförening;448848;7058042;;t
+RHY;274;RKA;250;Raahen seudun riistanhoitoyhdistys;Brahestadsnejdens jaktvårdsförening;382874;7157002;t;t
+RHY;275;RKA;250;Sievin riistanhoitoyhdistys;Sievi jaktvårdsförening;385874;7083032;;t
+RHY;276;RKA;250;Siikajokilaakson riistanhoitoyhdistys;Siikajokidalens jaktvårdsförening;419859;7162000;t;t
+RHY;279;RKA;250;Taivalkosken riistanhoitoyhdistys;Taivalkoski jaktvårdsförening;563801;7269957;;t
+RHY;280;RKA;250;Tyrnävän riistanhoitoyhdistys;Tyrnävä jaktvårdsförening;439851;7171991;;t
+RHY;281;RKA;250;Utajärven riistanhoitoyhdistys;Utajärvi jaktvårdsförening;490831;7191989;;t
+RHY;282;RKA;250;Vaalan riistanhoitoyhdistys;Vaala jaktvårdsförening;493830;7152005;;t
+RHY;283;RKA;250;Ylivieskan riistanhoitoyhdistys;Ylivieska jaktvårdsförening;385874;7104023;;t
+RHY;301;RKA;300;Alajärven riistanhoitoyhdistys;Alajärvi jaktvårdsförening;343891;6993068;;t
+RHY;302;RKA;300;Alavuden-Töysän riistanhoitoyhdistys;Alavo-Töysä jaktvårdsförening;324899;6943088;;t
+RHY;303;RKA;300;Evijärven-Kortesjärven riistanhoitoyhdistys;Evijärvi-Kortesjärvi jaktvårdsförening;316902;7029053;;t
+RHY;304;RKA;300;Halsuan riistanhoitoyhdistys;Halsua jaktvårdsförening;363883;7037050;;f
+RHY;305;RKA;300;Himangan riistanhoitoyhdistys;Himanka jaktvårdsförening;341891;7109021;t;t
+RHY;306;RKA;300;Härmän riistanhoitoyhdistys;Härmä jaktvårdsförening;289913;7017058;;t
+RHY;307;RKA;300;Ilmajoen riistanhoitoyhdistys;Ilmajoki jaktvårdsförening;273920;6963079;;t
+RHY;308;RKA;300;Isojoen-Karijoen riistanhoitoyhdistys;Storå-Bötom jaktvårdsförening;233937;6902104;;t
+RHY;309;RKA;300;Jalasjärven riistanhoitoyhdistys;Jalasjärvi jaktvårdsförening;264916;6931092;;t
+RHY;310;RKA;300;Jurvan riistanhoitoyhdistys;Jurva jaktvårdsförening;242932;6962079;;t
+RHY;311;RKA;300;Kannuksen riistanhoitoyhdistys;Kannus jaktvårdsförening;351887;7092028;;t
+RHY;312;RKA;300;Kauhajoen riistanhoitoyhdistys;Kauhajoki jaktvårdsförening;254928;6923095;;t
+RHY;313;RKA;300;Kauhavan riistanhoitoyhdistys;Kauhava jaktvårdsförening;304907;7004063;;t
+RHY;314;RKA;300;Kaustisen riistanhoitoyhdistys;Kaustby jaktvårdsförening;339893;7056042;;f
+RHY;315;RKA;300;Kuortaneen riistanhoitoyhdistys;Kuortane jaktvårdsförening;322900;6967078;;t
+RHY;316;RKA;300;Kurikan riistanhoitoyhdistys;Kurikka jaktvårdsförening;261925;6949085;;t
+RHY;317;RKA;300;Kyrönmaan riistanhoitoyhdistys;Kyrönmaa jaktvårdsförening;259925;6995066;;t
+RHY;318;RKA;300;Kälviän-Ullavan riistanhoitoyhdistys;Kälviä-Ullava jaktvårdsförening;341892;7072036;t;t
+RHY;319;RKA;300;Laihian riistanhoitoyhdistys;Laihia jaktvårdsförening;246931;6984071;;t
+RHY;320;RKA;300;Lappajärven-Vimpelin riistanhoitoyhdistys;Lappajärvi-Vimpeli jaktvårdsförening;333895;7011060;;t
+RHY;321;RKA;300;Lapuan riistanhoitoyhdistys;Lappo jaktvårdsförening;305907;6986070;;t
+RHY;322;RKA;300;Lehtimäen-Soinin riistanhoitoyhdistys;Lehtimäki-Soini jaktvårdsförening;356886;6973076;;t
+RHY;323;RKA;300;Lestijärven riistanhoitoyhdistys;Lestijärvi jaktvårdsförening;384874;7045047;;t
+RHY;324;RKA;300;Lohtajan riistanhoitoyhdistys;Lochteå jaktvårdsförening;329896;7101024;t;t
+RHY;326;RKA;300;Perhon riistanhoitoyhdistys;Perho jaktvårdsförening;373879;7015059;;t
+RHY;327;RKA;300;Peräseinäjoen riistanhoitoyhdistys;Peräseinäjoki jaktvårdsförening;302908;6937090;;t
+RHY;329;RKA;300;Teuvan riistanhoitoyhdistys;Östermark jaktvårdsförening;230937;6943087;;t
+RHY;330;RKA;300;Toholammin riistanhoitoyhdistys;Toholampi jaktvårdsförening;365882;7069037;;t
+RHY;331;RKA;300;Vetelin riistanhoitoyhdistys;Vetil jaktvårdsförening;344891;7036050;;f
+RHY;332;RKA;300;Ylistaron riistanhoitoyhdistys;Ylistaro jaktvårdsförening;278918;6990068;;t
+RHY;333;RKA;300;Ähtärin riistanhoitoyhdistys;Etseri jaktvårdsförening;359885;6942088;;t
+RHY;334;RKA;300;Lakeuden riistanhoitoyhdistys;Lakeuden jaktvårdsförening;290678;6966711;;t
+RHY;335;RKA;300;Perhonjokilaakson riistanhoitoyhdistys;Perhonjokilaakso jaktvårdsförening;350718;7035575;;t
+RHY;352;RKA;350;Jalannin riistanhoitoyhdistys;Jalanti jaktvårdsförening;325900;6781153;;t
+RHY;354;RKA;350;Kangasalan riistanhoitoyhdistys;Kangasala jaktvårdsförening;344892;6817139;;t
+RHY;356;RKA;350;Kuhmalahden-Sahalahden riistanhoitoyhdistys;Kuhmalahti-Sahalahti jaktvårdsförening;369882;6819138;;t
+RHY;358;RKA;350;Kuhmoisten riistanhoitoyhdistys;Kuhmoinen jaktvårdsförening;403868;6829134;;t
+RHY;360;RKA;350;Kurun riistanhoitoyhdistys;Kuru jaktvårdsförening;322901;6871117;;t
+RHY;362;RKA;350;Lempäälän seudun riistanhoitoyhdistys;Lempäälänejdens jaktvårdsförening;318903;6801145;;t
+RHY;364;RKA;350;Längelmäveden riistanhoitoyhdistys;Längelmävesi jaktvårdsförening;369882;6844128;;t
+RHY;366;RKA;350;Mäntän seudun riistanhoitoyhdistys;Mänttänejdens jaktvårdsförening;369882;6879114;;t
+RHY;368;RKA;350;Nokian seudun riistanhoitoyhdistys;Nokianejdens jaktvårdsförening;314904;6827135;;t
+RHY;370;RKA;350;Pälkäneen ja Luopioisten riistanhoitoyhdistys;Pälkäne och Luopioinen jaktvårdsförening;369882;6807143;;t
+RHY;372;RKA;350;Ruoveden riistanhoitoyhdistys;Ruovesi jaktvårdsförening;345891;6876115;;t
+RHY;374;RKA;350;Sääksmäen-Valkeakosken riistanhoitoyhdistys;Sääksmäki-Valkeakoski jaktvårdsförening;341894;6789150;;t
+RHY;376;RKA;350;Tampereen riistanhoitoyhdistys;Tammerfors jaktvårdsförening;329898;6822137;;f
+RHY;378;RKA;350;Teiskon riistanhoitoyhdistys;Teisko jaktvårdsförening;334896;6842129;;f
+RHY;380;RKA;350;Virtain riistanhoitoyhdistys;Virdois jaktvårdsförening;327898;6908102;;t
+RHY;382;RKA;350;Tampereen riistanhoitoyhdistys;Tammerfors jaktvårdsförening;335426;6831632;;t
+RHY;401;RKA;400;Enon riistanhoitoyhdistys;Eno jaktvårdsförening;665761;6967080;;t
+RHY;402;RKA;400;Ilomantsin riistanhoitoyhdistys;Ilomants jaktvårdsförening;699747;6967081;;t
+RHY;403;RKA;400;Joensuun seudun riistanhoitoyhdistys;Joensuunejdens jaktvårdsförening;644770;6951087;;t
+RHY;404;RKA;400;Juuan riistanhoitoyhdistys;Juuka jaktvårdsförening;609784;7007064;;t
+RHY;405;RKA;400;Kesälahden riistanhoitoyhdistys;Kesälahti jaktvårdsförening;649768;6867121;;t
+RHY;406;RKA;400;Kiteen riistanhoitoyhdistys;Kides jaktvårdsförening;654766;6881115;;t
+RHY;407;RKA;400;Liperin riistanhoitoyhdistys;Libelits jaktvårdsförening;621779;6937092;;t
+RHY;408;RKA;400;Nurmeksen riistanhoitoyhdistys;Nurmes jaktvårdsförening;604785;7051046;;f
+RHY;409;RKA;400;Outokummun riistanhoitoyhdistys;Outokumpu jaktvårdsförening;594790;6957084;;t
+RHY;410;RKA;400;Lieksan riistanhoitoyhdistys;Lieksa jaktvårdsförening;649767;7027056;;t
+RHY;411;RKA;400;Polvijärven riistanhoitoyhdistys;Polvijärvi jaktvårdsförening;617781;6967080;;t
+RHY;412;RKA;400;Rääkkylän riistanhoitoyhdistys;Rääkkylä jaktvårdsförening;629776;6907104;;t
+RHY;413;RKA;400;Tohmajärvi-Värtsilän riistanhoitoyhdistys;Tohmajärvi-Värtsilä jaktvårdsförening;669756;6902107;;t
+RHY;414;RKA;400;Tuupovaaran riistanhoitoyhdistys;Tuupovaara jaktvårdsförening;683750;6927097;;t
+RHY;415;RKA;400;Valtimon riistanhoitoyhdistys;Valtimo jaktvårdsförening;583794;7061042;;f
+RHY;416;RKA;400;Ylä-Karjalan riistanhoitoyhdistys;Ylä-Karjala jaktvårdsförening;601216;7052683;;t
+RHY;451;RKA;450;Iisalmen riistanhoitoyhdistys;Idensalmi jaktvårdsförening;509824;7047047;;t
+RHY;452;RKA;450;Juankosken riistanhoitoyhdistys;Juankoski jaktvårdsförening;569800;6997068;;t
+RHY;453;RKA;450;Kaavin riistanhoitoyhdistys;Kaavi jaktvårdsförening;579796;6987072;;t
+RHY;454;RKA;450;Karttulan riistanhoitoyhdistys;Karttula jaktvårdsförening;509824;6977075;;t
+RHY;455;RKA;450;Keiteleen riistanhoitoyhdistys;Keitele jaktvårdsförening;469840;7017064;;t
+RHY;456;RKA;450;Kiuruveden riistanhoitoyhdistys;Kiuruvesi jaktvårdsförening;479836;7057043;;t
+RHY;457;RKA;450;Kuopion riistanhoitoyhdistys;Kuopio jaktvårdsförening;534814;6972077;;t
+RHY;458;RKA;450;Lapinlahden riistanhoitoyhdistys;Lapinlahti jaktvårdsförening;524818;7027055;;t
+RHY;459;RKA;450;Leppävirran-Varkauden riistanhoitoyhdistys;Leppävirta-Varkaus jaktvårdsförening;539812;6927096;;t
+RHY;460;RKA;450;Maaningan riistanhoitoyhdistys;Maaninka jaktvårdsförening;514822;6997067;;t
+RHY;461;RKA;450;Nilsiän riistanhoitoyhdistys;Nilsiä jaktvårdsförening;554806;7007063;;t
+RHY;462;RKA;450;Pielaveden riistanhoitoyhdistys;Pielavesi jaktvårdsförening;489832;7012061;;t
+RHY;463;RKA;450;Rautalammin riistanhoitoyhdistys;Rautalampi jaktvårdsförening;489833;6952085;;t
+RHY;464;RKA;450;Rautavaaran riistanhoitoyhdistys;Rautavaara jaktvårdsförening;564802;7042049;;t
+RHY;465;RKA;450;Riistaveden riistanhoitoyhdistys;Riistavesi jaktvårdsförening;554806;6977076;;f
+RHY;466;RKA;450;Siilinjärven riistanhoitoyhdistys;Siilinjärvi jaktvårdsförening;534814;6997067;;t
+RHY;467;RKA;450;Sonkajärven riistanhoitoyhdistys;Sonkajärvi jaktvårdsförening;524818;7057043;;t
+RHY;468;RKA;450;Suonenjoen riistanhoitoyhdistys;Suonenjoki jaktvårdsförening;504827;6977089;;t
+RHY;469;RKA;450;Tervon riistanhoitoyhdistys;Tervo jaktvårdsförening;489832;6987071;;t
+RHY;470;RKA;450;Tuusniemen riistanhoitoyhdistys;Tuusniemi jaktvårdsförening;574798;6967080;;f
+RHY;471;RKA;450;Varpaisjärven riistanhoitoyhdistys;Varpaisjärvi jaktvårdsförening;539812;7027055;;t
+RHY;472;RKA;450;Vehmersalmen riistanhoitoyhdistys;Vehmersalmi jaktvårdsförening;554806;6962082;;t
+RHY;473;RKA;450;Vesannon riistanhoitoyhdistys;Vesanto jaktvårdsförening;469840;6977075;;t
+RHY;474;RKA;450;Vieremän riistanhoitoyhdistys;Vieremä jaktvårdsförening;499828;7067039;;t
+RHY;475;RKA;450;Koillis-Savon riistanhoitoyhdistys;Koillis-Savo jaktvårdsförening;573423;6963422;;t
+RHY;501;RKA;500;Kokkolan seudun riistanhoitoyhdistys;Karlebynejdens jaktvårdsförening;319901;7064039;t;t
+RHY;502;RKA;500;Pietarsaaren seudun riistanhoitoyhdistys;Pedersörenejdens jaktvårdsförening;289913;7065038;t;t
+RHY;503;RKA;500;Uudenkaarlepyyn seudun riistanhoitoyhdistys;Nykarlebynejdens jaktvårdsförening;274919;7049045;t;t
+RHY;504;RKA;500;Vöyrin seudun riistanhoitoyhdistys;Vörånejdens jaktvårdsförening;261924;7015058;t;t
+RHY;505;RKA;500;Vaasan seudun riistanhoitoyhdistys;Vasanejdens jaktvårdsförening;232936;7009060;t;t
+RHY;506;RKA;500;Maalahden seudun riistanhoitoyhdistys;Malaxnejdens jaktvårdsförening;221941;6990068;t;t
+RHY;507;RKA;500;Närpiön seudun riistanhoitoyhdistys;Närpesnejdens jaktvårdsförening;208946;6949084;t;t
+RHY;508;RKA;500;Lapväärtin seudun riistanhoitoyhdistys;Lappfjärdsnejdens jaktvårdsförening;212945;6905102;t;t
+RHY;551;RKA;550;Ala-Satakunnan riistanhoitoyhdistys;Nedre Satakunda jaktvårdsförening;268923;6790149;;t
+RHY;553;RKA;550;Euran seudun riistanhoitoyhdistys;Euranejdens jaktvårdsförening;234937;6785151;;t
+RHY;554;RKA;550;Harjavallan riistanhoitoyhdistys;Harjavalta jaktvårdsförening;240934;6806142;;t
+RHY;555;RKA;550;Hämeenkyrön-Viljakkalan riistanhoitoyhdistys;Hämeenkyrö-Viljakkala jaktvårdsförening;297911;6843128;;t
+RHY;556;RKA;550;Ikaalisten-Jämijärven riistanhoitoyhdistys;Ikaalinen-Jämijärvi jaktvårdsförening;285916;6864119;;t
+RHY;557;RKA;550;Kihniön riistanhoitoyhdistys;Kihniö jaktvårdsförening;301909;6906102;;t
+RHY;558;RKA;550;Kokemäen-Kauvatsan riistanhoitoyhdistys;Kokemäki-Kauvatsa jaktvårdsförening;253929;6805143;;t
+RHY;559;RKA;550;Lavian seudun riistanhoitoyhdistys;Lavianejdens jaktvårdsförening;267923;6833132;;t
+RHY;560;RKA;550;Lounais-Satakunnan riistanhoitoyhdistys;Sydvästra Satakunda jaktvårdsförening;198946;6799147;t;t
+RHY;561;RKA;550;Merikarvian riistanhoitoyhdistys;Sastmola jaktvårdsförening;212944;6877114;t;t
+RHY;562;RKA;550;Mouhijärven piirin riistanhoitoyhdistys;Mouhijärvi distrikts jaktvårdsförening;287915;6826135;;t
+RHY;563;RKA;550;Noormarkun seudun riistanhoitoyhdistys;Norrmarknejdens jaktvårdsförening;235936;6846126;t;t
+RHY;564;RKA;550;Parkanon-Karvian riistanhoitoyhdistys;Parkano-Karvia jaktvårdsförening;291913;6882112;;t
+RHY;565;RKA;550;Pohjois-Satakunnan riistanhoitoyhdistys;Norra Satakunda jaktvårdsförening;255928;6866118;;t
+RHY;566;RKA;550;Porin riistanhoitoyhdistys;Björneborgs jaktvårdsförening;220945;6839129;t;t
+RHY;567;RKA;550;Punkalaitumen riistanhoitoyhdistys;Punkalaidun jaktvårdsförening;289915;6781153;;t
+RHY;568;RKA;550;Sastamalan riistanhoitoyhdistys;Sastamala jaktvårdsförening;280918;6805143;;t
+RHY;569;RKA;550;Siikaisten riistanhoitoyhdistys;Siikainen jaktvårdsförening;233937;6869117;;t
+RHY;570;RKA;550;Säkylän-Köyliön riistanhoitoyhdistys;Säkylä-Kjulo jaktvårdsförening;250931;6780153;;t
+RHY;571;RKA;550;Ulvilan piirin riistanhoitoyhdistys;Ulvsby distrikts jaktvårdsförening;230938;6822136;t;t
+RHY;601;RKA;600;Askolan-Pukkilan riistanhoitoyhdistys;Askola-Pukkila jaktvårdsförening;421862;6717180;;t
+RHY;602;RKA;600;Helsingin riistanhoitoyhdistys;Helsingfors jaktvårdsförening;389875;6677196;t;t
+RHY;603;RKA;600;Hyvinkään riistanhoitoyhdistys;Hyvinge jaktvårdsförening;381878;6722177;;t
+RHY;604;RKA;600;Karjalohjan riistanhoitoyhdistys;Karislojo jaktvårdsförening;319903;6684192;;t
+RHY;605;RKA;600;Keski-Uusimaan riistanhoitoyhdistys;Mellersta Nylands jaktvårdsförening;390874;6704185;;t
+RHY;606;RKA;600;Lapinjärven riistanhoitoyhdistys;Lappträsk jaktvårdsförening;459846;6722178;;t
+RHY;607;RKA;600;Lohjan riistanhoitoyhdistys;Lojo jaktvårdsförening;339895;6687191;;t
+RHY;608;RKA;600;Myrskylä-Artjärven riistanhoitoyhdistys;Mörskom-Artsjö jaktvårdsförening;440854;6732174;;t
+RHY;609;RKA;600;Mäntsälän riistanhoitoyhdistys;Mäntsälä jaktvårdsförening;409866;6727175;;t
+RHY;610;RKA;600;Nummi-Pusulan riistanhoitoyhdistys;Nummi-Pusula jaktvårdsförening;333897;6708183;;t
+RHY;611;RKA;600;Nurmijärven riistanhoitoyhdistys;Nurmijärvi jaktvårdsförening;376880;6705184;;t
+RHY;612;RKA;600;Orimattilan riistanhoitoyhdistys;Orimattila jaktvårdsförening;431857;6741170;;t
+RHY;613;RKA;600;Pornaisten riistanhoitoyhdistys;Borgnäs jaktvårdsförening;410866;6706184;;t
+RHY;614;RKA;600;Ruotsinpyhtään riistanhoitoyhdistys;Strömfors jaktvårdsförening;466843;6705185;t;t
+RHY;615;RKA;600;Sammatin riistanhoitoyhdistys;Sammatti jaktvårdsförening;324901;6692189;;t
+RHY;616;RKA;600;Vihdin ja Karkkilan riistanhoitoyhdistys;Vichtis och Högfors jaktvårdsförening;354889;6705184;;t
+RHY;617;RKA;600;Porvoon riistanhoitoyhdistys;Borgå jaktvårdsförening;427859;6696188;t;t
+RHY;619;RKA;600;Tammisaaren riistanhoitoyhdistys;Ekenäsnejdens jaktvårdsförening;299911;6651206;t;f
+RHY;620;RKA;600;Espoo-Kauniaisten riistanhoitoyhdistys;Esbo-Grankulla jaktvårdsförening;369883;6681194;t;t
+RHY;621;RKA;600;Hankoniemen riistanhoitoyhdistys;Hangöudds jaktvårdsförening;274922;6639210;t;f
+RHY;622;RKA;600;Vantaan riistanhoitoyhdistys;Vanda jaktvårdsförening;385876;6688191;;t
+RHY;623;RKA;600;Inkoo-Snappertunan riistanhoitoyhdistys;Ingå-Snappertuna jaktvårdsförening;329899;6657203;t;f
+RHY;624;RKA;600;Karjaan riistanhoitoyhdistys;Karis jaktvårdsförening;319903;6667199;;f
+RHY;625;RKA;600;Kirkkonummen riistanhoitoyhdistys;Kyrkslätt jaktvårdsförening;359887;6667199;t;t
+RHY;626;RKA;600;Liljendalin riistanhoitoyhdistys;Liljendal jaktvårdsförening;447851;6715181;;t
+RHY;627;RKA;600;Loviisan riistanhoitoyhdistys;Lovisa jaktvårdsförening;449850;6702186;t;t
+RHY;628;RKA;600;Pohjan riistanhoitoyhdistys;Pojo jaktvårdsförening;307908;6668199;;f
+RHY;629;RKA;600;Sipoon riistanhoitoyhdistys;Sibbo jaktvårdsförening;403869;6694189;t;t
+RHY;630;RKA;600;Siuntion riistanhoitoyhdistys;Sjundeå jaktvårdsförening;344893;6674197;t;f
+RHY;631;RKA;600;Tenholan riistanhoitoyhdistys;Tenala jaktvårdsförening;287916;6661202;t;f
+RHY;632;RKA;600;Länsi-Uudenmaan riistanhoitoyhdistys;Västra-Nylands jaktvårdsförening;314586;6658410;t;t
+RHY;651;RKA;650;Alastaron riistanhoitoyhdistys;Alastaro jaktvårdsförening;273921;6765159;;t
+RHY;652;RKA;650;Kalannin seudun riistanhoitoyhdistys;Kalantinejdens jaktvårdsförening;187956;6762160;t;t
+RHY;653;RKA;650;Kemiönsaaren riistanhoitoyhdistys;Kimitoöns jaktvårdsförening;247933;6652205;t;t
+RHY;654;RKA;650;Kiskon piirin riistanhoitoyhdistys;Kisko distrikts jaktvårdsförening;308908;6696187;;t
+RHY;655;RKA;650;Laitilan seudun riistanhoitoyhdistys;Laitilanejdens jaktvårdsförening;206949;6769157;t;t
+RHY;656;RKA;650;Loimaan seudun riistanhoitoyhdistys;Loimaanejdens jaktvårdsförening;282918;6752165;;t
+RHY;657;RKA;650;Marttilan seudun riistanhoitoyhdistys;Marttilanejdens jaktvårdsförening;282918;6727175;;t
+RHY;658;RKA;650;Maskun seudun riistanhoitoyhdistys;Maskunejdens jaktvårdsförening;235937;6728174;t;t
+RHY;659;RKA;650;Mynämäen alueen riistanhoitoyhdistys;Mynämäkiområdets jaktvårdsförening;223942;6740169;t;t
+RHY;660;RKA;650;Paimionlahden riistanhoitoyhdistys;Pemarvikens jaktvårdsförening;262926;6700186;t;t
+RHY;661;RKA;650;Paraisten riistanhoitoyhdistys;Pargas jaktvårdsförening;238936;6689190;t;t
+RHY;662;RKA;650;Perniön seudun riistanhoitoyhdistys;Bjärnånejdens  jaktvårdsförening;282918;6679194;t;t
+RHY;663;RKA;650;Pöytyän seudun riistanhoitoyhdistys;Pöytisnejdens jaktvårdsförening;257928;6751165;;t
+RHY;664;RKA;650;Rymättylän-Merimaskun riistanhoitoyhdistys;Rimito-Merimasku jaktvårdsförening;216945;6703184;t;t
+RHY;665;RKA;650;Salon seudun riistanhoitoyhdistys;Salonejdens jaktvårdsförening;286916;6705184;t;t
+RHY;666;RKA;650;Turun seudun riistanhoitoyhdistys;Åbonejdens jaktvårdsförening;246933;6713180;t;t
+RHY;667;RKA;650;Vakka-Suomen riistanhoitoyhdistys;Vakka-Suomi jaktvårdsförening;192955;6732172;t;t
+RHY;668;RKA;650;Turunmaan saariston riistanhoitoyhdistys;Åbolands skärgårds jaktvårdsförening;198952;6674196;t;t
+RHY;669;RKA;650;Someron riistanhoitoyhdistys;Somero jaktvårdsförening;311906;6728174;;t
+RHY;701;RKA;700;Hyrynsalmen-Ristijärven riistanhoitoyhdistys;Hyrynsalmi-Ristijärvi jaktvårdsförening;569799;7166999;;t
+RHY;702;RKA;700;Kajaanin riistanhoitoyhdistys;Kajana jaktvårdsförening;529815;7119018;;t
+RHY;703;RKA;700;Kuhmon riistanhoitoyhdistys;Kuhmo jaktvårdsförening;619779;7119018;;t
+RHY;704;RKA;700;Paltamon riistanhoitoyhdistys;Paltamo jaktvårdsförening;527816;7147007;;t
+RHY;705;RKA;700;Puolangan riistanhoitoyhdistys;Puolanka jaktvårdsförening;529815;7184992;;t
+RHY;706;RKA;700;Sotkamon riistanhoitoyhdistys;Sotkamo jaktvårdsförening;564801;7107023;;t
+RHY;707;RKA;700;Suomussalmen riistanhoitoyhdistys;Suomussalmi jaktvårdsförening;579795;7211981;;t
+RHY;708;RKA;700;Vuolijoen riistanhoitoyhdistys;Vuolijoki jaktvårdsförening;499827;7107023;;t

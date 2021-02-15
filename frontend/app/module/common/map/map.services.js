@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('app.common.map.services', [])
-    .service('MapUtil', function () {
+    .service('MapUtil', function (leafletData, $timeout) {
         this.isValidLatLng = function (latlng) {
             return _.isObject(latlng) &&
                 isFinite(latlng.lat) &&
@@ -44,6 +44,21 @@ angular.module('app.common.map.services', [])
                 longitude: 570000,
                 zoom: 6
             };
+        };
+
+        // Map container may not be able to resolve map content size in creation time if nested inside e.g. bootstrap modal
+        // Solution is to invalidate map size (force recalculation of container) and recalculate bounding rect
+        this.forceRefreshMapArea = function (mapId, bounds) {
+            leafletData.getMap(mapId).then(function(map) {
+                $timeout(function () {
+                    map.invalidateSize();
+                    //create bounds
+                    leafletData.getMap(mapId).then(function (map) {
+                        var bbox = L.latLngBounds(bounds.toLeafletBounds());
+                        map.fitBounds(bbox);
+                    });
+                });
+            });
         };
     })
     .service('MapState', function (WGS84, MapUtil, LocalStorageService) {
@@ -225,30 +240,44 @@ angular.module('app.common.map.services', [])
         var maxBounds = MapBounds.getBoundsOfMmlBasemap();
 
         var mmlUrlTemplate = _.template('https://kartta.riista.fi/tms/1.0.0/<%= layer %>/EPSG_3857/{z}/{x}/{y}.png');
+        var defaults = {
+            maxNativeZoom: 16,
+            opacity: 1,
+            attribution: '&copy;<a href="http://www.maanmittauslaitos.fi" target="_blank">Maanmittauslaitos</a>'
+        };
+
         var mmlUrls = {
-            terrain: mmlUrlTemplate({layer: 'maasto_mobile'}),
-            background: mmlUrlTemplate({layer: 'tausta_mobile'}),
-            aerial: mmlUrlTemplate({layer: 'orto_mobile'}),
-            empty: ''
+            terrain: {url: mmlUrlTemplate({layer: 'maasto_mobile'})},
+            background: {url: mmlUrlTemplate({layer: 'tausta_mobile'})},
+            aerial: {url: mmlUrlTemplate({layer: 'orto_mobile'})},
+            empty: {url: ''},
+            natura: {
+                url: mmlUrlTemplate({layer: 'natura'}),
+                maxNativeZoom: 14,
+                opacity: 0.75,
+                pane: 'overlayPane',
+                attribution: '<br>Natura alueet / Lähde: <a href="https://www.syke.fi/" target=new>SYKE</a>, ELY-keskukset'
+            }
         };
 
         this.createLayer = function (type) {
             return {
                 name: $translate.instant('global.map.layer.' + type),
-                url: mmlUrls[type],
+                url: mmlUrls[type].url,
                 type: 'xyz',
                 layerOptions: {
                     type: 'xyz',
                     format: 'image/png',
                     minZoom: 0,
                     maxZoom: 16,
-                    maxNativeZoom: 16,
+                    maxNativeZoom: mmlUrls[type].maxNativeZoom || defaults.maxNativeZoom,
+                    opacity: mmlUrls[type].opacity || defaults.opacity,
                     detectRetina: false,
                     continuousWorld: true,
                     worldCopyJump: false,
                     tms: true,
                     bounds: L.latLngBounds(maxBounds.southWest, maxBounds.northEast),
-                    attribution: '&copy;<a href="http://www.maanmittauslaitos.fi" target="_blank">Maanmittauslaitos</a>'
+                    attribution: mmlUrls[type].attribution || defaults.attribution
                 }
             };
         };
@@ -321,6 +350,9 @@ angular.module('app.common.map.services', [])
             empty: BaseMapLayers.createLayer('empty')
         };
 
+        var naturaLayer = BaseMapLayers.createLayer('natura');
+        naturaLayer.layerOptions.pane = 'overlayPane'; // Otherwise this will be hidden when base layer is been changed
+
         var mapOverlays = {
             // Style definition contains hard-coded counts of known distinct layer features
             hirvi: VectorMapLayers.createLayer('hirvi', VectorMapLayers.createRandomColourFunction(348)),
@@ -343,7 +375,8 @@ angular.module('app.common.map.services', [])
                 fill: false,
                 weight: 5.0,
                 color: 'blue'
-            })
+            }),
+            natura: naturaLayer
         };
 
         this.create = function (cfg) {
@@ -558,6 +591,42 @@ angular.module('app.common.map.services', [])
         this.listMetsahallitusHirviByYear = function (year) {
             var params = {year: year};
             return $http.get('/api/v1/gis/mh/hirvi', {params: params});
+        };
+
+        this.getNaturaInfoLatlng = function (map, latlng) {
+            var geoLocation = WGS84.toETRS(latlng.lat, latlng.lng);
+            return this.getNaturaAreaInfo(map, {
+                longitude: geoLocation.lng,
+                latitude: geoLocation.lat,
+                accuracy: 0,
+                source: 'MANUAL'
+            });
+        };
+
+        this.getNaturaAreaInfo = function (map, geoLocation) {
+            var tileSize = {x: 256, y: 256}; // The only tile size available
+            var zoomLevel = 14;              // Use zoom detail enough
+            var pixelPoint = map.project(WGS84.fromETRS(geoLocation.latitude, geoLocation.longitude), zoomLevel).floor();
+            var unscaledPoint = pixelPoint.unscaleBy(tileSize);
+            var params = {
+                zoomLevel: zoomLevel,
+                tileX: unscaledPoint.floor().x,
+                tileY: unscaledPoint.floor().y,
+                pixelX: (unscaledPoint.x * tileSize.x) % tileSize.x,
+                pixelY: (unscaledPoint.y * tileSize.y) % tileSize.y
+            };
+            return $http.get('/api/v1/gis/naturainfo', {params: params});
+        };
+
+        this._getNaturaAreaInfo = function (zoomLevel, tileX, tileY, pixelX, pixelY) {
+            var params = {
+                zoomLevel: zoomLevel,
+                tileX: tileX,
+                tileY: tileY,
+                pixelX: pixelX,
+                pixelY: pixelY
+            };
+            return $http.get('/api/v1/gis/naturainfo', {params: params});
         };
     })
 

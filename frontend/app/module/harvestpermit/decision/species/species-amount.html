@@ -10,14 +10,14 @@
     </div>
 
     <div class="modal-body">
-        <div class="row">
+        <div class="row" ng-if="!$ctrl.nestRemovalApplicationType">
             <div class="col-xs-6">
                 <div class="row" style="margin-bottom: 6px">
                     <div class="col-xs-5 col-xs-offset-2">
-                        <strong translate="harvestpermit.decision.species.modal.applicationAmount"></strong>
+                        <strong translate="decision.species.modal.applicationAmount"></strong>
                     </div>
                     <div class="col-xs-5">
-                        <strong translate="harvestpermit.decision.species.modal.decisionAmount"></strong>
+                        <strong translate="decision.species.modal.decisionAmount"></strong>
                     </div>
                 </div>
 
@@ -34,7 +34,7 @@
                             <div class="input-group">
                                 <input class="form-control no-spinner"
                                        disabled
-                                       ng-value="spa.applicationAmount">
+                                       ng-value="spa.applicationSpecimenAmount">
                                 <div class="input-group-addon" translate="global.pcs"></div>
                             </div>
                         </div>
@@ -46,9 +46,9 @@
                                 <input name="amount-{{spa.id}}" id="amount-{{spa.id}}" type="number"
                                        class="form-control no-spinner"
                                        required
-                                       ng-model="spa.amount"
+                                       ng-model="spa.specimenAmount"
                                        min="0"
-                                       ng-max="spa.applicationAmount"
+                                       ng-max="spa.applicationSpecimenAmount"
                                        step="0.5">
                                 <div class="input-group-addon" translate="global.pcs"></div>
                             </div>
@@ -66,10 +66,10 @@
             <div class="col-xs-6" ng-if="$ctrl.restrictionsInUse">
                 <div class="row" style="margin-bottom: 6px">
                     <div class="col-xs-6">
-                        <strong translate="harvestpermit.decision.species.modal.restrictionType"></strong>
+                        <strong translate="decision.species.modal.restrictionType"></strong>
                     </div>
                     <div class="col-xs-6">
-                        <strong translate="harvestpermit.decision.species.modal.restrictionAmount"></strong>
+                        <strong translate="decision.species.modal.restrictionAmount"></strong>
                     </div>
                 </div>
 
@@ -80,11 +80,11 @@
                                     class="form-control"
                                     ng-model="spa.restrictionType">
                                 <option value=""
-                                        translate="harvestpermit.decision.species.modal.noRestriction"></option>
+                                        translate="decision.species.modal.noRestriction"></option>
                                 <option value="AE"
-                                        translate="harvestpermit.decision.species.modal.restrictionAE"></option>
+                                        translate="decision.species.modal.restrictionAE"></option>
                                 <option value="AU"
-                                        translate="harvestpermit.decision.species.modal.restrictionAU"></option>
+                                        translate="decision.species.modal.restrictionAU"></option>
                             </select>
                         </div>
                     </div>
@@ -96,7 +96,7 @@
                                        id="restrictionAmount-{{spa.id}}"
                                        class="form-control no-spinner"
                                        min="1"
-                                       ng-max="spa.amount"
+                                       ng-max="spa.specimenAmount"
                                        ng-disabled="!spa.restrictionType"
                                        ng-required="spa.restrictionType"
                                        ng-model="spa.restrictionAmount">
@@ -114,16 +114,118 @@
             </div>
         </div>
 
+        <div class="row" ng-if="$ctrl.nestRemovalApplicationType">
+            <div class="col-xs-12">
+                <div class="row" style="margin-bottom: 6px">
+                    <div class="col-xs-2">
+                        <strong translate="decision.species.modal.applicationNestAmount"></strong>
+                    </div>
+                    <div class="col-xs-2">
+                        <strong translate="decision.species.modal.decisionNestAmount"></strong>
+                    </div>
+                    <div class="col-xs-2">
+                        <strong translate="decision.species.modal.applicationConstructionAmount"></strong>
+                    </div>
+                    <div class="col-xs-2">
+                        <strong translate="decision.species.modal.decisionConstructionAmount"></strong>
+                    </div>
+                    <div class="col-xs-2" ng-if="$ctrl.isBirdPermitSpecies($ctrl.speciesAmountList[0].gameSpeciesCode)">
+                        <strong translate="decision.species.modal.applicationEggAmount"></strong>
+                    </div>
+                    <div class="col-xs-2" ng-if="$ctrl.isBirdPermitSpecies($ctrl.speciesAmountList[0].gameSpeciesCode)">
+                        <strong translate="decision.species.modal.decisionEggAmount"></strong>
+                    </div>
+                </div>
+
+                <div class="row" ng-repeat="spa in $ctrl.speciesAmountList track by spa.id">
+                    <div class="col-xs-2">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input class="form-control no-spinner"
+                                       disabled
+                                       ng-value="spa.applicationNestAmount">
+                                <div class="input-group-addon" translate="global.pcs"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-2">
+                        <div class="form-group" show-errors>
+                            <div class="input-group">
+                                <input name="amount-nest-{{spa.id}}" id="amount-nest-{{spa.id}}" type="number"
+                                       class="form-control no-spinner"
+                                       ng-model="spa.nestAmount"
+                                       min="0"
+                                       ng-max="spa.applicationNestAmount"
+                                       step="1"
+                                       ng-disabled="!spa.applicationNestAmount">
+                                <div class="input-group-addon" translate="global.pcs"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-2">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input class="form-control no-spinner"
+                                       disabled
+                                       ng-value="spa.applicationConstructionAmount">
+                                <div class="input-group-addon" translate="global.pcs"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-2">
+                        <div class="form-group" show-errors>
+                            <div class="input-group">
+                                <input name="amount-construction-{{spa.id}}" id="amount-construction-{{spa.id}}" type="number"
+                                       class="form-control no-spinner"
+                                       ng-model="spa.constructionAmount"
+                                       min="0"
+                                       ng-max="spa.applicationConstructionAmount"
+                                       step="1"
+                                       ng-disabled="!spa.applicationConstructionAmount">
+                                <div class="input-group-addon" translate="global.pcs"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-2" ng-if="$ctrl.isBirdPermitSpecies(spa.gameSpeciesCode)">
+                        <div class="form-group">
+                            <div class="input-group">
+                                <input class="form-control no-spinner"
+                                       disabled
+                                       ng-value="spa.applicationEggAmount">
+                                <div class="input-group-addon" translate="global.pcs"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-2" ng-if="$ctrl.isBirdPermitSpecies(spa.gameSpeciesCode)">
+                        <div class="form-group" show-errors>
+                            <div class="input-group">
+                                <input name="amount-egg-{{spa.id}}" id="amount-egg-{{spa.id}}" type="number"
+                                       class="form-control no-spinner"
+                                       ng-model="spa.eggAmount"
+                                       min="0"
+                                       ng-max="spa.applicationEggAmount"
+                                       step="1"
+                                       ng-disabled="!spa.applicationEggAmount">
+                                <div class="input-group-addon" translate="global.pcs"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row" style="margin-top: 10px">
             <div class="col-xs-6">
                 <fieldset>
-                    <legend translate="harvestpermit.decision.species.modal.beginAndEndDate1"></legend>
+                    <legend translate="decision.species.modal.beginAndEndDate1"></legend>
                 </fieldset>
             </div>
 
             <div class="col-xs-6">
                 <fieldset>
-                    <legend translate="harvestpermit.decision.species.modal.beginAndEndDate2"></legend>
+                    <legend translate="decision.species.modal.beginAndEndDate2"></legend>
                 </fieldset>
             </div>
         </div>
@@ -247,11 +349,11 @@
             </div>
 
             <div class="col-xs-12" ng-if="$ctrl.showDurationError(spa)">
-                <p class="text-danger" translate="harvestpermit.decision.species.modal.errorOver365"></p>
+                <p class="text-danger" translate="decision.species.modal.errorOver365"></p>
             </div>
 
             <div class="col-xs-12" ng-if="$ctrl.showOverlapError(spa)">
-                <p class="text-danger" translate="harvestpermit.decision.species.modal.errorOverlap"></p>
+                <p class="text-danger" translate="decision.species.modal.errorOverlap"></p>
             </div>
         </div>
     </div>

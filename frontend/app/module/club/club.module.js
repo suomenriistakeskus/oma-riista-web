@@ -5,6 +5,8 @@ angular.module('app.club', [
     'app.club.services',
     'app.club.members',
     'app.club.permits',
+    'app.club.reports',
+    'app.club.harvestsummary',
     'app.clubgroup.members',
     'app.clubgroup.datacard',
     'app.clubgroup.controllers',

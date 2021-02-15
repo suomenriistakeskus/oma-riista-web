@@ -1,7 +1,7 @@
 package fi.riista.feature.account.password;
 
 import fi.riista.validation.XssSafe;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Size;

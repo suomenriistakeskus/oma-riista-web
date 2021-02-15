@@ -37,7 +37,7 @@ import static fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.Spe
 
 @Entity
 @Access(AccessType.FIELD)
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"club_id", "harvest_permit_id"})})
+//@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"club_id", "harvest_permit_id"})})
 public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeginAndEndDate, MutableHuntingEndStatus {
 
     private Long id;

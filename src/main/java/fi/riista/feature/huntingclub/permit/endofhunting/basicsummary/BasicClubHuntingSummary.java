@@ -35,7 +35,7 @@ import java.util.Optional;
 
 @Entity
 @Access(AccessType.FIELD)
-@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"club_id", "species_amount_id"})})
+//@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"club_id", "species_amount_id"})})
 public class BasicClubHuntingSummary extends LifecycleEntity<Long> implements MutableHuntingEndStatus {
 
     private Long id;

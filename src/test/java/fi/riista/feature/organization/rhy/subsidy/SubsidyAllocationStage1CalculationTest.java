@@ -56,15 +56,15 @@ public class SubsidyAllocationStage1CalculationTest
                 calculateAllocationOfRhySubsidyToEachCriterion(
                         allRhyStatistics, totalAllocatableSubsidyAmount, subsidyYear);
 
-        final List<BasicSubsidyAllocationDTO> result =
-                calculateStatisticsBasedSubsidyAllocation(allRhyStatistics, criteriaSpecificAllocations);
+        final List<RhySubsidyStage1DTO> result =
+                calculateStatisticsBasedSubsidyAllocation(subsidyYear, allRhyStatistics, criteriaSpecificAllocations);
 
         assertEquals(2, result.size());
 
-        final BasicSubsidyAllocationDTO allocation1 = result.get(0);
+        final RhySubsidyStage1DTO allocation1 = result.get(0);
 
-        assertOrganisationTransformation(rhy1, allocation1.getRhy());
-        assertOrganisationTransformation(rka, allocation1.getRka());
+        assertOrganisationTransformation(rhy1, allocation1.getOrganisationInfo().getRhy());
+        assertOrganisationTransformation(rka, allocation1.getOrganisationInfo().getRka());
 
         final StatisticsBasedSubsidyShareDTO expectedShares1 = StatisticsBasedSubsidyShareDTO
                 .builder()
@@ -81,16 +81,13 @@ public class SubsidyAllocationStage1CalculationTest
                 .withSoldMhLicenses(500, bd("5000.00"))
                 .build();
 
-        assertEquality(expectedShares1, allocation1.getCalculatedShares());
-        assertEquals(currency(209_166), allocation1.getTotalRoundedShare());
+        assertEquality(subsidyYear, expectedShares1, allocation1.getCalculation().getCalculatedShares());
+        assertEquals(currency(209_166), allocation1.getCalculation().getTotalRoundedShare());
 
-        // Remainder euros are not calculated in this stage.
-        assertEquals(0, allocation1.getGivenRemainderEuros());
+        final RhySubsidyStage1DTO allocation2 = result.get(1);
 
-        final BasicSubsidyAllocationDTO allocation2 = result.get(1);
-
-        assertOrganisationTransformation(rhy2, allocation2.getRhy());
-        assertOrganisationTransformation(rka, allocation2.getRka());
+        assertOrganisationTransformation(rhy2, allocation2.getOrganisationInfo().getRhy());
+        assertOrganisationTransformation(rka, allocation2.getOrganisationInfo().getRka());
 
         final StatisticsBasedSubsidyShareDTO expectedShares2 = StatisticsBasedSubsidyShareDTO
                 .builder()
@@ -107,11 +104,8 @@ public class SubsidyAllocationStage1CalculationTest
                 .withSoldMhLicenses(2_000, bd("20000.00"))
                 .build();
 
-        assertEquality(expectedShares2, allocation2.getCalculatedShares());
-        assertEquals(currency(790_833), allocation2.getTotalRoundedShare());
-
-        // Remainder euros are not calculated in this stage.
-        assertEquals(0, allocation2.getGivenRemainderEuros());
+        assertEquality(subsidyYear, expectedShares2, allocation2.getCalculation().getCalculatedShares());
+        assertEquals(currency(790_833), allocation2.getCalculation().getTotalRoundedShare());
     }
 
     private RiistakeskuksenAlue newRka(final String officialCode) {

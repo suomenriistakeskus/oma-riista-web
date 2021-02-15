@@ -13,7 +13,6 @@ import org.joda.time.DateTime;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -96,7 +95,7 @@ public final class GameDiarySpecs {
 
     @Nonnull
     public static Specification<Harvest> harvestReportRequiredAndMissing() {
-        return Specifications
+        return Specification
                 .where(equal(Harvest_.harvestReportRequired, true))
                 .and(isNull(Harvest_.harvestReportState));
     }
@@ -135,6 +134,6 @@ public final class GameDiarySpecs {
 
     @Nonnull
     public static JpaSort temporalSort(@Nullable final Direction direction) {
-        return new JpaSort(direction, GameDiaryEntry_.pointOfTime, Harvest_.id);
+        return JpaSort.of(direction, GameDiaryEntry_.pointOfTime, Harvest_.id);
     }
 }

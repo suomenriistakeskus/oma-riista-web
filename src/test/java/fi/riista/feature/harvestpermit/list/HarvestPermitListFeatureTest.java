@@ -10,7 +10,6 @@ import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 
+import static fi.riista.util.DateUtil.huntingYear;
 import static org.junit.Assert.assertEquals;
 
 public class HarvestPermitListFeatureTest extends EmbeddedDatabaseTest {
@@ -103,7 +103,7 @@ public class HarvestPermitListFeatureTest extends EmbeddedDatabaseTest {
             final List<MooselikeHuntingYearDTO> years = harvestPermitListFeature.listRhyMooselikeHuntingYears(rhy.getId());
             assertEquals(1, years.size());
 
-            final int year = DateUtil.currentYear();
+            final int year = huntingYear();
             assertEquals(year, permit.getPermitYear());
 
             final List<MooselikePermitListDTO> permits = harvestPermitListFeature.listRhyMooselikePermits(rhy.getId(), year, GameSpecies.OFFICIAL_CODE_MOOSE, null);

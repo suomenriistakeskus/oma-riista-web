@@ -64,13 +64,34 @@
                 </div>
             </div>
         </div>
-        <div class="permit-section">
+        <div class="permit-section" ng-if="$ctrl.isHarvestApplication()">
             <div class="permit-section-header" translate="harvestpermit.mine.applications.species"></div>
-            <div class="permit-section-content">
-                <div ng-repeat="spa in ::$ctrl.application.speciesAmounts track by spa.gameSpeciesCode">
+            <div class="permit-section-content" ng-switch="$ctrl.isNestRemovalApplication()">
+                <div ng-switch-when="false" ng-repeat="spa in ::$ctrl.application.speciesAmounts track by spa.gameSpeciesCode">
                     <span ng-bind="::(spa.gameSpeciesCode | translateSpeciesCode)"></span>
-                    <span ng-bind="::spa.amount"></span>
-                    <span translate="global.pcs"></span>
+                    <span ng-bind="::spa.harvestAmount"></span>
+                    <span ng-if="::!!spa.harvestAmount" translate="global.pcs"></span>
+                    <span ng-bind="::spa.eggAmount"></span>
+                    <span ng-if="::!!spa.eggAmount" translate="harvestpermit.management.dashboard.permittedAmount.egg"></span>
+                </div>
+                <div ng-switch-when="true" ng-repeat="spa in ::$ctrl.application.speciesAmounts track by spa.gameSpeciesCode">
+                    <div>
+                        <span ng-bind="::(spa.gameSpeciesCode | translateSpeciesCode)"></span>
+                    </div>
+                    <div style="padding-left: 15px">
+                        <span ng-if="::spa.nestAmount">
+                            <span ng-bind="::spa.nestAmount"></span>
+                            <span translate="harvestpermit.management.dashboard.permittedAmount.nest"></span>
+                        </span>
+                        <span ng-if="::spa.constructionAmount">
+                            <span ng-bind="::spa.constructionAmount"></span>
+                            <span translate="harvestpermit.management.dashboard.permittedAmount.construction"></span>
+                        </span>
+                        <span ng-if="::spa.eggAmount">
+                            <span ng-bind="::spa.eggAmount"></span>
+                            <span translate="harvestpermit.management.dashboard.permittedAmount.egg"></span>
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -79,7 +100,8 @@
             <button class="btn btn-default btn-danger pull-left"
                     ng-if="::($ctrl.canDelete())"
                     ng-confirm-click="{{'harvestpermit.mine.applications.deleteConfirmation' | translate}}"
-                    ng-confirm-click-action="$ctrl.delete()">
+                    ng-confirm-click-action="$ctrl.delete()"
+                    ng-disabled="$ctrl.actionDisabled()">
                 <span class="fa fa-fw fa-remove"></span>
                 <span translate="global.button.delete"></span>
             </button>
@@ -87,14 +109,16 @@
             <button type="button"
                     class="btn btn-default"
                     ng-click="$ctrl.pdf()"
-                    ng-if="::($ctrl.application.status == 'DRAFT')">
+                    ng-if="::($ctrl.application.status == 'DRAFT')"
+                    ng-disabled="$ctrl.actionDisabled()">
                 <span class="fa fa-fw fa-file-pdf-o"></span>
                 <span translate="harvestpermit.mine.applications.pdfButton"></span>
             </button>
 
             <button type="button" class="btn btn-primary"
                     ng-if="::($ctrl.application.status == 'DRAFT')"
-                    ng-click="$ctrl.edit()">
+                    ng-click="$ctrl.edit()"
+                    ng-disabled="$ctrl.actionDisabled()">
                 <span class="fa fa-fw fa-edit"></span>
                 <span translate="global.button.edit"></span>
             </button>
@@ -102,13 +126,14 @@
             <div class="btn-group"
                  ng-if="::($ctrl.application.status === 'ACTIVE')"
                  uib-dropdown dropdown-append-to-body>
-                <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                <button type="button" class="btn btn-default" uib-dropdown-toggle
+                        ng-disabled="$ctrl.actionDisabled()">
                     <span translate="harvestpermit.mine.applications.download"></span>
                     &nbsp;
                     <span class="caret"></span>
                 </button>
 
-                <ul class="dropdown-menu" uib-dropdown-menu>
+                <ul class="dropdown-menu" uib-dropdown-menu ng-disabled="$ctrl.actionDisabled()">
                     <li>
                         <a ng-click="$ctrl.pdf()">
                             <span translate="harvestpermit.mine.applications.pdfButton"></span>
@@ -131,7 +156,8 @@
 
             <button type="button" class="btn btn-primary"
                     ng-if="::($ctrl.application.status === 'ACTIVE')"
-                    ng-click="$ctrl.view()">
+                    ng-click="$ctrl.view()"
+                    ng-disabled="$ctrl.actionDisabled()">
                 <span translate="global.button.open"></span>
             </button>
         </div>

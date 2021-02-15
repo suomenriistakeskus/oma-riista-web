@@ -12,6 +12,7 @@ import fi.riista.feature.huntingclub.hunting.rejection.ObservationRejection;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImport;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.util.DateUtil;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.jpa.CriteriaUtils;
 import org.joda.time.DateTime;
@@ -26,12 +27,9 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
@@ -76,9 +74,8 @@ public class HuntingClubGroup extends Organisation {
     @JoinColumn(name = "harvest_permit_id")
     private HarvestPermit harvestPermit;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column
-    private Date harvestPermitModificationTime;
+    private DateTime harvestPermitModificationTime;
 
     @Column(insertable = true, updatable = false)
     private Boolean fromMooseDataCard = false;
@@ -143,7 +140,7 @@ public class HuntingClubGroup extends Organisation {
     public void updateHarvestPermit(final HarvestPermit newPermit) {
         if (!Objects.equals(this.harvestPermit, newPermit)) {
             // use joda time to enable wall time tweaking in tests
-            setHarvestPermitModificationTime(new DateTime().toDate());
+            setHarvestPermitModificationTime(DateUtil.now());
         }
         setHarvestPermit(newPermit);
     }
@@ -184,12 +181,12 @@ public class HuntingClubGroup extends Organisation {
         this.harvestPermit = harvestPermit;
     }
 
-    public Date getHarvestPermitModificationTime() {
+    public DateTime getHarvestPermitModificationTime() {
         return harvestPermitModificationTime;
     }
 
     // package private because when updating modification time we want tp update permit too
-    void setHarvestPermitModificationTime(final Date harvestPermitModificationTime) {
+    void setHarvestPermitModificationTime(final DateTime harvestPermitModificationTime) {
         this.harvestPermitModificationTime = harvestPermitModificationTime;
     }
 

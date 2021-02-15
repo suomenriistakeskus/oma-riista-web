@@ -5,7 +5,9 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQueryFactory;
+import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitNotFoundException;
@@ -14,7 +16,7 @@ import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermitContactPerson;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.permit.PermitTypeCode;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -24,32 +26,48 @@ import java.util.Optional;
 
 import static com.querydsl.core.types.ExpressionUtils.and;
 import static com.querydsl.core.types.ExpressionUtils.or;
+import static fi.riista.feature.permit.PermitTypeCode.CANNOT_LINK_HARVESTS;
 import static java.util.Arrays.asList;
 import static java.util.Objects.requireNonNull;
 
-@Component
+@Service
 public class MobileHarvestPermitFeature {
-
-    @Resource
-    private ActiveUserService activeUserService;
 
     @Resource
     private HarvestPermitRepository harvestPermitRepository;
 
     @Resource
+    private ActiveUserService activeUserService;
+
+    @Resource
+    private DeerPilotService deerPilotService;
+
+    @Resource
     private JPQLQueryFactory queryFactory;
 
     @Transactional(readOnly = true)
-    public MobileHarvestPermitExistsDTO findPermitNumber(final String permitNumber) {
+    public MobileHarvestPermitExistsDTO findPermitNumber(final String permitNumber,
+                                                         @Nonnull final HarvestSpecVersion specVersion) {
+
+        // TODO Remove this when deer pilot 2020 is over.
+        final HarvestSpecVersion revisedSpecVersion =
+                specVersion.revertIfNotOnDeerPilot(deerPilotService.isPilotUser());
+
         return Optional.ofNullable(harvestPermitRepository.findByPermitNumber(permitNumber))
-                .map(MobileHarvestPermitExistsDTO::create)
+                .filter(permit -> PermitTypeCode.canLinkHarvests(permit.getPermitTypeCode()))
+                .map(permit -> MobileHarvestPermitExistsDTO.create(permit, revisedSpecVersion))
                 .orElseThrow(() -> new HarvestPermitNotFoundException(permitNumber));
     }
 
     @Transactional(readOnly = true)
-    public List<MobileHarvestPermitExistsDTO> preloadPermits() {
+    public List<MobileHarvestPermitExistsDTO> preloadPermits(@Nonnull final HarvestSpecVersion specVersion) {
         final Person person = activeUserService.requireActivePerson();
-        return MobileHarvestPermitExistsDTO.create(findPermits(person));
+
+        // TODO Remove this when deer pilot 2020 is over.
+        final HarvestSpecVersion revisedSpecVersion =
+                specVersion.revertIfNotOnDeerPilot(deerPilotService.isPilotUser(person));
+
+        return MobileHarvestPermitExistsDTO.create(findPermits(person), revisedSpecVersion);
     }
 
     private List<HarvestPermit> findPermits(final Person person) {
@@ -66,16 +84,15 @@ public class MobileHarvestPermitFeature {
         public static Predicate create(final @Nonnull Person person) {
             requireNonNull(person);
 
-            return and(notMoosePermit(), or(
+            return and(notListedPermits(), or(
                     harvestAuthorOrShooter(person),
                     and(isPermitContactPerson(person), or(
                             notHarvestsAsList(),
                             notHarvestReportDone()))));
         }
 
-        private static Predicate notMoosePermit() {
-            return ExpressionUtils.notIn(PERMIT.permitTypeCode,
-                    asList(PermitTypeCode.MOOSELIKE, PermitTypeCode.MOOSELIKE_AMENDMENT));
+        private static Predicate notListedPermits() {
+            return ExpressionUtils.notIn(PERMIT.permitTypeCode, CANNOT_LINK_HARVESTS);
         }
 
         private static BooleanExpression notHarvestsAsList() {

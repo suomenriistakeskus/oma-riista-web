@@ -1,5 +1,6 @@
 package fi.riista.feature.organization.jht.nomination;
 
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.jht.email.NotifyJhtOccupationNominationToRkaEmailDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
@@ -17,10 +18,13 @@ public interface OccupationNominationRepositoryCustom {
     Page<OccupationNomination> searchPage(
             Pageable pageRequest, OccupationType occupationType,
             OccupationNomination.NominationStatus nominationStatus,
+            RiistakeskuksenAlue rka,
             Riistanhoitoyhdistys rhy,
             Person person,
             LocalDate beginDate,
             LocalDate endDate);
 
     List<NotifyJhtOccupationNominationToRkaEmailDTO> findRkaNotifications(LocalDate nominationDate);
+
+    LocalDate findProposalDateForNomination(Riistanhoitoyhdistys rhy, OccupationType occupationType);
 }

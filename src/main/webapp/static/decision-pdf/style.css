@@ -141,6 +141,21 @@ hr {
     width: 60%;
 }
 
+.table-classified {
+    width: 100%;
+    border: 3px solid red;
+}
+
+.table-classified > tbody > tr > td {
+    color: red;
+    text-align: center;
+    padding: 5px
+}
+
+.table-classified > tbody > tr > td.classified-bold {
+    font-weight: bold;
+}
+
 /*-------------- BODY -------------------------- */
 
 .layout-container {
@@ -175,6 +190,7 @@ hr {
 
 .layout-container ul > li {
     margin: 6pt 0;
+    page-break-inside: avoid !important;
 }
 
 .layout-container ol {

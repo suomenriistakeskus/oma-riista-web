@@ -1,8 +1,8 @@
 package fi.riista.integration.metsastajarekisteri.input;
 
 import com.google.common.io.CharStreams;
+import fi.riista.config.Constants;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.h2.engine.Constants;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -55,7 +55,7 @@ public class MetsastajaRekisteriBufferedReaderFactoryTest {
     private String readContent(final String fileName) throws IOException {
         final ClassPathResource resource = new ClassPathResource(fileName, this.getClass());
 
-        try (BufferedReader bufferedReader = readerFactory.create(resource, Constants.UTF8.name())) {
+        try (BufferedReader bufferedReader = readerFactory.create(resource, Constants.DEFAULT_CHARSET.name())) {
             final StringBuilder to = new StringBuilder();
             CharStreams.copy(bufferedReader, to);
             return to.toString();

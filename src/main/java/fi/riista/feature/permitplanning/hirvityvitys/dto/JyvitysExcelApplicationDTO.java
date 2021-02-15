@@ -10,6 +10,7 @@ import static java.util.Objects.requireNonNull;
 public class JyvitysExcelApplicationDTO {
 
     public static final class Builder {
+        private Integer applicationNumber;
         private String applicant;
         private double appliedAmount;
         private int shooterOnlyClub;
@@ -22,6 +23,11 @@ public class JyvitysExcelApplicationDTO {
 
         public static Builder builder() {
             return new Builder();
+        }
+
+        public Builder withApplicationNumber(final int applicationNumber) {
+            this.applicationNumber = applicationNumber;
+            return this;
         }
 
         public Builder withApplicant(final String applicant) {
@@ -55,10 +61,12 @@ public class JyvitysExcelApplicationDTO {
         }
 
         public JyvitysExcelApplicationDTO build() {
-            return new JyvitysExcelApplicationDTO(applicant, appliedAmount, shooterOnlyClub, shooterOtherClubPassive, lohkoList, otherRhysInArea);
+            return new JyvitysExcelApplicationDTO(applicationNumber, applicant, appliedAmount, shooterOnlyClub,
+                    shooterOtherClubPassive, lohkoList, otherRhysInArea);
         }
     }
 
+    private final int applicationNumber;
     private final String applicant;
     private final double appliedAmount;
     private final int shooterOnlyClub;
@@ -68,18 +76,24 @@ public class JyvitysExcelApplicationDTO {
     private final List<JyvitysExcelApplicationVerotuslohkoDTO> lohkoList;
     private final List<String> otherRhysInArea;
 
-    private JyvitysExcelApplicationDTO(final @Nonnull String applicant,
+    private JyvitysExcelApplicationDTO(final int applicationNumber,
+                                       final @Nonnull String applicant,
                                        final double appliedAmount,
                                        final int shooterOnlyClub,
                                        final int shooterOtherClubPassive,
                                        final @Nonnull List<JyvitysExcelApplicationVerotuslohkoDTO> lohkoList,
                                        final @Nonnull List<String> otherRhysInArea) {
+        this.applicationNumber = applicationNumber;
         this.applicant = requireNonNull(applicant);
         this.appliedAmount = appliedAmount;
         this.shooterOnlyClub = shooterOnlyClub;
         this.shooterOtherClubPassive = shooterOtherClubPassive;
         this.lohkoList = ImmutableList.copyOf(lohkoList);
         this.otherRhysInArea = ImmutableList.copyOf(otherRhysInArea);
+    }
+
+    public int getApplicationNumber() {
+        return applicationNumber;
     }
 
     public String getApplicant() {

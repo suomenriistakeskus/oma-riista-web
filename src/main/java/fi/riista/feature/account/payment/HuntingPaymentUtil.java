@@ -16,7 +16,6 @@ public class HuntingPaymentUtil {
 
     static Set<Integer> getHuntingPaymentPdfYears(final LocalDate today, final Person person) {
         return DateUtil.streamCurrentAndNextHuntingYear(today)
-                .filter(HuntingPaymentInfo::isPaymentInfoAvailable)
                 .filter(person::isInvoiceReferenceAvailable)
                 .filter(person::isPaymentDateMissing)
                 .filter(year -> isPaymentAllowedForHuntingSeason(year, today))

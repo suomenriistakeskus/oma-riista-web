@@ -21,9 +21,20 @@ class HarvestPermitApplicationTypeFactory {
         return ImmutableList.of(
                 mooselikeForHuntingYear(calendarYear),
                 birdForCalendarYear(calendarYear),
+                mammalForCalendarYear(calendarYear),
                 bearForHuntingYear(calendarYear),
                 lynxForHuntingYear(calendarYear),
-                lynxPoronhoitoForHuntingYear(calendarYear));
+                lynxPoronhoitoForHuntingYear(calendarYear),
+                nestRemovalForCalendarYear(calendarYear),
+                lawSectionTenForCalendarYear(calendarYear),
+                weaponTransportationForCalendarYear(calendarYear),
+                disabilityForCalendarYear(calendarYear),
+                dogUnleashForCalendarYear(calendarYear),
+                dogDisturbanceForCalendarYear(calendarYear),
+                deportationForCalendarYear(calendarYear),
+                researchForCalendarYear(calendarYear),
+                importingForCalendarYear(calendarYear),
+                gameManagementForCalendarYear(calendarYear));
     }
 
     public HarvestPermitApplicationTypeDTO resolve(final HarvestPermitCategory category,
@@ -39,6 +50,28 @@ class HarvestPermitApplicationTypeFactory {
                 return lynxForHuntingYear(huntingYear);
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
                 return lynxPoronhoitoForHuntingYear(huntingYear);
+            case MAMMAL:
+                return mammalForCalendarYear(huntingYear);
+            case NEST_REMOVAL:
+                return nestRemovalForCalendarYear(huntingYear);
+            case LAW_SECTION_TEN:
+                return lawSectionTenForCalendarYear(huntingYear);
+            case WEAPON_TRANSPORTATION:
+                return weaponTransportationForCalendarYear(huntingYear);
+            case DISABILITY:
+                return disabilityForCalendarYear(huntingYear);
+            case DOG_UNLEASH:
+                return dogUnleashForCalendarYear(huntingYear);
+            case DOG_DISTURBANCE:
+                return dogDisturbanceForCalendarYear(huntingYear);
+            case DEPORTATION:
+                return deportationForCalendarYear(huntingYear);
+            case RESEARCH:
+                return researchForCalendarYear(huntingYear);
+            case IMPORTING:
+                return importingForCalendarYear(huntingYear);
+            case GAME_MANAGEMENT:
+                return gameManagementForCalendarYear(huntingYear);
             default:
                 throw new IllegalArgumentException("Unknown permit category:" + category);
         }
@@ -46,7 +79,7 @@ class HarvestPermitApplicationTypeFactory {
     }
 
     HarvestPermitApplicationTypeDTO mooselikeForHuntingYear(final int huntingYear) {
-        final LocalDate begin = new LocalDate(huntingYear, 4, 3);
+        final LocalDate begin = new LocalDate(huntingYear, 4, 1);
         final LocalDate end = new LocalDate(huntingYear, 4, 30);
 
         return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.MOOSELIKE)
@@ -64,22 +97,27 @@ class HarvestPermitApplicationTypeFactory {
                 .build();
     }
 
-    HarvestPermitApplicationTypeDTO bearForHuntingYear(final int calendarYear) {
-        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.LARGE_CARNIVORE_BEAR)
+    HarvestPermitApplicationTypeDTO mammalForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.MAMMAL)
                 .withHuntingYear(calendarYear)
-                .withActiveOverride(false)
                 .withToday(today)
                 .build();
     }
 
+    HarvestPermitApplicationTypeDTO bearForHuntingYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.LARGE_CARNIVORE_BEAR)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .withActiveOverride(false)
+                .build();
+    }
+
     HarvestPermitApplicationTypeDTO lynxForHuntingYear(final int calendarYear) {
-        final LocalDate begin = new LocalDate(calendarYear, 9, 10);
-        final LocalDate end = new LocalDate(calendarYear, 9, 30);
         return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.LARGE_CARNIVORE_LYNX)
                 .withHuntingYear(calendarYear)
                 .withToday(today)
-                .withBegin(begin)
-                .withEnd(end)
+                .withBegin(new LocalDate(2020, 9, 11))
+                .withEnd(new LocalDate(2020, 10, 23))
                 .build();
     }
 
@@ -88,6 +126,76 @@ class HarvestPermitApplicationTypeFactory {
                 .withHuntingYear(calendarYear)
                 .withToday(today)
                 .withActiveOverride(false)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO nestRemovalForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.NEST_REMOVAL)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO lawSectionTenForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.LAW_SECTION_TEN)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO weaponTransportationForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.WEAPON_TRANSPORTATION)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO dogUnleashForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.DOG_UNLEASH)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO dogDisturbanceForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.DOG_DISTURBANCE)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO disabilityForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.DISABILITY)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO deportationForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.DEPORTATION)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO researchForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.RESEARCH)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO importingForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.IMPORTING)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
+                .build();
+    }
+
+    HarvestPermitApplicationTypeDTO gameManagementForCalendarYear(final int calendarYear) {
+        return HarvestPermitApplicationTypeDTO.Builder.builder(HarvestPermitCategory.GAME_MANAGEMENT)
+                .withHuntingYear(calendarYear)
+                .withToday(today)
                 .build();
     }
 }

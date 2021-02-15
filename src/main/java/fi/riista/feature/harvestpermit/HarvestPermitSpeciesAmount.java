@@ -25,8 +25,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -60,8 +67,17 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private GameSpecies gameSpecies;
 
-    @Column(nullable = false)
-    private float amount;
+    @Column(name = "amount")
+    private Float specimenAmount;
+
+    @Column
+    private Integer nestAmount;
+
+    @Column
+    private Integer eggAmount;
+
+    @Column
+    private Integer constructionAmount;
 
     @NotNull
     @Column(nullable = false)
@@ -95,20 +111,84 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
     public HarvestPermitSpeciesAmount() {
     }
 
-    public HarvestPermitSpeciesAmount(final HarvestPermit harvestPermit,
-                                      final GameSpecies gameSpecies,
-                                      final float amount,
-                                      final RestrictionType restrictionType,
-                                      final Float restrictionAmount,
-                                      final LocalDate beginDate,
-                                      final LocalDate endDate) {
+    public static HarvestPermitSpeciesAmount createForHarvest(final HarvestPermit harvestPermit,
+                                                              final GameSpecies gameSpecies,
+                                                              final float amount,
+                                                              final RestrictionType restrictionType,
+                                                              final Float restrictionAmount,
+                                                              final LocalDate beginDate,
+                                                              final LocalDate endDate) {
+        final HarvestPermitSpeciesAmount spa = new HarvestPermitSpeciesAmount(harvestPermit,
+                gameSpecies,
+                restrictionType,
+                restrictionAmount,
+                beginDate,
+                endDate);
+        spa.setSpecimenAmount(amount);
+        return spa;
+    }
+
+    public static HarvestPermitSpeciesAmount createForNestRemoval(final HarvestPermit harvestPermit,
+                                                                  final GameSpecies gameSpecies,
+                                                                  final Integer nestAmount,
+                                                                  final Integer eggAmount,
+                                                                  final Integer constructionAmount,
+                                                                  final RestrictionType restrictionType,
+                                                                  final Float restrictionAmount,
+                                                                  final LocalDate beginDate,
+                                                                  final LocalDate endDate) {
+        final HarvestPermitSpeciesAmount spa = new HarvestPermitSpeciesAmount(harvestPermit,
+                gameSpecies,
+                restrictionType,
+                restrictionAmount,
+                beginDate,
+                endDate);
+        spa.setNestAmount(nestAmount);
+        spa.setEggAmount(eggAmount);
+        spa.setConstructionAmount(constructionAmount);
+        return spa;
+    }
+
+    public static HarvestPermitSpeciesAmount createWithSpecimenOrEggs(final HarvestPermit harvestPermit,
+                                                                      final GameSpecies gameSpecies,
+                                                                      final Float specimenAmount,
+                                                                      final Integer eggAmount,
+                                                                      final LocalDate beginDate,
+                                                                      final LocalDate endDate) {
+
+        checkArgument(F.firstNonNull(specimenAmount, eggAmount) != null);
+
+        final HarvestPermitSpeciesAmount spa = new HarvestPermitSpeciesAmount(harvestPermit,
+                gameSpecies,
+                null,
+                null,
+                beginDate,
+                endDate);
+        spa.setSpecimenAmount(specimenAmount);
+        spa.setEggAmount(eggAmount);
+        return spa;
+    }
+
+    private HarvestPermitSpeciesAmount(final HarvestPermit harvestPermit,
+                                       final GameSpecies gameSpecies,
+                                       final RestrictionType restrictionType,
+                                       final Float restrictionAmount,
+                                       final LocalDate beginDate,
+                                       final LocalDate endDate) {
         this.harvestPermit = harvestPermit;
         this.gameSpecies = gameSpecies;
-        this.amount = amount;
         this.restrictionType = restrictionType;
         this.restrictionAmount = restrictionAmount;
         this.beginDate = beginDate;
         this.endDate = endDate;
+    }
+
+    @AssertTrue
+    public boolean isValidAmount() {
+        final List<Integer> nestRemovalAmounts = Stream.of(nestAmount, eggAmount, constructionAmount)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return specimenAmount != null || !nestRemovalAmounts.isEmpty();
     }
 
     @Id
@@ -141,12 +221,36 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
         this.gameSpecies = gameSpecies;
     }
 
-    public float getAmount() {
-        return amount;
+    public Float getSpecimenAmount() {
+        return specimenAmount;
     }
 
-    public void setAmount(float amount) {
-        this.amount = amount;
+    public void setSpecimenAmount(Float harvestAmount) {
+        this.specimenAmount = harvestAmount;
+    }
+
+    public Integer getNestAmount() {
+        return nestAmount;
+    }
+
+    public void setNestAmount(final Integer nestAmount) {
+        this.nestAmount = nestAmount;
+    }
+
+    public Integer getEggAmount() {
+        return eggAmount;
+    }
+
+    public void setEggAmount(final Integer eggAmount) {
+        this.eggAmount = eggAmount;
+    }
+
+    public Integer getConstructionAmount() {
+        return constructionAmount;
+    }
+
+    public void setConstructionAmount(final Integer constructionAmount) {
+        this.constructionAmount = constructionAmount;
     }
 
     public RestrictionType getRestrictionType() {

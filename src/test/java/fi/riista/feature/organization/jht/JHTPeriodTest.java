@@ -1,6 +1,5 @@
 package fi.riista.feature.organization.jht;
 
-import fi.riista.feature.organization.jht.JHTPeriod;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 

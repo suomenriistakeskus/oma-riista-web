@@ -9,8 +9,8 @@ import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportRepository
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.storage.metadata.PersistentFileMetadataRepository;
-import fi.riista.util.F;
 import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.F;
 import org.junit.Test;
 
 import javax.annotation.Resource;
@@ -56,7 +56,7 @@ public class HuntingClubGroupCrudFeature_MooseDataCardTest extends EmbeddedDatab
 
             onSavedAndAuthenticated(createUser(person), () -> {
                 final HuntingClubGroup transientGroup = model().newHuntingClubGroup(club);
-                feature.create(HuntingClubGroupDTO.create(transientGroup, groupGameSpecies, groupHarvestPermit));
+                feature.create(HuntingClubGroupDTO.create(transientGroup, groupGameSpecies, groupHarvestPermit, false));
             });
         });
     }
@@ -85,7 +85,7 @@ public class HuntingClubGroupCrudFeature_MooseDataCardTest extends EmbeddedDatab
             model().newOccupation(club, person, OccupationType.SEURAN_YHDYSHENKILO);
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                feature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), group.getHarvestPermit()));
+                feature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), group.getHarvestPermit(), false));
             });
         }));
     }
@@ -98,7 +98,7 @@ public class HuntingClubGroupCrudFeature_MooseDataCardTest extends EmbeddedDatab
             model().newHuntingClubGroupMember(person, group, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                feature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), group.getHarvestPermit()));
+                feature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), group.getHarvestPermit(), false));
             });
         }));
     }
@@ -182,7 +182,7 @@ public class HuntingClubGroupCrudFeature_MooseDataCardTest extends EmbeddedDatab
                 } catch (final CannotModifyMooseDataCardHuntingGroupException e) {
                     // Expected
                 }
-                assertTrue(repo.exists(group.getId()));
+                assertTrue(repo.existsById(group.getId()));
             });
         });
     }

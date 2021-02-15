@@ -15,7 +15,7 @@ import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.domain.Specifications;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -62,6 +62,7 @@ public class HarvestReportReminderFeature {
                 .collect(toSet());
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional
     public Map<Long, Set<String>> sendReminders() {
         final DateTime processingStartTime = DateUtil.now();
@@ -94,13 +95,13 @@ public class HarvestReportReminderFeature {
     }
 
     private static Specification<Harvest> spec(final Interval createdDuring, final DateTime reminderOlderThan) {
-        return Specifications
+        return Specification
                 // Reminder needs to be sent if there harvest report is required and there is no harvest report.
                 .where(GameDiarySpecs.harvestReportRequiredAndMissing())
                 // But list type permits are special. That's why we check that email is sent if there is no link to
                 // permit or permit is 'normal' permit (not list type)
                 .and(JpaSpecs.or(JpaSpecs.isNull(Harvest_.harvestPermit), GameDiarySpecs.permitHarvestAsList(false)))
-                .and(JpaSpecs.creationTimeBetween(createdDuring.getStart().toDate(), createdDuring.getEnd().toDate()))
+                .and(JpaSpecs.creationTimeBetween(createdDuring.getStart(), createdDuring.getEnd()))
                 .and(JpaSpecs.or(GameDiarySpecs.emailReminderSentTimeIsNull(),
                         GameDiarySpecs.emailReminderSentTimeBefore(reminderOlderThan)));
     }

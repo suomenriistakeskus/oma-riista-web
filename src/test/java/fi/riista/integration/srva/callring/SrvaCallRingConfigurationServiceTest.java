@@ -1,10 +1,11 @@
 package fi.riista.integration.srva.callring;
 
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.organization.rhy.SrvaRotation;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.F;
 import org.hamcrest.Matcher;
@@ -17,12 +18,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static fi.riista.util.DateUtil.today;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class SrvaCallRingConfigurationServiceTest extends EmbeddedDatabaseTest {
+
     @Resource
     private SrvaCallRingConfigurationService srvaCallRingConfigurationService;
 
@@ -72,6 +77,114 @@ public class SrvaCallRingConfigurationServiceTest extends EmbeddedDatabaseTest {
     @Test
     public void testOccupationOrder() {
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+
+        // Randomize insertion order
+        final Occupation srva1 = createSrvaOccupation(rhy, 1);
+        final Occupation srva3 = createSrvaOccupation(rhy, 3);
+        final Occupation srva4 = createSrvaOccupation(rhy, null);
+        final Occupation srva2 = createSrvaOccupation(rhy, 2);
+
+        persistInNewTransaction();
+
+        assertRhyCallRing(rhy,
+                srva1.getPerson().getPhoneNumber(),
+                srva2.getPerson().getPhoneNumber(),
+                srva3.getPerson().getPhoneNumber(),
+                srva4.getPerson().getPhoneNumber());
+    }
+
+    @Test
+    public void testOccupationOrder_rotationDays() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        rhy.setSrvaRotation(SrvaRotation.DAILY);
+        rhy.setRotationStart(today().minusDays(1));
+
+        // Randomize insertion order
+        final Occupation srva1 = createSrvaOccupation(rhy, 1);
+        final Occupation srva3 = createSrvaOccupation(rhy, 3);
+        final Occupation srva4 = createSrvaOccupation(rhy, null);
+        final Occupation srva2 = createSrvaOccupation(rhy, 2);
+
+        persistInNewTransaction();
+
+        // First one should be moved to last
+        assertRhyCallRing(rhy,
+                srva2.getPerson().getPhoneNumber(),
+                srva3.getPerson().getPhoneNumber(),
+                srva4.getPerson().getPhoneNumber(),
+                srva1.getPerson().getPhoneNumber());
+    }
+
+    @Test
+    public void testOccupationOrder_rotationWeeks() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        rhy.setSrvaRotation(SrvaRotation.WEEKLY);
+        rhy.setRotationStart(today().minusWeeks(2));
+
+        // Randomize insertion order
+        final Occupation srva1 = createSrvaOccupation(rhy, 1);
+        final Occupation srva3 = createSrvaOccupation(rhy, 3);
+        final Occupation srva4 = createSrvaOccupation(rhy, null);
+        final Occupation srva2 = createSrvaOccupation(rhy, 2);
+
+        persistInNewTransaction();
+
+        // First one should be moved to last two times
+        assertRhyCallRing(rhy,
+                srva3.getPerson().getPhoneNumber(),
+                srva4.getPerson().getPhoneNumber(),
+                srva1.getPerson().getPhoneNumber(),
+                srva2.getPerson().getPhoneNumber());
+    }
+
+    @Test
+    public void testOccupationOrder_rotationMonths() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        rhy.setSrvaRotation(SrvaRotation.MONTHLY);
+        rhy.setRotationStart(today().minusMonths(3));
+
+        // Randomize insertion order
+        final Occupation srva1 = createSrvaOccupation(rhy, 1);
+        final Occupation srva3 = createSrvaOccupation(rhy, 3);
+        final Occupation srva4 = createSrvaOccupation(rhy, null);
+        final Occupation srva2 = createSrvaOccupation(rhy, 2);
+
+        persistInNewTransaction();
+
+        // First one should be moved to last three times
+        assertRhyCallRing(rhy,
+                srva4.getPerson().getPhoneNumber(),
+                srva1.getPerson().getPhoneNumber(),
+                srva2.getPerson().getPhoneNumber(),
+                srva3.getPerson().getPhoneNumber());
+    }
+
+    @Test
+    public void testOccupationOrder_rotationStartDateInFuture() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        rhy.setSrvaRotation(SrvaRotation.DAILY);
+        rhy.setRotationStart(today().plusDays(3));
+
+        // Randomize insertion order
+        final Occupation srva1 = createSrvaOccupation(rhy, 1);
+        final Occupation srva3 = createSrvaOccupation(rhy, 3);
+        final Occupation srva4 = createSrvaOccupation(rhy, null);
+        final Occupation srva2 = createSrvaOccupation(rhy, 2);
+
+        persistInNewTransaction();
+
+        // No rotation until start
+        assertRhyCallRing(rhy,
+                srva1.getPerson().getPhoneNumber(),
+                srva2.getPerson().getPhoneNumber(),
+                srva3.getPerson().getPhoneNumber(),
+                srva4.getPerson().getPhoneNumber());
+    }
+    @Test
+    public void testOccupationOrder_fullRound() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        rhy.setSrvaRotation(SrvaRotation.DAILY);
+        rhy.setRotationStart(today().plusDays(4));
 
         // Randomize insertion order
         final Occupation srva1 = createSrvaOccupation(rhy, 1);
@@ -212,5 +325,20 @@ public class SrvaCallRingConfigurationServiceTest extends EmbeddedDatabaseTest {
         persistInNewTransaction();
 
         assertNotificationEmails(rhy, "rhy@invalid");
+    }
+
+    @Test
+    public void testConfiguresOnlyActiveRhys() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        final Riistanhoitoyhdistys inactiveRhy = model().newRiistanhoitoyhdistys();
+        inactiveRhy.setActive(false);
+        persistInNewTransaction();
+
+        final List<SrvaCallRingConfiguration> callRingConfigurations =
+                callInTransaction(srvaCallRingConfigurationService::generateConfigurationForEveryRhy);
+        assertThat(callRingConfigurations, hasSize(1));
+        final SrvaCallRingConfiguration configuration = callRingConfigurations.get(0);
+        assertEquals(rhy.getOfficialCode(), configuration.getRhyOfficialCode());
+        assertThat(configuration.getFormattedPhoneNumbers(), hasSize(0));
     }
 }

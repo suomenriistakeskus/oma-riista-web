@@ -24,11 +24,11 @@ public class SubsidyCompensationPartitionTest {
                 F.mapNonNullsToSet(partition.getDownscaled(), SubsidyCompensationInputDTO::getRhyCode));
 
         assertEquals(
-                newHashSet("004", "009"),
+                newHashSet("004", "007"),
                 F.mapNonNullsToSet(partition.getKeptUnchanged(), SubsidyCompensationInputDTO::getRhyCode));
 
         assertEquals(
-                newHashSet("005", "007", "008"),
+                newHashSet("005", "006"),
                 F.mapNonNullsToSet(partition.getNeedingCompensation(), SubsidyCompensationInputDTO::getRhyCode));
     }
 
@@ -42,7 +42,7 @@ public class SubsidyCompensationPartitionTest {
         final SubsidyAllocationCompensationBasis basis =
                 partitionByCompensationNeed(createDefaultInput()).calculateCompensationBasis();
 
-        assertEquals(currency(2 + 2 + 6), basis.getTotalCompensationNeed());
+        assertEquals(currency(2 + 8), basis.getTotalCompensationNeed());
         assertEquals(currency(11 + 6), basis.getSumOfSubsidiesAboveLowerLimit());
         assertEquals(bd("0.5882352941"), basis.getDecrementCoefficient());
     }
@@ -53,8 +53,7 @@ public class SubsidyCompensationPartitionTest {
                 SubsidyCompensationInputs.TOTAL_SUBSIDY_ABOVE_LOWER_LIMIT_2,
                 SubsidyCompensationInputs.TOTAL_SUBSIDY_EQUALS_TO_LOWER_LIMIT,
                 SubsidyCompensationInputs.TOTAL_SUBSIDY_BELOW_LOWER_LIMIT,
-                SubsidyCompensationInputs.NEGATIVE_SECOND_BATCH,
-                SubsidyCompensationInputs.NEGATIVE_SECOND_BATCH_AND_TOTAL_SUBSIDY_BELOW_LOWER_LIMIT,
+                SubsidyCompensationInputs.TOTAL_SUBSIDY_BELOW_LOWER_LIMIT_2,
                 SubsidyCompensationInputs.ALREADY_COMPENSATED);
     }
 }

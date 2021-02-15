@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 
 import java.util.Collection;
+import java.util.Optional;
 
 import static fi.riista.util.NumberUtils.percentRatio;
 import static fi.riista.util.NumberUtils.sum;
@@ -17,15 +18,25 @@ public class MoosePermitStatisticsAmountDTO {
     public static MoosePermitStatisticsAmountDTO create(final HarvestPermitSpeciesAmount originalSpeciesAmount,
                                                         final float amendmentPermitAmount,
                                                         final float applicationPermitAmount) {
-        final double restrictionAdultAmount = getRestrictionAmount(originalSpeciesAmount, HarvestPermitSpeciesAmount.RestrictionType.AE);
-        final double restrictionAdultMaleAmount = getRestrictionAmount(originalSpeciesAmount, HarvestPermitSpeciesAmount.RestrictionType.AU);
+        final float harvestAmount = Optional.ofNullable(originalSpeciesAmount)
+                .map(HarvestPermitSpeciesAmount::getSpecimenAmount)
+                .orElse(0f);
+        final double restrictionAdultAmount = Optional.ofNullable(originalSpeciesAmount)
+                .map(amount -> getRestrictionAmount(amount, HarvestPermitSpeciesAmount.RestrictionType.AE))
+                .orElse(0f);
+        final double restrictionAdultMaleAmount = Optional.ofNullable(originalSpeciesAmount)
+                .map(amount -> getRestrictionAmount(amount, HarvestPermitSpeciesAmount.RestrictionType.AU))
+                .orElse(0f);
+        final boolean isMooselikeHuntingFinished = Optional.ofNullable(originalSpeciesAmount)
+                .map(HarvestPermitSpeciesAmount::isMooselikeHuntingFinished)
+                .orElse(true);
 
-        return new MoosePermitStatisticsAmountDTO(originalSpeciesAmount.getAmount(),
+        return new MoosePermitStatisticsAmountDTO(harvestAmount,
                 amendmentPermitAmount,
                 applicationPermitAmount,
                 restrictionAdultAmount,
                 restrictionAdultMaleAmount,
-                originalSpeciesAmount.isMooselikeHuntingFinished());
+                isMooselikeHuntingFinished);
     }
 
     public static MoosePermitStatisticsAmountDTO createTotal(final Collection<MoosePermitStatisticsAmountDTO> amounts) {

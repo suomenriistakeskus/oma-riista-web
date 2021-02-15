@@ -1,0 +1,73 @@
+<form name="importPersonalAreaForm" role="form"
+      class="form form-horizontal" autocomplete="off"
+      ng-submit="$ctrl.doImport()">
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="club.area.importPersonal.modalTitle"></h3>
+    </div>
+
+    <div class="modal-body">
+        <p translate="club.area.importPersonal.instructions"></p>
+
+        <p class="text-danger"></p>
+
+        <div class="form-group row" show-errors="{ trigger: 'keypress' }">
+            <label for="areaExternalId" class="col-xs-3 control-label">
+                <span translate="club.area.importPersonal.areaExternalId"></span>
+            </label>
+
+            <div class="col-xs-6">
+                <input name="areaExternalId" id="areaExternalId"
+                       class="form-control"
+                       minlength="10"
+                       maxlength="10"
+                       ng-pattern="/^[a-zA-Z0-9]{10,}$/"
+                       focus-me
+                       required
+                       ng-model="$ctrl.areaExternalId">
+
+                <p class="help-block has-error"
+                   ng-show="importPersonalAreaForm.areaExternalId.$invalid"
+                   ng-messages="importPersonalAreaForm.areaExternalId.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+            <div class="col-xs-3">
+                <button type="button" class="btn btn-primary btn-block"
+                        ng-disabled="importPersonalAreaForm.areaExternalId.$invalid && !$ctrl.selectedArea"
+                        ng-click="$ctrl.search()">
+                    <span class="fa fa-search"></span>
+                    <span translate="club.area.importPersonal.search"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group row" ng-if="$ctrl.selectedArea">
+            <label for="areaName" class="control-label col-xs-3">
+                <span translate="club.area.importPersonal.areaName"></span>
+            </label>
+            <strong class="col-xs-6 form-control-static" id="areaName" name="areaName"
+                    ng-bind="$ctrl.selectedArea.name"></strong>
+            <div class="col-xs-3">
+                <button type="button" class="btn btn-default btn-block" ng-click="$ctrl.removeSelection()">
+                    <span class="text-danger fa fa-remove"></span>
+                    <span translate="club.area.importPersonal.removeSelection"></span>
+                </button>
+            </div>
+            <hr>
+        </div>
+        <div class="row" ng-if="$ctrl.error">
+            <span class="col-xs-12 text-danger" translate="club.area.importPersonal.notFound"></span>
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.close()"
+                translate="global.button.close"></button>
+        <button type="submit" class="btn btn-primary"
+                translate="club.area.importPersonal.doImport"
+                ng-disabled="!$ctrl.selectedArea"></button>
+    </div>
+</form>

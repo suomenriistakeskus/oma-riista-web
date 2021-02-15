@@ -1,0 +1,101 @@
+<form class="form form-horizontal">
+    <div class="well">
+        <div class="form-group" ng-repeat="opt in $ctrl.opts track by $index">
+            <div class="col-xs-8">
+                <select class="form-control"
+                        ng-model="opt.harvestPermitCategory"
+                        ng-options="type.category as ('harvestpermit.wizard.summary.permitCategory.' + type.category | translate) for type in ::$ctrl.applicationTypes">
+                    <option value="">{{'reporting.contacts.allCategories' | translate}}</option>
+                </select>
+            </div>
+
+            <div class="col-xs-3">
+                <select class="form-control"
+                        ng-model="opt.huntingYear"
+                        ng-options="year for year in ::$ctrl.availableYears">
+                    <option value="">{{'reporting.contacts.allYears' | translate}}</option>
+                </select>
+            </div>
+            <span class="col-xs-1">
+                <span class="glyphicon glyphicon-minus" ng-click="$ctrl.removeOpt(opt)"> </span>
+                <span class="glyphicon glyphicon-plus" ng-click="$ctrl.addOpt(opt)"> </span>
+            </span>
+        </div>
+    </div>
+</form>
+
+<div>
+    <ul class="nav nav-pills">
+        <li>
+            <button type="submit" ng-click="$ctrl.searchPermitContacts()" class="btn btn-primary">
+                <span class="glyphicon glyphicon-search"></span> &nbsp;
+                <span translate="reporting.contacts.search"></span>
+            </button>
+        </li>
+
+        <li ng-show="$ctrl.pager.total > 0">
+            <button type="button" ng-click="$ctrl.exportToExcel()" class="btn btn-primary">
+                <span class="glyphicon glyphicon-search"></span> &nbsp;
+                <span translate="reporting.common.toExcel"></span>
+            </button>
+        </li>
+
+        <li class="pull-right" ng-show="$ctrl.pager.total > 0">
+            <button type="button" class="btn btn-primary"
+                    ng-controller="CopyEmailsController as $emailCtrl"
+                    ng-click="$emailCtrl.copyEmails($ctrl.pager.data)">
+
+                <span class="glyphicon glyphicon-envelope"></span> &nbsp;
+                <span translate="reporting.common.copyEmails"></span>
+            </button>
+        </li>
+    </ul>
+
+    <h5 ng-show="$ctrl.pager.total === 0" translate="reporting.contacts.noResults"></h5>
+
+    <div ng-show="$ctrl.pager.total > 0">
+        <h5>{{'reporting.contacts.resultCount' | translate:$ctrl.getResultCount()}}</h5>
+
+
+        <div class="r-contactsearch-results">
+            <div ng-show="$ctrl.pager.total > $ctrl.pager.pageSize">
+                <ul uib-pagination
+                    ng-model="$ctrl.pager.currentPage"
+                    items-per-page="$ctrl.pager.pageSize"
+                    total-items="$ctrl.pager.total"
+                    rotate="true"
+                    max-size="15"
+                    boundary-links="true"
+                    class="pagination-md"
+                    previous-text="{{'global.pager.previous' | translate}}"
+                    next-text="{{'global.pager.next' | translate}}"
+                    first-text="{{'global.pager.first' | translate}}"
+                    last-text="{{'global.pager.last' | translate}}"></ul>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th translate="reporting.contacts.permitType"></th>
+                        <th translate="global.huntingYear"></th>
+                        <th translate="global.organisationType.RKA"></th>
+                        <th translate="global.organisationType.RHY"></th>
+                        <th translate="global.person.name"></th>
+                        <th translate="global.person.email"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="row in $ctrl.page track by $index">
+                        <td translate="harvestpermit.wizard.summary.permitCategory.{{row.harvestPermitCategory}}"></td>
+                        <td>{{row.huntingYear}}</td>
+                        <td name-translated="row.rka"></td>
+                        <td name-translated="row.rhy"></td>
+                        <td>{{row.name}}</td>
+                        <td>{{row.email}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

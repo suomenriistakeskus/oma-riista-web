@@ -1,10 +1,12 @@
 package fi.riista.feature.harvestpermit.search;
 
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.common.decision.GrantStatus;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.data.domain.Sort;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Objects;
 
 public class HarvestPermitSearchDTO {
@@ -37,6 +39,9 @@ public class HarvestPermitSearchDTO {
 
     @Valid
     private HarvestPermitTypeDTO permitType;
+
+    @Valid
+    private List<GrantStatus> decisionStatuses;
 
     private SortType sortingType = SortType.NORMAL;
     private Sort.Direction permitNumberSort = Sort.Direction.ASC;
@@ -151,5 +156,13 @@ public class HarvestPermitSearchDTO {
 
     public void setOrdinalSort(final Sort.Direction ordinalSort) {
         this.ordinalSort = ordinalSort;
+    }
+
+    public List<GrantStatus> getDecisionStatuses() {
+        return decisionStatuses;
+    }
+
+    public void setDecisionStatuses(final List<GrantStatus> decisionStatuses) {
+        this.decisionStatuses = decisionStatuses;
     }
 }

@@ -74,8 +74,8 @@ public class PermitDecisionProtectedAreaTypeFeature {
         final List<PermitDecisionProtectedAreaType> toDelete = byPermitDecision.stream()
                 .filter(r -> removedValues.contains(r.getProtectedAreaType())).collect(toList());
 
-        permitDecisionProtectedAreaTypeRepository.save(toAdd);
-        permitDecisionProtectedAreaTypeRepository.delete(toDelete);
+        permitDecisionProtectedAreaTypeRepository.saveAll(toAdd);
+        permitDecisionProtectedAreaTypeRepository.deleteAll(toDelete);
     }
 
     private static Set<ProtectedAreaType> getCheckedValuesFrom(List<PermitDecisionProtectedAreaTypeDTO> dtos) {

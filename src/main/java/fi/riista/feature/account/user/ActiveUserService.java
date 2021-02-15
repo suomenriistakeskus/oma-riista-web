@@ -25,8 +25,6 @@ import javax.annotation.Resource;
 import java.io.Serializable;
 import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkState;
-
 @Service
 public class ActiveUserService {
 
@@ -89,31 +87,27 @@ public class ActiveUserService {
 
     public Long requireActiveUserId() {
         return findActiveUserId().orElseThrow(() -> {
-            return new IllegalStateException("User id not available in security context");
+            return new AccessDeniedException("User id not available in security context");
         });
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public Optional<SystemUser> findActiveUser() {
-        return findActiveUserId().map(userRepository::findOne);
+        return findActiveUserId().flatMap(userRepository::findById);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public SystemUser requireActiveUser() {
         return Optional.of(requireActiveUserId())
-                .map(userRepository::findOne)
+                .flatMap(userRepository::findById)
                 .orElseThrow(() -> {
-                    return new IllegalStateException("User for authenticated principal does not exist in repository");
+                    return new AccessDeniedException("User for authenticated principal does not exist in repository");
                 });
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public Person requireActivePerson() {
-        final SystemUser activeUser = requireActiveUser();
-        checkState(activeUser.getRole() == SystemUser.Role.ROLE_USER, "Active user has incorrect role");
-
-        return Optional.ofNullable(activeUser.getPerson())
-                .orElseThrow(() -> new IllegalStateException("Active user is not associated with person"));
+        return requireActiveUser().requirePerson();
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
@@ -125,7 +119,8 @@ public class ActiveUserService {
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void assertHasPermission(final BaseEntity<?> entity, final Enum<?> permission) {
-        final Authentication authentication = findAuthenticationAuthenticated().orElse(null);
+        final Authentication authentication =
+                findAuthenticationAuthenticated().orElseThrow(() -> new AccessDeniedException("Not authenticated"));
         final boolean hasPermission = permissionEvaluator.hasPermission(authentication, entity, permission);
 
         // Audit event

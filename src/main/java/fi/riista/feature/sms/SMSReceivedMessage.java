@@ -1,12 +1,11 @@
 package fi.riista.feature.sms;
 
 import fi.riista.feature.sms.storage.SMSPersistentMessage;
-
-import java.util.Date;
+import org.joda.time.DateTime;
 
 public class SMSReceivedMessage {
     private final Long id;
-    private final Date receivedTimestamp;
+    private final DateTime receivedTimestamp;
     private final String numberFrom;
     private final String numberTo;
     private final String message;
@@ -23,7 +22,7 @@ public class SMSReceivedMessage {
         return id;
     }
 
-    public Date getReceivedTimestamp() {
+    public DateTime getReceivedTimestamp() {
         return receivedTimestamp;
     }
 

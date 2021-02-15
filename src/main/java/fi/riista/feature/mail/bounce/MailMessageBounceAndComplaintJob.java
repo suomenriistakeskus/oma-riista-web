@@ -1,9 +1,8 @@
 package fi.riista.feature.mail.bounce;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
+import fi.riista.config.quartz.RunAsAdminJob;
 import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,14 +14,14 @@ import javax.annotation.Resource;
         enabledProperty = "ses.bounce.processing.enabled",
         cronExpression = "${ses.bounce.processing.schedule}"
 )
-public class MailMessageBounceAndComplaintJob implements Job {
+public class MailMessageBounceAndComplaintJob extends RunAsAdminJob {
     private static final Logger LOG = LoggerFactory.getLogger(MailMessageBounceAndComplaintJob.class);
 
     @Resource
     private MailMessageBounceAndComplaintListener mailMessageBounceAndComplaintListener;
 
     @Override
-    public void execute(final JobExecutionContext context) {
+    public void executeAsAdmin() {
         LOG.info("Running MailMessageBounceAndComplaintJob");
 
         try {

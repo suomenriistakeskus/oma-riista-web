@@ -9,9 +9,9 @@ import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.statistics.HarvestPermitSpecimenSummary;
 import fi.riista.feature.mail.MailMessageDTO;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
+import fi.riista.util.DateUtil;
 import fi.riista.util.Locales;
 import fi.riista.util.LocalisedString;
-import org.joda.time.DateTime;
 import org.springframework.context.MessageSource;
 
 import javax.annotation.Nonnull;
@@ -70,7 +70,7 @@ public class EndOfHuntingReportNotification {
         final String emailSubject = messageSource.getMessage("harvest.report.email.subject", null, Locales.FI);
 
         final HashMap<String, Object> model = Maps.newHashMap();
-        model.put("timestamp", DateTime.now().toDate());
+        model.put("timestamp", DateUtil.now());
         model.put("author", this.author);
         model.put("permitNumber", this.permitNumber);
         model.put("state", this.state);

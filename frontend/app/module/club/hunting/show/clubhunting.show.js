@@ -3,7 +3,7 @@
 angular.module('app.clubhunting.show', [])
 
     .controller('ClubDiaryEntryShowController', function ($scope, $translate, dialogs, ActiveRoleService,
-                                                          DiaryImageService,
+                                                          DiaryImageService, AuthenticationService,
                                                           diaryEntry, groupStatus, isRejected, parameters) {
 
         $scope.diaryEntry = diaryEntry;
@@ -12,11 +12,16 @@ angular.module('app.clubhunting.show', [])
 
         var canEdit = groupStatus.canEditDiaryEntry;
         var isModerator = ActiveRoleService.isModerator();
+        var isObservationWithinDeerHunting = diaryEntry.isObservationWithinDeerHunting();
 
-        $scope.showEdit = canEdit && diaryEntry.huntingDayId && !diaryEntry.updateableOnlyByCarnivoreAuthority;
-        $scope.showAccept = canEdit && !diaryEntry.huntingDayId;
+        $scope.showEdit = canEdit
+            && diaryEntry.huntingDayId
+            && (!diaryEntry.updateableOnlyByCarnivoreAuthority || AuthenticationService.isCarnivoreAuthority())
+            && !isObservationWithinDeerHunting;
+        $scope.showAccept = canEdit && !diaryEntry.huntingDayId && !isObservationWithinDeerHunting;
         $scope.showReject = canEdit && !isRejected;
         $scope.showGeolocationEditButton = isModerator && groupStatus.fromMooseDataCard;
+        $scope.showAcceptDeerObservation = isObservationWithinDeerHunting && isRejected;
 
         if (!diaryEntry.huntingDayId) {
             if (diaryEntry.isHarvest()) {
@@ -56,6 +61,10 @@ angular.module('app.clubhunting.show', [])
 
         $scope.accept = function () {
             $scope.$close('accept');
+        };
+
+        $scope.acceptDeerObservation = function () {
+            $scope.$close('acceptDeerObservation');
         };
 
         $scope.reject = function () {
@@ -130,6 +139,12 @@ angular.module('app.clubhunting.show', [])
                         ClubHuntingActiveEntry.acceptDiaryEntry(clubId, groupId, diaryEntry);
                         $state.go('club.hunting.add');
                         return $q.reject('ignore');
+
+                    case 'acceptDeerObservation':
+                        return ClubGroupDiary.acceptDeerObservation({
+                            id: groupId,
+                            observationId: diaryEntry.id
+                        }).$promise;
 
                     case 'edit':
                         ClubHuntingActiveEntry.editDiaryEntry(clubId, groupId, diaryEntry);

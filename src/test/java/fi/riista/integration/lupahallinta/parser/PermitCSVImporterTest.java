@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
@@ -43,7 +44,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -126,7 +126,7 @@ public class PermitCSVImporterTest {
 
     public static void assertSpeciesAmounts(Iterable<HarvestPermitSpeciesAmount> speciesAmounts, int code, float amount) {
         for (HarvestPermitSpeciesAmount spa : speciesAmounts) {
-            if (spa.getGameSpecies().getOfficialCode() == code && NumberUtils.equal(spa.getAmount(), amount)) {
+            if (spa.getGameSpecies().getOfficialCode() == code && NumberUtils.equal(spa.getSpecimenAmount(), amount)) {
                 return;
             }
         }
@@ -650,7 +650,7 @@ public class PermitCSVImporterTest {
         HarvestPermitSpeciesAmount hpsa = new HarvestPermitSpeciesAmount();
         hpsa.setId(id);
         hpsa.setGameSpecies(species);
-        hpsa.setAmount(amount);
+        hpsa.setSpecimenAmount(amount);
         existingPermit.getSpeciesAmounts().add(hpsa);
         return hpsa;
     }
@@ -660,7 +660,7 @@ public class PermitCSVImporterTest {
     }
 
 
-    private HarvestPermit createExistingPermitForClubAndOnePartner() {
+    private static HarvestPermit createExistingPermitForClubAndOnePartner() {
         final HarvestPermit existingPermit = new HarvestPermit();
         existingPermit.setId(256L);
 

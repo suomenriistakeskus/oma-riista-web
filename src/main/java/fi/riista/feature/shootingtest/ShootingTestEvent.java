@@ -4,6 +4,7 @@ import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.calendar.CalendarEvent;
 import fi.riista.feature.shootingtest.official.ShootingTestOfficial;
 import fi.riista.util.DateUtil;
+import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 
@@ -19,10 +20,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,9 +40,8 @@ public class ShootingTestEvent extends LifecycleEntity<Long> {
     @OneToOne(optional = false, fetch = FetchType.LAZY)
     private CalendarEvent calendarEvent;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column
-    private Date lockedTime;
+    private DateTime lockedTime;
 
     @OneToMany(mappedBy = "shootingTestEvent")
     private Set<ShootingTestOfficial> officials = new HashSet<>();
@@ -77,7 +74,7 @@ public class ShootingTestEvent extends LifecycleEntity<Long> {
 
     public void close() {
         assertOpen("Shooting test event is already closed");
-        this.lockedTime = DateUtil.now().toDate();
+        this.lockedTime = DateUtil.now();
     }
 
     public void reopen() {
@@ -115,7 +112,7 @@ public class ShootingTestEvent extends LifecycleEntity<Long> {
         return calendarEvent;
     }
 
-    public Date getLockedTime() {
+    public DateTime getLockedTime() {
         return lockedTime;
     }
 

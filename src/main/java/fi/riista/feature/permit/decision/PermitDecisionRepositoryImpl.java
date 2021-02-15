@@ -1,8 +1,9 @@
 package fi.riista.feature.permit.decision;
 
 import com.querydsl.jpa.JPQLQueryFactory;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
 import fi.riista.feature.permit.application.amendment.QAmendmentApplicationData;
 import org.springframework.stereotype.Repository;
@@ -38,8 +39,8 @@ public class PermitDecisionRepositoryImpl implements PermitDecisionRepositoryCus
                 .join(APPLICATION.decision, DECISION)
                 .where(AMEND_DATA.originalPermit.eq(originalPermit))
                 .where(DECISION.decisionType.in(PermitDecision.DecisionType.CANCEL_APPLICATION, PermitDecision.DecisionType.IGNORE_APPLICATION))
-                .where(DECISION.status.eq(PermitDecision.Status.PUBLISHED))
-                .fetch().stream().map(tuple -> PermitNumberUtil.createPermitNumber(
+                .where(DECISION.status.eq(DecisionStatus.PUBLISHED))
+                .fetch().stream().map(tuple -> DocumentNumberUtil.createDocumentNumber(
                         tuple.get(DECISION.decisionYear),
                         tuple.get(DECISION.validityYears),
                         tuple.get(DECISION.decisionNumber)))

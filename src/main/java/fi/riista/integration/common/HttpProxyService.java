@@ -6,11 +6,13 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -28,9 +30,10 @@ public class HttpProxyService {
     private static final Logger LOG = LoggerFactory.getLogger(HttpProxyService.class);
 
     private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
-            .setConnectTimeout(1500)
+            .setConnectTimeout(750)
             .setSocketTimeout(5000)
-            // When LH serves pdf, and pdf is not found for some reason, there will be redirect to error page, but error page is 200 OK.
+            // When LH serves pdf, and pdf is not found for some reason, there will be redirect to error page, but
+            // error page is 200 OK.
             // Therefore do not follow redirects and treat anything else than 200 as 404 Not Found.
             .setRedirectsEnabled(false)
             .build();
@@ -56,7 +59,8 @@ public class HttpProxyService {
                 request.addHeader(new BasicScheme().authenticate(credentials, request, new BasicHttpContext()));
             }
 
-            return httpClient.execute(request, response -> response.getStatusLine().getStatusCode() == HttpStatus.OK.value());
+            return httpClient.execute(request,
+                    response -> response.getStatusLine().getStatusCode() == HttpStatus.OK.value());
 
         } catch (final Exception e) {
             LOG.error("Exception, message: " + e.getMessage());
@@ -70,9 +74,19 @@ public class HttpProxyService {
                              final UsernamePasswordCredentials credentials,
                              final String responseFileName,
                              final MediaType responseContentType) {
+        downloadFile(httpServletResponse, requestUri, credentials, responseFileName, responseContentType,
+                REQUEST_CONFIG);
+    }
+
+    public void downloadFile(final @NotNull HttpServletResponse httpServletResponse,
+                             final @NotNull URI requestUri,
+                             final UsernamePasswordCredentials credentials,
+                             final String responseFileName,
+                             final MediaType responseContentType,
+                             final RequestConfig requestConfig) {
         try {
             final HttpGet request = new HttpGet(requestUri);
-            request.setConfig(REQUEST_CONFIG);
+            request.setConfig(requestConfig);
 
             if (credentials != null) {
                 request.addHeader(new BasicScheme().authenticate(credentials, request, new BasicHttpContext()));
@@ -82,7 +96,8 @@ public class HttpProxyService {
                 final int code = proxyResponse.getStatusLine().getStatusCode();
 
                 if (code != HttpStatus.OK.value()) {
-                    LOG.warn(String.format("Incorrect response code when downloading URL:%s code:%d", requestUri, code));
+                    LOG.warn(String.format("Incorrect response code when downloading URL:%s code:%d", requestUri,
+                            code));
                     httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
                     return null;
                 }
@@ -102,7 +117,7 @@ public class HttpProxyService {
                 }
 
                 if (entity.getContentLength() >= 0) {
-                    httpServletResponse.setContentLengthLong(entity.getContentLength());
+                    httpServletResponse.setContentLength((int)entity.getContentLength());
                 }
 
                 entity.writeTo(httpServletResponse.getOutputStream());
@@ -111,9 +126,15 @@ public class HttpProxyService {
                 return null;
             });
 
+        } catch (final ConnectTimeoutException cte) {
+            LOG.error("ConnectTimeoutException:{} occurred while downloading uri:{}",
+                    cte.getMessage(), requestUri);
+
+            httpServletResponse.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
+            httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
         } catch (final Exception e) {
-            LOG.error(String.format("Exception type:%s msg:%s occurred while downloading uri:%s",
-                    e.getClass().getSimpleName(), e.getMessage(), requestUri));
+            LOG.error("Exception type:%s msg:{} occurred while downloading uri:{}",
+                    e.getClass().getSimpleName(), e.getMessage(), requestUri);
 
             httpServletResponse.setStatus(HttpStatus.NOT_FOUND.value());
         }

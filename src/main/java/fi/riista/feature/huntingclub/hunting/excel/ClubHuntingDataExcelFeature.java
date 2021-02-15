@@ -1,6 +1,7 @@
 package fi.riista.feature.huntingclub.hunting.excel;
 
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.pilot.DeerPilotRepository;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -54,6 +55,9 @@ public class ClubHuntingDataExcelFeature {
     @Resource
     private MessageSource messageSource;
 
+    @Resource
+    private DeerPilotRepository deerPilotRepository;
+
     @Transactional(readOnly = true)
     public ClubHuntingDataExcelView export(final long clubId,
                                            final int huntingYear,
@@ -87,7 +91,8 @@ public class ClubHuntingDataExcelFeature {
                     return new ClubHuntingDataExcelDTO(groupName, days, harvests, observations);
                 }).collect(toList());
 
-        return new ClubHuntingDataExcelView(new EnumLocaliser(messageSource, locale), speciesIndex, clubName, excelData);
+        final boolean hasAnyDeerPilotGroups = deerPilotRepository.filterGroupsInPilot(clubGroups).size() > 0;
+        return new ClubHuntingDataExcelView(new EnumLocaliser(messageSource, locale), speciesIndex, clubName, excelData, hasAnyDeerPilotGroups);
     }
 
     private static List<GroupHuntingDayDTO> sortDays(final List<GroupHuntingDayDTO> days) {

@@ -5,10 +5,8 @@ import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.util.LocalisedString;
 import org.geojson.Feature;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.format.ISODateTimeFormat;
 
-import java.util.Date;
 import java.util.Objects;
 
 class GeoJsonMetadata {
@@ -20,10 +18,10 @@ class GeoJsonMetadata {
 
     GeoJsonMetadata(final GISZoneSizeDTO areaSize,
                     final AreaExportDTO dto,
-                    final Date latestModificationTime) {
+                    final DateTime latestModificationTime) {
         Objects.requireNonNull(latestModificationTime);
 
-        this.saveDate = new DateTime(latestModificationTime).withZone(DateTimeZone.UTC);
+        this.saveDate = latestModificationTime;
         this.areaSize = areaSize;
         this.clubName = Objects.requireNonNull(dto.getClubName());
         this.areaName = Objects.requireNonNull(dto.getAreaName());

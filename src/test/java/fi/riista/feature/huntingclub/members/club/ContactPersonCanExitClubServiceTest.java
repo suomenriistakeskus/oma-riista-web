@@ -1,11 +1,12 @@
 package fi.riista.feature.huntingclub.members.club;
 
-import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.gamediary.observation.Observation;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.test.EmbeddedDatabaseTest;
@@ -14,6 +15,8 @@ import org.junit.Test;
 
 import javax.annotation.Resource;
 
+import static fi.riista.feature.gamediary.observation.ObservationCategory.DEER_HUNTING;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.MOOSE_HUNTING;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -136,14 +139,25 @@ public class ContactPersonCanExitClubServiceTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testClubHasObservationLinkedToHuntingDay() {
+    public void testClubHasObservationLinkedToHuntingDay_mooseHunting() {
+        testClubHasObservationLinkedToHuntingDayWithObservation(MOOSE_HUNTING);
+    }
+
+    @Test
+    public void testClubHasObservationLinkedToHuntingDay_deerHunting() {
+        testClubHasObservationLinkedToHuntingDayWithObservation(DEER_HUNTING);
+    }
+
+    private void testClubHasObservationLinkedToHuntingDayWithObservation(final ObservationCategory category) {
         final HuntingClub club = model().newHuntingClub();
         final Occupation contactPerson = model().newOccupation(club, model().newPerson(), OccupationType.SEURAN_YHDYSHENKILO);
         final HuntingClubGroup group = model().newHuntingClubGroup(club);
         final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, DateUtil.today());
         final Observation observation = model().newObservation();
+        observation.setObservationCategory(category);
         observation.updateHuntingDayOfGroup(huntingDay, null);
 
         assertContactPersonIsLocked(contactPerson, "should NOT ALLOW delete contact person when club has observation linked to hunting day");
     }
+
 }

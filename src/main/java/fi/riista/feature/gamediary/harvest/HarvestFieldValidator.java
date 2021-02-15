@@ -1,25 +1,32 @@
 package fi.riista.feature.gamediary.harvest;
 
-import fi.riista.feature.common.entity.FieldPresence;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestField;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
 import org.apache.commons.lang.StringUtils;
 
+import javax.annotation.Nonnull;
 import java.util.EnumSet;
-import java.util.Objects;
 import java.util.Set;
 
+import static fi.riista.feature.gamediary.harvest.fields.RequiredHarvestField.NO;
+import static fi.riista.feature.gamediary.harvest.fields.RequiredHarvestField.YES;
 import static java.util.Collections.unmodifiableSet;
+import static java.util.Objects.requireNonNull;
 
 public class HarvestFieldValidator {
+
     private final RequiredHarvestFields.Report requirements;
-    private final EnumSet<HarvestFieldName> missingFields = EnumSet.noneOf(HarvestFieldName.class);
-    private final EnumSet<HarvestFieldName> illegalFields = EnumSet.noneOf(HarvestFieldName.class);
+
     private final Harvest harvest;
 
-    public HarvestFieldValidator(final RequiredHarvestFields.Report requirements,
-                                 final Harvest harvest) {
-        this.requirements = requirements;
-        this.harvest = harvest;
+    private final EnumSet<HarvestFieldName> missingFields = EnumSet.noneOf(HarvestFieldName.class);
+    private final EnumSet<HarvestFieldName> illegalFields = EnumSet.noneOf(HarvestFieldName.class);
+
+    public HarvestFieldValidator(@Nonnull final RequiredHarvestFields.Report requirements,
+                                 @Nonnull final Harvest harvest) {
+
+        this.requirements = requireNonNull(requirements);
+        this.harvest = requireNonNull(harvest);
     }
 
     public HarvestFieldValidator validateAll() {
@@ -29,7 +36,8 @@ public class HarvestFieldValidator {
                 .validateHuntingAreaType()
                 .validateHuntingAreaSize()
                 .validateReportedWithPhoneCall()
-                .validateHuntingParty();
+                .validateHuntingParty()
+                .validateDeerHuntingType();
     }
 
     public HarvestFieldValidator validateHuntingMethod() {
@@ -63,6 +71,11 @@ public class HarvestFieldValidator {
         return this;
     }
 
+    public HarvestFieldValidator validateDeerHuntingType() {
+        validateField(HarvestFieldName.DEER_HUNTING_TYPE, requirements.getDeerHuntingType(), harvest.getDeerHuntingType());
+        return this;
+    }
+
     public HarvestFieldValidator validateHuntingParty() {
         final String huntingParty = harvest.getHuntingParty();
         final boolean emptyOrNullValue = StringUtils.isBlank(huntingParty);
@@ -74,11 +87,11 @@ public class HarvestFieldValidator {
             return this;
         }
 
-        if (requirements.getHuntingParty().nullValueRequired()) {
+        if (requirements.getHuntingParty() == NO) {
             if (!emptyOrNullValue) {
                 illegal(HarvestFieldName.HUNTING_PARTY);
             }
-        } else if (requirements.getHuntingParty().nonNullValueRequired()) {
+        } else if (requirements.getHuntingParty() == YES) {
             if (emptyOrNullValue) {
                 missing(HarvestFieldName.HUNTING_PARTY);
             }
@@ -86,13 +99,21 @@ public class HarvestFieldValidator {
         return this;
     }
 
-    private void validateField(HarvestFieldName fieldName,
-                               FieldPresence required,
-                               Object fieldValue) {
-        if (required.nonNullValueRequired()) {
-            mustNotBeNull(fieldName, fieldValue);
-        } else if (required.nullValueRequired()) {
-            mustBeNull(fieldName, fieldValue);
+    private void validateField(final HarvestFieldName fieldName,
+                               final RequiredHarvestField requirement,
+                               final Object fieldValue) {
+        switch (requirement) {
+            case YES:
+                mustNotBeNull(fieldName, fieldValue);
+                break;
+            case VOLUNTARY:
+                // Either null or non-null value will pass.
+                break;
+            case NO:
+                mustBeNull(fieldName, fieldValue);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported RequiredHarvestField: " + requirement);
         }
     }
 
@@ -127,11 +148,11 @@ public class HarvestFieldValidator {
     }
 
     private void illegal(final HarvestFieldName fieldName) {
-        illegalFields.add(Objects.requireNonNull(fieldName));
+        illegalFields.add(requireNonNull(fieldName));
     }
 
     private void missing(final HarvestFieldName fieldName) {
-        missingFields.add(Objects.requireNonNull(fieldName));
+        missingFields.add(requireNonNull(fieldName));
     }
 
 }

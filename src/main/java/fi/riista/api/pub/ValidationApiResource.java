@@ -2,7 +2,7 @@ package fi.riista.api.pub;
 
 import fi.riista.feature.huntingclub.HuntingClubNameValidationFeature;
 import fi.riista.validation.PhoneNumber;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.DataBinder;

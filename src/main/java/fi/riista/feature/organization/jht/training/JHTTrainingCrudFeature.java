@@ -1,8 +1,13 @@
 package fi.riista.feature.organization.jht.training;
 
+import com.google.common.base.Preconditions;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
+import fi.riista.feature.organization.RiistakeskuksenAlueRepository;
 import fi.riista.feature.organization.jht.nomination.OccupationNomination;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -19,7 +24,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -35,6 +39,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.EHDOLLA;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.ESITETTY;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.NIMITETTY;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -56,7 +61,16 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
     private RiistanhoitoyhdistysRepository riistanhoitoyhdistysRepository;
 
     @Resource
+    private RiistakeskuksenAlueRepository riistakeskuksenAlueRepository;
+
+    @Resource
     private RequireEntityService requireEntityService;
+
+    @Resource
+    private ActiveUserService activeUserService;
+
+    @Resource
+    private UserAuthorizationHelper userAuthorizationHelper;
 
     @Override
     protected JpaRepository<JHTTraining, Long> getRepository() {
@@ -92,32 +106,41 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR,ROLE_COORDINATOR')")
     public Page<JHTTrainingDTO> search(final JHTTrainingSearchDTO dto) {
-        final Sort sortSpec = new JpaSort(Sort.Direction.DESC, JHTTraining_.trainingDate)
+        userAuthorizationHelper.assertCoordinatorAnywhereOrModerator();
+
+        final Sort sortSpec = JpaSort.of(Sort.Direction.DESC, JHTTraining_.trainingDate)
                 .and(Sort.Direction.ASC, JpaSort.path(JHTTraining_.person).dot(Person_.lastName))
                 .and(Sort.Direction.ASC, JpaSort.path(JHTTraining_.person).dot(Person_.firstName));
-        final PageRequest pageRequest = new PageRequest(dto.getPage(), dto.getPageSize(), sortSpec);
+        final PageRequest pageRequest = PageRequest.of(dto.getPage(), dto.getPageSize(), sortSpec);
         final Optional<Person> person = getPerson(dto);
+        final Optional<RiistakeskuksenAlue> rka = getRka(dto.getAreaCode());
         final Optional<Riistanhoitoyhdistys> rhy = getRhy(dto.getRhyCode());
 
-        if (!canSearch(dto, person, rhy)) {
+        Preconditions.checkArgument(rhy.isPresent()
+                        || !rka.isPresent()
+                        || activeUserService.isModeratorOrAdmin(),
+                "Only moderators can search by rka.");
+
+        if (!canSearch(dto, person, rka, rhy)) {
             return new PageImpl<>(Collections.emptyList());
         }
 
         final Page<JHTTraining> trainingList = jhtTrainingRepository.searchPage(
                 pageRequest, dto.getSearchType(),
                 dto.getOccupationType(), dto.getTrainingType(), dto.getTrainingLocation(),
-                rhy.orElse(null), person.orElse(null),
+                rka.orElse(null), rhy.orElse(null), person.orElse(null),
                 dto.getBeginDate(), dto.getEndDate());
 
         final Page<JHTTrainingDTO> dtoList = jhtTrainingDTOTransformer.apply(trainingList, pageRequest);
 
-        final List<Long> selectedPersonIds = occupationNominationRepository.findPersonIdByOccupationTypeAndNominationStatusIn(
-                dto.getOccupationType(), EnumSet.of(EHDOLLA, ESITETTY));
+        final List<Long> selectedPersonIds =
+                occupationNominationRepository.findPersonIdByOccupationTypeAndNominationStatusIn(
+                        dto.getOccupationType(), EnumSet.of(EHDOLLA, ESITETTY));
 
-        final List<Long> acceptedPersonIds = occupationNominationRepository.findPersonIdByOccupationTypeAndNominationStatusIn(
-                dto.getOccupationType(), EnumSet.of(NIMITETTY));
+        final List<Long> acceptedPersonIds =
+                occupationNominationRepository.findPersonIdByOccupationTypeAndNominationStatusIn(
+                        dto.getOccupationType(), EnumSet.of(NIMITETTY));
 
         for (final JHTTrainingDTO trainingDTO : dtoList.getContent()) {
             final Long personId = trainingDTO.getPerson().getId();
@@ -131,13 +154,14 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
 
     private static boolean canSearch(final JHTTrainingSearchDTO dto,
                                      final Optional<Person> person,
+                                     final Optional<RiistakeskuksenAlue> rka,
                                      final Optional<Riistanhoitoyhdistys> rhy) {
         final boolean searchByPerson = dto.getSearchType() == JHTTrainingSearchDTO.SearchType.PERSON;
         final boolean searchByLocation = dto.getSearchType() == JHTTrainingSearchDTO.SearchType.TRAINING_LOCATION;
-
+        final boolean organisationPresent = rka.isPresent() || rhy.isPresent();
         return searchByLocation ||
                 (person.isPresent() && searchByPerson) ||
-                (rhy.isPresent() && !searchByPerson);
+                (organisationPresent && !searchByPerson);
     }
 
     private Optional<Person> getPerson(@Nonnull final JHTTrainingSearchDTO dto) {
@@ -154,7 +178,11 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
     }
 
     private Optional<Riistanhoitoyhdistys> getRhy(final String officialCode) {
-        return Optional.ofNullable(officialCode).map(riistanhoitoyhdistysRepository::findByOfficialCode);
+        return ofNullable(officialCode).map(riistanhoitoyhdistysRepository::findByOfficialCode);
+    }
+
+    private Optional<RiistakeskuksenAlue> getRka(final String officialCode) {
+        return ofNullable(officialCode).map(riistakeskuksenAlueRepository::findByOfficialCode);
     }
 
     @Transactional

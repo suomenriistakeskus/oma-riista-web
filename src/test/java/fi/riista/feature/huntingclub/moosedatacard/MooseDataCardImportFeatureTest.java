@@ -117,9 +117,9 @@ public class MooseDataCardImportFeatureTest extends EmbeddedDatabaseTest {
             runInTransaction(() -> {
                 assertImportData(import1.getId(), true, group1.getId());
 
-                assertEmpty(huntingDayRepo.findAll(F.getUniqueIds(import1HuntingDayData._1)));
-                assertEmpty(harvestRepo.findAll(F.getUniqueIds(import1HuntingDayData._2)));
-                assertEmpty(observationRepo.findAll(F.getUniqueIds(import1HuntingDayData._3)));
+                assertEmpty(huntingDayRepo.findAllById(F.getUniqueIds(import1HuntingDayData._1)));
+                assertEmpty(harvestRepo.findAllById(F.getUniqueIds(import1HuntingDayData._2)));
+                assertEmpty(observationRepo.findAllById(F.getUniqueIds(import1HuntingDayData._3)));
 
                 assertImportData(import2.getId(), false, group1.getId());
                 assertImportData(import3.getId(), false, group2.getId());
@@ -179,7 +179,7 @@ public class MooseDataCardImportFeatureTest extends EmbeddedDatabaseTest {
         final List<Harvest> harvests = Stream.of(9, 12, 15).flatMap(hour -> huntingDays.stream().map(day -> {
 
             final Harvest harvest = model().newHarvest(group.getSpecies(), author, day);
-            harvest.setPointOfTime(toDate(day.getStartDate(), hour));
+            harvest.setPointOfTime(day.getStartDate().toDateTime(new LocalTime(hour, 0)));
 
             model().newHarvestSpecimen(harvest);
 
@@ -191,7 +191,7 @@ public class MooseDataCardImportFeatureTest extends EmbeddedDatabaseTest {
                 Stream.of(9, 12, 15).flatMap(hour -> huntingDays.stream().map(day -> {
 
                     final Observation observation = model().newObservation(group.getSpecies(), author, day);
-                    observation.setPointOfTime(toDate(day.getStartDate(), hour));
+                    observation.setPointOfTime(day.getStartDate().toDateTime(new LocalTime(hour, 0)));
 
                     return observation;
 
@@ -201,7 +201,7 @@ public class MooseDataCardImportFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private void assertImportData(final long importId, final boolean expectSoftDeleted, final long expectedGroupId) {
-        final MooseDataCardImport reloadedImport = importRepo.findOne(importId);
+        final MooseDataCardImport reloadedImport = importRepo.findById(importId).get();
         assertNotNull(reloadedImport);
         assertEquals(expectSoftDeleted, reloadedImport.isDeleted());
         assertNotNull(reloadedImport.getGroup());

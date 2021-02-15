@@ -2,6 +2,7 @@ package fi.riista.feature.harvestpermit;
 
 import com.google.common.collect.Sets;
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.account.user.SystemUserPrivilege;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -10,6 +11,7 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.test.EmbeddedDatabaseTest;
 import org.joda.time.LocalDate;
@@ -42,21 +44,34 @@ public class HarvestPermitAuthorizationTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testPermitContactPerson() {
-        testHasPermissions(createUserWithPerson());
+        testHasPermissions(createUserWithPerson(), PermitTypeCode.MAMMAL_DAMAGE_BASED);
     }
 
     @Test
     public void testAdmin() {
-        testHasPermissions(createNewAdmin());
+        testHasPermissions(createNewAdmin(), PermitTypeCode.MAMMAL_DAMAGE_BASED);
     }
 
     @Test
     public void testModerator() {
-        testHasPermissions(createNewModerator());
+        testHasPermissions(createNewModerator(), PermitTypeCode.MAMMAL_DAMAGE_BASED);
     }
 
-    private void testHasPermissions(SystemUser user) {
-        HarvestPermit permit = model().newHarvestPermit(newRhy());
+    @Test
+    public void testModerator_disabilityPermitWithPrivileges() {
+        testHasPermissions(createNewModerator(SystemUserPrivilege.MODERATE_DISABILITY_PERMIT_APPLICATION), PermitTypeCode.DISABILITY_BASED);
+    }
+
+    @Test
+    public void testModerator_disabilityPermitWithoutPrivileges() {
+        HarvestPermit permit = model().newHarvestPermit(newRhy(), permitNumber(), PermitTypeCode.DISABILITY_BASED);
+
+        onSavedAndAuthenticated(createNewModerator(),
+                () -> assertNoPermissions(permit, asList(READ, UPDATE, UPDATE_ALLOCATIONS, CREATE_REMOVE_MOOSE_HARVEST_REPORT, LIST_LEADERS)));
+    }
+
+    private void testHasPermissions(final SystemUser user, final String permitTypeCode) {
+        HarvestPermit permit = model().newHarvestPermit(newRhy(), permitNumber(), permitTypeCode);
         if (user.getPerson() != null) {
             permit.setOriginalContactPerson(user.getPerson());
         }
@@ -69,39 +84,51 @@ public class HarvestPermitAuthorizationTest extends EmbeddedDatabaseTest {
     public void testCoordinatorForPermitsRhy() {
         Riistanhoitoyhdistys coordinatorRhy = newRhy();
         Riistanhoitoyhdistys permitRhy = coordinatorRhy;
-        testCoordinator(true, coordinatorRhy, permitRhy, null, null);
+        testCoordinator(true, coordinatorRhy, permitRhy, null, null, PermitTypeCode.MAMMAL_DAMAGE_BASED);
+    }
+
+    @Test
+    public void testCoordinatorForPermitsRhy_disabilityPermit() {
+        Riistanhoitoyhdistys coordinatorRhy = newRhy();
+        Riistanhoitoyhdistys permitRhy = coordinatorRhy;
+        testCoordinator(false, coordinatorRhy, permitRhy, null, null, PermitTypeCode.DISABILITY_BASED);
     }
 
     @Test
     public void testPastCoordinatorForPermitsRhy() {
         Riistanhoitoyhdistys coordinatorRhy = newRhy();
         Riistanhoitoyhdistys permitRhy = coordinatorRhy;
-        testCoordinator(false, coordinatorRhy, permitRhy, null, today().minusDays(1));
+        testCoordinator(false, coordinatorRhy, permitRhy, null, today().minusDays(1), PermitTypeCode.MAMMAL_DAMAGE_BASED);
     }
 
     @Test
     public void testFutureCoordinatorForPermitsRhy() {
         Riistanhoitoyhdistys coordinatorRhy = newRhy();
         Riistanhoitoyhdistys permitRhy = coordinatorRhy;
-        testCoordinator(false, coordinatorRhy, permitRhy, today().plusDays(1), null);
+        testCoordinator(false, coordinatorRhy, permitRhy, today().plusDays(1), null, PermitTypeCode.MAMMAL_DAMAGE_BASED);
     }
 
     @Test
     public void testCoordinatorForOtherRhy() {
         Riistanhoitoyhdistys coordinatorRhy = newRhy();
         Riistanhoitoyhdistys permitRhy = newRhy();
-        testCoordinator(false, coordinatorRhy, permitRhy, null, null);
+        testCoordinator(false, coordinatorRhy, permitRhy, null, null, PermitTypeCode.MAMMAL_DAMAGE_BASED);
     }
 
     @Test
     public void testCoordinatorForRelatedRhy() {
         Riistanhoitoyhdistys coordinatorRhy = newRhy();
         Riistanhoitoyhdistys permitRhy = newRhy();
-        testCoordinator(true, coordinatorRhy, permitRhy, coordinatorRhy, null, null);
+        testCoordinator(true, coordinatorRhy, permitRhy, coordinatorRhy, null, null, PermitTypeCode.MAMMAL_DAMAGE_BASED);
     }
 
-    private void testCoordinator(boolean hasPermission, Riistanhoitoyhdistys coordinatorRhy, Riistanhoitoyhdistys permitRhy, LocalDate begin, LocalDate end) {
-        testCoordinator(hasPermission, coordinatorRhy, permitRhy, null, begin, end);
+    private void testCoordinator(final boolean hasPermission,
+                                 final Riistanhoitoyhdistys coordinatorRhy,
+                                 final Riistanhoitoyhdistys permitRhy,
+                                 final LocalDate begin,
+                                 final LocalDate end,
+                                 final String permitTypeCode) {
+        testCoordinator(hasPermission, coordinatorRhy, permitRhy, null, begin, end, permitTypeCode);
     }
 
     private void testCoordinator(final boolean hasPermission,
@@ -109,13 +136,14 @@ public class HarvestPermitAuthorizationTest extends EmbeddedDatabaseTest {
                                  final Riistanhoitoyhdistys permitRhy,
                                  final Riistanhoitoyhdistys relatedRhy,
                                  final LocalDate begin,
-                                 final LocalDate end) {
+                                 final LocalDate end,
+                                 final String permitTypeCode) {
         withPerson(person -> {
             Occupation occupation = model().newOccupation(coordinatorRhy, person, TOIMINNANOHJAAJA);
             occupation.setBeginDate(begin);
             occupation.setEndDate(end);
 
-            HarvestPermit permit = model().newHarvestPermit(permitRhy);
+            HarvestPermit permit = model().newHarvestPermit(permitRhy, permitNumber(), permitTypeCode);
             if (relatedRhy != null) {
                 permit.setRelatedRhys(Sets.newHashSet(relatedRhy));
             }

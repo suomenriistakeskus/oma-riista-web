@@ -1,0 +1,134 @@
+<form>
+    <div class="btn-group btn-group-justified" style="margin-bottom: 20px">
+        <label class="btn"
+               ng-class="$ctrl.filterMode === 'mine' ? 'btn-primary' : 'btn-default'"
+               ng-click="$ctrl.showMine()">
+            <span class="fa fa-3x fa-user"></span>
+            <br>
+            <span translate="harvestpermit.admin.application.filterMine"></span>
+        </label>
+        <label class="btn"
+               ng-class="$ctrl.filterMode !== 'mine' ? 'btn-primary' : 'btn-default'"
+               ng-click="$ctrl.showOther()">
+            <span class="fa fa-3x fa-filter"></span>
+            <br>
+            <span translate="harvestpermit.admin.application.filterOthers"></span>
+        </label>
+    </div>
+
+    <div class="form-group">
+        <label for="decisionType" translate="harvestpermit.admin.application.decisionType"></label>
+
+        <select name="decisionType" id="decisionType"
+                class="form-control"
+                ng-model="$ctrl.filters.decisionType"
+                ng-change="$ctrl.onFilterChange()"
+                ng-disabled="$ctrl.filters.decisionNumber"
+                ng-options="s as ('jht.nomination.decision.decisionType.' + s | translate) for s in $ctrl.decisionTypeList">
+            <option value="" translate="global.showAll"></option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="occupationType" translate="occupation.occupation"></label>
+
+        <select name="occupationType" id="occupationType"
+                class="form-control"
+                ng-model="$ctrl.filters.occupationType"
+                ng-change="$ctrl.onFilterChange()"
+                ng-disabled="$ctrl.filters.decisionNumber"
+                ng-options="s as ('occupation.type.' + s | translate) for s in $ctrl.occupationTypes">
+            <option value="" translate="global.showAll"></option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label translate="harvestpermit.admin.application.status"></label>
+
+        <div class="btn-group btn-group-justified"
+             ng-repeat="s in $ctrl.statusList">
+            <label class="btn"
+                   ng-class="$ctrl.filters.status === s ? 'btn-primary' : 'btn-default'"
+                   ng-model="$ctrl.filters.status"
+                   ng-change="$ctrl.onFilterChange()"
+                   uib-btn-radio="s">
+                <span translate="jht.nomination.decision.status.{{s}}"></span>
+            </label>
+        </div>
+    </div>
+
+    <fieldset ng-disabled="$ctrl.filters.decisionNumber">
+        <div class="form-group">
+            <label translate="harvestpermit.admin.application.selectOrganisation"></label>
+
+            <organisation-selection
+                    show-rk="true"
+                    show-rka="true"
+                    area-code="$ctrl.filters.rkaOfficialCode"
+                    rhy-code="$ctrl.filters.rhyOfficialCode"
+                    show-inactive-rhys="true"></organisation-selection>
+        </div>
+    </fieldset>
+
+    <div class="form-group" show-errors>
+        <label for="yearSelect" translate="harvestpermit.application.selectedYear"></label>
+
+        <select name="yearSelect" id="yearSelect"
+                class="form-control"
+                ng-model="$ctrl.filters.huntingYear"
+                ng-change="$ctrl.onFilterChange()"
+                ng-disabled="$ctrl.filters.decisionNumber"
+                ng-options="year for year in $ctrl.availableYears">
+            <option value="" translate="global.showAll"></option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="handler" translate="harvestpermit.admin.application.handler"></label>
+
+        <select name="handler" id="handler"
+                class="form-control"
+                ng-model="$ctrl.filters.handlerId"
+                ng-change="$ctrl.onFilterChange()"
+                ng-disabled="$ctrl.filters.decisionNumber"
+                ng-options="t.handlerId as t.name for t in $ctrl.handlers | orderBy: 'name'">
+            <option value="" translate="global.showAll"></option>
+        </select>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label for="decisionNumber" translate="jht.nomination.decision.decisionNumber"></label>
+
+        <input name="decisionNumber" id="decisionNumber"
+               type="number"
+               class="form-control"
+               maxlength="6"
+               ng-model="$ctrl.filters.decisionNumber"
+               ng-model-options="{'debounce': 500}"
+               ng-change="$ctrl.onFilterChange()">
+    </div>
+
+    <p>
+        <a ng-click="$ctrl.collapseAdditionalFilters = !$ctrl.collapseAdditionalFilters">
+            <span class="glyphicon glyphicon-chevron-right" ng-show="$ctrl.collapseAdditionalFilters"></span>
+            <span class="glyphicon glyphicon-chevron-down" ng-hide="$ctrl.collapseAdditionalFilters"></span>
+            <span translate="harvestpermit.admin.application.moreFilters"></span>
+        </a>
+    </p>
+
+    <div uib-collapse="$ctrl.collapseAdditionalFilters">
+
+        <div class="form-group">
+            <label for="appealStatus" translate="harvestpermit.admin.application.appealStatus"></label>
+
+            <select name="appealStatus" id="appealStatus"
+                    class="form-control"
+                    ng-model="$ctrl.filters.appealStatus"
+                    ng-change="$ctrl.onFilterChange()"
+                    ng-disabled="$ctrl.filters.decisionNumber"
+                    ng-options="s as ('decision.appealStatus.' + s | translate) for s in $ctrl.appealStatusList">
+                <option value="" translate="global.showAll"></option>
+            </select>
+        </div>
+    </div>
+</form>

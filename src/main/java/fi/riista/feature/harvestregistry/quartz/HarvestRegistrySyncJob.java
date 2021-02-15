@@ -1,6 +1,7 @@
 package fi.riista.feature.harvestregistry.quartz;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
+import fi.riista.config.quartz.RunAsAdminJob;
 import io.sentry.Sentry;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
@@ -17,14 +18,14 @@ import javax.annotation.Resource;
         name = "HarvestRegistrySync",
         cronExpression = "${harvestregistry.sync.schedule}"
 )
-public class HarvestRegistrySyncJob implements Job {
+public class HarvestRegistrySyncJob extends RunAsAdminJob {
     private static final Logger LOG = LoggerFactory.getLogger(HarvestRegistrySyncJob.class);
 
     @Resource
     private HarvestRegistrySynchronizerService harvestRegistrySynchronizerService;
 
     @Override
-    public void execute(final JobExecutionContext context) throws JobExecutionException {
+    public void executeAsAdmin() {
         LOG.info("Starting ...");
 
         try {

@@ -72,9 +72,10 @@ public class JHTOccupationExpiryEmailFactoryTest extends SpringRuleConfigurer {
                         "\n" +
                         "<p>\n" +
                         "    Uutta nimitystä varten teidän on suoritettava kyseisen tehtävän vaatima kertauskoulutus yllä olevaan päivämäärään\n" +
-                        "    mennessä osoitteessa <a href=\"https://www.riistainfo.fi/\">www.riistainfo.fi</a>. Kertauskoulutuksen hyväksytyn\n" +
-                        "    suorittamisen jälkeen teidät voidaan nimittää uudelleen kyseiseen tehtävään. Vaihtoehtoisesti voitte osallistua\n" +
-                        "    Suomen riistakeskuksen järjestämään koulutustilaisuuteen.\n" +
+                        "    mennessä osoitteessa <a href=\"https://www.riistainfo.fi/kurssikategoria/jht/\">www.riistainfo.fi/kurssikategoria/jht/</a>.\n" +
+                        "    Kertauskoulutuksen hyväksytyn suorittamisen jälkeen teidät voidaan nimittää uudelleen kyseiseen tehtävään.\n" +
+                        "    Vaihtoehtoisesti voitte osallistua Suomen riistakeskuksen järjestämään koulutustilaisuuteen.\n" +
+                        "    Kertauskoulutusvaatimus ei koske rhy:n edustajia riistavahinkojen maastokatselmuksessa.\n" +
                         "</p>\n" +
                         "\n" +
                         "<p>Tämä viesti on lähetetty myös Mäntyharjun-Hirvensalmen riistanhoitoyhdistykselle.</p>\n" +
@@ -108,9 +109,11 @@ public class JHTOccupationExpiryEmailFactoryTest extends SpringRuleConfigurer {
                         "\n" +
                         "<p>\n" +
                         "    För att få en ny utnämning måste ni avlägga en repetitionsutbildning som krävs för ifrågavarande uppdrag före ovan\n" +
-                        "    nämnda datum på adressen <a href=\"https://www.riistainfo.fi/\">www.riistainfo.fi</a>. Efter att\n" +
-                        "    repetitionsutbildningen är godkänd kan ni utnämnas på nytt för ifrågavarande uppdrag. Alternativt kan ni delta i\n" +
-                        "    utbildningstillfälle som ordnas av Finlands viltcentral.\n" +
+                        "    nämnda datum på adressen <a href=\"https://www.riistainfo.fi/sv/kurs-kategori/repetitionsutbildning-for-offentliga-forvaltningsuppgifter/\">\n" +
+                        "    https://www.riistainfo.fi/sv/kurs-kategori/repetitionsutbildning-for-offentliga-forvaltningsuppgifter/</a>.\n" +
+                        "    Efter att repetitionsutbildningen är godkänd kan ni utnämnas på nytt för ifrågavarande uppdrag. Alternativt kan ni\n" +
+                        "    delta i utbildningstillfälle som ordnas av Finlands viltcentral. Kravet på repetitionsutbildning gäller inte för\n" +
+                        "    jvf:s representanter vid terrängundersökningar av viltskador.\n" +
                         "</p>\n" +
                         "\n" +
                         "<p>Det här meddelandet har också sänts till Mäntyharju-Hirvensalmi jaktvårdsförening.</p>\n" +
@@ -123,7 +126,7 @@ public class JHTOccupationExpiryEmailFactoryTest extends SpringRuleConfigurer {
     }
 
     @Nonnull
-    private JHTOccupationExpiryDTO createDTO(final Locale locale) {
+    private static JHTOccupationExpiryDTO createDTO(final Locale locale) {
         return new JHTOccupationExpiryDTO(locale,
                 new LocalDate(2018, 11, 30), "Etunimi Sukunimi",
                 LocalisedString.of(

@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.hunting.day;
 
+import fi.riista.config.Constants;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.observation.Observation;
@@ -35,9 +36,30 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import static java.util.Optional.ofNullable;
+
 @Entity
 @Access(value = AccessType.FIELD)
 public class GroupHuntingDay extends LifecycleEntity<Long> {
+
+    public static GroupHuntingDay createAllDayHuntingDayForGroup(@Nonnull final LocalDate date,
+                                                                 @Nonnull final HuntingClubGroup group) {
+
+        Objects.requireNonNull(date);
+        Objects.requireNonNull(group);
+
+        final GroupHuntingDay huntingDay = new GroupHuntingDay();
+        huntingDay.setGroup(group);
+
+        huntingDay.setStartDate(date);
+        huntingDay.setStartTime(new LocalTime(0, 0));
+
+        huntingDay.setEndDate(date);
+        huntingDay.setEndTime(new LocalTime(23, 59));
+        huntingDay.setCreatedBySystem(true);
+
+        return huntingDay;
+    }
 
     private Long id;
 
@@ -95,6 +117,13 @@ public class GroupHuntingDay extends LifecycleEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY)
     private MooseDataCardImport mooseDataCardImport;
 
+    // This value indicates that the hunting day has been automatically created by the system
+    // in order to store game diary entries. Can be used to deduce whether the not null attributes
+    // contain valid data.
+    // TODO: Add not null constraint afterwoods, production db has 450k lines in this table
+    @Column
+    private Boolean createdBySystem = false;
+
     public GroupHuntingDay() {
     }
 
@@ -109,6 +138,10 @@ public class GroupHuntingDay extends LifecycleEntity<Long> {
             this.endDate = end.toLocalDate();
             this.endTime = end.toLocalTime();
         }
+    }
+
+    public DateTime getStartAsDateTime() {
+        return getStartDate().toDateTime(getStartTime(), Constants.DEFAULT_TIMEZONE);
     }
 
     public LocalDateTime getStartAsLocalDateTime() {
@@ -252,5 +285,13 @@ public class GroupHuntingDay extends LifecycleEntity<Long> {
 
     Set<Observation> getObservations() {
         return observations;
+    }
+
+    public boolean isCreatedBySystem() {
+        return ofNullable(createdBySystem).orElse(false);
+    }
+
+    public void setCreatedBySystem(final boolean createdBySystem) {
+        this.createdBySystem = createdBySystem;
     }
 }

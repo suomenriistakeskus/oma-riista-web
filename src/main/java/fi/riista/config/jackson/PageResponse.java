@@ -1,7 +1,6 @@
 package fi.riista.config.jackson;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -11,6 +10,7 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 @XmlRootElement
 public class PageResponse<T> implements Page<T> {
@@ -65,7 +65,7 @@ public class PageResponse<T> implements Page<T> {
     }
 
     @Override
-    public <S> Page<S> map(final Converter<? super T, ? extends S> converter) {
+    public <U> Page<U> map(final Function<? super T, ? extends U> function) {
         return null;
     }
 

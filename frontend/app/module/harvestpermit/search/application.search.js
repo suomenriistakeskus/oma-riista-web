@@ -43,7 +43,8 @@ angular.module('app.harvestpermit.search.application', [])
                     'rhyOfficialCode', 'rkaOfficialCode', 'gameSpeciesCode',
                     'huntingYear', 'harvestPermitCategory', 'status',
                     'decisionType', 'grantStatus', 'appealStatus', 'handlerId',
-                    'protectedAreaType', 'derogationReason', 'forbiddenMethod'
+                    'protectedAreaType', 'derogationReason', 'forbiddenMethod',
+                    'validityYears'
                 ]));
 
             } else {
@@ -69,18 +70,43 @@ angular.module('app.harvestpermit.search.application', [])
         templateUrl: 'harvestpermit/search/application-status-table.html',
         controller: function ($translate, $http, FormPostService) {
             var $ctrl = this;
+            var PAGE_SIZE = 5;
 
             $ctrl.$onInit = function () {
                 $ctrl.year = new Date().getFullYear();
                 $ctrl.yearOptions = _.range(2018, $ctrl.year + 1);
-                $ctrl.stats = $ctrl.loadStatistics($ctrl.year);
+                $ctrl.loadStatistics($ctrl.year);
+                $ctrl.pageInfo = {
+                    hasNext: true,
+                    pageable: {
+                        page: 0
+                    }
+                };
+            };
+
+            $ctrl.selectPage = function (page) {
+                var start = PAGE_SIZE * page;
+                var end = start + PAGE_SIZE;
+                $ctrl.stats = _.map($ctrl.allStats, function (stat) {
+                    return Object.assign({},
+                        {rka: stat.rka},
+                        {categoryStatuses: stat.categoryStatuses.slice(start, end)});
+                });
+
+                $ctrl.pageInfo.pageable.page = page;
+                $ctrl.pageInfo.hasNext = end < $ctrl.allStats[0].categoryStatuses.length;
             };
 
             $ctrl.loadStatistics = function () {
                 $http({
                     url: 'api/v1/harvestpermit/application/moderator/statustable/' + $ctrl.year
                 }).then(function (response) {
-                    $ctrl.stats = response.data;
+                    $ctrl.allStats = response.data;
+                    $ctrl.stats = _.map($ctrl.allStats, function (stat) {
+                        return Object.assign({},
+                            {rka: stat.rka},
+                            {categoryStatuses: stat.categoryStatuses.slice(0, PAGE_SIZE)});
+                    });
                 });
             };
 
@@ -105,12 +131,17 @@ angular.module('app.harvestpermit.search.application', [])
             tab: '<'
         },
         controller: function (HarvestPermitApplications, HuntingYearService, TranslatedBlockUI,
-                              ModeratorPermitApplicationSearchFilters, FormPostService) {
+                              ModeratorPermitApplicationSearchFilters, FormPostService, AuthenticationService) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
                 $ctrl.filters = ModeratorPermitApplicationSearchFilters.load();
                 $ctrl.results = null;
+                $ctrl.mineAnnual = true;
+                $ctrl.setShowMineAnnual = function (value) {
+                    $ctrl.mineAnnual = value;
+                    doSearch(0);
+                };
 
                 if ($ctrl.tab) {
                     doSearch(0);
@@ -155,7 +186,6 @@ angular.module('app.harvestpermit.search.application', [])
             }
 
             function search(page) {
-                var searchParams = createSearchParams($ctrl.filters, page);
 
                 if ($ctrl.tab === 'postalQueue') {
                     return HarvestPermitApplications.postalQueue().$promise.then(function (resultList) {
@@ -166,6 +196,17 @@ angular.module('app.harvestpermit.search.application', [])
                     });
                 }
 
+                if ($ctrl.tab === 'annualRenewals') {
+                    var handlerId = $ctrl.mineAnnual ? _.get(AuthenticationService.getAuthentication(), 'id') : null;
+                    return HarvestPermitApplications.annualRenewals({handlerId: handlerId}).$promise.then(function (resultList) {
+                        return {
+                            content: resultList,
+                            hasNext: false
+                        };
+                    });
+                }
+
+                var searchParams = createSearchParams($ctrl.filters, page);
                 return HarvestPermitApplications.search(searchParams).$promise;
             }
 
@@ -178,6 +219,7 @@ angular.module('app.harvestpermit.search.application', [])
                     // optional
                     gameSpeciesCode: f.gameSpeciesCode,
                     harvestPermitCategory: f.harvestPermitCategory === 'ALL' ? null : f.harvestPermitCategory,
+                    validityYears: f.validityYears,
                     rhyOfficialCode: f.rhyOfficialCode,
                     rkaOfficialCode: f.rkaOfficialCode,
                     applicationNumber: f.applicationNumber,
@@ -216,10 +258,12 @@ angular.module('app.harvestpermit.search.application', [])
                 $ctrl.filterMode = getCurrentFilterMode();
                 $ctrl.collapseAdditionalFilters = !($ctrl.filters.gameSpeciesCode || $ctrl.filters.decisionType
                     || $ctrl.filters.grantStatus || $ctrl.filters.appealStatus || $ctrl.filters.protectedArea
-                    || $ctrl.filters.derogationReason || $ctrl.filters.forbiddenMethod);
+                    || $ctrl.filters.derogationReason || $ctrl.filters.forbiddenMethod
+                    || !_.isNil($ctrl.filters.validityYears));
                 $ctrl.statusList = ApplicationStatusList.all();
                 $ctrl.statusList.unshift('ALL');
                 $ctrl.availableSpecies = buildAvailableSpecies();
+                $ctrl.validityYearsList = _.range(0, 5 + 1); // End exclusive -> +1
                 $ctrl.permitCategoryList = PermitCategories;
                 $ctrl.decisionTypeList = DecisionTypes;
                 $ctrl.grantStatusList = DecisionGrantStatus;
@@ -273,11 +317,7 @@ angular.module('app.harvestpermit.search.application', [])
             }
 
             function buildAvailableSpecies() {
-                var mooseSpecies = Species.getPermitBasedMooselike();
-                var birdSpecies = Species.getBirdPermitSpecies();
-                var speciesList = _([]).concat(mooseSpecies, birdSpecies).value();
-
-                return _.chain(speciesList)
+                return _.chain(Species.getSpeciesMapping())
                     .map(function (species) {
                         return TranslatedSpecies.translateSpecies(species);
                     })
@@ -291,7 +331,7 @@ angular.module('app.harvestpermit.search.application', [])
         bindings: {
             results: '<'
         },
-        controller: function ($state, $translate, PermitDecision) {
+        controller: function ($state, $translate, PermitDecision, HarvestPermitCategoryType) {
             var $ctrl = this;
 
             $ctrl.openApplication = function (application) {
@@ -310,7 +350,6 @@ angular.module('app.harvestpermit.search.application', [])
                 if (application.harvestPermitCategory === 'MOOSELIKE' && application.submitDate) {
                     var submitDate = moment(application.submitDate, 'YYYY-MM-DD');
 
-                    // TODO: Fix hard coded application period
                     if (submitDate.isValid()) {
                         var month = submitDate.month() + 1; // zero indexed
                         return month > 4; // Submitted after 30.4.
@@ -329,6 +368,10 @@ angular.module('app.harvestpermit.search.application', [])
                 }
 
                 return application.decisionStatus;
+            };
+
+            $ctrl.hasPermission = function (application) {
+                return HarvestPermitCategoryType.hasPermission(application.harvestPermitCategory);
             };
         }
     });

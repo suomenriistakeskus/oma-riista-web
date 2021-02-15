@@ -9,6 +9,8 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_EXAM_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_TRAINING_2017;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE_2018;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY_2018;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.YOUTH_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTING_CONTROL;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.JHT_TRAINING;
@@ -73,7 +75,7 @@ public class AnnualStatisticGroupsFactory {
         if (year == 2018) {
             return asList(
                     BASIC_INFO,
-                    SUBSIDY_SUMMARY,
+                    SUBSIDY_SUMMARY_2018,
                     OTHER_SUMMARY,
 
                     HUNTER_EXAMS,
@@ -98,8 +100,40 @@ public class AnnualStatisticGroupsFactory {
                     OTHER_HUNTING_RELATED,
                     COMMUNICATION,
                     SHOOTING_RANGES,
-                    LUKE,
+                    LUKE_2018,
                     METSAHALLITUS);
+        }
+
+        if (year == 2019) {
+            return asList(
+                    BASIC_INFO,
+                    SUBSIDY_SUMMARY_2018,
+                    OTHER_SUMMARY,
+
+                    HUNTER_EXAMS,
+                    SHOOTING_TESTS,
+                    GAME_DAMAGE,
+                    HUNTING_CONTROL,
+                    OTHER_PUBLIC_ADMIN_TASKS,
+
+                    SRVA_TOTALS,
+                    SRVA_ACCIDENTS,
+                    SRVA_DEPORTATIONS,
+                    SRVA_INJURIES,
+
+                    TRAINING_SUMMARY,
+                    HUNTER_EXAM_TRAINING,
+                    JHT_TRAINING,
+                    HUNTER_TRAINING,
+                    YOUTH_TRAINING,
+                    OTHER_HUNTER_TRAINING,
+
+                    OTHER_HUNTING_RELATED,
+                    COMMUNICATION,
+                    SHOOTING_RANGES,
+                    LUKE_2018,
+                    METSAHALLITUS,
+                    PUBLIC_EVENTS);
         }
 
         return asList(

@@ -9,12 +9,13 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.AssertTrue;
 import java.util.Objects;
 
 public class AddressDTO extends BaseEntityDTO<Long> {
 
-    public static AddressDTO from(Address address) {
+    public static AddressDTO from(@Nullable Address address) {
         return address != null ? new AddressDTO(address) : null;
     }
 

@@ -11,6 +11,7 @@ import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardHarvest;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardHarvestValidator;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.util.DateUtil;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.joda.time.LocalTime;
@@ -71,7 +72,7 @@ public abstract class MooseDataCardHarvestConverter<T extends MooseDataCardHarve
         harvest.setFromMobile(false);
 
         harvest.setGeoLocation(source.getGeoLocation());
-        harvest.setPointOfTime(source.getDate().toLocalDateTime(DEFAULT_ENTRY_TIME).toDate());
+        harvest.setPointOfTime(DateUtil.toDateTimeNullSafe(source.getDate(), DEFAULT_ENTRY_TIME));
 
         specimen.setWeightEstimated(source.getWeightEstimated());
         specimen.setWeightMeasured(source.getWeightMeasured());

@@ -223,7 +223,7 @@ public abstract class GameDiaryEntryAuthorizationTest<T extends GameDiaryEntry>
         final T diaryEntry = create(group.getSpecies(), author);
         diaryEntry.setGeoLocation(location);
 
-        modifyOccupations.accept(clubOccupation, groupOccupation, LocalDate.fromDateFields(diaryEntry.getPointOfTime()));
+        modifyOccupations.accept(clubOccupation, groupOccupation, diaryEntry.getPointOfTime().toLocalDate());
 
         assertPermissions(diaryEntry, group, NO_PERMS, NO_PERMS, NO_PERMS, NO_PERMS);
     }

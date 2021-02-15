@@ -13,6 +13,7 @@ import fi.riista.util.Locales;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -44,6 +45,7 @@ public class NotifyJhtOccupationNominationToRkaService {
     @Resource
     private OccupationNominationRepository occupationNominationRepository;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional
     public void sendNotificationEmail(final LocalDate nominationDate) {
         occupationNominationRepository.findRkaNotifications(nominationDate).forEach(notification -> {

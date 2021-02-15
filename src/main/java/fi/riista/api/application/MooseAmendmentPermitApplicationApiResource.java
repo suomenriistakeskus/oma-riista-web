@@ -29,12 +29,12 @@ public class MooseAmendmentPermitApplicationApiResource {
     private HarvestPermitAmendmentApplicationFeature harvestPermitAmendmentApplicationFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{applicationId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{applicationId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public HarvestPermitAmendmentApplicationDTO get(@PathVariable final long applicationId) {
         return harvestPermitAmendmentApplicationFeature.getApplication(applicationId);
     }
 
-    @PutMapping(value = "/{applicationId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PutMapping(value = "/{applicationId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public HarvestPermitAmendmentApplicationDTO update(
             final @RequestBody @Valid HarvestPermitAmendmentApplicationDTO dto, final Locale locale) {
 
@@ -49,19 +49,19 @@ public class MooseAmendmentPermitApplicationApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{permitId:\\d+}/partners", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{permitId:\\d+}/partners", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<OrganisationNameDTO> listPartners(@PathVariable final long permitId) {
         return harvestPermitAmendmentApplicationFeature.listPartners(permitId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/{permitId:\\d+}/species", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/{permitId:\\d+}/species", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<GameSpeciesDTO> listSpecies(@PathVariable final long permitId) {
         return harvestPermitAmendmentApplicationFeature.listSpecies(permitId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/list/{permitId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/list/{permitId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HarvestPermitAmendmentApplicationDTO> list(@PathVariable final long permitId) {
         return harvestPermitAmendmentApplicationFeature.list(permitId);
     }

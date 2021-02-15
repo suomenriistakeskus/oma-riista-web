@@ -1,0 +1,16 @@
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+        <tr>
+            <th style="width: 15%" translate="harvestpermit.wizard.species.table.headerSpecies"></th>
+            <th class="text-right" translate="harvestpermit.wizard.species.table.headerAmount"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="spa in ::$ctrl.species track by spa.gameSpeciesCode">
+            <td ng-bind="spa.gameSpeciesCode | translateSpeciesCode"></td>
+            <td num-pieces="spa.amount"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>

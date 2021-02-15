@@ -10,61 +10,27 @@ import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.organization.person.Person;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 @Component
 public class MobileHarvestDTOTransformer extends HarvestDTOTransformerBase<MobileHarvestDTO> {
 
-    // Transactional propagation not mandated since entity associations are not traversed.
-    @Transactional(readOnly = true)
-    @Nullable
-    public List<MobileHarvestDTO> apply(@Nullable final List<Harvest> list,
-                                        @Nonnull final HarvestSpecVersion specVersion) {
-
-        return list == null ? null : transform(list, specVersion);
-    }
-
-    // Transactional propagation not mandated since entity associations are not traversed.
-    @Transactional(readOnly = true)
-    @Nullable
-    public MobileHarvestDTO apply(@Nullable final Harvest harvest, @Nonnull final HarvestSpecVersion specVersion) {
-        if (harvest == null) {
-            return null;
-        }
-
-        final List<MobileHarvestDTO> singletonList = apply(Collections.singletonList(harvest), specVersion);
-
-        if (singletonList.size() != 1) {
-            throw new IllegalStateException(
-                    "Expected list containing exactly one harvest but has: " + singletonList.size());
-        }
-
-        return singletonList.get(0);
-    }
-
-    @Override
-    protected List<MobileHarvestDTO> transform(final List<Harvest> harvests) {
-        throw new UnsupportedOperationException("No transformation without harvestSpecVersion supported");
-    }
-
     protected List<MobileHarvestDTO> transform(@Nonnull final List<Harvest> harvests,
                                                @Nonnull final HarvestSpecVersion specVersion) {
 
-        Objects.requireNonNull(harvests, "harvests is null");
-        Objects.requireNonNull(specVersion, "specVersion is null");
+        requireNonNull(harvests, "harvests is null");
+        requireNonNull(specVersion, "specVersion is null");
 
-        final Function<Harvest, GameSpecies> harvestToSpecies = getGameDiaryEntryToSpeciesMapping(harvests);
+        final Function<Harvest, GameSpecies> harvestToSpecies = getHarvestToSpeciesMapping(harvests);
 
         final Map<Harvest, List<GameDiaryImage>> groupedImages = getImagesGroupedByHarvests(harvests);
         final Map<Harvest, List<HarvestSpecimen>> groupedSpecimens = getSpecimensGroupedByHarvests(harvests);
@@ -78,20 +44,20 @@ public class MobileHarvestDTOTransformer extends HarvestDTOTransformerBase<Mobil
         return harvests.stream()
                 .filter(Objects::nonNull)
                 .map(harvest -> {
-                    final boolean canEdit = HarvestLockedCondition.canEdit(
-                            authenticatedPerson, harvest, specVersion,
-                            groupHuntingStatusTester, contactPersonTester);
+                    final GameSpecies species = harvestToSpecies.apply(harvest);
+
+                    final boolean canEdit = HarvestLockedCondition.canEditFromMobile(
+                            authenticatedPerson, harvest, specVersion, groupHuntingStatusTester, contactPersonTester);
 
                     return MobileHarvestDTO.builder(specVersion)
                             .populateWith(harvest)
-                            .populateWith(harvestToSpecies.apply(harvest))
-                            .populateWith(specVersion.supportsHarvestPermitState() ? harvestToPermit.apply(harvest) : null)
-                            .populateSpecimensWith(groupedSpecimens.get(harvest))
+                            .withGameSpeciesCode(species.getOfficialCode())
+                            .populateWith(harvestToPermit.apply(harvest))
+                            .withSpecimensMappedFrom(groupedSpecimens.get(harvest))
                             .populateWith(groupedImages.get(harvest))
                             .withCanEdit(canEdit)
                             .build();
                 })
                 .collect(toList());
     }
-
 }

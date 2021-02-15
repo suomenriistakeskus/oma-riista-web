@@ -12,7 +12,6 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.shootingtest.ShootingTestParticipantRepositoryCustom.ParticipantSummary;
 import fi.riista.feature.shootingtest.official.ShootingTestOfficialDTO;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -123,7 +122,7 @@ public class ShootingTestCalendarEventDTOTransformerTest extends EmbeddedDatabas
 
             assertFieldsWhenShootingTestEventIsPresent(event1, null, ParticipantSummary.EMPTY, results.get(0));
 
-            final DateTime expectedLockedTimeForEvent2 = DateUtil.toDateTimeNullSafe(event2.getLockedTime());
+            final DateTime expectedLockedTimeForEvent2 = event2.getLockedTime();
             final ParticipantSummary participantSummaryForEvent2 = new ParticipantSummary(6, 3, 2, currency(60));
 
             assertFieldsWhenShootingTestEventIsPresent(
@@ -217,7 +216,7 @@ public class ShootingTestCalendarEventDTOTransformerTest extends EmbeddedDatabas
         persistInNewTransaction();
 
         runInTransaction(() -> {
-            final List<CalendarEvent> reloaded = calendarEventRepository.findAll(F.getUniqueIds(calendarEvents));
+            final List<CalendarEvent> reloaded = calendarEventRepository.findAllById(F.getUniqueIds(calendarEvents));
 
             // "5" is currently the upper limit of SQL queries needed to be executed. This may
             // need to be raised in case new logic is added to the transformer.
@@ -256,7 +255,7 @@ public class ShootingTestCalendarEventDTOTransformerTest extends EmbeddedDatabas
 
                 // Check resulting last modifier.
                 doWithShootingTestEvent(event.getId(), reloaded -> {
-                    final DateTime modificationTime = DateUtil.toDateTimeNullSafe(reloaded.getModificationTime());
+                    final DateTime modificationTime = reloaded.getModificationTime();
 
                     final ShootingTestCalendarEventDTO eventDTO = transformer.apply(reloaded.getCalendarEvent());
                     final LastModifierDTO actualLastModifier = eventDTO.getLastModifier();
@@ -269,7 +268,7 @@ public class ShootingTestCalendarEventDTOTransformerTest extends EmbeddedDatabas
 
     private void doWithShootingTestEvent(final long shootingTestEventId, final Consumer<ShootingTestEvent> consumer) {
         runInTransaction(() -> {
-            consumer.accept(shootingTestEventRepository.findOne(shootingTestEventId));
+            consumer.accept(shootingTestEventRepository.findById(shootingTestEventId).get());
         });
     }
 }

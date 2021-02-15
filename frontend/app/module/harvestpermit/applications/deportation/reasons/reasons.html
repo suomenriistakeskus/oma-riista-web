@@ -1,0 +1,39 @@
+<form name="deportationReasonsForm" r-force-show-errors-check-validity>
+    <div class="alert alert-info">
+        <span class="fa fa-info-circle"></span>
+
+        <div class="alert-content">
+            <p class="alert-title" translate="harvestpermit.wizard.deportation.cause.instruction1"></p>
+            <p translate="harvestpermit.wizard.deportation.cause.instruction2"></p>
+        </div>
+    </div>
+
+    <div ng-repeat="reason in ::$ctrl.reasons track by $index">
+        <label>
+            <strong ng-bind="::reason.speciesCodes | uppercase"></strong>
+        </label>
+        <br/>
+        <div ng-switch="reason.lawSection">
+            <span ng-switch-when="SECTION_41A" translate="harvestpermit.wizard.derogation.cause.reasonSection41A"></span>
+            <span ng-switch-when="SECTION_41B" translate="harvestpermit.wizard.derogation.cause.reasonSection41B"></span>
+            <span ng-switch-when="SECTION_41C" translate="harvestpermit.wizard.derogation.cause.reasonSection41C"></span>
+        </div>
+        <div class="form-group">
+            <div class="checkbox" ng-repeat="sectionReason in ::reason.lawSectionReasons track by $index">
+                <input type="checkbox" ng-model="sectionReason.checked">
+                <span>{{::'harvestpermit.wizard.derogation.cause.' + sectionReason.reasonType | translate}}</span>
+            </div>
+        </div>
+        <hr>
+    </div>
+</form>
+
+<hr class="invisible">
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(deportationReasonsForm)"
+        previous="$ctrl.previous(deportationReasonsForm)"
+        next-disabled="$ctrl.nextDisabled(deportationReasonsForm)"
+        next="$ctrl.next()">
+</permit-application-wizard-navigation>

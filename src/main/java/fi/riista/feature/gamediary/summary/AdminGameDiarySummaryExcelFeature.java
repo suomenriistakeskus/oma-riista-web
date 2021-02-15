@@ -10,6 +10,7 @@ import fi.riista.feature.gamediary.GameSpeciesService;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.Harvest_;
 import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.gamediary.observation.Observation;
@@ -59,6 +60,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class AdminGameDiarySummaryExcelFeature {
+
     private static final Logger LOG = LoggerFactory.getLogger(AdminGameDiarySummaryExcelFeature.class);
 
     // Arbitrary maximum result row limit (500k) to limit memory consumption
@@ -112,7 +114,7 @@ public class AdminGameDiarySummaryExcelFeature {
 
         final List<HarvestDTO> harvestDTOList = loadHarvest(createHarvestPredicate(
                 interval, gameSpecies, dto.getOrganisationType(),
-                dto.getOfficialCode(), dto.isHarvestReportOnly()))
+                dto.getOfficialCode(), dto.isHarvestReportOnly(), dto.isOfficialHarvestOnly()))
                 .stream().sorted(Comparator.comparing(HarvestDTO::getPointOfTime)).collect(Collectors.toList());
 
         final List<ObservationDTO> observationDTOList = loadObservations(
@@ -138,17 +140,18 @@ public class AdminGameDiarySummaryExcelFeature {
         return new BooleanBuilder()
                 .and(organisationPredicate(SRVA.rhy, organisationType, organisationOfficialCode))
                 .and(interval != null ? SRVA.pointOfTime.between(
-                        interval.getStart().toDate(),
-                        interval.getEnd().toDate()) : null)
+                        interval.getStart(),
+                        interval.getEnd()) : null)
                 .and(gameSpecies != null ? SRVA.species.eq(gameSpecies) : null);
     }
 
     @Nonnull
-    private BooleanBuilder createHarvestPredicate(final Interval interval,
-                                                  final GameSpecies gameSpecies,
-                                                  final OrganisationType organisationType,
-                                                  final String organisationOfficialCode,
-                                                  final boolean harvestReportOnly) {
+        /*package*/ BooleanBuilder createHarvestPredicate(final Interval interval,
+                                                          final GameSpecies gameSpecies,
+                                                          final OrganisationType organisationType,
+                                                          final String organisationOfficialCode,
+                                                          final boolean harvestReportOnly,
+                                                          final boolean officialHarvestOnly) {
         final QHarvest HARVEST = QHarvest.harvest;
         return new BooleanBuilder()
                 .and(harvestReportOnly
@@ -156,10 +159,14 @@ public class AdminGameDiarySummaryExcelFeature {
                         .and(HARVEST.harvestReportState.ne(HarvestReportState.REJECTED))
                         : HARVEST.harvestReportState.isNull()
                         .or(HARVEST.harvestReportState.ne(HarvestReportState.REJECTED)))
+                .and(officialHarvestOnly
+                        ? HARVEST.harvestReportState.eq(HarvestReportState.APPROVED)
+                        .or(HARVEST.huntingDayOfGroup.isNotNull())
+                        : null)
                 .and(organisationPredicate(HARVEST.rhy, organisationType, organisationOfficialCode))
                 .and(interval != null ? HARVEST.pointOfTime.between(
-                        interval.getStart().toDate(),
-                        interval.getEnd().toDate()) : null)
+                        interval.getStart(),
+                        interval.getEnd()) : null)
                 .and(gameSpecies != null ? HARVEST.species.eq(gameSpecies) : null);
     }
 
@@ -172,8 +179,8 @@ public class AdminGameDiarySummaryExcelFeature {
         return new BooleanBuilder()
                 .and(organisationPredicate(OBSERVATION.rhy, organisationType, organisationOfficialCode))
                 .and(interval != null ? OBSERVATION.pointOfTime.between(
-                        interval.getStart().toDate(),
-                        interval.getEnd().toDate()) : null)
+                        interval.getStart(),
+                        interval.getEnd()) : null)
                 .and(gameSpecies != null ? OBSERVATION.species.eq(gameSpecies) : null);
     }
 
@@ -204,17 +211,20 @@ public class AdminGameDiarySummaryExcelFeature {
                                         RKA.officialCode.eq(officialCode))));
     }
 
-    private List<HarvestDTO> loadHarvest(final Predicate predicate) {
+    /*package*/ List<HarvestDTO> loadHarvest(final Predicate predicate) {
         final List<HarvestDTO> result = new LinkedList<>();
         int pageCounter = 0;
 
         while (true) {
             LOG.info("Loading harvest page {}", pageCounter);
 
-            final PageRequest pageRequest = new PageRequest(pageCounter++, PAGE_SIZE,
-                    new JpaSort(Sort.Direction.ASC, Harvest_.id));
+            final PageRequest pageRequest = PageRequest.of(pageCounter++, PAGE_SIZE,
+                    JpaSort.of(Sort.Direction.ASC, Harvest_.id));
             final Slice<Harvest> slice = harvestRepository.findAllAsSlice(predicate, pageRequest);
-            result.addAll(adminSummaryHarvestDTOTransformer.apply(slice.getContent()));
+
+            // TODO Update to currently supported HarvestSpecVersion.
+            result.addAll(adminSummaryHarvestDTOTransformer.apply(slice.getContent(), HarvestSpecVersion._7));
+
             entityManager.clear();
 
             if (!slice.hasNext()) {
@@ -236,8 +246,8 @@ public class AdminGameDiarySummaryExcelFeature {
         while (true) {
             LOG.info("Loading observation page {}", pageCounter);
 
-            final PageRequest pageRequest = new PageRequest(pageCounter++, PAGE_SIZE,
-                    new JpaSort(Sort.Direction.ASC, Observation_.id));
+            final PageRequest pageRequest = PageRequest.of(pageCounter++, PAGE_SIZE,
+                    JpaSort.of(Sort.Direction.ASC, Observation_.id));
             final Slice<Observation> slice = observationRepository.findAllAsSlice(predicate, pageRequest);
             result.addAll(adminSummaryObservationDTOTransformer.apply(slice.getContent()));
             entityManager.clear();
@@ -262,8 +272,8 @@ public class AdminGameDiarySummaryExcelFeature {
         while (true) {
             LOG.info("Loading SRVA page {}", pageCounter);
 
-            final PageRequest pageRequest = new PageRequest(pageCounter++, PAGE_SIZE,
-                    new JpaSort(Sort.Direction.ASC, Observation_.id));
+            final PageRequest pageRequest = PageRequest.of(pageCounter++, PAGE_SIZE,
+                    JpaSort.of(Sort.Direction.ASC, Observation_.id));
             final Slice<SrvaEvent> slice = srvaEventRepository.findAllAsSlice(predicate, pageRequest);
             result.addAll(adminSummarySrvaEventDTOTransformer.apply(slice.getContent()));
             entityManager.clear();

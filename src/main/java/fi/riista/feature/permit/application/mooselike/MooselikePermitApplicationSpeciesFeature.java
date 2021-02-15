@@ -15,6 +15,8 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 @Service
 public class MooselikePermitApplicationSpeciesFeature {
 
@@ -40,6 +42,9 @@ public class MooselikePermitApplicationSpeciesFeature {
     @Transactional
     public void saveSpeciesAmounts(
             final long applicationId, final List<MooselikePermitApplicationSpeciesAmountDTO> dtoList) {
+
+        assertHasNoDuplicatesBySpecies(dtoList);
+
         final HarvestPermitApplication application =
                 harvestPermitApplicationAuthorizationService.updateApplication(applicationId);
 
@@ -49,8 +54,13 @@ public class MooselikePermitApplicationSpeciesFeature {
         final Updater updater = new Updater(speciesAmountList, createCallback(application));
         updater.processAll(dtoList);
 
-        harvestPermitApplicationSpeciesAmountRepository.save(updater.getResultList());
-        harvestPermitApplicationSpeciesAmountRepository.delete(updater.getMissing());
+        if (!updater.getResultList().isEmpty()) {
+            // Force change to application to avoid possible duplicates in amounts
+            application.forceRevisionUpdate();
+        }
+
+        harvestPermitApplicationSpeciesAmountRepository.saveAll(updater.getResultList());
+        harvestPermitApplicationSpeciesAmountRepository.deleteAll(updater.getMissing());
     }
 
     @Nonnull
@@ -59,7 +69,8 @@ public class MooselikePermitApplicationSpeciesFeature {
             @Override
             public HarvestPermitApplicationSpeciesAmount create(final MooselikePermitApplicationSpeciesAmountDTO dto) {
                 final GameSpecies gameSpecies = gameSpeciesService.requireByOfficialCode(dto.getGameSpeciesCode());
-                final HarvestPermitApplicationSpeciesAmount speciesAmount = new HarvestPermitApplicationSpeciesAmount(application, gameSpecies, dto.getAmount());
+                final HarvestPermitApplicationSpeciesAmount speciesAmount =
+                        HarvestPermitApplicationSpeciesAmount.createForHarvest(application, gameSpecies, dto.getAmount());
                 speciesAmount.setMooselikeDescription(dto.getDescription());
 
                 return speciesAmount;
@@ -68,7 +79,7 @@ public class MooselikePermitApplicationSpeciesFeature {
             @Override
             public void update(final HarvestPermitApplicationSpeciesAmount entity,
                                final MooselikePermitApplicationSpeciesAmountDTO dto) {
-                entity.setAmount(dto.getAmount());
+                entity.setSpecimenAmount(dto.getAmount());
                 entity.setMooselikeDescription(dto.getDescription());
             }
 
@@ -89,5 +100,14 @@ public class MooselikePermitApplicationSpeciesFeature {
 
     private abstract static class UpdaterCallback
             implements HarvestPermitApplicationSpeciesAmountUpdater.Callback<MooselikePermitApplicationSpeciesAmountDTO> {
+    }
+
+    private static void assertHasNoDuplicatesBySpecies(final List<MooselikePermitApplicationSpeciesAmountDTO> dtoList) {
+        final long speciesCount =
+                dtoList.stream()
+                        .map(MooselikePermitApplicationSpeciesAmountDTO::getGameSpeciesCode)
+                        .distinct()
+                        .count();
+        checkArgument(speciesCount == dtoList.size(), "List contains duplicates by species");
     }
 }

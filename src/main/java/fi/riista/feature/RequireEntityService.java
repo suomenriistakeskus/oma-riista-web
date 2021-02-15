@@ -26,8 +26,11 @@ import fi.riista.feature.organization.calendar.Venue;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatistics;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlAttachment;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEvent;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.common.decision.nomination.NominationDecision;
 import fi.riista.feature.permit.invoice.Invoice;
 import fi.riista.feature.permit.invoice.batch.PermitDecisionInvoiceBatch;
 import fi.riista.feature.permit.invoice.payment.InvoicePaymentLine;
@@ -101,6 +104,10 @@ public class RequireEntityService {
 
     public PermitDecision requirePermitDecision(final Long id, final Enum<?> permission) {
         return require(id, PermitDecision.class, permission);
+    }
+
+    public NominationDecision requireNominationDecision(final Long id, final Enum<?> permission) {
+        return require(id, NominationDecision.class, permission);
     }
 
     public PermitDecisionInvoiceBatch requirePermitDecisionInvoiceBatch(final Long id, final Enum<?> permission) {
@@ -177,6 +184,14 @@ public class RequireEntityService {
 
     public PersonalAreaUnion requireAccountAreaUnion(final Long id, final Enum<?> permission) {
         return require(id, PersonalAreaUnion.class, permission);
+    }
+
+    public HuntingControlEvent requireHuntingControlEvent(final Long id, final Enum<?> permission) {
+        return require(id, HuntingControlEvent.class, permission);
+    }
+
+    public HuntingControlAttachment requireHuntingControlAttachment(final Long id, final Enum<?> permission) {
+        return require(id, HuntingControlAttachment.class, permission);
     }
 
     private <T extends BaseEntity<ID>, ID extends java.io.Serializable> T require(final ID id,

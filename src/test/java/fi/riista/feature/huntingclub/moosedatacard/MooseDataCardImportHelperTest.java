@@ -49,6 +49,7 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.gamediary.observation.ObservationCategory.MOOSE_HUNTING;
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.alreadyExistingHuntingDaysIgnored;
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.harvestsIgnoredBecauseOfAlreadyExistingHuntingDays;
 import static fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportMessages.missingHuntingDaysCreated;
@@ -378,17 +379,17 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
         final GroupHuntingDay transientHuntingDay4 = model().newGroupHuntingDay(group, today.plusDays(7));
 
         final Harvest transientHarvest3 = model().newHarvest(species, author, today.plusDays(8));
-        final Observation transientObservation3 = model().newObservation(species, author, today.plusDays(8));
+        final Observation transientObservation3 = model().newObservation(species, MOOSE_HUNTING, author, today.plusDays(8));
 
         final Harvest transientHarvest4 = model().newHarvest(species, author, today.plusDays(9));
 
-        final Observation transientObservation4 = model().newObservation(species, author, today.plusDays(10));
+        final Observation transientObservation4 = model().newObservation(species, MOOSE_HUNTING, author, today.plusDays(10));
 
         // Hunting day already exists for following
         final GroupHuntingDay transientHuntingDay5 = model().newGroupHuntingDay(group, huntingDay4.getStartDate());
         final Harvest transientHarvest5 = model().newHarvest(species, author, huntingDay1.getStartDate());
         final Observation transientObservation5 =
-                model().newObservation(species, author, huntingDay1.getStartDate());
+                model().newObservation(species, MOOSE_HUNTING, author, huntingDay1.getStartDate());
 
         final Try<Tuple2<List<GroupHuntingDay>, List<String>>> tryResult = helper.persistHuntingDayData(
                 group,

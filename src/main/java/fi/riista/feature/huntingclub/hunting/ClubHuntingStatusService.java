@@ -2,7 +2,8 @@ package fi.riista.feature.huntingclub.hunting;
 
 import com.google.common.collect.Sets;
 import fi.riista.feature.account.user.ActiveUserService;
-import fi.riista.feature.gamediary.GameDiaryEntry;
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -62,7 +63,9 @@ public class ClubHuntingStatusService {
 
         result.setFromMooseDataCard(group.isFromMooseDataCard());
 
-        if (!isGroupHuntingDataLocked(group)) {
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+
+        if (!isGroupHuntingDataLocked(group, activeUser)) {
             result.setCanCreateHarvest(true);
             result.setCanEditHuntingDay(true);
             result.setCanEditDiaryEntry(true);
@@ -81,19 +84,24 @@ public class ClubHuntingStatusService {
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public boolean isDiaryEntryLocked(final @Nonnull GameDiaryEntry diaryEntry) {
-        requireNonNull(diaryEntry);
+    public boolean isHarvestLocked(final @Nonnull Harvest harvest) {
+        requireNonNull(harvest);
 
-        return diaryEntry.getHuntingDayOfGroup() != null &&
-                isGroupHuntingDataLocked(diaryEntry.getHuntingDayOfGroup().getGroup());
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+
+        return harvest.getHuntingDayOfGroup() != null &&
+                isGroupHuntingDataLocked(harvest.getHuntingDayOfGroup().getGroup(), activeUser);
     }
 
-    private boolean isGroupHuntingDataLocked(final @Nonnull HuntingClubGroup group) {
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isGroupHuntingDataLocked(final @Nonnull HuntingClubGroup group,
+                                            final @Nonnull SystemUser activeUser) {
+
         if (huntingFinishingService.hasPermitPartnerFinishedHunting(group)) {
             return true;
         }
 
-        if (activeUserService.isModeratorOrAdmin()) {
+        if (activeUser.isModeratorOrAdmin()) {
             return false;
         }
 
@@ -108,7 +116,7 @@ public class ClubHuntingStatusService {
         final EnumSet<OccupationType> leaderRoles = EnumSet.of(SEURAN_YHDYSHENKILO, RYHMAN_METSASTYKSENJOHTAJA);
 
         final Set<OccupationType> activePersonRoles =
-                findActiveClubAndGroupOccupationTypes(group, activeUserService.requireActiveUser().getPerson());
+                findActiveClubAndGroupOccupationTypes(group, activeUser.getPerson());
 
         return Sets.intersection(leaderRoles, activePersonRoles).isEmpty();
     }

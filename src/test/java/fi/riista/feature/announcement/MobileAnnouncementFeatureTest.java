@@ -18,14 +18,14 @@ import org.springframework.data.domain.PageRequest;
 import javax.annotation.Resource;
 import java.util.List;
 
+import static fi.riista.test.Asserts.assertThat;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 public class MobileAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
@@ -63,7 +63,7 @@ public class MobileAnnouncementFeatureTest extends EmbeddedDatabaseTest {
     private List<MobileAnnouncementDTO> listAnnouncements() {
         return mobileAnnouncementFeature.listMobileAnnouncements(
                 DateUtil.now().minusYears(1),
-                new PageRequest(0, 100));
+                PageRequest.of(0, 100));
     }
 
     @Test
@@ -87,11 +87,11 @@ public class MobileAnnouncementFeatureTest extends EmbeddedDatabaseTest {
 
             final MobileAnnouncementDTO dto = list.get(0);
 
-            assertEquals(announcement.getBody(), dto.getBody());
-            assertEquals(announcement.getSubject(), dto.getSubject());
-            assertNotNull(dto.getSender());
-            assertEquals(announcement.getFromOrganisation().getNameLocalisation().asMap(), dto.getSender().getOrganisation());
-//            assertEquals(OccupationType.SEURAN_YHDYSHENKILO, dto.getSender().getTitle());
+            assertThat(dto.getBody(), is(equalTo(announcement.getBody())));
+            assertThat(dto.getSubject(), is(equalTo(announcement.getSubject())));
+            assertThat(dto.getSender(), is(notNullValue()));
+            assertThat(dto.getSender().getOrganisation(), is(equalTo(announcement.getFromOrganisation().getNameLocalisation().asMap())));
+//            assertThat(dto.getSender().getTitle(), is(equalTo(OccupationType.SEURAN_YHDYSHENKILO)));
         });
     }
 
@@ -114,11 +114,13 @@ public class MobileAnnouncementFeatureTest extends EmbeddedDatabaseTest {
                 club, createUser(contactPerson), OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
         onSavedAndAuthenticated(createUser(clubMember), () -> {
-            assertThat("normal group member should not see", listAnnouncements(), hasSize(0));
+            assertThat(listAnnouncements(), hasSize(0),
+                    "normal group member should not see");
         });
 
         onSavedAndAuthenticated(createUser(huntingLeader), () -> {
-            assertThat("hunting leader should see", listAnnouncements(), hasSize(1));
+            assertThat(listAnnouncements(), hasSize(1),
+                    "hunting leader should see");
         });
     }
 
@@ -144,7 +146,8 @@ public class MobileAnnouncementFeatureTest extends EmbeddedDatabaseTest {
         final Person otherClubMember = createClubAndGroupMember(otherClub, otherGroup);
 
         onSavedAndAuthenticated(createUser(otherClubMember), () -> {
-            assertThat("other club member should not see", listAnnouncements(), hasSize(0));
+            assertThat(listAnnouncements(), hasSize(0),
+                    "other club member should not see");
         });
     }
 
@@ -178,9 +181,9 @@ public class MobileAnnouncementFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private static Matcher<MobileAnnouncementDTO> hasAnnouncement(final Announcement announcement) {
-        return allOf(hasAnnouncementId(equalTo(announcement.getId())),
-                hasAnnouncementBody(equalTo(announcement.getBody())),
-                hasAnnouncementSubject(equalTo(announcement.getSubject())));
+        return allOf(hasAnnouncementId(is(equalTo(announcement.getId()))),
+                hasAnnouncementBody(is(equalTo(announcement.getBody()))),
+                hasAnnouncementSubject(is(equalTo(announcement.getSubject()))));
     }
 
     private static Matcher<MobileAnnouncementDTO> hasAnnouncementBody(Matcher<String> childMatcher) {

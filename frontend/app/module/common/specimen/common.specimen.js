@@ -12,12 +12,21 @@ angular.module('app.common.specimen', [])
         bindings: {
             entry: '<'
         },
-        controller: function () {
+        controller: function (AuthenticationService, GameSpeciesCodes) {
             var $ctrl = this;
 
-            $ctrl.isAloneVisible = function () {
-                var e = $ctrl.entry;
-                return e.isHarvest() && e.isAlonePossible() && _.isBoolean(e.specimens[0].alone);
+            $ctrl.isNotNil = function (value) {
+                return !_.isNil(value);
+            };
+
+            $ctrl.$onInit = function () {
+                var speciesCode = $ctrl.entry.gameSpeciesCode;
+
+                // TODO Remove this when deer pilot 2020 is over.
+                var isDeerPilotUser = AuthenticationService.isDeerPilotUser();
+
+                $ctrl.speciesHasExtendedFields = !!speciesCode
+                    && GameSpeciesCodes.isSpeciesHavingExtendedFields(speciesCode, isDeerPilotUser);
             };
         }
     })
@@ -32,12 +41,16 @@ angular.module('app.common.specimen', [])
             $ctrl.$onInit = function () {
                 var e = $ctrl.entry;
 
-                $ctrl.showMooselikeObservationAmounts = $ctrl.entry.isMooselike() && $ctrl.entry.withinMooseHunting;
+                $ctrl.showMooselikeObservationAmounts = $ctrl.entry.isMooselike()
+                    && $ctrl.entry.isObservationWithinHunting();
+
+                $ctrl.showCalfAmount = $ctrl.entry.isMoose()
+                    || !_.isNil($ctrl.entry.mooselikeCalfAmount);
 
                 ObservationFieldsMetadata
                     .forSpecies({gameSpeciesCode: e.gameSpeciesCode}).$promise
                     .then(function (metadata) {
-                        var fieldRequirements = metadata.getFieldRequirements(e.withinMooseHunting, e.observationType);
+                        var fieldRequirements = metadata.getFieldRequirements(e.observationCategory, e.observationType);
 
                         $ctrl.isGenderVisible = fieldRequirements.isFieldLegal('gender');
                         $ctrl.isAgeVisible = fieldRequirements.isFieldLegal('age');

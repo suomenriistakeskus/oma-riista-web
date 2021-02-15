@@ -9,11 +9,19 @@ angular.module('app.jht.controllers', ['app.admin.users'])
                 url: '/jht',
                 controllerAs: '$ctrl',
 
-                controller: function(ModeratorPrivileges, AvailableRoleService, ActiveRoleService) {
+                controller: function (ModeratorPrivileges, AvailableRoleService, ActiveRoleService, renewalTodos) {
                     var $ctrl = this;
+                    $ctrl.$onInit = function () {
+                        $ctrl.myRenewalTodos = renewalTodos.myDecisionsToRenew;
+                    };
 
                     $ctrl.isAuthorizedForHarvestRegistry = ActiveRoleService.isAdmin() ||
-                            AvailableRoleService.hasPrivilege(ModeratorPrivileges.harvestRegistry);
+                        AvailableRoleService.hasPrivilege(ModeratorPrivileges.harvestRegistry);
+                },
+                resolve: {
+                    renewalTodos: function (ModeratorTodos) {
+                        return ModeratorTodos.get().$promise;
+                    }
                 }
             })
             .state('jht.home', {
@@ -50,12 +58,14 @@ angular.module('app.jht.controllers', ['app.admin.users'])
                     }
                 },
                 controllerAs: '$ctrl',
-                controller: function (handlers, $location) {
+                controller: function (handlers, $location, renewalTodos) {
                     var $ctrl = this;
 
                     $ctrl.$onInit = function () {
                         $ctrl.handlers = handlers;
                         $ctrl.showTab('filter');
+                        $ctrl.myRenewalTodos = renewalTodos.myDecisionsToRenew;
+                        $ctrl.decisionsToRenewExist = renewalTodos.decisionsToRenew;
                     };
 
                     $ctrl.showTab = function (tab) {
@@ -70,6 +80,9 @@ angular.module('app.jht.controllers', ['app.admin.users'])
                 controller: 'OccupationNominationListController',
                 controllerAs: '$ctrl',
                 params: {
+                    areaCode: {
+                        value: null
+                    },
                     rhyCode: {
                         value: null
                     },

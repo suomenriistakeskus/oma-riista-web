@@ -3,7 +3,7 @@ package fi.riista.feature.permit.application.bird.area;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.permit.application.bird.BirdPermitApplication;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;

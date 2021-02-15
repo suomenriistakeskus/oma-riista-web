@@ -12,7 +12,6 @@ import fi.riista.feature.organization.rhy.annualstats.GameDamageStatistics;
 import fi.riista.feature.organization.rhy.annualstats.HunterExamStatistics;
 import fi.riista.feature.organization.rhy.annualstats.HunterExamTrainingStatistics;
 import fi.riista.feature.organization.rhy.annualstats.HunterTrainingStatistics;
-import fi.riista.feature.organization.rhy.annualstats.YouthTrainingStatistics;
 import fi.riista.feature.organization.rhy.annualstats.HuntingControlStatistics;
 import fi.riista.feature.organization.rhy.annualstats.JHTTrainingStatistics;
 import fi.riista.feature.organization.rhy.annualstats.LukeStatistics;
@@ -26,6 +25,7 @@ import fi.riista.feature.organization.rhy.annualstats.RhyBasicInfo;
 import fi.riista.feature.organization.rhy.annualstats.ShootingRangeStatistics;
 import fi.riista.feature.organization.rhy.annualstats.SrvaEventStatistics;
 import fi.riista.feature.organization.rhy.annualstats.SrvaSpeciesCountStatistics;
+import fi.riista.feature.organization.rhy.annualstats.YouthTrainingStatistics;
 import fi.riista.test.DefaultEntitySupplierProvider;
 import fi.riista.test.rules.SpringRuleConfigurer;
 import fi.riista.util.F;
@@ -50,6 +50,7 @@ import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_FALLOW_DEER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_LYNX;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_ROE_DEER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_UNKNOWN;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WILD_BOAR;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WILD_FOREST_REINDEER;
@@ -62,11 +63,11 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_EXAM_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_TRAINING_2017;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.YOUTH_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTING_CONTROL;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.JHT_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE_2017;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE_2018;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.MAIN_SUMMARY_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.METSAHALLITUS;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_HUNTER_TRAINING;
@@ -84,8 +85,10 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SRVA_INJURIES;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SRVA_TOTALS;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY_2018;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.TRAINING_SUMMARY;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.TRAINING_SUMMARY_2017;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.YOUTH_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.*;
 import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Arrays.asList;
@@ -109,6 +112,7 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
             .put(OFFICIAL_CODE_BEAR, LocalisedString.of("Karhu", "Björn"))
             .put(OFFICIAL_CODE_WOLF, LocalisedString.of("Susi", "Varg"))
             .put(OFFICIAL_CODE_WOLVERINE, LocalisedString.of("Ahma", "Järv"))
+            .put(OFFICIAL_CODE_UNKNOWN, LocalisedString.of("Muu", "Övrig"))
             .build();
 
     @Configuration
@@ -161,7 +165,7 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
     public void testExtractedGroupsForYear2018() {
         final List<AnnualStatisticGroup> expectedGroups = asList(
                 BASIC_INFO,
-                SUBSIDY_SUMMARY,
+                SUBSIDY_SUMMARY_2018,
                 OTHER_SUMMARY,
                 HUNTER_EXAMS,
                 SHOOTING_TESTS,
@@ -182,14 +186,45 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 OTHER_HUNTING_RELATED,
                 COMMUNICATION,
                 SHOOTING_RANGES,
-                LUKE,
+                LUKE_2018,
                 METSAHALLITUS);
 
         assertEquals(expectedGroups, extractGroups(2018));
     }
 
     @Test
-    public void testExtractedGroupsForYearAfter2018() {
+    public void testExtractedGroupsForYear2019() {
+        final List<AnnualStatisticGroup> expectedGroups = asList(
+                BASIC_INFO,
+                SUBSIDY_SUMMARY_2018,
+                OTHER_SUMMARY,
+                HUNTER_EXAMS,
+                SHOOTING_TESTS,
+                GAME_DAMAGE,
+                HUNTING_CONTROL,
+                OTHER_PUBLIC_ADMIN_TASKS,
+                SRVA_TOTALS,
+                SRVA_ACCIDENTS,
+                SRVA_DEPORTATIONS,
+                SRVA_INJURIES,
+                TRAINING_SUMMARY,
+                HUNTER_EXAM_TRAINING,
+                JHT_TRAINING,
+                HUNTER_TRAINING,
+                YOUTH_TRAINING,
+                OTHER_HUNTER_TRAINING,
+                OTHER_HUNTING_RELATED,
+                COMMUNICATION,
+                SHOOTING_RANGES,
+                LUKE_2018,
+                METSAHALLITUS,
+                AnnualStatisticGroup.PUBLIC_EVENTS);
+
+        assertEquals(expectedGroups, extractGroups(2019));
+    }
+
+    @Test
+    public void testExtractedGroupsForYearAfter2019() {
         final List<AnnualStatisticGroup> expectedGroups = asList(
                 BASIC_INFO,
                 SUBSIDY_SUMMARY,
@@ -216,7 +251,7 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 METSAHALLITUS,
                 AnnualStatisticGroup.PUBLIC_EVENTS);
 
-        assertEquals(expectedGroups, extractGroups(2019));
+        assertEquals(expectedGroups, extractGroups(2020));
     }
 
     @Test
@@ -227,7 +262,7 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
         final List<Tuple2<LocalisedString, Either<Number, String>>> extractedItems = extractItems(stats);
 
         assertResult(getExpectedItems(stats), extractedItems);
-        assertEquals(153, extractedItems.size());
+        assertEquals(156, extractedItems.size());
     }
 
     @Test
@@ -238,39 +273,69 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
         final List<Tuple2<LocalisedString, Either<Number, String>>> extractedItems = extractItems(stats);
 
         assertResult(getExpectedItems(stats), extractedItems);
-        assertEquals(155, extractedItems.size());
+        assertEquals(158, extractedItems.size());
+    }
+
+    @Test
+    public void testExtractedItemsForYear2019() {
+        final Riistanhoitoyhdistys rhy = getEntitySupplier().newRiistanhoitoyhdistys();
+        final RhyAnnualStatistics stats = getEntitySupplier().newRhyAnnualStatistics(rhy, 2019);
+
+        final List<Tuple2<LocalisedString, Either<Number, String>>> extractedItems = extractItems(stats);
+
+        assertResult(getExpectedItems(stats), extractedItems);
+        assertEquals(158, extractedItems.size());
+    }
+
+    @Test
+    public void testExtractedItemsForYearAfter2019() {
+        final Riistanhoitoyhdistys rhy = getEntitySupplier().newRiistanhoitoyhdistys();
+        final RhyAnnualStatistics stats = getEntitySupplier().newRhyAnnualStatistics(rhy, 2020);
+
+        final List<Tuple2<LocalisedString, Either<Number, String>>> extractedItems = extractItems(stats);
+
+        assertResult(getExpectedItems(stats), extractedItems);
+        assertEquals(161, extractedItems.size());
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> getExpectedItems(final RhyAnnualStatistics stats) {
         final int year = stats.getYear();
 
-        return Stream
-                .of(listExpectedBasicInfoItems(stats.getOrCreateBasicInfo()),
-                        listExpectedSubsidySummaryItems(stats),
-                        listExpectedOtherSummaryItems(stats),
-                        listExpectedHunterExamItems(stats.getOrCreateHunterExams()),
-                        listExpectedShootingTestItems(stats.getOrCreateShootingTests()),
-                        listExpectedGameDamageItems(stats.getOrCreateGameDamage()),
-                        listExpectedHuntingControlItems(stats.getOrCreateHuntingControl()),
-                        listExpectedOtherPublicAdminItems(stats.getOrCreateOtherPublicAdmin()),
-                        listExpectedSrvaTotalItems(stats.getOrCreateSrva()),
-                        listExpectedSrvaAccidentItems(stats.getOrCreateSrva().getAccident()),
-                        listExpectedSrvaDeportationItems(stats.getOrCreateSrva().getDeportation()),
-                        listExpectedSrvaInjuryItems(stats.getOrCreateSrva().getInjury()),
-                        listExpectedTrainingSummaryItems(stats),
-                        listExpectedHunterExamTrainingItems(stats.getOrCreateHunterExamTraining()),
-                        listExpectedJhtTrainingItems(stats.getOrCreateJhtTraining()),
-                        listExpectedHunterTrainingItems(stats.getOrCreateHunterTraining()),
-                        listExpectedYouthTrainingItems(stats.getOrCreateYouthTraining()),
-                        listExpectedOtherHunterTrainingItems(stats.getOrCreateOtherHunterTraining(), year),
-                        listExpectedPublicEventItems(stats.getOrCreatePublicEvents(), year),
-                        listExpectedOtherHuntingRelatedItems(stats.getOrCreateOtherHuntingRelated(), year),
-                        listExpectedCommunicationItems(stats.getOrCreateCommunication()),
-                        listExpectedShootingRangeItems(stats.getOrCreateShootingRanges()),
-                        listExpectedLukeItems(stats.getOrCreateLuke(), year),
-                        listExpectedMetsahallitusItems(stats.getOrCreateMetsahallitus()))
-                .flatMap(List::stream)
-                .collect(toList());
+        final Stream.Builder<List<Tuple2<LocalisedString, Either<Number, String>>>> builder = Stream.builder();
+        builder.add(listExpectedBasicInfoItems(stats.getOrCreateBasicInfo()))
+                .add(listExpectedSubsidySummaryItems(stats))
+                .add(listExpectedOtherSummaryItems(stats))
+                .add(listExpectedHunterExamItems(stats.getOrCreateHunterExams()))
+                .add(listExpectedShootingTestItems(stats.getOrCreateShootingTests()))
+                .add(listExpectedGameDamageItems(stats.getOrCreateGameDamage()))
+                .add(listExpectedHuntingControlItems(stats.getOrCreateHuntingControl()))
+                .add(listExpectedOtherPublicAdminItems(stats.getOrCreateOtherPublicAdmin()))
+                .add(listExpectedSrvaTotalItems(stats.getOrCreateSrva()))
+                .add(listExpectedSrvaAccidentItems(stats.getOrCreateSrva().getAccident()))
+                .add(listExpectedSrvaDeportationItems(stats.getOrCreateSrva().getDeportation()))
+                .add(listExpectedSrvaInjuryItems(stats.getOrCreateSrva().getInjury()))
+                .add(listExpectedTrainingSummaryItems(stats))
+                .add(listExpectedHunterExamTrainingItems(stats.getOrCreateHunterExamTraining()))
+                .add(listExpectedJhtTrainingItems(stats.getOrCreateJhtTraining()))
+                .add(listExpectedHunterTrainingItems(stats.getOrCreateHunterTraining()))
+                .add(listExpectedYouthTrainingItems(stats.getOrCreateYouthTraining()))
+                .add(listExpectedOtherHunterTrainingItems(stats.getOrCreateOtherHunterTraining(), year));
+
+        if (year < 2019) {
+            builder.add(listExpectedPublicEventItems(stats.getOrCreatePublicEvents(), year));
+        }
+
+        builder.add(listExpectedOtherHuntingRelatedItems(stats.getOrCreateOtherHuntingRelated(), year))
+                .add(listExpectedCommunicationItems(stats.getOrCreateCommunication()))
+                .add(listExpectedShootingRangeItems(stats.getOrCreateShootingRanges()))
+                .add(listExpectedLukeItems(stats.getOrCreateLuke(), year))
+                .add(listExpectedMetsahallitusItems(stats.getOrCreateMetsahallitus()));
+
+        if (year >= 2019) {
+            builder.add(listExpectedPublicEventItems(stats.getOrCreatePublicEvents(), year));
+        }
+
+        return builder.build().flatMap(List::stream).collect(toList());
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> extractItems(final RhyAnnualStatistics statistics) {
@@ -328,13 +393,28 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                     number(HUNTER_TRAINING_EVENTS_2017, 67 + 69 + 71 + 73 + 75 + 77 + 79),
                     number(STUDENT_TRAINING_EVENTS_2017, 81 + 83),
                     number(HUNTING_CONTROL_EVENTS, huntingControl.getHuntingControlEvents()),
-                    number(SUM_OF_LUKE_CALCULATIONS, 113 + 114 + 115 + 116),
+                    number(SUM_OF_LUKE_CALCULATIONS_2018, 113 + 114 + 115 + 116),
                     number(HARVEST_PERMIT_APPLICATION_PARTNERS, ohr.getHarvestPermitApplicationPartners()),
                     number(WOLF_TERRITORY_WORKGROUP_LEADS_2017, ohr.getWolfTerritoryWorkgroups()),
-                    number(SRVA_ALL_EVENTS, 465),
+                    number(SRVA_ALL_EVENTS, 528),
                     number(SRVA_ALL_MOOSELIKE_EVENTS_2017, 195),
                     number(SRVA_ALL_LARGE_CARNIVORE_EVENTS_2017, 222),
                     number(SRVA_ALL_WILD_BOAR_EVENTS_2017, 6 + 16 + 26),
+                    number(SMALL_GAME_LICENSES_SOLD_BY_METSAHALLITUS, mh.getSmallGameLicensesSoldByMetsahallitus()));
+        }
+
+        if (year < 2020) {
+            return asList(
+                    number(RHY_MEMBERS, basicInfo.getRhyMembers()),
+                    number(SUBSIDIZABLE_HUNTER_EXAM_TRAINING_EVENTS, hunterExamTraining.getHunterExamTrainingEvents()),
+                    number(SUBSIDIZABLE_OTHER_TRAINING_EVENTS, 1410),
+                    number(SUBSIDIZABLE_STUDENT_AND_YOUTH_TRAINING_EVENTS, 81 + 83 + 85),
+                    number(HUNTING_CONTROL_EVENTS, huntingControl.getHuntingControlEvents()),
+                    number(SUM_OF_LUKE_CALCULATIONS_2018, 113 + 114 + 115 + 116 + 117),
+                    number(LUKE_CARNIVORE_CONTACT_PERSONS, stats.getOrCreateLuke().getCarnivoreContactPersons()),
+                    number(MOOSELIKE_TAXATION_PLANNING_EVENTS, ohr.getMooselikeTaxationPlanningEvents()),
+                    number(WOLF_TERRITORY_WORKGROUPS, ohr.getWolfTerritoryWorkgroups()),
+                    number(SRVA_ALL_MOOSELIKE_EVENTS, 195),
                     number(SMALL_GAME_LICENSES_SOLD_BY_METSAHALLITUS, mh.getSmallGameLicensesSoldByMetsahallitus()));
         }
 
@@ -344,8 +424,8 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 number(SUBSIDIZABLE_OTHER_TRAINING_EVENTS, 1410),
                 number(SUBSIDIZABLE_STUDENT_AND_YOUTH_TRAINING_EVENTS, 81 + 83 + 85),
                 number(HUNTING_CONTROL_EVENTS, huntingControl.getHuntingControlEvents()),
-                number(SUM_OF_LUKE_CALCULATIONS, 113 + 114 + 115 + 116 + 117),
-                number(LUKE_CARNIVORE_CONTACT_PERSONS, stats.getOrCreateLuke().getCarnivoreContactPersons()),
+                number(SUM_OF_LUKE_CALCULATIONS, 113 + 114 + 115 + 116 + 117 + 119),
+                number(TOTAL_LUKE_CARNIVORE_PERSONS, stats.getOrCreateLuke().sumOfCarnivorePersons()),
                 number(MOOSELIKE_TAXATION_PLANNING_EVENTS, ohr.getMooselikeTaxationPlanningEvents()),
                 number(WOLF_TERRITORY_WORKGROUPS, ohr.getWolfTerritoryWorkgroups()),
                 number(SRVA_ALL_MOOSELIKE_EVENTS, 195),
@@ -428,7 +508,7 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedSrvaTotalItems(final SrvaEventStatistics srva) {
         return asList(
-                number(SRVA_ALL_EVENTS, 465),
+                number(SRVA_ALL_EVENTS, 528),
                 number(SRVA_TOTAL_WORK_HOURS, srva.getTotalSrvaWorkHours()),
                 number(SRVA_TOTAL_PARTICIPANTS, srva.getSrvaParticipants()));
     }
@@ -437,26 +517,27 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
         final int mooselikes = 1 + 2 + 3 + 4 + 5;
         final int largeCarnivores = 7 + 8 + 9 + 10;
         final int wildBoars = accident.getWildBoars();
+        final int otherSpecies = accident.getOtherSpecies();
 
-        final List<Tuple2<LocalisedString, Either<Number, String>>> list = new ArrayList<>(14);
-        list.add(number(SRVA_ALL_ACCIDENTS, mooselikes + largeCarnivores + wildBoars));
+        final List<Tuple2<LocalisedString, Either<Number, String>>> list = new ArrayList<>(15);
+        list.add(number(SRVA_ALL_ACCIDENTS, mooselikes + largeCarnivores + wildBoars + otherSpecies));
         list.add(number(SRVA_TRAFFIC_ACCIDENTS, mooselikes));
         list.add(number(SRVA_RAILWAY_ACCIDENTS, largeCarnivores));
-        list.add(number(SRVA_OTHER_ACCIDENTS, wildBoars));
+        list.add(number(SRVA_OTHER_ACCIDENTS, wildBoars + otherSpecies));
         list.addAll(listSrvaSpeciesCounts(accident));
         return list;
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedSrvaDeportationItems(final SrvaSpeciesCountStatistics deportation) {
-        final List<Tuple2<LocalisedString, Either<Number, String>>> list = new ArrayList<>(11);
-        list.add(number(SRVA_ALL_DEPORTATIONS, 11 + 12 + 13 + 14 + 15 + 16 + 17 + 18 + 19 + 20));
+        final List<Tuple2<LocalisedString, Either<Number, String>>> list = new ArrayList<>(12);
+        list.add(number(SRVA_ALL_DEPORTATIONS, 11 + 12 + 13 + 14 + 15 + 16 + 17 + 18 + 19 + 20 + 21));
         list.addAll(listSrvaSpeciesCounts(deportation));
         return list;
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedSrvaInjuryItems(final SrvaSpeciesCountStatistics injury) {
-        final List<Tuple2<LocalisedString, Either<Number, String>>> list = new ArrayList<>(11);
-        list.add(number(SRVA_ALL_INJURIES, 21 + 22 + 23 + 24 + 25 + 26 + 27 + 28 + 29 + 30));
+        final List<Tuple2<LocalisedString, Either<Number, String>>> list = new ArrayList<>(12);
+        list.add(number(SRVA_ALL_INJURIES, 21 + 22 + 23 + 24 + 25 + 26 + 27 + 28 + 29 + 30 + 31));
         list.addAll(listSrvaSpeciesCounts(injury));
         return list;
     }
@@ -472,7 +553,8 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 speciesCount(OFFICIAL_CODE_LYNX, speciesCounts.getLynxes()),
                 speciesCount(OFFICIAL_CODE_BEAR, speciesCounts.getBears()),
                 speciesCount(OFFICIAL_CODE_WOLF, speciesCounts.getWolves()),
-                speciesCount(OFFICIAL_CODE_WOLVERINE, speciesCounts.getWolverines()));
+                speciesCount(OFFICIAL_CODE_WOLVERINE, speciesCounts.getWolverines()),
+                speciesCount(OFFICIAL_CODE_UNKNOWN, speciesCounts.getOtherSpecies()));
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedTrainingSummaryItems(final RhyAnnualStatistics stats) {
@@ -637,13 +719,27 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
         if (year < 2018) {
             list.add(number(WATER_BIRD_CALCULATION_LOCATIONS_2017, waterBirdCouples));
 
-        } else {
+        } else if (year < 2020) {
             final Integer waterBirdBroods = stats.getWaterBirdBroods();
 
             list.add(number(TOTAL_WATER_BIRD_CALCULATION_LOCATIONS, nullableIntSum(waterBirdBroods, waterBirdCouples)));
             list.add(number(WATER_BIRD_BROOD_CALCULATION_LOCATIONS, waterBirdBroods));
             list.add(number(WATER_BIRD_COUPLE_CALCULATION_LOCATIONS, waterBirdCouples));
             list.add(number(LUKE_CARNIVORE_CONTACT_PERSONS, stats.getCarnivoreContactPersons()));
+        } else {
+            final Integer waterBirdBroods = stats.getWaterBirdBroods();
+
+            list.add(number(TOTAL_WATER_BIRD_CALCULATION_LOCATIONS, nullableIntSum(waterBirdBroods, waterBirdCouples)));
+            list.add(number(WATER_BIRD_BROOD_CALCULATION_LOCATIONS, waterBirdBroods));
+            list.add(number(WATER_BIRD_COUPLE_CALCULATION_LOCATIONS, waterBirdCouples));
+            list.add(number(NORTHERN_LAPLAND_WILLOW_GROUSE_LINES, stats.getNorthernLaplandWillowGrouseLines()));
+
+            final Integer carnivoreContacts = stats.getCarnivoreContactPersons();
+            final Integer carnivoreDnaCollectors = stats.getCarnivoreDnaCollectors();
+
+            list.add(number(TOTAL_LUKE_CARNIVORE_PERSONS, nullableIntSum(carnivoreContacts, carnivoreDnaCollectors)));
+            list.add(number(LUKE_CARNIVORE_CONTACT_PERSONS, carnivoreContacts));
+            list.add(number(LUKE_CARNIVORE_DNA_COLLECTORS, carnivoreDnaCollectors));
         }
 
         return list;

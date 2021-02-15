@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Locale;
 
 @RestController
-@RequestMapping(value = "/api/v1/organisation/rka", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/organisation/rka", produces = MediaType.APPLICATION_JSON_VALUE)
 public class RkaListApiResource {
 
     @Resource

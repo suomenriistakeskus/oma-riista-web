@@ -1,18 +1,23 @@
 package fi.riista.feature.gamediary.harvest;
 
-import fi.riista.feature.common.entity.Required;
+import fi.riista.feature.gamediary.DeerHuntingType;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestField;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsImpl;
 import fi.riista.util.F;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import java.util.EnumSet;
 
+import static fi.riista.feature.gamediary.harvest.fields.RequiredHarvestField.NO;
+import static fi.riista.feature.gamediary.harvest.fields.RequiredHarvestField.VOLUNTARY;
+import static fi.riista.feature.gamediary.harvest.fields.RequiredHarvestField.YES;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class HarvestFieldValidatorTest {
@@ -26,14 +31,15 @@ public class HarvestFieldValidatorTest {
         harvest.setHuntingAreaSize(1.0);
         harvest.setHuntingParty("a");
         harvest.setReportedWithPhoneCall(Boolean.TRUE);
+        harvest.setDeerHuntingType(DeerHuntingType.DOG_HUNTING);
         return harvest;
     }
 
     @Test
     public void testValidateAll_AllRequired_Success() {
         final Harvest harvest = createHarvestWithAllFields();
-        final RequiredHarvestFields.Report fields = createFields(Required.YES);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFields(YES);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -45,8 +51,8 @@ public class HarvestFieldValidatorTest {
     @Test
     public void testValidateAll_AllRequired_Failure() {
         final Harvest harvest = new Harvest();
-        final RequiredHarvestFields.Report fields = createFields(Required.YES);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFields(YES);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -60,8 +66,8 @@ public class HarvestFieldValidatorTest {
     @Test
     public void testValidateAll_AllVoluntary_Given() {
         final Harvest harvest = createHarvestWithAllFields();
-        final RequiredHarvestFields.Report fields = createFields(Required.VOLUNTARY);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFields(VOLUNTARY);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -73,8 +79,8 @@ public class HarvestFieldValidatorTest {
     @Test
     public void testValidateAll_AllVoluntary_Missing() {
         final Harvest harvest = new Harvest();
-        final RequiredHarvestFields.Report fields = createFields(Required.VOLUNTARY);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFields(VOLUNTARY);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -86,8 +92,8 @@ public class HarvestFieldValidatorTest {
     @Test
     public void testValidateAll_AllIllegal_Success() {
         final Harvest harvest = new Harvest();
-        final RequiredHarvestFields.Report fields = createFields(Required.NO);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFields(NO);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -99,8 +105,8 @@ public class HarvestFieldValidatorTest {
     @Test
     public void testValidateAll_AllIllegal_Failure() {
         final Harvest harvest = createHarvestWithAllFields();
-        final RequiredHarvestFields.Report fields = createFields(Required.NO);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFields(NO);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -116,8 +122,8 @@ public class HarvestFieldValidatorTest {
         harvest.setHuntingAreaType(HuntingAreaType.HUNTING_SOCIETY);
         harvest.setHuntingParty("a");
 
-        final RequiredHarvestFields.Report fields = createFields(Required.NO, Required.YES);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFieldsForHuntingParty(NO, YES);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -132,8 +138,8 @@ public class HarvestFieldValidatorTest {
         harvest.setHuntingAreaType(HuntingAreaType.HUNTING_SOCIETY);
         harvest.setHuntingParty(null);
 
-        final RequiredHarvestFields.Report fields = createFields(Required.NO, Required.YES);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFieldsForHuntingParty(NO, YES);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -148,8 +154,8 @@ public class HarvestFieldValidatorTest {
         harvest.setHuntingAreaType(HuntingAreaType.HUNTING_SOCIETY);
         harvest.setHuntingParty("");
 
-        final RequiredHarvestFields.Report fields = createFields(Required.NO, Required.YES);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFieldsForHuntingParty(NO, YES);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -164,8 +170,8 @@ public class HarvestFieldValidatorTest {
         harvest.setHuntingAreaType(HuntingAreaType.PROPERTY);
         harvest.setHuntingParty(null);
 
-        final RequiredHarvestFields.Report fields = createFields(Required.NO, Required.YES);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFieldsForHuntingParty(NO, YES);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -180,8 +186,8 @@ public class HarvestFieldValidatorTest {
         harvest.setHuntingAreaType(HuntingAreaType.PROPERTY);
         harvest.setHuntingParty("a");
 
-        final RequiredHarvestFields.Report fields = createFields(Required.NO, Required.YES);
-        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+        final RequiredHarvestFields.Report fields = createFieldsForHuntingParty(NO, YES);
+        final HarvestFieldValidator validator = createValidator(fields, harvest);
 
         validator.validateAll();
 
@@ -190,64 +196,118 @@ public class HarvestFieldValidatorTest {
         assertThat(validator.getMissingFields(), hasSize(0));
     }
 
-    private static RequiredHarvestFields.Report createFields(final Required required) {
-        return createFields(required, required);
+    @Test
+    public void testValidateDeerHuntingType_whenUserInPilot() {
+        final Harvest harvest = new Harvest();
+        harvest.setDeerHuntingType(DeerHuntingType.DOG_HUNTING);
+
+        final RequiredHarvestFields.Report fields = createFieldsForDeerHuntingType(NO, VOLUNTARY);
+        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+
+        validator.validateAll();
+
+        assertFalse(validator.hasErrors());
+        assertThat(validator.getMissingFields(), hasSize(0));
+        assertThat(validator.getIllegalFields(), hasSize(0));
     }
 
-    private static RequiredHarvestFields.Report createFields(final Required required,
-                                                             final Required huntingAreaTypeAndParty) {
+    @Test
+    public void testValidateDeerHuntingType_whenUserNotInPilot() {
+        final Harvest harvest = new Harvest();
+        harvest.setDeerHuntingType(DeerHuntingType.DOG_HUNTING);
+
+        final RequiredHarvestFields.Report fields = createFieldsForDeerHuntingType(NO, NO);
+        final HarvestFieldValidator validator = new HarvestFieldValidator(fields, harvest);
+
+        validator.validateAll();
+
+        assertTrue(validator.hasErrors());
+        assertThat(validator.getMissingFields(), hasSize(0));
+        assertThat(validator.getIllegalFields(), hasSize(1));
+    }
+
+    private static RequiredHarvestFields.Report createFields(final RequiredHarvestField required) {
+        return createFields(required, required, required);
+    }
+
+    private static RequiredHarvestFields.Report createFieldsForHuntingParty(final RequiredHarvestField defaultValue,
+                                                                            final RequiredHarvestField huntingAreaTypeAndParty) {
+
+        return createFields(defaultValue, huntingAreaTypeAndParty, defaultValue);
+    }
+
+    private static RequiredHarvestFields.Report createFieldsForDeerHuntingType(final RequiredHarvestField defaultValue,
+                                                                               final RequiredHarvestField deerHuntingType) {
+        return createFields(defaultValue, defaultValue, deerHuntingType);
+    }
+
+    private static RequiredHarvestFields.Report createFields(final RequiredHarvestField defaultValue,
+                                                             final RequiredHarvestField huntingAreaTypeAndParty,
+                                                             final RequiredHarvestField deerHuntingType) {
 
         // bogus constructor fields, because all methods are overridden
-        return new RequiredHarvestFields.Report(2017, 1, HarvestReportingType.BASIC) {
+        return new RequiredHarvestFieldsImpl.ReportImpl(2017, 1, HarvestReportingType.BASIC, false) {
             @Override
-            public Required getPermitNumber() {
-                return required;
+            public RequiredHarvestField getPermitNumber() {
+                return defaultValue;
             }
 
             @Override
-            public Required getHarvestArea() {
-                return required;
+            public RequiredHarvestField getHarvestArea() {
+                return defaultValue;
             }
 
             @Override
-            public Required getHuntingMethod() {
-                return required;
+            public RequiredHarvestField getHuntingMethod() {
+                return defaultValue;
             }
 
             @Override
-            public Required getFeedingPlace() {
-                return required;
+            public RequiredHarvestField getFeedingPlace() {
+                return defaultValue;
             }
 
             @Override
-            public Required getTaigaBeanGoose() {
-                return required;
+            public RequiredHarvestField getTaigaBeanGoose() {
+                return defaultValue;
             }
 
             @Override
-            public Required getLukeStatus() {
-                return required;
+            public RequiredHarvestField getLukeStatus() {
+                return defaultValue;
             }
 
             @Override
-            public Required getHuntingAreaType() {
+            public RequiredHarvestField getHuntingAreaType() {
                 return huntingAreaTypeAndParty;
             }
 
             @Override
-            public Required getHuntingParty() {
+            public RequiredHarvestField getHuntingParty() {
                 return huntingAreaTypeAndParty;
             }
 
             @Override
-            public Required getHuntingAreaSize() {
-                return required;
+            public RequiredHarvestField getHuntingAreaSize() {
+                return defaultValue;
             }
 
             @Override
-            public Required getReportedWithPhoneCall() {
-                return required;
+            public RequiredHarvestField getReportedWithPhoneCall() {
+                return defaultValue;
+            }
+
+            @Override
+            public RequiredHarvestField getDeerHuntingType() {
+                return deerHuntingType;
             }
         };
+    }
+
+    // Deer pilot flag is expected to be meaningless/ineffective when calling this.
+    private static HarvestFieldValidator createValidator(final RequiredHarvestFields.Report requirements,
+                                                         final Harvest harvest) {
+
+        return new HarvestFieldValidator(requirements, harvest);
     }
 }

@@ -2,30 +2,23 @@ package fi.riista.feature.account.payment;
 
 import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
 import static fi.riista.feature.account.payment.HuntingPaymentUtil.getHuntingPaymentPdfYears;
 import static fi.riista.test.TestUtils.ld;
-import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class HuntingPaymentUtilTest {
     private static final String INVOICE_REFERENCE1 = "14507700161";
     private static final String INVOICE_REFERENCE2 = "15862640169";
 
-    private static int HUNTING_YEAR = 2019;
+    private static int HUNTING_YEAR = DateUtil.huntingYear();
     private static int PREVIOUS_HUNTING_YEAR = HUNTING_YEAR - 1;
 
     // Valid payment date for both current and next year (between 15.7 and 31.7)
     private static LocalDate TODAY = new LocalDate(HUNTING_YEAR, 7, 20);
-
-    @Test
-    public void testMakeSurePaymentDetailsAreAvailableOnTime() {
-        // When this test fails update all constants above to match current and next hunting year
-        assertTrue(today().isBefore(new LocalDate(HUNTING_YEAR + 1, 6, 1)));
-    }
 
     @Test
     public void testHuntingPaymentPdfYears_NoPayments_NoInvoiceReference() {

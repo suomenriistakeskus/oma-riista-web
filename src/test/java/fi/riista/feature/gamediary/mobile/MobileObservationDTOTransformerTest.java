@@ -6,40 +6,45 @@ import fi.riista.feature.gamediary.fixture.ObservationFixtureMixin;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.util.DateUtil;
-import fi.riista.util.VersionedTestExecutionSupport;
-import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.gamediary.DeerHuntingType.STAND_HUNTING;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_CANADIAN_BEAVER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_EUROPEAN_BEAVER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.DEER_HUNTING;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
+import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.LOWEST_VERSION_SUPPORTING_CATEGORY;
 import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.LOWEST_VERSION_SUPPORTING_XTRA_BEAVER_TYPES;
 import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOST_RECENT;
+import static fi.riista.feature.gamediary.observation.ObservationType.NAKO;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
 import static fi.riista.test.Asserts.assertEmpty;
 import static fi.riista.test.TestUtils.createList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeTrue;
 
-public class MobileObservationDTOTransformerTest extends EmbeddedDatabaseTest
-        implements ObservationFixtureMixin, VersionedTestExecutionSupport<ObservationSpecVersion> {
+@RunWith(Theories.class)
+public class MobileObservationDTOTransformerTest extends EmbeddedDatabaseTest implements ObservationFixtureMixin {
+
+    @DataPoints("specVersions")
+    public static final ObservationSpecVersion[] SPEC_VERSIONS = ObservationSpecVersion.values();
 
     @Resource
     private MobileObservationDTOTransformer transformer;
-
-    @Override
-    public List<ObservationSpecVersion> getTestExecutionVersions() {
-        return new ArrayList<>(EnumSet.allOf(ObservationSpecVersion.class));
-    }
 
     @Test(expected = RuntimeException.class)
     public void testUserNotAuthenticated() {
@@ -48,10 +53,14 @@ public class MobileObservationDTOTransformerTest extends EmbeddedDatabaseTest
         transformer.apply(observations);
     }
 
-    @Test
-    public void testSpecimens_isNullWhenAmountIsNull() {
-        forEachVersion(version -> withPerson(person -> {
-            final Observation observation = model().newObservation(person);
+    @Theory
+    public void testSpecimens_isNullWhenAmountIsNull(final ObservationSpecVersion version) {
+        withPerson(person -> {
+
+            final GameSpecies species = model().newGameSpecies();
+            model().newObservationBaseFields(species, version);
+
+            final Observation observation = model().newObservation(species, person);
             observation.setAmount(null);
 
             onSavedAndAuthenticated(createUser(person), () -> {
@@ -59,13 +68,17 @@ public class MobileObservationDTOTransformerTest extends EmbeddedDatabaseTest
                 assertNull(dto.getAmount());
                 assertNull(dto.getSpecimens());
             });
-        }));
+        });
     }
 
-    @Test
-    public void testSpecimens_isEmptyWhenAmountIsNotNull() {
-        forEachVersion(version -> withPerson(person -> {
-            final Observation observation = model().newObservation(person);
+    @Theory
+    public void testSpecimens_isEmptyWhenAmountIsNotNull(final ObservationSpecVersion version) {
+        withPerson(person -> {
+
+            final GameSpecies species = model().newGameSpecies();
+            model().newObservationBaseFields(species, version);
+
+            final Observation observation = model().newObservation(species, person);
             observation.setAmount(1);
 
             onSavedAndAuthenticated(createUser(person), () -> {
@@ -73,12 +86,14 @@ public class MobileObservationDTOTransformerTest extends EmbeddedDatabaseTest
                 assertNotNull(dto.getAmount());
                 assertEmpty(dto.getSpecimens());
             });
-        }));
+        });
     }
 
-    @Test
-    public void testTranslationOfObsoleteBeaverObservationType() {
-        forEachVersionBefore(LOWEST_VERSION_SUPPORTING_XTRA_BEAVER_TYPES, v -> withPerson(author -> {
+    @Theory
+    public void testTranslationOfObsoleteBeaverObservationType(final ObservationSpecVersion version) {
+        assumeTrue(version.lessThan(LOWEST_VERSION_SUPPORTING_XTRA_BEAVER_TYPES));
+
+        withPerson(author -> {
 
             Stream.of(OFFICIAL_CODE_CANADIAN_BEAVER, OFFICIAL_CODE_EUROPEAN_BEAVER, OFFICIAL_CODE_BEAR)
                     .forEach(speciesCode -> {
@@ -87,42 +102,101 @@ public class MobileObservationDTOTransformerTest extends EmbeddedDatabaseTest
 
                         createObservationMetaF(species, MOST_RECENT, PESA_KEKO).forMobile().consumeBy(currentMeta -> {
 
-                            createObservationMetaF(species, v, PESA).forMobile().consumeBy(oldMeta -> {
+                            createObservationMetaF(species, version, PESA).forMobile().consumeBy(oldMeta -> {
 
                                 final List<Observation> observations =
                                         createList(5, () -> model().newMobileObservation(author, currentMeta));
 
                                 onSavedAndAuthenticated(createUser(author), () -> {
 
-                                    final List<MobileObservationDTO> dtos = transformer.apply(observations, v);
+                                    final List<MobileObservationDTO> dtos = transformer.apply(observations, version);
 
                                     for (int i = 0; i < observations.size(); i++) {
                                         final MobileObservationDTO dto = dtos.get(i);
                                         assertNotNull(dto);
 
                                         assertEquals(species.isBeaver() ? PESA : PESA_KEKO, dto.getObservationType());
-                                        assertFieldsExcludingPluralAssociations(observations.get(i), dto);
+                                        assertFieldsExcludingPluralAssociations(observations.get(i), dto, false);
                                     }
                                 });
                             });
                         });
                     });
-        }));
+        });
+    }
+
+    @Theory
+    public void testTranslationOfObservationWithinDeerHunting(final ObservationSpecVersion version) {
+        assumeTrue(version.lessThan(LOWEST_VERSION_SUPPORTING_CATEGORY));
+
+        withPerson(author -> {
+
+            final GameSpecies species = model().newGameSpecies(OFFICIAL_CODE_WHITE_TAILED_DEER);
+
+            createObservationMetaF(species, MOST_RECENT, DEER_HUNTING, NAKO).forMobile().consumeBy(newMeta -> {
+
+                final List<Observation> observations = createList(5, () -> model().newObservation(author, newMeta, o -> {
+                    o.setDeerHuntingType(STAND_HUNTING);
+                    o.setDeerHuntingTypeDescription("Description");
+                }));
+
+                createObservationMetaF(species, version, NORMAL, NAKO).forMobile().consumeBy(oldMeta -> {
+
+                    onSavedAndAuthenticated(createUser(author), () -> {
+                        final List<MobileObservationDTO> dtos = transformer.apply(observations, version);
+
+                        for (int i = 0; i < observations.size(); i++) {
+
+                            // Sanity checks for observation are done here even though the DTO assertions are
+                            // the beef of the test.
+                            final Observation obs = observations.get(i);
+                            assertEquals(DEER_HUNTING, obs.getObservationCategory());
+                            assertEquals(STAND_HUNTING, obs.getDeerHuntingType());
+                            assertEquals("Description", obs.getDeerHuntingTypeDescription());
+
+                            final MobileObservationDTO dto = dtos.get(i);
+                            assertNotNull(dto);
+                            assertNull(dto.getObservationCategory());
+                            assertNull(dto.getWithinMooseHunting());
+                            assertNull(dto.getDeerHuntingType());
+                            assertNull(dto.getDeerHuntingTypeDescription());
+                            assertFalse(dto.isCanEdit());
+                        }
+                    });
+                });
+            });
+        });
     }
 
     private static void assertFieldsExcludingPluralAssociations(final Observation observation,
-                                                                final MobileObservationDTO dto) {
+                                                                final MobileObservationDTO dto,
+                                                                final boolean canBeObservedWithinMooseHunting) {
+
+        assertEquals(GameDiaryEntryType.OBSERVATION, dto.getType());
 
         assertNotNull(observation.getId());
-        assertNotNull(observation.getConsistencyVersion());
-
         assertEquals(observation.getId(), dto.getId());
+
+        assertNotNull(observation.getConsistencyVersion());
         assertEquals(observation.getConsistencyVersion(), dto.getRev());
-        Assert.assertEquals(GameDiaryEntryType.OBSERVATION, dto.getType());
+
         assertEquals(observation.getSpecies().getOfficialCode(), dto.getGameSpeciesCode());
-        assertEquals(observation.getWithinMooseHunting(), dto.getWithinMooseHunting());
+
+        if (dto.getObservationSpecVersion().supportsCategory()) {
+            assertEquals(observation.getObservationCategory(), dto.getObservationCategory());
+        } else {
+            if (canBeObservedWithinMooseHunting) {
+                assertNotNull(dto.getWithinMooseHunting());
+                assertEquals(
+                        observation.getObservationCategory().isWithinMooseHunting(),
+                        dto.getWithinMooseHunting().booleanValue());
+            } else {
+                assertNull(dto.getWithinMooseHunting());
+            }
+        }
+
         assertEquals(observation.getGeoLocation(), dto.getGeoLocation());
-        assertEquals(DateUtil.toLocalDateTimeNullSafe(observation.getPointOfTime()), dto.getPointOfTime());
+        assertEquals(observation.getPointOfTime().toLocalDateTime(), dto.getPointOfTime());
         assertEquals(observation.getDescription(), dto.getDescription());
 
         assertEquals(observation.getAmount(), dto.getAmount());

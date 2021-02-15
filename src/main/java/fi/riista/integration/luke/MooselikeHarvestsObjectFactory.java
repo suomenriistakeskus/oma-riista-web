@@ -51,7 +51,6 @@ import fi.riista.integration.luke_export.mooselikeharvests.LEM_RestrictionType;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Source;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_TrendOfPopulationGrowth;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_WildBoarEstimatedAppearance;
-import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -99,7 +98,7 @@ public class MooselikeHarvestsObjectFactory {
 
     private static LEM_Amount createAmount(HarvestPermitSpeciesAmount spa) {
         LEM_Amount a = new LEM_Amount();
-        a.setAmount(spa.getAmount());
+        a.setAmount(spa.getSpecimenAmount());
         if (spa.getRestrictionType() != null) {
             a.setRestrictedAmount(spa.getRestrictionAmount());
             a.setRestriction(convert(LEM_RestrictionType.class, spa.getRestrictionType()));
@@ -260,7 +259,7 @@ public class MooselikeHarvestsObjectFactory {
     private static LEM_Harvest createHarvest(final Harvest harvest, final List<HarvestSpecimen> harvestSpecimens) {
         final LEM_Harvest dto = new LEM_Harvest();
         dto.setGeoLocation(createGeoLocation(harvest.getGeoLocation()));
-        dto.setPointOfTime(DateUtil.toLocalDateTimeNullSafe(harvest.getPointOfTime()));
+        dto.setPointOfTime(harvest.getPointOfTime().toLocalDateTime());
 
         if (CollectionUtils.isEmpty(harvestSpecimens)) {
             return dto;
@@ -278,10 +277,12 @@ public class MooselikeHarvestsObjectFactory {
         dto.setWeightEstimated(specimen.getWeightEstimated());
         dto.setWeightMeasured(specimen.getWeightMeasured());
         dto.setFitnessClass(convert(LEM_GameFitnessClass.class, specimen.getFitnessClass()));
+        dto.setAntlersLost(specimen.getAntlersLost());
         dto.setAntlersType(convert(LEM_GameAntlersType.class, specimen.getAntlersType()));
         dto.setAntlersWidth(specimen.getAntlersWidth());
         dto.setAntlerPointsLeft(specimen.getAntlerPointsLeft());
         dto.setAntlerPointsRight(specimen.getAntlerPointsRight());
+        dto.setAntlersGirth(specimen.getAntlersGirth());
         dto.setNotEdible(specimen.getNotEdible());
         dto.setAdditionalInfo(specimen.getAdditionalInfo());
 
@@ -292,7 +293,7 @@ public class MooselikeHarvestsObjectFactory {
                                                      final List<ObservationSpecimen> observationSpecimens) {
         final LEM_Observation dto = new LEM_Observation();
         dto.setGeoLocation(createGeoLocation(observation.getGeoLocation()));
-        dto.setPointOfTime(DateUtil.toLocalDateTimeNullSafe(observation.getPointOfTime()));
+        dto.setPointOfTime(observation.getPointOfTime().toLocalDateTime());
         dto.setObservationType(convert(LEM_ObservationType.class, observation.getObservationType()));
         dto.setGameSpeciesCode(observation.getSpecies().getOfficialCode());
         dto.setGameSpeciesNameFinnish(observation.getSpecies().getNameFinnish());

@@ -23,6 +23,7 @@ public class HuntingClubGroupAuthorization extends AbstractEntityAuthorization<H
 
     public enum Permission {
         LINK_DIARY_ENTRY_TO_HUNTING_DAY,
+        LINK_AUTOMATICALLY_OBSERVATION_TO_HUNTING_DAY,
         COPY
     }
 
@@ -39,6 +40,10 @@ public class HuntingClubGroupAuthorization extends AbstractEntityAuthorization<H
         allow(Permission.LINK_DIARY_ENTRY_TO_HUNTING_DAY,
                 ROLE_ADMIN, ROLE_MODERATOR,
                 SEURAN_YHDYSHENKILO, RYHMAN_METSASTYKSENJOHTAJA);
+
+        allow(Permission.LINK_AUTOMATICALLY_OBSERVATION_TO_HUNTING_DAY,
+              RYHMAN_METSASTYKSENJOHTAJA,
+              RYHMAN_JASEN);
 
         allow(Permission.COPY,
                 ROLE_ADMIN, ROLE_MODERATOR,

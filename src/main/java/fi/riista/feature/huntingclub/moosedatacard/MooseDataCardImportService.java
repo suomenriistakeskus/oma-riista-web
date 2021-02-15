@@ -200,7 +200,7 @@ public class MooseDataCardImportService {
         return Try.success(input.mooseDataCard).flatMapTry(mooseDataCard -> {
 
             final HuntingClub club = registerHuntingClubService.findExistingOrCreate(input.clubCode);
-            final Person contactPerson = personRepo.findOne(input.contactPersonId);
+            final Person contactPerson = personRepo.findById(input.contactPersonId).orElse(null);
 
             final HarvestPermitSpeciesAmount speciesAmount =
                     speciesAmountRepo.getOne(input.harvestPermitSpeciesAmountId);

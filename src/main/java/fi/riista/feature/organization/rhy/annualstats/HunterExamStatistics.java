@@ -3,6 +3,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -25,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class HunterExamStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<HunterExamStatistics>,
+        AnnualStatisticsManuallyEditableFields<HunterExamStatistics>,
         Serializable {
 
     public static final HunterExamStatistics reduce(@Nullable final HunterExamStatistics a,
@@ -59,6 +60,7 @@ public class HunterExamStatistics
     private Integer hunterExamEvents;
 
     // Updated when moderator overrides automatically computed value.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "hunter_exam_events_last_overridden")
     private DateTime hunterExamEventsLastOverridden;
 
@@ -78,6 +80,7 @@ public class HunterExamStatistics
     private Integer hunterExamOfficials;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "hunter_exams_last_modified")
     private DateTime lastModified;
 

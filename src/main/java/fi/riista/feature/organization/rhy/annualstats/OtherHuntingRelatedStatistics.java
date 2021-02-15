@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class OtherHuntingRelatedStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<OtherHuntingRelatedStatistics>,
+        AnnualStatisticsManuallyEditableFields<OtherHuntingRelatedStatistics>,
         Serializable {
 
     public static final OtherHuntingRelatedStatistics reduce(@Nullable final OtherHuntingRelatedStatistics a,
@@ -61,12 +62,16 @@ public class OtherHuntingRelatedStatistics
     @Column(name = "mooselike_taxation_planning_events")
     private Integer mooselikeTaxationPlanningEvents;
 
+    @Column(name = "mooselike_taxation_planning_events_overridden", nullable = false)
+    private boolean mooselikeTaxationPlanningEventsOverridden;
+
     // Susireviiriyhteistyöryhmän toimintaan osallistuminen, kpl
     @Min(0)
     @Column(name = "wolf_territory_workgroups")
     private Integer wolfTerritoryWorkgroups;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "other_hunting_related_last_modified")
     private DateTime lastModified;
 
@@ -77,6 +82,7 @@ public class OtherHuntingRelatedStatistics
         final OtherHuntingRelatedStatistics copy = new OtherHuntingRelatedStatistics();
         copy.harvestPermitApplicationPartners = this.harvestPermitApplicationPartners;
         copy.mooselikeTaxationPlanningEvents = this.mooselikeTaxationPlanningEvents;
+        copy.mooselikeTaxationPlanningEventsOverridden = this.mooselikeTaxationPlanningEventsOverridden;
         copy.wolfTerritoryWorkgroups = this.wolfTerritoryWorkgroups;
         copy.lastModified = this.lastModified;
         return copy;
@@ -96,6 +102,9 @@ public class OtherHuntingRelatedStatistics
     @Override
     public void assignFrom(@Nonnull final OtherHuntingRelatedStatistics that) {
         // Includes only fields manually updateable by coordinator.
+        if (!Objects.equals(this.mooselikeTaxationPlanningEvents, that.mooselikeTaxationPlanningEvents)) {
+            this.mooselikeTaxationPlanningEventsOverridden = true;
+        }
         this.mooselikeTaxationPlanningEvents = that.mooselikeTaxationPlanningEvents;
     }
 
@@ -125,6 +134,14 @@ public class OtherHuntingRelatedStatistics
 
     public void setMooselikeTaxationPlanningEvents(final Integer mooselikeTaxationPlanningEvents) {
         this.mooselikeTaxationPlanningEvents = mooselikeTaxationPlanningEvents;
+    }
+
+    public boolean isMooselikeTaxationPlanningEventsOverridden() {
+        return mooselikeTaxationPlanningEventsOverridden;
+    }
+
+    public void setMooselikeTaxationPlanningEventsOverridden(final boolean mooselikeTaxationPlanningEventsOverridden) {
+        this.mooselikeTaxationPlanningEventsOverridden = mooselikeTaxationPlanningEventsOverridden;
     }
 
     public Integer getWolfTerritoryWorkgroups() {

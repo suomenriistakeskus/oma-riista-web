@@ -22,5 +22,10 @@ angular.module('app.common', [
     'app.mapeditor.mml',
     'app.mapeditor.metsahallitus',
     'app.mapeditor.excluded',
-    'app.mapeditor.sidebar'
+    'app.mapeditor.sidebar',
+    'app.common.locale',
+    'app.common.decision.handler',
+    'app.common.decision.document.text',
+    'app.common.decision.revisions',
+    'app.common.antler-guide'
 ]);

@@ -1,0 +1,30 @@
+<div class="diary-entry-row">
+    <div>
+        <img ng-src="/static/elainlajikuvat/96x96/{{ ::$ctrl.entry.gameSpeciesCode }}.jpg"
+             width="24" height="24"/>
+    </div>
+
+    <div>
+        <span ng-bind="::($ctrl.entry.gameSpeciesCode | translateSpeciesCode)"></span>
+        <span class="glyphicon glyphicon-asterisk text-danger" ng-hide="$ctrl.entry.huntingDayId"></span>
+        <span class="glyphicon glyphicon-briefcase text-warning" ng-show="$ctrl.entry.moderatorOverride"
+              uib-tooltip="{{ 'gamediary.moderatorOverride' | translate }}" tooltip-append-to-body></span>
+    </div>
+
+    <div>
+        <span ng-if="$ctrl.entry.specimens && $ctrl.entry.specimens.length === 1"
+              ng-bind="::($ctrl.getSpecimenType($ctrl.entry.specimens[0]) | translateWithPrefix:'club.hunting.specimenAbbrv.')"></span>
+    </div>
+
+    <div>
+        <span ng-bind="::($ctrl.entry.totalSpecimenAmount)"></span>
+        <span translate="gamediary.search.pieces"></span>
+    </div>
+
+    <div ng-bind="::($ctrl.entry.pointOfTime | date:'HH:mm')"></div>
+
+    <div>
+        <span class="fa fa-crosshairs" ng-if="::$ctrl.entry.isHarvest()"></span>
+        <r-binoculars-symbol ng-if="::$ctrl.entry.isObservation()"></r-binoculars-symbol>
+    </div>
+</div>

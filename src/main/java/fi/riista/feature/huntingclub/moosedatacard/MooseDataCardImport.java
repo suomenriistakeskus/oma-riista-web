@@ -7,6 +7,7 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroup_;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.util.jpa.CriteriaUtils;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
 import javax.persistence.Access;
@@ -24,12 +25,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.OrderColumn;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,9 +60,8 @@ public class MooseDataCardImport extends LifecycleEntity<Long> implements HasBeg
     private PersistentFileMetadata pdfFileMetadata;
 
     @NotNull
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date filenameTimestamp;
+    private DateTime filenameTimestamp;
 
     @OneToMany(mappedBy = "mooseDataCardImport")
     private Set<GroupHuntingDay> huntingDays = new HashSet<>();
@@ -137,11 +134,11 @@ public class MooseDataCardImport extends LifecycleEntity<Long> implements HasBeg
         this.pdfFileMetadata = pdfFileMetadata;
     }
 
-    public Date getFilenameTimestamp() {
+    public DateTime getFilenameTimestamp() {
         return filenameTimestamp;
     }
 
-    public void setFilenameTimestamp(final Date filenameTimestamp) {
+    public void setFilenameTimestamp(final DateTime filenameTimestamp) {
         this.filenameTimestamp = filenameTimestamp;
     }
 

@@ -7,8 +7,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Optional;
 
-import static java.util.Objects.requireNonNull;
-
 @Component
 public class HarvestPermitApplicationFeature {
 
@@ -34,10 +32,8 @@ public class HarvestPermitApplicationFeature {
                 .map(Locales::getLocaleByLanguageCode)
                 .ifPresent(application::setDecisionLocale);
 
-        if (application.getHarvestPermitCategory().isDerogation()) {
-            final DeliveryAddressDTO deliveryAddress = requireNonNull(dto.getDeliveryAddress());
-            application.setDeliveryAddress(deliveryAddress.toEntity());
-        }
+        final DeliveryAddressDTO deliveryAddress = dto.getDeliveryAddress();
+        application.setDeliveryAddress(deliveryAddress.toEntity());
     }
 
 }

@@ -2,6 +2,8 @@ package fi.riista.feature.dashboard;
 
 public class DashboardShootingTestDTO {
     private long countOfTotalAttempts;
+    private long countOfQualifiedAttempts;
+    private long countOfQualifiedParticipants;
     private long countOfClosedEvents;
     private long countOfActiveRhy;
     private long countOfTotalRhy;
@@ -12,6 +14,22 @@ public class DashboardShootingTestDTO {
 
     public void setCountOfTotalAttempts(final long countOfTotalAttempts) {
         this.countOfTotalAttempts = countOfTotalAttempts;
+    }
+
+    public long getCountOfQualifiedAttempts() {
+        return countOfQualifiedAttempts;
+    }
+
+    public void setCountOfQualifiedAttempts(final long countOfQualifiedAttempts) {
+        this.countOfQualifiedAttempts = countOfQualifiedAttempts;
+    }
+
+    public long getCountOfQualifiedParticipants() {
+        return countOfQualifiedParticipants;
+    }
+
+    public void setCountOfQualifiedParticipants(final long countOfQualifiedParticipants) {
+        this.countOfQualifiedParticipants = countOfQualifiedParticipants;
     }
 
     public long getCountOfClosedEvents() {

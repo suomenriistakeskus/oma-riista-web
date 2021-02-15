@@ -37,13 +37,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.types.dsl.Expressions.numberPath;
 import static fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount.RestrictionType.AE;
 import static fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount.RestrictionType.AU;
 import static fi.riista.integration.common.export.RvrConstants.RVR_PERMIT_TYPE_CODES;
+import static fi.riista.integration.common.export.RvrConstants.RVR_SPECIES;
 import static fi.riista.util.Collect.entriesToMap;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -95,24 +98,41 @@ public class CommonHarvestPermitExportFeature {
     // PERMITS
 
     private List<Tuple> findPermits(final int year) {
-        return queryFactory.select(
-                PERMIT.id,
-                PERMIT.permitNumber,
-                PERMIT.permitYear,
-                PERMIT.permitType,
-                PERMIT.permitTypeCode,
-                ORIGINAL_PERMIT.permitNumber,
-                RHY.officialCode,
-                CLUB.geoLocation.latitude.coalesce(RHY.geoLocation.latitude).as("lat"),
-                CLUB.geoLocation.longitude.coalesce(RHY.geoLocation.longitude).as("lon"),
-                PERMIT.harvestReportState)
-                .from(PERMIT)
-                .leftJoin(PERMIT.huntingClub, CLUB)
-                .innerJoin(PERMIT.rhy, RHY)
-                .leftJoin(PERMIT.originalPermit, ORIGINAL_PERMIT)
-                .where(PERMIT.permitTypeCode.in(RVR_PERMIT_TYPE_CODES)
-                        .and(PERMIT.permitYear.eq(year)))
+
+        // Using species amounts to gather up granted permits. Not using decision
+        // status since permits from LH do not have decisions.
+        final List<Long> grantedPermitIds = queryFactory
+                .selectDistinct(PERMIT.id)
+                .from(SPA)
+                .innerJoin(SPA.harvestPermit, PERMIT)
+                .innerJoin(SPA.gameSpecies, SPECIES)
+                .where(PERMIT.permitYear.eq(year),
+                        PERMIT.permitTypeCode.in(RVR_PERMIT_TYPE_CODES),
+                        SPECIES.officialCode.in(RVR_SPECIES))
                 .fetch();
+
+        return Lists.partition(grantedPermitIds, PAGE_SIZE)
+                .stream()
+                .flatMap(partition ->
+                        queryFactory.select(
+                                PERMIT.id,
+                                PERMIT.permitNumber,
+                                PERMIT.permitYear,
+                                PERMIT.permitType,
+                                PERMIT.permitTypeCode,
+                                ORIGINAL_PERMIT.permitNumber,
+                                RHY.officialCode,
+                                CLUB.geoLocation.latitude.coalesce(RHY.geoLocation.latitude).as("lat"),
+                                CLUB.geoLocation.longitude.coalesce(RHY.geoLocation.longitude).as("lon"),
+                                PERMIT.harvestReportState)
+                                .from(PERMIT)
+                                .leftJoin(PERMIT.huntingClub, CLUB)
+                                .innerJoin(PERMIT.rhy, RHY)
+                                .leftJoin(PERMIT.originalPermit, ORIGINAL_PERMIT)
+                                .where(PERMIT.id.in(partition))
+                                .fetch()
+                                .stream()
+                ).collect(toList());
     }
 
     private Collection<CPER_Permit> mapPermits(final Collection<Tuple> permits, final List<Long> permitIds) {
@@ -150,32 +170,35 @@ public class CommonHarvestPermitExportFeature {
         return Lists.partition(permitIds, PAGE_SIZE)
                 .stream()
                 .flatMap(partition -> {
-                    final Map<Long, Long> decisionToPermit = queryFactory
+                    final Map<Long, Long> permitToDecision = queryFactory
                             .select(PERMIT.id, DECISION.id)
                             .from(PERMIT)
                             .innerJoin(PERMIT.permitDecision, DECISION)
-                            .transform(groupBy(DECISION.id).as(PERMIT.id));
+                            .where(PERMIT.id.in(partition))
+                            .transform(groupBy(PERMIT.id).as(DECISION.id));
+
+                    if (permitToDecision.isEmpty()){
+                        return Stream.empty();
+                    }
 
                     final Map<Long, Set<PermitDecisionDerogationReasonType>> decisionToReasons = queryFactory
                             .select(DEROGATION_REASON.reasonType, DECISION.id)
                             .from(DEROGATION_REASON)
                             .innerJoin(DEROGATION_REASON.permitDecision, DECISION)
-                            .where(DECISION.id.in(decisionToPermit.keySet()))
+                            .where(DECISION.id.in(permitToDecision.values()))
                             .transform(groupBy(DECISION.id).as(GroupBy.set(DEROGATION_REASON.reasonType)));
 
                     // Transform map to permit id -> set of reasons
-                    return decisionToPermit.entrySet()
+                    return permitToDecision.entrySet()
                             .stream()
-                            .collect(Collectors.toMap(e -> e.getValue(),
-                                    e -> decisionToReasons.getOrDefault(e.getKey(), ImmutableSet.of())))
-                            .entrySet().stream();
+                            .map(e -> F.entry(e.getKey(), decisionToReasons.getOrDefault(e.getValue(), emptySet())));
                 })
                 .collect(entriesToMap());
     }
 
-    private CPER_Permit mapPermitToPojo(final Tuple tuple,
-                                        final Map<Long, Boolean> finishedMap,
-                                        final Map<Long, Set<PermitDecisionDerogationReasonType>> reasonMap) {
+    private static CPER_Permit mapPermitToPojo(final Tuple tuple,
+                                               final Map<Long, Boolean> finishedMap,
+                                               final Map<Long, Set<PermitDecisionDerogationReasonType>> reasonMap) {
         return new CPER_Permit()
                 .withPermitNumber(tuple.get(PERMIT.permitNumber))
                 .withPermitYear(tuple.get(PERMIT.permitYear))
@@ -189,13 +212,13 @@ public class CommonHarvestPermitExportFeature {
                 .withHuntingFinished(resolveHuntingFinished(tuple, finishedMap));
     }
 
-    private Set<String> getReasons(final Tuple tuple,
-                                   final Map<Long, Set<PermitDecisionDerogationReasonType>> reasonMap) {
+    private static Set<String> getReasons(final Tuple tuple,
+                                          final Map<Long, Set<PermitDecisionDerogationReasonType>> reasonMap) {
         return F.mapNonNullsToSet(reasonMap.getOrDefault(tuple.get(PERMIT.id), ImmutableSet.of()),
-                PermitDecisionDerogationReasonType::getHabidesCodeForCarnivore);
+                PermitDecisionDerogationReasonType::getHabidesCodeForMammals);
     }
 
-    private boolean resolveHuntingFinished(final Tuple tuple, final Map<Long, Boolean> finishedMap) {
+    private static boolean resolveHuntingFinished(final Tuple tuple, final Map<Long, Boolean> finishedMap) {
         HarvestReportState reportState = tuple.get(PERMIT.harvestReportState);
         return HarvestReportState.APPROVED == reportState ||
                 finishedMap.getOrDefault(tuple.get(PERMIT.id), false);
@@ -257,13 +280,14 @@ public class CommonHarvestPermitExportFeature {
                         SPA.endDate,
                         SPA.beginDate2,
                         SPA.endDate2,
-                        SPA.amount,
+                        SPA.specimenAmount,
                         SPA.restrictionAmount,
                         SPA.restrictionType)
                         .from(SPA)
                         .innerJoin(SPA.harvestPermit, PERMIT)
                         .innerJoin(SPA.gameSpecies, SPECIES)
-                        .where(PERMIT.id.in(list))
+                        .where(PERMIT.id.in(list),
+                                SPECIES.officialCode.in(RVR_SPECIES))
                         .fetch()
                         .stream()
                         .map(tuple -> mapSpeciesAmountToPojo(tuple)))
@@ -271,18 +295,18 @@ public class CommonHarvestPermitExportFeature {
 
     }
 
-    private CPER_PermitSpeciesAmount mapSpeciesAmountToPojo(final Tuple tuple) {
+    private static CPER_PermitSpeciesAmount mapSpeciesAmountToPojo(final Tuple tuple) {
         final CPER_PermitSpeciesAmount amount = new CPER_PermitSpeciesAmount()
                 .withPermitNumber(tuple.get(PERMIT.permitNumber))
                 .withGameSpeciesCode(tuple.get(SPA.gameSpecies.officialCode))
-                .withAmount(tuple.get(SPA.amount))
+                .withAmount(tuple.get(SPA.specimenAmount))
                 .withRestrictedAmountAdult(mapRestriction(AE, tuple))
                 .withRestrictedAmountAdultMale(mapRestriction(AU, tuple));
 
         return addValidityPeriods(amount, tuple);
     }
 
-    private CPER_PermitSpeciesAmount addValidityPeriods(final CPER_PermitSpeciesAmount amount, final Tuple tuple) {
+    private static CPER_PermitSpeciesAmount addValidityPeriods(final CPER_PermitSpeciesAmount amount, final Tuple tuple) {
         final LocalDate begin = tuple.get(SPA.beginDate);
         final LocalDate end = tuple.get(SPA.endDate);
         final LocalDate begin2 = tuple.get(SPA.beginDate2);
@@ -294,7 +318,7 @@ public class CommonHarvestPermitExportFeature {
         return amount;
     }
 
-    private Float mapRestriction(final HarvestPermitSpeciesAmount.RestrictionType type, final Tuple tuple) {
+    private static Float mapRestriction(final HarvestPermitSpeciesAmount.RestrictionType type, final Tuple tuple) {
         if (tuple.get(SPA.restrictionType) == type) {
             return tuple.get(SPA.restrictionAmount);
         }

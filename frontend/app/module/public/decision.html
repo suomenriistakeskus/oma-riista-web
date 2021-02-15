@@ -1,0 +1,47 @@
+<h1>Lataa päätös / Ladda ner beslut</h1>
+<hr class="invisible"/>
+
+
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+        <tr>
+            <th style="width: 80%">PÄÄTÖS / BESLUT</th>
+            <th class="text-right" style="width: 20%">LATAA / LADDA</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>
+                <span ng-bind="::$ctrl.downloadLinks.decisionLink.linkName"></span>
+            </td>
+            <td class="text-right text-primary">
+                <a ng-click="$ctrl.downloadDecision()" class="fa fa-2x fa-download"></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<hr class="invisible"/>
+
+<div class="table-responsive" ng-if="$ctrl.downloadLinks.attachmentLinks.length > 0">
+    <table class="table">
+        <thead>
+        <tr>
+            <th style="width: 80%">Liitteet / Bilagor</th>
+            <th class="text-right" style="width: 20%">LATAA LIITE / LADDA BILAG</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="att in $ctrl.downloadLinks.attachmentLinks">
+            <td>
+                <span ng-bind="::att.linkName"></span>
+            </td>
+            <td class="text-right text-primary">
+                <a ng-click="$ctrl.downloadAttachment(att.url)" class="fa fa-2x fa-download"></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

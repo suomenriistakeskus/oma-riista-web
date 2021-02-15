@@ -112,7 +112,7 @@ public class CommonObservationExportFeatureTest extends EmbeddedDatabaseTest {
         final DateTime dateTime = new DateTime(year, month, day, 0, 0, 0, 1, Constants.DEFAULT_TIMEZONE);
         final Observation observation = model().newObservation(
                 mooseSpecies, observationperson);
-        observation.setPointOfTime(dateTime.toDate());
+        observation.setPointOfTime(dateTime);
         observation.setRhy(rhy);
         model().newObservationSpecimen(observation);
 

@@ -8,15 +8,24 @@
             <table class="table table-condensed">
                 <tbody>
                     <tr>
-                        <td class="col-xs-8" translate="rhy.annualStats.administration.huntingControl.events"></td>
+                        <td class="col-xs-8" ng-switch="$ctrl.huntingControl.huntingControlEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.huntingControl.events"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.huntingControl.events"></div>
+                        </td>
                         <td num-pieces="::$ctrl.huntingControl.huntingControlEvents"></td>
                     </tr>
                     <tr>
-                        <td class="col-xs-8" translate="rhy.annualStats.administration.huntingControl.customers"></td>
+                        <td class="col-xs-8" ng-switch="$ctrl.huntingControl.huntingControlCustomersOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.huntingControl.customers"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.huntingControl.customers"></div>
+                        </td>
                         <td num-pieces="::$ctrl.huntingControl.huntingControlCustomers"></td>
                     </tr>
                     <tr>
-                        <td class="col-xs-8" translate="rhy.annualStats.administration.huntingControl.proofOrders"></td>
+                        <td class="col-xs-8" ng-switch="$ctrl.huntingControl.proofOrdersOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.huntingControl.proofOrders"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.huntingControl.proofOrders"></div>
+                        </td>
                         <td num-pieces="::$ctrl.huntingControl.proofOrders"></td>
                     </tr>
                     <tr>

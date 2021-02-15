@@ -11,6 +11,7 @@ import fi.riista.feature.gamediary.harvest.HuntingMethod;
 import fi.riista.feature.gamediary.harvest.PermittedMethod;
 import fi.riista.feature.gamediary.harvest.mutation.basic.HarvestAuthorActorMutation;
 import fi.riista.feature.gamediary.harvest.mutation.basic.HarvestCommonMutation;
+import fi.riista.feature.gamediary.harvest.mutation.basic.HarvestDeerHuntingMutation;
 import fi.riista.feature.gamediary.harvest.mutation.basic.HarvestGISMutation;
 import fi.riista.feature.gamediary.harvest.mutation.basic.HarvestLocationMutation;
 import fi.riista.feature.gamediary.harvest.mutation.exception.HarvestSpeciesRequiresPermitException;
@@ -168,13 +169,13 @@ public class HarvestMutationFactory {
                                                              @Nonnull final HarvestCommonMutation commonMutation,
                                                              @Nonnull final HarvestGISMutation gisMutation) {
         if (gisMutation.getRhyByLocation() == null) {
-            // Outside Finland
+            // Outside Finland, handle as private harvest
             return new HarvestForDiaryMutation(false);
         }
 
         final Tuple2<HarvestSeason, HarvestQuota> harvestSeasonAndQuota = harvestSeasonService.findHarvestSeasonAndQuota(
                 commonMutation.getSpecies(),
-                gisMutation.getRhyByLocation(),
+                dto.getGeoLocation(),
                 commonMutation.getHarvestDate(), true);
 
         final boolean permitRequiredWithoutSeason =
@@ -201,5 +202,11 @@ public class HarvestMutationFactory {
     public HarvestForHuntingDayMutation createHuntingDayMutation(@Nonnull final HarvestDTO dto,
                                                                  final Person activePerson) {
         return new HarvestForHuntingDayMutation(dto, activePerson, groupHuntingDayService);
+    }
+
+    @Nonnull
+    @Transactional
+    public HarvestDeerHuntingMutation createDeerHuntingMutation(@Nonnull final HarvestDTOBase dto) {
+        return new HarvestDeerHuntingMutation(dto);
     }
 }

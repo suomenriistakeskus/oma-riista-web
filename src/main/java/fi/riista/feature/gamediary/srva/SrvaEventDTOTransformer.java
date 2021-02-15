@@ -11,7 +11,7 @@ import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.Occupation_;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
-import org.springframework.data.jpa.domain.Specifications;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -103,7 +103,7 @@ public class SrvaEventDTOTransformer extends SrvaEventDTOTransformerBase<SrvaEve
             return Collections.emptyList();
         }
 
-        final Specifications<Occupation> specs = Specifications
+        final Specification<Occupation> specs = Specification
                 .where(equal(Occupation_.person, activePerson))
                 .and(inCollection(Occupation_.occupationType, EnumSet.of(TOIMINNANOHJAAJA, SRVA_YHTEYSHENKILO)))
                 .and(withinInterval(Occupation_.beginDate, Occupation_.endDate, DateUtil.today()))

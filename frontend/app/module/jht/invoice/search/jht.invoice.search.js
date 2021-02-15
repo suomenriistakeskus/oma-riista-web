@@ -424,7 +424,8 @@
 
         .controller('InvoiceController', function ($uibModalInstance, FileSaver, HttpGetBlob, Invoice,
                                                    InvoicePaymentLineModal, InvoicePdf, InvoiceService, InvoiceState,
-                                                   NotificationService, invoice, paymentAlterPermissionGranted) {
+                                                   NotificationService, invoice, paymentAlterPermissionGranted,
+                                                   PermitTypeCode) {
             var $ctrl = this;
             var invoiceId = invoice.id;
 
@@ -504,6 +505,10 @@
             $ctrl.removePayment = function (paymentId) {
                 var params = {invoicePaymentLineId: paymentId};
                 return Invoice.removePaymentLine(params, null).$promise.then(updateInvoice, _.noop);
+            };
+
+            $ctrl.hasPermission = function() {
+                return PermitTypeCode.hasPermission($ctrl.invoice.permitTypeCode);
             };
         })
 

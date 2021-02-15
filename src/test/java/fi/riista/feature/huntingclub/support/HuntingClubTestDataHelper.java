@@ -11,14 +11,14 @@ import fi.riista.util.DateUtil;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
-import static fi.riista.feature.gamediary.GameAge.ADULT;
-import static fi.riista.feature.gamediary.GameAge.YOUNG;
-import static fi.riista.feature.gamediary.GameGender.FEMALE;
-import static fi.riista.feature.gamediary.GameGender.MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_FEMALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_FEMALE;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.YOUNG_MALE;
+import static fi.riista.test.TestUtils.concatAndShuffle;
 import static fi.riista.test.TestUtils.createList;
+import static java.util.Objects.requireNonNull;
 
 public abstract class HuntingClubTestDataHelper {
 
@@ -37,41 +37,43 @@ public abstract class HuntingClubTestDataHelper {
                 numNotEdibleAdults, numNotEdibleYoungs);
     }
 
-    public void createHarvestsForHuntingGroup(
-            @Nonnull final HuntingClubGroup group,
-            @Nonnull final Person author,
-            @Nonnull final HasHarvestCountsForPermit harvestCounts) {
+    public void createHarvestsForHuntingGroup(@Nonnull final HuntingClubGroup group,
+                                              @Nonnull final Person author,
+                                              @Nonnull final HasHarvestCountsForPermit harvestCounts) {
 
-        Objects.requireNonNull(group, "group is null");
-        Objects.requireNonNull(author, "author is null");
-        Objects.requireNonNull(harvestCounts, "harvestCounts is null");
+        requireNonNull(group, "group is null");
+        requireNonNull(author, "author is null");
+        requireNonNull(harvestCounts, "harvestCounts is null");
 
         final GameSpecies species = group.getSpecies();
         final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, DateUtil.today());
 
         final List<HarvestSpecimen> adultMales = createList(
                 harvestCounts.getNumberOfAdultMales(),
-                () -> model().newHarvestSpecimen(model().newHarvest(species, author, huntingDay), ADULT, MALE));
+                () -> model().newHarvestSpecimen(model().newHarvest(species, author, huntingDay), ADULT_MALE));
 
         final List<HarvestSpecimen> adultFemales = createList(
                 harvestCounts.getNumberOfAdultFemales(),
-                () -> model().newHarvestSpecimen(model().newHarvest(species, author, huntingDay), ADULT, FEMALE));
+                () -> model().newHarvestSpecimen(model().newHarvest(species, author, huntingDay), ADULT_FEMALE));
 
         final List<HarvestSpecimen> youngMales = createList(
                 harvestCounts.getNumberOfYoungMales(),
-                () -> model().newHarvestSpecimen(model().newHarvest(species, author, huntingDay), YOUNG, MALE));
+                () -> model().newHarvestSpecimen(model().newHarvest(species, author, huntingDay), YOUNG_MALE));
 
         final List<HarvestSpecimen> youngFemales = createList(
                 harvestCounts.getNumberOfYoungFemales(),
-                () -> model().newHarvestSpecimen(model().newHarvest(species, author, huntingDay), YOUNG, FEMALE));
+                () -> model().newHarvestSpecimen(model().newHarvest(species, author, huntingDay), YOUNG_FEMALE));
 
-        Stream.concat(adultMales.stream(), adultFemales.stream())
-                .limit(harvestCounts.getNumberOfNonEdibleAdults())
-                .forEach(adult -> adult.setNotEdible(true));
-
-        Stream.concat(youngMales.stream(), youngFemales.stream())
-                .limit(harvestCounts.getNumberOfNonEdibleYoungs())
-                .forEach(young -> young.setNotEdible(true));
+        markEdibles(concatAndShuffle(adultMales, adultFemales), harvestCounts.getNumberOfNonEdibleAdults());
+        markEdibles(concatAndShuffle(youngMales, youngFemales), harvestCounts.getNumberOfNonEdibleYoungs());
     }
 
+    private static void markEdibles(final Iterable<HarvestSpecimen> specimens, final int numberOfNonEdibles) {
+        int counter = 0;
+
+        for (final HarvestSpecimen specimen : specimens) {
+            final boolean notEdible = numberOfNonEdibles > counter++;
+            specimen.setNotEdible(notEdible);
+        }
+    }
 }

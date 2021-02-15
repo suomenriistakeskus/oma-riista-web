@@ -192,7 +192,7 @@ public class ShootingTestAttemptCrudFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private void assertTotalDueAmount(final double expected, final ShootingTestParticipant participant) {
-        final BigDecimal totalDueAmount = participantRepository.findOne(participant.getId()).getTotalDueAmountOrZero();
+        final BigDecimal totalDueAmount = participantRepository.findById(participant.getId()).map(ShootingTestParticipant::getTotalDueAmountOrZero).orElse(null);
         assertTrue(BigDecimal.valueOf(expected).compareTo(totalDueAmount) == 0);
     }
 }

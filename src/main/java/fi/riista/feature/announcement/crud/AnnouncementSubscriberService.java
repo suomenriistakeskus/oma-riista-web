@@ -36,13 +36,13 @@ public class AnnouncementSubscriberService {
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void create(final Announcement announcement, final AnnouncementDTO dto) {
-        announcementSubscriberRepository.save(createSubscribers(dto, announcement));
+        announcementSubscriberRepository.saveAll(createSubscribers(dto, announcement));
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void update(final Announcement announcement, final AnnouncementDTO dto) {
         announcementSubscriberRepository.deleteByAnnouncement(announcement);
-        announcementSubscriberRepository.save(createSubscribers(dto, announcement));
+        announcementSubscriberRepository.saveAll(createSubscribers(dto, announcement));
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)

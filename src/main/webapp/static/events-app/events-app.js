@@ -17,7 +17,7 @@
         this.$searchForm = jQuery(options.formSelector);
         this.$searchResults = jQuery(options.searchResultsSelector);
 
-        this.getJSONP = function (urlSuffix, requestData, successCallback) {
+        this.fetchJson = function (urlSuffix, requestData, successCallback) {
             requestData = requestData || {};
             if (self.options.lang) requestData.lang = self.options.lang;
 
@@ -25,11 +25,8 @@
                 type: "GET",
                 data: requestData,
                 url: self.options.backendUrl + urlSuffix,
-                accepts: "application/json; charset=UTF-8",
-                dataType: "jsonp",
                 timeout: 2000,
                 cache: false,
-                crossDomain: true,
                 success: successCallback
             });
         };
@@ -176,7 +173,7 @@
                 calendarEventType: eventType
             };
 
-            self.getJSONP("/tapahtumat.jsonp", requestData, function(data) {
+            self.fetchJson("/tapahtumat", requestData, function(data) {
                 var events = data.events || [];
                 if (data.tooManyResults) {
                     self.$searchResults.html(self.options.translations.tooManyResults);
@@ -241,7 +238,7 @@
             return left.localeCompare(right);
         };
         this.updateAreaList = function(callback) {
-            self.getJSONP("/rk.jsonp", {}, function(data) {
+            self.fetchJson("/rk", {}, function(data) {
                 var options = [];
                 self.addAreasAsOptionsToArray(data, options);
                 options.sort(sortOptionData);
@@ -254,7 +251,7 @@
         };
         this.updateRHYList = function(selectedArea, callback) {
             if (selectedArea) {
-                self.getJSONP("/RKA/" + selectedArea + ".jsonp", {}, function(data) {
+                self.fetchJson("/RKA/" + selectedArea, {}, function(data) {
                     var options = [];
                     self.addRHYsAsOptionsToArray(data, options);
                     options.sort(sortOptionData);
@@ -273,7 +270,7 @@
             }
         };
         this.updateEventTypeList = function(callback) {
-            self.getJSONP("/tapahtumatyypit.jsonp", {}, function(data) {
+            self.fetchJson("/tapahtumatyypit", {}, function(data) {
                 var options = ["<option value='' selected=''>("+self.options.translations.all+")</option>"];
                 for (var i = 0; i < data.length; i++) {
                     self.addEventTypesAsOptionsToArray(data[i], options);

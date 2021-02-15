@@ -1,9 +1,8 @@
 package fi.riista.feature.permit.invoice.reminder;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
+import fi.riista.config.quartz.RunAsAdminJob;
 import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,7 @@ import java.util.List;
         enabledProperty = "permit.invoice.reminder.enabled",
         cronExpression = "${permit.invoice.reminder.schedule}"
 )
-public class PermitInvoiceReminderJob implements Job {
+public class PermitInvoiceReminderJob extends RunAsAdminJob {
 
     private static final Logger LOG = LoggerFactory.getLogger(PermitInvoiceReminderJob.class);
 
@@ -27,7 +26,7 @@ public class PermitInvoiceReminderJob implements Job {
     private PermitInvoiceReminderSender permitInvoiceReminderSender;
 
     @Override
-    public void execute(final JobExecutionContext jobExecutionContext) {
+    public void executeAsAdmin() {
         final List<PermitInvoiceReminderDTO> reminderList = permitInvoiceReminderResolver.resolve();
 
         LOG.info("Sending email reminders of permit invoices...");

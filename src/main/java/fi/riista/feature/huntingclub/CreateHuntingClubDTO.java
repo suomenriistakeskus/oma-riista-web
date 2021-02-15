@@ -2,7 +2,7 @@ package fi.riista.feature.huntingclub;
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.organization.occupation.OccupationDTO;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.Valid;

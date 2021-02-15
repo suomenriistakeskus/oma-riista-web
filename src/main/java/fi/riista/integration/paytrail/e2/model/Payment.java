@@ -3,7 +3,7 @@ package fi.riista.integration.paytrail.e2.model;
 import fi.riista.util.BigDecimalMoney;
 import fi.riista.validation.FinnishCreditorReference;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;

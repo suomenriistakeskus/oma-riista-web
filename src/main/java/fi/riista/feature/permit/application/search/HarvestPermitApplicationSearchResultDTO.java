@@ -7,7 +7,7 @@ import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.PersonWithNameDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.PermitHolderDTO;
-import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.common.decision.DecisionStatus;
 import org.joda.time.LocalDateTime;
 
 import java.util.Set;
@@ -33,7 +33,7 @@ public class HarvestPermitApplicationSearchResultDTO extends BaseEntityDTO<Long>
 
     private OrganisationNameDTO rhy;
     private PersonWithNameDTO handler;
-    private PermitDecision.Status decisionStatus;
+    private DecisionStatus decisionStatus;
 
     @Override
     public Long getId() {
@@ -167,11 +167,11 @@ public class HarvestPermitApplicationSearchResultDTO extends BaseEntityDTO<Long>
         this.handler = handler;
     }
 
-    public PermitDecision.Status getDecisionStatus() {
+    public DecisionStatus getDecisionStatus() {
         return decisionStatus;
     }
 
-    public void setDecisionStatus(final PermitDecision.Status decisionStatus) {
+    public void setDecisionStatus(final DecisionStatus decisionStatus) {
         this.decisionStatus = decisionStatus;
     }
 }

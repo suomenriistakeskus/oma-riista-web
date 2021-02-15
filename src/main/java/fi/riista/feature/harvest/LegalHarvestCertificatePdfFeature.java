@@ -10,8 +10,10 @@ import fi.riista.feature.gamediary.HarvestChangeHistory;
 import fi.riista.feature.gamediary.HarvestChangeHistoryRepository;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
+import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.Locales;
@@ -42,7 +44,7 @@ public class LegalHarvestCertificatePdfFeature {
 
     private static final String JSP_HARVEST_CERTIFICATE_FI = "pdf/legal-harvest-certificate-fi";
     private static final String JSP_HARVEST_CERTIFICATE_SV = "pdf/legal-harvest-certificate-sv";
-    private static final LocalisedString FILENAME = LocalisedString.of("todistus-%s.pdf", "intyg-%s.pdf");
+    private static final LocalisedString FILENAME = LocalisedString.of("saalistodistus-%s.pdf", "bytesintyg-%s.pdf");
 
     public static class PdfModel {
         private final String view;
@@ -77,6 +79,17 @@ public class LegalHarvestCertificatePdfFeature {
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
+    public Locale getHarvestCertificateLocale(final long harvestId) {
+        final Harvest harvest = requireEntityService.requireHarvest(harvestId, EntityPermission.READ);
+
+        return Optional.ofNullable(harvest.getHarvestPermit())
+                .map(HarvestPermit::getPermitDecision)
+                .map(PermitDecision::getLocale)
+                .orElse(Locales.FI);
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
     public LegalHarvestCertificatePdfFeature.PdfModel getPdfModel(final long harvestId, final Locale locale) {
 
         final Harvest harvest = requireEntityService.requireHarvest(harvestId, EntityPermission.READ);
@@ -90,7 +103,7 @@ public class LegalHarvestCertificatePdfFeature {
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Approver not present."));
         final DateTime approvedDate = historyItem.getPointOfTime();
-        final String approver = userRepository.findOne(historyItem.getUserId()).getFullName();
+        final String approver = userRepository.findById(historyItem.getUserId()).get().getFullName();
         final GameSpecies species = harvest.getSpecies();
         final List<HarvestSpecimen> specimens = harvest.getSortedSpecimens();
         Preconditions.checkState(specimens.size() == 1, "Must have exactly one specimen");
@@ -113,7 +126,7 @@ public class LegalHarvestCertificatePdfFeature {
                 .withHunterNumber(shooter.getHunterNumber())
                 .withLatitude(harvest.getGeoLocation().getLatitude())
                 .withLongitude(harvest.getGeoLocation().getLongitude())
-                .withPointOfTime(DateUtil.toLocalDateTimeNullSafe(harvest.getPointOfTime()))
+                .withPointOfTime(harvest.getPointOfTime().toLocalDateTime())
                 .withRhy(localiser.getTranslation(harvest.getRhy().getNameLocalisation()))
                 .withSpecies(localiser.getTranslation(species.getNameLocalisation()))
                 .withGender(localiser.getTranslation(specimen.getGender()))

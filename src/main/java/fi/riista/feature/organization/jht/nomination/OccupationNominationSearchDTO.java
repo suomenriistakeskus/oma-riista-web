@@ -39,39 +39,79 @@ public class OccupationNominationSearchDTO {
         return page;
     }
 
+    public void setPage(final int page) {
+        this.page = page;
+    }
+
     public int getPageSize() {
         return pageSize;
+    }
+
+    public void setPageSize(final int pageSize) {
+        this.pageSize = pageSize;
     }
 
     public OccupationType getOccupationType() {
         return occupationType;
     }
 
+    public void setOccupationType(final OccupationType occupationType) {
+        this.occupationType = occupationType;
+    }
+
     public OccupationNomination.NominationStatus getNominationStatus() {
         return nominationStatus;
+    }
+
+    public void setNominationStatus(final OccupationNomination.NominationStatus nominationStatus) {
+        this.nominationStatus = nominationStatus;
     }
 
     public String getAreaCode() {
         return areaCode;
     }
 
+    public void setAreaCode(final String areaCode) {
+        this.areaCode = areaCode;
+    }
+
     public String getRhyCode() {
         return rhyCode;
+    }
+
+    public void setRhyCode(final String rhyCode) {
+        this.rhyCode = rhyCode;
     }
 
     public String getSsn() {
         return ssn;
     }
 
+    public void setSsn(final String ssn) {
+        this.ssn = ssn;
+    }
+
     public String getHunterNumber() {
         return hunterNumber;
+    }
+
+    public void setHunterNumber(final String hunterNumber) {
+        this.hunterNumber = hunterNumber;
+    }
+
+    public LocalDate getBeginDate() {
+        return beginDate;
+    }
+
+    public void setBeginDate(final LocalDate beginDate) {
+        this.beginDate = beginDate;
     }
 
     public LocalDate getEndDate() {
         return endDate;
     }
 
-    public LocalDate getBeginDate() {
-        return beginDate;
+    public void setEndDate(final LocalDate endDate) {
+        this.endDate = endDate;
     }
 }

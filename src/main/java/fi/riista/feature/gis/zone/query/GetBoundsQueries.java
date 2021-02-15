@@ -1,10 +1,10 @@
 package fi.riista.feature.gis.zone.query;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.gis.GISBounds;
 import fi.riista.util.Collect;
 import fi.riista.util.GISUtils;
 import io.vavr.Tuple;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
@@ -47,7 +47,7 @@ public class GetBoundsQueries {
                 .collect(Collect.tuplesToMap());
     }
 
-    private GISBounds wkbToBounds(final GISUtils.SRID srid, final byte[] wkb) {
+    private static GISBounds wkbToBounds(final GISUtils.SRID srid, final byte[] wkb) {
         return wkb != null ? getGISBounds(GISUtils.readFromPostgisWkb(wkb, srid)) : null;
     }
 

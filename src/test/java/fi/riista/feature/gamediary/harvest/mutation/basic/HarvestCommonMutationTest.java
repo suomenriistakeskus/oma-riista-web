@@ -24,7 +24,7 @@ public class HarvestCommonMutationTest {
         return dto;
     }
 
-    private static MobileHarvestDTO createMobileDto(final LocalDateTime pointOfTime, final Integer amount) {
+    private static MobileHarvestDTO createMobileDto(final LocalDateTime pointOfTime, final int amount) {
         final MobileHarvestDTO dto = new MobileHarvestDTO();
         dto.setPointOfTime(pointOfTime);
         dto.setAmount(amount);
@@ -43,19 +43,14 @@ public class HarvestCommonMutationTest {
         doMobileCreate(10, 10);
     }
 
-    @Test
-    public void testMobile_UseDefaultAmount() {
-        doMobileCreate(null, 1);
-    }
-
-    private void doMobileCreate(final Integer dtoAmount, final int expectedAmount) {
+    private void doMobileCreate(final int dtoAmount, final int expectedAmount) {
         final Harvest harvest = new Harvest();
         final MobileHarvestDTO dto = createMobileDto(now, dtoAmount);
         final GameSpecies species = new GameSpecies();
         new HarvestCommonMutation(dto, species, HarvestMutationRole.AUTHOR_OR_ACTOR).accept(harvest);
 
         assertEquals(species, harvest.getSpecies());
-        assertEquals(DateUtil.toDateNullSafe(now), harvest.getPointOfTime());
+        assertEquals(now, harvest.getPointOfTime().toLocalDateTime());
         assertEquals(expectedAmount, harvest.getAmount());
         assertFalse(harvest.isModeratorOverride());
     }
@@ -73,7 +68,7 @@ public class HarvestCommonMutationTest {
         new HarvestCommonMutation(dto, species, mutationRole).accept(harvest);
 
         assertEquals(species, harvest.getSpecies());
-        assertEquals(DateUtil.toDateNullSafe(now), harvest.getPointOfTime());
+        assertEquals(now, harvest.getPointOfTime().toLocalDateTime());
         assertEquals(10, harvest.getAmount());
         assertEquals(mutationRole == HarvestMutationRole.MODERATOR, harvest.isModeratorOverride());
     }
@@ -109,7 +104,7 @@ public class HarvestCommonMutationTest {
         new HarvestCommonMutation(dto, species, mutationRole).accept(harvest);
 
         assertEquals(species, harvest.getSpecies());
-        assertEquals(DateUtil.toDateNullSafe(now), harvest.getPointOfTime());
+        assertEquals(now, harvest.getPointOfTime().toLocalDateTime());
         assertEquals(20, harvest.getAmount());
         assertEquals(mutationRole == HarvestMutationRole.MODERATOR, harvest.isModeratorOverride());
     }

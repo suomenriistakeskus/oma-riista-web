@@ -40,7 +40,28 @@ angular.module('app.srva.controllers', [])
             })
         ;
     })
+    .controller('SrvaCallringRotationController', function ($state, NotificationService, Rhys, Helpers, rhyId, rotation) {
 
+        var $ctrl = this;
+        $ctrl.rotationOptions = ['DAILY','WEEKLY', 'MONTHLY'];
+        $ctrl.rotation = rotation;
+        $ctrl.rotationInUse = !!$ctrl.rotation.srvaRotation;
+
+        $ctrl.save = function () {
+            var rotation = $ctrl.rotationInUse ? $ctrl.rotation : {srvaRotation: null, startDate: null};
+
+            var promise = Rhys.updateSrvaRotation({id: rhyId}, rotation).$promise;
+
+            promise.then(function () {
+                NotificationService.showDefaultSuccess();
+
+                $state.reload();
+            }, function () {
+                NotificationService.showDefaultFailure();
+            });
+        };
+
+    })
     .controller('SrvaEventMapController', function ($state, $q, Helpers, FormPostService,
                                                     MapDefaults, MapState, MapBounds, Markers,
                                                     DiaryListService, DiaryEntryRepositoryFactory,

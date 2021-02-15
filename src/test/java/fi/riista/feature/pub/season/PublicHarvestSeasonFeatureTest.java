@@ -1,5 +1,6 @@
 package fi.riista.feature.pub.season;
 
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
@@ -119,8 +120,8 @@ public class PublicHarvestSeasonFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @SafeVarargs
-    private static void assertUsedQuotas(List<PublicHarvestQuotaDTO> quotas,
-                                         Tuple2<HarvestQuota, Integer>... allQuotasToExpectedUse) {
+    private static void assertUsedQuotas(final List<PublicHarvestQuotaDTO> quotas,
+                                         final Tuple2<HarvestQuota, Integer>... allQuotasToExpectedUse) {
 
         if (allQuotasToExpectedUse != null) {
             for (Tuple2<HarvestQuota, Integer> quotaToExpectedUse : allQuotasToExpectedUse) {
@@ -130,7 +131,7 @@ public class PublicHarvestSeasonFeatureTest extends EmbeddedDatabaseTest {
         }
     }
 
-    private static PublicHarvestQuotaDTO findQuota(List<PublicHarvestQuotaDTO> quotas, HarvestQuota q) {
+    private static PublicHarvestQuotaDTO findQuota(final List<PublicHarvestQuotaDTO> quotas, final HarvestQuota q) {
         for (PublicHarvestQuotaDTO publicQuota : quotas) {
             if (publicQuota.getNameFinnish().equals(q.getHarvestArea().getNameFinnish())) {
                 return publicQuota;
@@ -139,7 +140,7 @@ public class PublicHarvestSeasonFeatureTest extends EmbeddedDatabaseTest {
         return null;
     }
 
-    private static PublicHarvestSeasonDTO findSeason(List<PublicHarvestSeasonDTO> results, String nameFinnish) {
+    private static PublicHarvestSeasonDTO findSeason(final List<PublicHarvestSeasonDTO> results, final String nameFinnish) {
         for (PublicHarvestSeasonDTO dto : results) {
             if (dto.getNameFinnish().equals(nameFinnish)) {
                 return dto;
@@ -148,23 +149,25 @@ public class PublicHarvestSeasonFeatureTest extends EmbeddedDatabaseTest {
         return null;
     }
 
-    private HarvestQuota createAreaAndInsertHarvests(HarvestSeason harvestSeason,
-                                                     HarvestReportState... harvestStates) {
-        HarvestArea harvestArea = model().newHarvestArea(this.rhy);
+    private HarvestQuota createAreaAndInsertHarvests(final HarvestSeason harvestSeason,
+                                                     final HarvestReportState... harvestStates) {
+        final GeoLocation geoLocation = geoLocation();
+        HarvestArea harvestArea = model().newHarvestAreaContaining(geoLocation);
         HarvestQuota quota = model().newHarvestQuota(harvestSeason, harvestArea, 10);
         for (HarvestReportState state : harvestStates) {
-            createHarvest(quota, state);
+            createHarvest(quota, state, geoLocation);
         }
         return quota;
     }
 
-    private void createHarvest(HarvestQuota quota, HarvestReportState state) {
+    private void createHarvest(final HarvestQuota quota, final HarvestReportState state, final GeoLocation geoLocation) {
         Harvest harvest = model().newHarvest(quota.getHarvestSeason().getSpecies());
         harvest.setHarvestSeason(quota.getHarvestSeason());
         harvest.setHarvestQuota(quota);
         harvest.setHarvestReportState(state);
         harvest.setHarvestReportAuthor(harvest.getAuthor());
         harvest.setHarvestReportDate(DateUtil.now());
+        harvest.setGeoLocation(geoLocation);
     }
 
     private HarvestSeason createSeasonActiveNow() {

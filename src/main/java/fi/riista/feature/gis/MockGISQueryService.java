@@ -2,6 +2,7 @@ package fi.riista.feature.gis;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Maps;
 import fi.riista.config.profile.MockGisDatabase;
 import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.common.entity.GeoLocation;
@@ -11,10 +12,14 @@ import fi.riista.feature.common.repository.MunicipalityRepository;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
 import fi.riista.feature.gis.metsahallitus.MetsahallitusAreaLookupResult;
+import fi.riista.feature.harvestpermit.season.HarvestArea;
+import fi.riista.feature.harvestpermit.season.HarvestAreaRepository;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.integration.mml.dto.MMLRekisteriyksikonTietoja;
 import fi.riista.util.GISFinnishEconomicZoneUtil;
+import fi.riista.util.GISUtils;
+import org.locationtech.jts.geom.Point;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -22,12 +27,15 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
 
 @Service
 @MockGisDatabase
@@ -53,6 +61,9 @@ public class MockGISQueryService implements GISQueryService {
     @Resource
     private MunicipalityRepository municipalityRepository;
 
+    @Resource
+    private HarvestAreaRepository harvestAreaRepository;
+
     private AtomicInteger sequenceGenerator = new AtomicInteger(0);
 
     @PostConstruct
@@ -70,6 +81,22 @@ public class MockGISQueryService implements GISQueryService {
     @Override
     public Riistanhoitoyhdistys findRhyByLocation(@Nonnull GISPoint gisPoint) {
         return randomRhy();
+    }
+
+    @Override
+    public Optional<HarvestArea> findHarvestAreaByLocation(@Nonnull final HarvestArea.HarvestAreaType areaType,
+                                                           @Nonnull final GeoLocation geoLocation) {
+        LOG.warn("Using mock implementation to find harvest area!");
+        return harvestAreaRepository.findAll().stream()
+                .filter(harvestArea -> geometryContains(harvestArea, geoLocation))
+                .findAny();
+    }
+
+    private static boolean geometryContains(final HarvestArea harvestArea, @Nonnull final GeoLocation geoLocation) {
+        final Point point = GISUtils.createPoint(requireNonNull(geoLocation));
+        return ofNullable(harvestArea.getGeometry())
+                .map(geom -> geom.contains(point))
+                .orElse(false);
     }
 
     @Override
@@ -128,8 +155,8 @@ public class MockGISQueryService implements GISQueryService {
     }
 
     @Override
-    public List<Long> findZonesWithChanges() {
-        return Collections.emptyList();
+    public Map<Long, Boolean> findZonesWithChanges(final Set<Long> zoneIds) {
+        return Maps.asMap(zoneIds, zoneId -> false);
     }
 
     @Override

@@ -33,8 +33,8 @@ public class MetsahallitusImportApiResource {
 
     @PreAuthorize("hasPrivilege('IMPORT_METSAHALLITUS_PERMITS')")
     @PostMapping(value = "/permit",
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Set<String>>> importMhPermits(
             final @RequestBody @Valid List<MetsahallitusPermitImportDTO> permits) {
 

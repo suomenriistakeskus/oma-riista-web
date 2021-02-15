@@ -1,7 +1,7 @@
 package fi.riista.feature.gis.zone.query;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.util.GISUtils;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 

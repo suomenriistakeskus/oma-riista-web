@@ -2,12 +2,12 @@ package fi.riista.feature.common.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
 import fi.riista.util.GISUtils;
 import fi.riista.util.LocalisedEnum;
 import fi.riista.util.NumberUtils;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;

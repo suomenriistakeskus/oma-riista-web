@@ -1,5 +1,6 @@
 package fi.riista.feature.permit.invoice.pdf;
 
+import com.google.common.collect.ImmutableList;
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.money.FinnishBankAccount;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -20,9 +21,13 @@ import org.joda.time.format.DateTimeFormatter;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Locale;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static fi.riista.feature.common.money.FinnishBankAccount.MOOSELIKE_HARVEST_FEE_DANSKE;
+import static fi.riista.feature.common.money.FinnishBankAccount.MOOSELIKE_HARVEST_FEE_NORDEA;
+import static fi.riista.feature.common.money.FinnishBankAccount.MOOSELIKE_HARVEST_FEE_OP_POHJOLA;
 import static fi.riista.util.DateUtil.today;
 import static java.util.Objects.requireNonNull;
 
@@ -33,6 +38,12 @@ public class PermitHarvestInvoicePdfModel {
         REMINDER,
         RECEIPT
     }
+
+    /*package*/ static List<FinnishBankAccount> HARVEST_FEE_ACCOUNTS = ImmutableList.of(
+            MOOSELIKE_HARVEST_FEE_OP_POHJOLA,
+            MOOSELIKE_HARVEST_FEE_DANSKE,
+            MOOSELIKE_HARVEST_FEE_NORDEA
+    );
 
     static final String PAYMENT_RECIPIENT = "MMM/Hirvieläinten pyyntilupamaksujen keräilytili";
 
@@ -64,6 +75,9 @@ public class PermitHarvestInvoicePdfModel {
         requireNonNull(resultType);
         requireNonNull(speciesAmount);
         requireNonNull(invoice);
+
+        // The pdf shall contain multiple bank accounts, assert that the account in invoice is listed
+        checkArgument(HARVEST_FEE_ACCOUNTS.contains(invoice.resolveBankAccountDetails()));
 
         final HarvestPermit permit = speciesAmount.getHarvestPermit();
         final GameSpecies gameSpecies = speciesAmount.getGameSpecies();
@@ -100,7 +114,8 @@ public class PermitHarvestInvoicePdfModel {
         requireNonNull(gameSpecies);
 
         final LocalDate invoiceDate = decision.getPublishDate().toLocalDate();
-        final PermitHarvestInvoicePdfPrice specimenPrice = new PermitHarvestInvoicePdfPrice(MooselikePrice.get(gameSpecies));
+        final PermitHarvestInvoicePdfPrice specimenPrice =
+                new PermitHarvestInvoicePdfPrice(MooselikePrice.get(gameSpecies));
         final CreditorReference invoiceReference = CreditorReferenceCalculator.computeReferenceForPermitHarvestInvoice(
                 decision.getDecisionYear(), decision.getDecisionNumber(), gameSpecies.getOfficialCode());
 

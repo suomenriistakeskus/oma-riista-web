@@ -2,7 +2,7 @@ package fi.riista.feature.organization.occupation.search;
 
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
-import org.hibernate.validator.constraints.NotEmpty;
+import javax.validation.constraints.NotEmpty;
 import org.hibernate.validator.constraints.SafeHtml;
 
 public class OccupationContactSearchDTO {

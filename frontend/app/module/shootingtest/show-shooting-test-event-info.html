@@ -34,7 +34,7 @@
             <button class="btn btn-primary"
                     translate="shootingTest.overview.close"
                     ng-if="::$ctrl.canCloseEvent"
-                    ng-confirm-click ng-confirm-click-action="$ctrl.closeEvent()"></button>
+                    ng-confirm-click="{{$ctrl.getCloseConfirmationMsg()}}" ng-confirm-click-action="$ctrl.closeEvent()"></button>
 
             <button class="btn btn-primary"
                     translate="shootingTest.overview.reopen"

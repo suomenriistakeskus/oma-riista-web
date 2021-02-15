@@ -196,7 +196,7 @@ public class MetsastajaRekisteriFinnishPersonImportServiceTest extends EmbeddedD
         importService.updatePersons(singletonList(mr), DateUtil.now());
 
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(existingPerson.getId());
+            final Person person = personRepository.findById(existingPerson.getId()).orElse(null);
             assertTrue("Name should change", hasSameName(person, mr));
         });
     }
@@ -212,7 +212,7 @@ public class MetsastajaRekisteriFinnishPersonImportServiceTest extends EmbeddedD
         importService.updatePersons(singletonList(mr), DateUtil.now());
 
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(existingPerson.getId());
+            final Person person = personRepository.findById(existingPerson.getId()).orElse(null);
 
             assertNull("Empty or partial value should remove address", person.getMrAddress());
             assertNotNull("Other addresses should remain", person.getOtherAddress());
@@ -230,7 +230,7 @@ public class MetsastajaRekisteriFinnishPersonImportServiceTest extends EmbeddedD
         importService.updatePersons(singletonList(mr), DateUtil.now());
 
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(existingPerson.getId());
+            final Person person = personRepository.findById(existingPerson.getId()).orElse(null);
 
             assertNotNull(person.getMrAddress());
             assertNotNull("Other address should not be changed", person.getOtherAddress());
@@ -248,7 +248,7 @@ public class MetsastajaRekisteriFinnishPersonImportServiceTest extends EmbeddedD
         importService.updatePersons(singletonList(mr), DateUtil.now());
 
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(existingPerson.getId());
+            final Person person = personRepository.findById(existingPerson.getId()).orElse(null);
 
             assertTrue("Name should not change", hasSameName(person, existingPerson));
             assertNull("Should remove address MR address", person.getMrAddress());
@@ -293,7 +293,7 @@ public class MetsastajaRekisteriFinnishPersonImportServiceTest extends EmbeddedD
         importService.updatePersons(singletonList(mr), DateUtil.now());
 
         runInTransaction(() -> {
-            final Person person = personRepository.findOne(existingPerson.getId());
+            final Person person = personRepository.findById(existingPerson.getId()).orElse(null);
 
             assertTrue("Name should not change", hasSameName(person, existingPerson));
             assertNull("Should remove address", person.getMrAddress());

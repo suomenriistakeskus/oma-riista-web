@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static fi.riista.feature.organization.rhy.subsidy.RhySubsidyTestHelper.createEmptyCalculatedShares;
-import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationStage2Calculation.calculateAndAllocateRemainder;
+import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationStage2Calculation.calculateRemainder;
 import static fi.riista.test.TestUtils.currency;
 import static fi.riista.util.NumberUtils.currencySum;
 import static java.util.Arrays.asList;
@@ -25,29 +25,33 @@ public class SubsidyAllocationStage2CalculationTest {
     private static final String RHY3_CODE = "003";
     private static final String RHY4_CODE = "004";
 
-    private List<BasicSubsidyAllocationDTO> inputAllocations;
+    private static OrganisationNameDTO rka;
 
-    private BigDecimal subsidyAmountAlreadyAllocatedInPreviousStage;
+    private List<RhySubsidyStage1DTO> inputAllocations;
+
+    private BigDecimal subsidyAmountAllocatedInStage1;
 
     @Before
     public void setup() {
+        rka = new OrganisationNameDTO();
+        rka.setOfficialCode("000");
+
         inputAllocations = asList(
                 newInputAllocation(RHY1_CODE, currency(100)),
                 newInputAllocation(RHY2_CODE, currency(101)),
                 newInputAllocation(RHY3_CODE, currency(102)),
                 newInputAllocation(RHY4_CODE, currency(103)));
 
-        subsidyAmountAlreadyAllocatedInPreviousStage =
-                currencySum(inputAllocations, BasicSubsidyAllocationDTO::getTotalRoundedShare);
+        subsidyAmountAllocatedInStage1 =
+                currencySum(inputAllocations, dto -> dto.getCalculation().getTotalRoundedShare());
     }
 
     @Test
-    public void testCalculateAndAllocateRemainder_whenThereAreLessRemainderEurosThanNumberOfRhys() {
+    public void testCalculateRemainder_whenThereAreLessRemainderEurosThanNumberOfRhys() {
         final int numRhys = inputAllocations.size();
-        final BigDecimal totalSubsidyAmount = subsidyAmountAlreadyAllocatedInPreviousStage.add(currency(numRhys - 1));
+        final BigDecimal totalSubsidyAmount = subsidyAmountAllocatedInStage1.add(currency(numRhys - 1));
 
-        final List<BasicSubsidyAllocationDTO> output =
-                calculateAndAllocateRemainder(totalSubsidyAmount, inputAllocations);
+        final List<RhySubsidyStage2DTO> output = calculateRemainder(totalSubsidyAmount, inputAllocations);
 
         final List<Tuple3<String, Integer, BigDecimal>> expectedOutput = ImmutableList.of(
                 Tuple.of(RHY1_CODE, 1, currency(101)),
@@ -55,16 +59,15 @@ public class SubsidyAllocationStage2CalculationTest {
                 Tuple.of(RHY3_CODE, 1, currency(103)),
                 Tuple.of(RHY4_CODE, 0, currency(103)));
 
-        assertEquals(expectedOutput, transformToTuples(output));
+        assertEquals(expectedOutput, tuplesFromOutput(output));
     }
 
     @Test
-    public void testCalculateAndAllocateRemainder_whenThereAreMoreRemainderEurosThanNumberOfRhys() {
+    public void testCalculateRemainder_whenThereAreMoreRemainderEurosThanNumberOfRhys() {
         final int numRhys = inputAllocations.size();
-        final BigDecimal totalSubsidyAmount = subsidyAmountAlreadyAllocatedInPreviousStage.add(currency(numRhys + 1));
+        final BigDecimal totalSubsidyAmount = subsidyAmountAllocatedInStage1.add(currency(numRhys + 1));
 
-        final List<BasicSubsidyAllocationDTO> output =
-                calculateAndAllocateRemainder(totalSubsidyAmount, inputAllocations);
+        final List<RhySubsidyStage2DTO> output = calculateRemainder(totalSubsidyAmount, inputAllocations);
 
         final List<Tuple3<String, Integer, BigDecimal>> expectedOutput = ImmutableList.of(
                 Tuple.of(RHY1_CODE, 2, currency(102)),
@@ -72,41 +75,43 @@ public class SubsidyAllocationStage2CalculationTest {
                 Tuple.of(RHY3_CODE, 1, currency(103)),
                 Tuple.of(RHY4_CODE, 1, currency(104)));
 
-        assertEquals(expectedOutput, transformToTuples(output));
+        assertEquals(expectedOutput, tuplesFromOutput(output));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCalculateAndAllocateRemainder_withNegativeRemainder() {
-        final BigDecimal totalSubsidyAmount = subsidyAmountAlreadyAllocatedInPreviousStage.subtract(BigDecimal.ONE);
+    public void testCalculateRemainder_withNegativeRemainder() {
+        final BigDecimal totalSubsidyAmount = subsidyAmountAllocatedInStage1.subtract(BigDecimal.ONE);
 
-        calculateAndAllocateRemainder(totalSubsidyAmount, inputAllocations);
+        calculateRemainder(totalSubsidyAmount, inputAllocations);
     }
 
     @Test
-    public void testCalculateAndAllocateRemainder_withZeroRemainder() {
-        final List<BasicSubsidyAllocationDTO> output =
-                calculateAndAllocateRemainder(subsidyAmountAlreadyAllocatedInPreviousStage, inputAllocations);
+    public void testCalculateRemainder_withZeroRemainder() {
+        final List<RhySubsidyStage2DTO> output = calculateRemainder(subsidyAmountAllocatedInStage1, inputAllocations);
 
-        assertEquals(transformToTuples(inputAllocations), transformToTuples(output));
+        assertEquals(tuplesFromInput(inputAllocations), tuplesFromOutput(output));
     }
 
-    private static List<Tuple3<String, Integer, BigDecimal>> transformToTuples(final List<BasicSubsidyAllocationDTO> list) {
-        return F.mapNonNullsToList(list, dto -> {
-            return Tuple.of(dto.getRhyCode(), dto.getGivenRemainderEuros(), dto.getTotalRoundedShare());
-        });
+    private static List<Tuple3<String, Integer, BigDecimal>> tuplesFromInput(final List<RhySubsidyStage1DTO> list) {
+        return F.mapNonNullsToList(list, dto ->
+                Tuple.of(dto.getRhyCode(), 0, dto.getCalculation().getTotalRoundedShare()));
     }
 
-    private static BasicSubsidyAllocationDTO newInputAllocation(final String rhyCode,
-                                                                final BigDecimal totalRoundedShare) {
+    private static List<Tuple3<String, Integer, BigDecimal>> tuplesFromOutput(final List<RhySubsidyStage2DTO> list) {
+        return F.mapNonNullsToList(list, dto -> Tuple.of(
+                dto.getRhyCode(),
+                dto.getCalculation().getRemainderEurosGivenInStage2(),
+                dto.getCalculation().getSubsidyAfterStage2RemainderAllocation()));
+    }
 
+    private static RhySubsidyStage1DTO newInputAllocation(final String rhyCode, final BigDecimal totalRoundedShare) {
         final OrganisationNameDTO rhy = new OrganisationNameDTO();
         rhy.setOfficialCode(rhyCode);
 
-        return new BasicSubsidyAllocationDTO(
-                rhy,
-                new OrganisationNameDTO(),     // not relevant content in tests of stage 2
-                createEmptyCalculatedShares(), // not relevant content in tests of stage 2
-                totalRoundedShare,
-                0);                            // always zero after stage 1
+        return new RhySubsidyStage1DTO(
+                new RhyAndRkaDTO(rhy, rka),
+                new SubsidyCalculationStage1DTO(
+                        createEmptyCalculatedShares(), // not relevant in tests of stage 2
+                        totalRoundedShare));
     }
 }

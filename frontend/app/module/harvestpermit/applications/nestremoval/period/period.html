@@ -1,0 +1,93 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.nestremoval.period.instruction1"></p>
+        <p translate="harvestpermit.wizard.nestremoval.period.instruction2"></p>
+    </div>
+</div>
+
+<form name="speciesPeriodForm" r-force-show-errors-check-validity>
+    <div ng-repeat="s in ::$ctrl.speciesPeriodList track by s.gameSpeciesCode">
+        <div class="row">
+            <div class="col-xs-2">
+                <div class="form-control-static" style="padding-top: 30px">
+                    <strong ng-bind="s.gameSpeciesCode | translateSpeciesCode | uppercase"></strong>
+                </div>
+            </div>
+
+            <div class="col-xs-3">
+                <div class="form-group" show-errors>
+                    <label class="control-label" for="beginDate-{{::s.gameSpeciesCode}}"
+                           translate="harvestpermit.wizard.period.beginDate"></label>
+
+                    <div class="input-group r-dropdown-align-right"
+                         ng-controller="DatePickerController">
+
+                        <input type="text" name="beginDate-{{::s.gameSpeciesCode}}"
+                               id="beginDate-{{::s.gameSpeciesCode}}"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-append-to-body="true"
+                               ng-model="s.beginDate"
+                               required
+                               date-between-min-max
+                               max-date="s.endDate">
+
+                        <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                    </div>
+                    <p class="help-block has-error"
+                       ng-show="speciesPeriodForm['beginDate-' + s.gameSpeciesCode].$invalid"
+                       ng-messages="speciesPeriodForm['beginDate-' + s.gameSpeciesCode].$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-xs-3">
+                <div class="form-group" show-errors>
+                    <label class="control-label" for="endDate-{{::s.gameSpeciesCode}}"
+                           translate="harvestpermit.wizard.period.endDate"></label>
+
+                    <div class="input-group r-dropdown-align-right"
+                         ng-controller="DatePickerController">
+
+                        <input type="text" name="endDate-{{::s.gameSpeciesCode}}" id="endDate-{{::s.gameSpeciesCode}}"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-append-to-body="true"
+                               ng-model="s.endDate"
+                               required
+                               date-between-min-max
+                               min-date="s.beginDate">
+
+
+                        <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                    </div>
+                    <p class="help-block has-error"
+                       ng-show="speciesPeriodForm['endDate-' + s.gameSpeciesCode].$invalid"
+                       ng-messages="speciesPeriodForm['endDate-' + s.gameSpeciesCode].$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(speciesPeriodForm)"
+        previous="$ctrl.previous(speciesPeriodForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(speciesPeriodForm)">
+</permit-application-wizard-navigation>

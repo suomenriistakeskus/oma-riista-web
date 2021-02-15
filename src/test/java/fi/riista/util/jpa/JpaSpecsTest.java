@@ -1,7 +1,7 @@
 package fi.riista.util.jpa;
 
 import io.vavr.Function3;
-import org.hibernate.jpa.criteria.CriteriaBuilderImpl;
+import org.hibernate.query.criteria.internal.CriteriaBuilderImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

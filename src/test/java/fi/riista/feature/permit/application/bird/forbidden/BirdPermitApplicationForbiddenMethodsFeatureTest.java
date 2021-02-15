@@ -5,6 +5,8 @@ import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethodsDTO;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethodsSpeciesDTO;
 import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 
@@ -30,19 +32,21 @@ public class BirdPermitApplicationForbiddenMethodsFeatureTest extends EmbeddedDa
         application.setSpeciesAmounts(ImmutableList.of(model().newHarvestPermitApplicationSpeciesAmount(application, model().newGameSpecies(42), 3)));
 
         onSavedAndAuthenticated(createUser(contactPerson), () -> {
-            final BirdPermitApplicationForbiddenMethodsSpeciesDTO justificationDTO =
-                    new BirdPermitApplicationForbiddenMethodsSpeciesDTO();
+            final DerogationPermitApplicationForbiddenMethodsSpeciesDTO justificationDTO =
+                    new DerogationPermitApplicationForbiddenMethodsSpeciesDTO();
             justificationDTO.setGameSpeciesCode(42);
             justificationDTO.setJustification("Because I can");
 
-            final BirdPermitApplicationForbiddenMethodsDTO updateDTO = new BirdPermitApplicationForbiddenMethodsDTO();
+            final DerogationPermitApplicationForbiddenMethodsDTO updateDTO =
+                    new DerogationPermitApplicationForbiddenMethodsDTO();
             updateDTO.setDeviateSection34("Perustelu pykälälle 34");
             updateDTO.setTraps(true);
             updateDTO.setSpeciesJustifications(ImmutableList.of(justificationDTO));
 
             birdPermitApplicationMethodsFeature.updateMethodInfo(application.getId(), updateDTO);
 
-            final BirdPermitApplicationForbiddenMethodsDTO dto = birdPermitApplicationMethodsFeature.getCurrentMethodInfo(application.getId());
+            final DerogationPermitApplicationForbiddenMethodsDTO dto =
+                    birdPermitApplicationMethodsFeature.getCurrentMethodInfo(application.getId());
 
             assertTrue(dto.isTraps());
             assertFalse(dto.isTapeRecorders());

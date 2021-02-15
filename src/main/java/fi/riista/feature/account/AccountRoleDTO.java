@@ -13,7 +13,6 @@ import org.joda.time.Duration;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
@@ -83,7 +82,7 @@ public class AccountRoleDTO {
 
     private AccountRoleDTO(@Nonnull final String id,
                            @Nonnull final String type,
-                           final Date creationTime,
+                           final DateTime creationTime,
                            final String displayName,
                            @Nonnull final Map<String, Object> context) {
         this.id = Objects.requireNonNull(id);
@@ -93,8 +92,8 @@ public class AccountRoleDTO {
         this.context = Objects.requireNonNull(context);
     }
 
-    private static boolean ageIsLessThanDays(final Date creationTime, final Duration minDuration) {
-        return new Duration(new DateTime(creationTime), DateUtil.now()).compareTo(minDuration) < 0;
+    private static boolean ageIsLessThanDays(final DateTime creationTime, final Duration minDuration) {
+        return new Duration(creationTime, DateUtil.now()).compareTo(minDuration) < 0;
     }
 
     public String getId() {

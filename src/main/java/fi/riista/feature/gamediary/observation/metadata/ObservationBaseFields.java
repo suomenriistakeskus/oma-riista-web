@@ -2,6 +2,7 @@ package fi.riista.feature.gamediary.observation.metadata;
 
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.common.entity.Required;
+import fi.riista.feature.common.entity.RequiredWithinDeerPilot;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpecies_;
 import fi.riista.util.DateUtil;
@@ -42,6 +43,14 @@ public class ObservationBaseFields extends BaseEntity<Long> {
     @NotNull
     @Column(nullable = false)
     private Required withinMooseHunting = Required.NO;
+
+    /**
+     * Peuran metsästyksen yhteydessä tehty havainto
+     */
+    @Enumerated(EnumType.STRING)
+    @NotNull
+    @Column(nullable = false)
+    private RequiredWithinDeerPilot withinDeerHunting = RequiredWithinDeerPilot.NO;
 
     @Min(1)
     @Column(nullable = false)
@@ -103,6 +112,14 @@ public class ObservationBaseFields extends BaseEntity<Long> {
 
     public void setWithinMooseHunting(final Required withinMooseHunting) {
         this.withinMooseHunting = withinMooseHunting;
+    }
+
+    public RequiredWithinDeerPilot getWithinDeerHunting() {
+        return withinDeerHunting;
+    }
+
+    public void setWithinDeerHunting(final RequiredWithinDeerPilot withinDeerHunting) {
+        this.withinDeerHunting = withinDeerHunting;
     }
 
     public int getMetadataVersion() {

@@ -41,18 +41,18 @@
                     </tr>
 
                     <!-- PERSON -->
-                    <tr ng-if="::($ctrl.club.subtype == 'PERSON')">
+                    <tr ng-if="::($ctrl.club.subtype === 'PERSON')">
                         <th></th>
                         <td><strong translate="club.subtype.person.title"></strong></td>
                     </tr>
-                    <tr ng-if="::($ctrl.club.subtype == 'PERSON' && $ctrl.club.clubPerson)">
+                    <tr ng-if="::($ctrl.club.subtype === 'PERSON' && $ctrl.club.clubPerson)">
                         <th class="col-xs-3" translate="club.subtype.person.link"></th>
                         <td>
                             <span ng-bind="::$ctrl.club.clubPerson.lastName"></span>
                             <span ng-bind="::$ctrl.club.clubPerson.byName"></span>
                         </td>
                     </tr>
-                    <tr ng-if="::($ctrl.club.subtype == 'PERSON' && !$ctrl.club.clubPerson)">
+                    <tr ng-if="::($ctrl.club.subtype === 'PERSON' && !$ctrl.club.clubPerson)">
                         <th></th>
                         <td>
                             <strong class="text-danger" translate="club.subtype.person.notSelected"></strong>
@@ -60,15 +60,15 @@
                     </tr>
 
                     <!-- BUSINESS -->
-                    <tr ng-if="::($ctrl.club.subtype == 'BUSINESS')">
+                    <tr ng-if="::($ctrl.club.subtype === 'BUSINESS')">
                         <th></th>
                         <td><strong translate="club.subtype.business.title"></strong></td>
                     </tr>
-                    <tr ng-if="::($ctrl.club.subtype == 'BUSINESS' && $ctrl.club.businessId)">
+                    <tr ng-if="::($ctrl.club.subtype === 'BUSINESS' && $ctrl.club.businessId)">
                         <th class="col-xs-3" translate="club.subtype.business.link"></th>
                         <td ng-bind="::$ctrl.club.businessId"></td>
                     </tr>
-                    <tr ng-if="::($ctrl.club.subtype == 'BUSINESS' && !$ctrl.club.businessId)">
+                    <tr ng-if="::($ctrl.club.subtype === 'BUSINESS' && !$ctrl.club.businessId)">
                         <th></th>
                         <td>
                             <strong class="text-danger" translate="club.subtype.business.notSelected"></strong>
@@ -76,18 +76,22 @@
                     </tr>
 
                     <!-- RY -->
-                    <tr ng-if="::($ctrl.club.subtype == 'RY')">
+                    <tr ng-if="::($ctrl.club.subtype === 'RY')">
                         <th></th>
                         <td><strong translate="club.subtype.ry.title"></strong></td>
                     </tr>
-                    <tr ng-if="::($ctrl.club.subtype == 'RY' && $ctrl.club.associationRegistryNumber)">
+                    <tr ng-if="::($ctrl.club.subtype === 'RY' && $ctrl.club.businessId)">
+                        <th class="col-xs-3" translate="club.subtype.business.link"></th>
+                        <td ng-bind="::$ctrl.club.businessId"></td>
+                    </tr>
+                    <tr ng-if="::($ctrl.club.subtype === 'RY' && $ctrl.club.associationRegistryNumber)">
                         <th class="col-xs-3" translate="club.subtype.ry.link"></th>
                         <td ng-bind="::$ctrl.club.associationRegistryNumber"></td>
                     </tr>
-                    <tr ng-if="::($ctrl.club.subtype == 'RY' && !$ctrl.club.associationRegistryNumber)">
+                    <tr ng-if="::($ctrl.club.subtype === 'RY' && !$ctrl.club.businessId)">
                         <th></th>
                         <td>
-                            <strong class="text-danger" translate="club.subtype.ry.notSelected"></strong>
+                            <strong class="text-danger" translate="club.subtype.business.notSelected"></strong>
                         </td>
                     </tr>
 
@@ -166,13 +170,13 @@
 
                         <td class="col-xs-6 text-right">
                             <div class="label label-info"
-                                 ng-show="member.callOrder == 0">
+                                 ng-show="member.callOrder === 0">
                                 <span translate="club.main.contactPersons.primary"></span>
                             </div>
 
                             <div class="btn-group btn-group-sm"
                                  uib-dropdown
-                                 ng-show="$ctrl.club.canEdit && member.callOrder != 0">
+                                 ng-show="$ctrl.club.canEdit && member.callOrder !== 0">
 
                                 <button type="button" class="btn btn-default" uib-dropdown-toggle>
                                     <span class="glyphicon glyphicon-cog"></span>&nbsp;

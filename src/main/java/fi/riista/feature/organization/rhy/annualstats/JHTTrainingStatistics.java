@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class JHTTrainingStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<JHTTrainingStatistics>,
+        AnnualStatisticsManuallyEditableFields<JHTTrainingStatistics>,
         Serializable {
 
     public static final JHTTrainingStatistics reduce(@Nullable final JHTTrainingStatistics a,
@@ -119,6 +120,7 @@ public class JHTTrainingStatistics
     private boolean huntingControlTrainingParticipantsOverridden;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "jht_trainings_last_modified")
     private DateTime lastModified;
 
@@ -181,29 +183,45 @@ public class JHTTrainingStatistics
     public void assignFrom(@Nonnull final JHTTrainingStatistics that) {
         // Includes manually updateable fields only.
 
+        if (!Objects.equals(this.shootingTestTrainingEvents, that.shootingTestTrainingEvents)) {
+            this.shootingTestTrainingEventsOverridden = true;
+        }
         this.shootingTestTrainingEvents = that.shootingTestTrainingEvents;
-        this.shootingTestTrainingEventsOverridden = that.shootingTestTrainingEventsOverridden;
 
+        if (!Objects.equals(this.shootingTestTrainingParticipants, that.shootingTestTrainingParticipants)) {
+            this.shootingTestTrainingParticipantsOverridden = true;
+        }
         this.shootingTestTrainingParticipants = that.shootingTestTrainingParticipants;
-        this.shootingTestTrainingParticipantsOverridden = that.shootingTestTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.hunterExamOfficialTrainingEvents, that.hunterExamOfficialTrainingEvents)) {
+            this.hunterExamOfficialTrainingEventsOverridden = true;
+        }
         this.hunterExamOfficialTrainingEvents = that.hunterExamOfficialTrainingEvents;
-        this.hunterExamOfficialTrainingEventsOverridden = that.hunterExamOfficialTrainingEventsOverridden;
 
+        if (!Objects.equals(this.hunterExamOfficialTrainingParticipants, that.hunterExamOfficialTrainingParticipants)) {
+            this.hunterExamOfficialTrainingParticipantsOverridden = true;
+        }
         this.hunterExamOfficialTrainingParticipants = that.hunterExamOfficialTrainingParticipants;
-        this.hunterExamOfficialTrainingParticipantsOverridden = that.hunterExamOfficialTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.gameDamageTrainingEvents, that.gameDamageTrainingEvents)) {
+            this.gameDamageTrainingEventsOverridden = true;
+        }
         this.gameDamageTrainingEvents = that.gameDamageTrainingEvents;
-        this.gameDamageTrainingEventsOverridden = that.gameDamageTrainingEventsOverridden;
 
+        if (!Objects.equals(this.gameDamageTrainingParticipants, that.gameDamageTrainingParticipants)) {
+            this.gameDamageTrainingParticipantsOverridden = true;
+        }
         this.gameDamageTrainingParticipants = that.gameDamageTrainingParticipants;
-        this.gameDamageTrainingParticipantsOverridden = that.gameDamageTrainingParticipantsOverridden;
 
+        if (!Objects.equals(this.huntingControlTrainingEvents, that.huntingControlTrainingEvents)) {
+            this.huntingControlTrainingEventsOverridden = true;
+        }
         this.huntingControlTrainingEvents = that.huntingControlTrainingEvents;
-        this.huntingControlTrainingEventsOverridden = that.huntingControlTrainingEventsOverridden;
 
+        if (!Objects.equals(this.huntingControlTrainingParticipants, that.huntingControlTrainingParticipants)) {
+            this.huntingControlTrainingParticipantsOverridden = true;
+        }
         this.huntingControlTrainingParticipants = that.huntingControlTrainingParticipants;
-        this.huntingControlTrainingParticipantsOverridden = that.huntingControlTrainingParticipantsOverridden;
     }
 
     @Override

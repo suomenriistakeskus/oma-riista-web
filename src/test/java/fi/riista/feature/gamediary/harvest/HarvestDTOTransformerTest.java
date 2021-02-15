@@ -1,6 +1,7 @@
 package fi.riista.feature.gamediary.harvest;
 
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest.StateAcceptedToHarvestPermit;
@@ -22,11 +23,13 @@ import io.vavr.Tuple2;
 import org.joda.time.LocalDate;
 import org.junit.Assert;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 
 import static fi.riista.feature.gamediary.image.GameDiaryImage.getUniqueImageIds;
@@ -34,16 +37,21 @@ import static fi.riista.test.TestUtils.createList;
 import static fi.riista.test.TestUtils.times;
 import static fi.riista.util.EqualityHelper.equalIdAndContent;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(Theories.class)
 public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
+
+    // TODO Remove specVersion 7 when deer pilot 2020 is over.
+    @DataPoints("harvestSpecVersions")
+    public static final HarvestSpecVersion[] HARVEST_SPEC_VERSIONS = {HarvestSpecVersion._7, HarvestSpecVersion._8};
 
     @Resource
     private HarvestDTOTransformer transformer;
@@ -51,8 +59,8 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    @Test
-    public void testUserNotAuthenticated() {
+    @Theory
+    public void testUserNotAuthenticated(final HarvestSpecVersion version) {
         thrown.expect(RuntimeException.class);
         thrown.expectMessage("User id not available in security context");
 
@@ -60,19 +68,20 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
 
         persistInNewTransaction();
 
-        transformer.apply(harvests);
+        transformer.apply(harvests, version);
     }
 
-    @Test
-    public void testWithoutCreatingPluralAssociations() {
+    @Theory
+    public void testWithoutCreatingPluralAssociations(final HarvestSpecVersion version) {
         withPerson(author -> {
+
             final List<Harvest> harvests = createList(5, () -> model().newHarvest(author));
 
             // Generate extra harvest that is not included in input and thus should not affect output either.
             model().newHarvest(author);
 
             onSavedAndAuthenticated(createUser(author), () -> {
-                final List<HarvestDTO> dtos = transformer.apply(harvests);
+                final List<HarvestDTO> dtos = transformer.apply(harvests, version);
 
                 assertNotNull(dtos);
                 assertEquals(harvests.size(), dtos.size());
@@ -95,9 +104,10 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         });
     }
 
-    @Test
-    public void testWithSpecimens() {
+    @Theory
+    public void testWithSpecimens(final HarvestSpecVersion version) {
         withPerson(author -> {
+
             final List<Tuple2<Harvest, List<HarvestSpecimen>>> pairs =
                     createList(5, () -> newHarvestWithSpecimens(10, author));
 
@@ -105,7 +115,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
             newHarvestWithSpecimens(5, author);
 
             onSavedAndAuthenticated(createUser(author), () -> {
-                final List<HarvestDTO> dtos = transformer.apply(F.nonNullKeys(pairs));
+                final List<HarvestDTO> dtos = transformer.apply(F.nonNullKeys(pairs), version);
 
                 assertNotNull(dtos);
                 assertEquals(pairs.size(), dtos.size());
@@ -129,9 +139,10 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         });
     }
 
-    @Test
-    public void testWithHarvestPermit() {
+    @Theory
+    public void testWithHarvestPermit(final HarvestSpecVersion version) {
         withRhy(rhy -> withPerson(person -> {
+
             final GameSpecies species = model().newGameSpecies();
             final HarvestPermit permit = model().newHarvestPermit(rhy);
             model().newHarvestPermitSpeciesAmount(permit, species);
@@ -157,7 +168,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
             });
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                final List<HarvestDTO> dtos = transformer.apply(harvests);
+                final List<HarvestDTO> dtos = transformer.apply(harvests, version);
                 assertEquals(harvests.size(), dtos.size());
 
                 for (int i = 0; i < harvests.size(); i++) {
@@ -178,12 +189,13 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         }));
     }
 
-    @Test
-    public void testWithHarvestSeason() {
+    @Theory
+    public void testWithHarvestSeason(final HarvestSpecVersion version) {
         withRhy(rhy -> withPerson(person -> {
+
             final GameSpecies species = model().newGameSpecies();
             final HarvestSeason season = model().newHarvestSeason(species);
-            final HarvestArea harvestArea = model().newHarvestArea(rhy);
+            final HarvestArea harvestArea = model().newHarvestArea();
             final HarvestQuota quota = model().newHarvestQuota(season, harvestArea, 1);
 
             final List<Harvest> harvests = createList(5, () -> {
@@ -211,7 +223,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
             });
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                final List<HarvestDTO> dtos = transformer.apply(harvests);
+                final List<HarvestDTO> dtos = transformer.apply(harvests, version);
                 assertEquals(harvests.size(), dtos.size());
 
                 for (int i = 0; i < harvests.size(); i++) {
@@ -237,9 +249,10 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         }));
     }
 
-    @Test
-    public void testWithHarvestReportMemo_asModerator() {
+    @Theory
+    public void testWithHarvestReportMemo_asModerator(final HarvestSpecVersion version) {
         withRhy(rhy -> withPerson(person -> {
+
             final Harvest harvest = model().newHarvest();
             harvest.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
             harvest.setHarvestReportAuthor(harvest.getAuthor());
@@ -250,7 +263,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
             model().newGameDiaryImage(harvest);
 
             onSavedAndAuthenticated(createNewUser(SystemUser.Role.ROLE_MODERATOR), () -> {
-                final List<HarvestDTO> dtos = transformer.apply(Collections.singletonList(harvest));
+                final List<HarvestDTO> dtos = transformer.apply(singletonList(harvest), version);
                 assertEquals(1, dtos.size());
 
                 final HarvestDTO dto = dtos.get(0);
@@ -261,9 +274,10 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         }));
     }
 
-    @Test
-    public void testWithImages() {
+    @Theory
+    public void testWithImages(final HarvestSpecVersion version) {
         withPerson(author -> {
+
             final List<Tuple2<Harvest, List<GameDiaryImage>>> pairs =
                     createList(5, () -> newHarvestWithImages(5, author));
 
@@ -271,7 +285,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
             newHarvestWithImages(5, author);
 
             onSavedAndAuthenticated(createUser(author), () -> {
-                final List<HarvestDTO> dtos = transformer.apply(F.nonNullKeys(pairs));
+                final List<HarvestDTO> dtos = transformer.apply(F.nonNullKeys(pairs), version);
 
                 assertNotNull(dtos);
                 assertEquals(pairs.size(), dtos.size());
@@ -292,15 +306,16 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         });
     }
 
-    @Test
-    public void testWithImages_asModerator() {
+    @Theory
+    public void testWithImages_asModerator(final HarvestSpecVersion version) {
         withPerson(author -> {
+
             final Harvest harvest = model().newHarvest(author);
             harvest.setDescription("description-" + nextLong());
             createList(5, () -> model().newGameDiaryImage(harvest));
 
             onSavedAndAuthenticated(createNewModerator(), () -> {
-                final List<HarvestDTO> dtos = transformer.apply(singletonList(harvest));
+                final List<HarvestDTO> dtos = transformer.apply(singletonList(harvest), version);
                 assertEquals(1, dtos.size());
 
                 final HarvestDTO dto = dtos.get(0);
@@ -310,9 +325,10 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         });
     }
 
-    @Test
-    public void testWithImages_asPermitContactPerson() {
+    @Theory
+    public void testWithImages_asPermitContactPerson(final HarvestSpecVersion version) {
         withPerson(contactPerson -> {
+
             final GameSpecies species = model().newGameSpecies();
             final HarvestPermit permit = model().newHarvestPermit(contactPerson);
             model().newHarvestPermitSpeciesAmount(permit, species);
@@ -323,7 +339,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
             createList(5, () -> model().newGameDiaryImage(harvest));
 
             onSavedAndAuthenticated(createUser(contactPerson), () -> {
-                final List<HarvestDTO> dtos = transformer.apply(singletonList(harvest));
+                final List<HarvestDTO> dtos = transformer.apply(singletonList(harvest), version);
                 assertEquals(1, dtos.size());
 
                 final HarvestDTO dto = dtos.get(0);
@@ -333,17 +349,17 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         });
     }
 
-    @Test
-    public void testWithApprovedHarvestReport() {
-        testWithHarvestReportState(HarvestReportState.APPROVED);
+    @Theory
+    public void testWithApprovedHarvestReport(final HarvestSpecVersion version) {
+        testWithHarvestReportState(HarvestReportState.APPROVED, version);
     }
 
-    @Test
-    public void testWithRejectedHarvestReport() {
-        testWithHarvestReportState(HarvestReportState.REJECTED);
+    @Theory
+    public void testWithRejectedHarvestReport(final HarvestSpecVersion version) {
+        testWithHarvestReportState(HarvestReportState.REJECTED, version);
     }
 
-    private void testWithHarvestReportState(final HarvestReportState state) {
+    private void testWithHarvestReportState(final HarvestReportState state, final HarvestSpecVersion version) {
         withPerson(author -> {
             final List<Harvest> harvests = newHarvestsWithHarvestReport(5, state, author);
 
@@ -352,7 +368,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
 
             onSavedAndAuthenticated(createUser(author), () -> {
 
-                final List<HarvestDTO> dtos = transformer.apply(harvests);
+                final List<HarvestDTO> dtos = transformer.apply(harvests, version);
 
                 assertNotNull(dtos);
                 assertEquals(harvests.size(), dtos.size());
@@ -372,62 +388,63 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         });
     }
 
-    @Test
-    public void testHarvestAcceptedToPermit() {
-        doTestCanEdit(false, StateAcceptedToHarvestPermit.ACCEPTED, false);
+    @Theory
+    public void testHarvestAcceptedToPermit(final HarvestSpecVersion version) {
+        doTestCanEdit(false, StateAcceptedToHarvestPermit.ACCEPTED, false, version);
     }
 
-    @Test
-    public void testHarvestAcceptedToPermit_AsContactPerson() {
-        doTestCanEdit(true, StateAcceptedToHarvestPermit.ACCEPTED, true);
+    @Theory
+    public void testHarvestAcceptedToPermit_AsContactPerson(final HarvestSpecVersion version) {
+        doTestCanEdit(true, StateAcceptedToHarvestPermit.ACCEPTED, true, version);
     }
 
-    @Test
-    public void testHarvestProposedToPermit() {
-        doTestCanEdit(true, StateAcceptedToHarvestPermit.PROPOSED, false);
+    @Theory
+    public void testHarvestProposedToPermit(final HarvestSpecVersion version) {
+        doTestCanEdit(true, StateAcceptedToHarvestPermit.PROPOSED, false, version);
     }
 
-    @Test
-    public void testHarvestRejectedToPermit() {
-        doTestCanEdit(true, StateAcceptedToHarvestPermit.REJECTED, false);
+    @Theory
+    public void testHarvestRejectedToPermit(final HarvestSpecVersion version) {
+        doTestCanEdit(true, StateAcceptedToHarvestPermit.REJECTED, false, version);
     }
 
-    @Test
-    public void testHarvestAcceptedToPermit_withProposedHarvestReport() {
-        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.SENT_FOR_APPROVAL, false);
+    @Theory
+    public void testHarvestAcceptedToPermit_withProposedHarvestReport(final HarvestSpecVersion version) {
+        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.SENT_FOR_APPROVAL, false, version);
     }
 
-    @Test
-    public void testHarvestAcceptedToPermit_withProposedHarvestReport_asContactPerson() {
-        doTestCanEditWithReport(true, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.SENT_FOR_APPROVAL, true);
+    @Theory
+    public void testHarvestAcceptedToPermit_withProposedHarvestReport_asContactPerson(final HarvestSpecVersion version) {
+        doTestCanEditWithReport(true, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.SENT_FOR_APPROVAL, true, version);
     }
 
-    @Test
-    public void testHarvestProposedToPermit_withApprovedHarvestReport() {
-        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.APPROVED, false);
+    @Theory
+    public void testHarvestProposedToPermit_withApprovedHarvestReport(final HarvestSpecVersion version) {
+        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.APPROVED, false, version);
     }
 
-    @Test
-    public void testHarvestRejectedToPermit_withRejectedHarvestReport() {
-        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.REJECTED, false);
+    @Theory
+    public void testHarvestRejectedToPermit_withRejectedHarvestReport(final HarvestSpecVersion version) {
+        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.REJECTED, false, version);
     }
 
-    @Test
-    public void testHarvestRejectedToPermit_withRejectedHarvestReport_asContactPerson() {
-        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.REJECTED, true);
+    @Theory
+    public void testHarvestRejectedToPermit_withRejectedHarvestReport_asContactPerson(final HarvestSpecVersion version) {
+        doTestCanEditWithReport(false, StateAcceptedToHarvestPermit.ACCEPTED, HarvestReportState.REJECTED, true, version);
     }
 
-    @Test
-    @HibernateStatisticsAssertions(maxQueries = 10)
-    public void testQueryCountWithSeasonHarvest() {
+    @Theory
+    @HibernateStatisticsAssertions(maxQueries = 11)
+    public void testQueryCountWithSeasonHarvest(final HarvestSpecVersion version) {
         withRhy(rhy -> withPerson(hunter -> {
             final List<Harvest> harvests = createList(10, () -> {
                 final GameSpecies species = model().newGameSpecies(true);
                 final LocalDate seasonBegin = DateUtil.today();
                 final LocalDate seasonEnd = seasonBegin.plusYears(1);
                 final LocalDate reportingDeadline = seasonEnd.plusMonths(1);
+                final GeoLocation geoLocation = geoLocation();
                 final HarvestSeason harvestSeason = model().newHarvestSeason(species, seasonBegin, seasonEnd, reportingDeadline);
-                final HarvestArea harvestArea = model().newHarvestArea(rhy);
+                final HarvestArea harvestArea = model().newHarvestAreaContaining(geoLocation);
                 final HarvestQuota quota = model().newHarvestQuota(harvestSeason, harvestArea, 100);
 
                 final Harvest harvest = model().newHarvest(species, hunter);
@@ -446,14 +463,15 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
 
             persistAndAuthenticateWithNewUser(true);
 
-            transformer.apply(harvests);
+            transformer.apply(harvests, version);
         }));
     }
 
-    @Test
+    @Theory
     @HibernateStatisticsAssertions(maxQueries = 10)
-    public void testQueryCountWithPermitHarvest() {
+    public void testQueryCountWithPermitHarvest(final HarvestSpecVersion version) {
         withRhy(rhy -> withPerson(hunter -> {
+
             final List<Harvest> harvests = createList(10, () -> {
                 final GameSpecies species = model().newGameSpecies(true);
 
@@ -478,7 +496,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
 
             persistAndAuthenticateWithNewUser(true);
 
-            transformer.apply(harvests);
+            transformer.apply(harvests, version);
         }));
     }
 
@@ -493,7 +511,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
         Assert.assertEquals(GameDiaryEntryType.HARVEST, dto.getType());
         assertEquals(harvest.getSpecies().getOfficialCode(), dto.getGameSpeciesCode());
         assertEquals(harvest.getGeoLocation(), dto.getGeoLocation());
-        assertEquals(DateUtil.toLocalDateTimeNullSafe(harvest.getPointOfTime()), dto.getPointOfTime());
+        assertEquals(harvest.getPointOfTime().toLocalDateTime(), dto.getPointOfTime());
         assertEquals(harvest.getDescription(), dto.getDescription());
         assertEquals(harvest.getAmount(), dto.getAmount());
         assertEquals(harvest.getHuntingAreaType(), dto.getHuntingAreaType());
@@ -537,7 +555,8 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
 
     private void doTestCanEdit(final boolean canEdit,
                                final StateAcceptedToHarvestPermit state,
-                               final boolean isContactPerson) {
+                               final boolean isContactPerson,
+                               final HarvestSpecVersion version) {
 
         withRhy(rhy -> withPerson(person -> {
             final List<Harvest> harvests = createList(5, () -> {
@@ -558,7 +577,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
             });
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                final List<HarvestDTO> dtos = transformer.apply(harvests);
+                final List<HarvestDTO> dtos = transformer.apply(harvests, version);
                 assertEquals(harvests.size(), dtos.size());
                 dtos.forEach(dto -> assertEquals(canEdit, dto.isCanEdit()));
             });
@@ -568,7 +587,8 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
     private void doTestCanEditWithReport(final boolean canEdit,
                                          final StateAcceptedToHarvestPermit state,
                                          final HarvestReportState reportState,
-                                         final boolean isContactPerson) {
+                                         final boolean isContactPerson,
+                                         final HarvestSpecVersion version) {
 
         withRhy(rhy -> withPerson(person -> {
 
@@ -592,7 +612,7 @@ public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
             });
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                final List<HarvestDTO> dtos = transformer.apply(harvests);
+                final List<HarvestDTO> dtos = transformer.apply(harvests, version);
                 assertEquals(harvests.size(), dtos.size());
                 dtos.forEach(dto -> assertEquals(canEdit, dto.isCanEdit()));
             });

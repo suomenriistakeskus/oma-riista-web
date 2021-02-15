@@ -1,10 +1,8 @@
 package fi.riista.feature.harvestpermit.season;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
-import fi.riista.feature.organization.Organisation;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.LocalisedString;
-import org.hibernate.validator.constraints.NotBlank;
+import org.locationtech.jts.geom.Geometry;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -15,14 +13,14 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.Transient;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_GREY_SEAL;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -30,7 +28,18 @@ public class HarvestArea extends LifecycleEntity<Long> {
 
     public enum HarvestAreaType {
         HALLIALUE,
-        PORONHOITOALUE
+        PORONHOITOALUE;
+
+        public static HarvestAreaType getValidTypeFor(final int speciesCode){
+            switch (speciesCode){
+                case OFFICIAL_CODE_BEAR:
+                    return PORONHOITOALUE;
+                case OFFICIAL_CODE_GREY_SEAL:
+                    return HALLIALUE;
+                default:
+                    return null;
+            }
+        }
     }
 
     private static final String ID_COLUMN_NAME = "harvest_area_id";
@@ -58,24 +67,27 @@ public class HarvestArea extends LifecycleEntity<Long> {
 
     @Column
     private Date beginDate;
+
     @Column
     private Date endDate;
 
-    @ManyToMany
-    @JoinTable(name = "harvest_area_rhys",
-            joinColumns = {@JoinColumn(name = ID_COLUMN_NAME, referencedColumnName = ID_COLUMN_NAME)},
-            inverseJoinColumns = {@JoinColumn(name = Organisation.ID_COLUMN_NAME, referencedColumnName = Organisation.ID_COLUMN_NAME)}
-    )
-    private Set<Riistanhoitoyhdistys> rhys = new HashSet<>();
+    // Mapped to entity field only in tests.
+    @Transient
+    @Column(name = "geom")
+    private Geometry geometry;
 
     public HarvestArea() {
     }
 
-    public HarvestArea(HarvestAreaType type, String nameFinnish, String nameSwedish, Set<Riistanhoitoyhdistys> rhys) {
+    // For testing
+    public HarvestArea(final HarvestAreaType type,
+                       final String nameFinnish,
+                       final String nameSwedish,
+                       final Geometry geometry) {
         this.type = type;
         this.nameFinnish = nameFinnish;
         this.nameSwedish = nameSwedish;
-        this.rhys = rhys;
+        this.geometry = geometry;
     }
 
     @Id
@@ -144,11 +156,7 @@ public class HarvestArea extends LifecycleEntity<Long> {
         this.endDate = endDate;
     }
 
-    public Set<Riistanhoitoyhdistys> getRhys() {
-        return rhys;
-    }
-
-    public void setRhys(Set<Riistanhoitoyhdistys> rhys) {
-        this.rhys = rhys;
+    public Geometry getGeometry() {
+        return geometry;
     }
 }

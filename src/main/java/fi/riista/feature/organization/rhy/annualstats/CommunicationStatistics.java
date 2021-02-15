@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
 
@@ -26,7 +27,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class CommunicationStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<CommunicationStatistics>,
+        AnnualStatisticsManuallyEditableFields<CommunicationStatistics>,
         Serializable {
 
     public static final CommunicationStatistics reduce(@Nullable final CommunicationStatistics a,
@@ -84,6 +85,7 @@ public class CommunicationStatistics
     private String info;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "communication_last_modified")
     private DateTime lastModified;
 

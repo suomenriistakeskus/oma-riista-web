@@ -7,6 +7,7 @@ import fi.riista.feature.mail.MailService;
 import fi.riista.feature.permit.PermitClientUriFactory;
 import fi.riista.util.LocalisedString;
 import org.springframework.context.MessageSource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,7 @@ public class PermitInvoiceReminderSender {
     @Resource
     private PermitClientUriFactory permitClientUriFactory;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional
     public void sendReminder(final PermitInvoiceReminderDTO dto) {
         final Map<String, Object> model = createEmailTemplateModel(dto);

@@ -1,13 +1,25 @@
 <div class="row">
     <div class="col-xs-8 col-xs-offset-2">
         <h3 translate="jht.hirviJyvitys.title"></h3>
-        <select class="form-control"
-                name="selectedArea"
-                id="selectedArea"
-                ng-model="$ctrl.selectedArea"
-                ng-options="area as area.name for area in $ctrl.areas">
-            <option disabled value="" translate="jht.hirviJyvitys.chooseRka"></option>
-        </select>
+        <div class="row">
+            <div class="col-xs-4">
+                <select class="form-control"
+                        name="selectHuntingYear"
+                        id="selectHuntingYear"
+                        ng-model="$ctrl.selectedHuntingYear"
+                        ng-options="year for year in $ctrl.huntingYears">
+                </select>
+            </div>
+            <div class="col-xs-8">
+                <select class="form-control"
+                        name="selectedArea"
+                        id="selectedArea"
+                        ng-model="$ctrl.selectedArea"
+                        ng-options="area as area.name for area in $ctrl.areas">
+                    <option disabled value="" translate="jht.hirviJyvitys.chooseRka"></option>
+                </select>
+            </div>
+        </div>
 
         <h4 ng-if="!!$ctrl.selectedArea" translate="jht.hirviJyvitys.chooseRhy"></h4>
 

@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import static fi.riista.integration.mmm.statement.MMMConstants.CURRENCY_CODE_EURO;
-import static fi.riista.integration.mmm.statement.MMMConstants.MMM_ACCOUNT_NUMBER;
+import static fi.riista.integration.mmm.statement.MMMConstants.VALID_ACCOUNT_NUMBERS;
 import static fi.riista.integration.mmm.statement.MMMConstants.VALID_REVERSAL_INDICATOR;
 import static fi.riista.util.fixedformat.FixedFormatHelper.asString;
 import static java.lang.String.format;
@@ -29,7 +29,9 @@ public class AccountStatementLineValidator {
         } catch (final IbanFormatException e) {
             throw new AccountStatementLineValidationException("invalid creditor account number: " + accountNumber, e);
         }
-        mustEqual("creditor account number", MMM_ACCOUNT_NUMBER, accountNumber);
+        mustHold(VALID_ACCOUNT_NUMBERS.contains(accountNumber), () -> {
+            return format("creditor account number: illegal value: %s", accountNumber);
+        });
 
         final LocalDate bookingDate = line.getBookingDate();
         final LocalDate transactionDate = line.getTransactionDate();
@@ -46,7 +48,7 @@ public class AccountStatementLineValidator {
         mustNotBeNull("creditor reference", creditorReference);
 
         mustHold(CreditorReference.fromNullable(creditorReference).isValid(), () -> {
-            return "creditor reference validation failed: " + creditorReference.toString();
+            return "creditor reference validation failed: " + creditorReference;
         });
 
         mustNotBeBlank("debtor name abbreviation", line.getDebtorNameAbbrv());

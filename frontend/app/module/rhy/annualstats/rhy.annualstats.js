@@ -23,8 +23,8 @@
 
                             return Rhys.get({id: rhyId}).$promise;
                         },
-                        availableYears: function (AnnualStatisticsAvailableYears) {
-                            return AnnualStatisticsAvailableYears.get();
+                        availableYears: function (AnnualStatisticsYears, rhyId) {
+                            return AnnualStatisticsYears.get({rhyId: rhyId}).$promise;
                         },
                         year: function ($stateParams, RhyAnnualStatisticsViewState, availableYears) {
                             var yearParam = $stateParams.year;
@@ -69,7 +69,6 @@
                         allSpeciesNames: function (GameDiaryParameters) {
                             return GameDiaryParameters.query().$promise.then(function (params) {
                                 var ret = {};
-
                                 _.forEach(params.species, function (species) {
                                     ret[species.code] = species.name;
                                 });
@@ -144,13 +143,14 @@
             MODERATE: 'MODERATE'
         })
 
-        .service('AnnualStatisticsAvailableYears', function () {
-            this.get = function () {
-                return [2017, 2018, 2019];
+        .constant('AnnualStatisticsLastAvailableYear', {
+            LAST_YEAR: 2020
+        })
 
-                // TODO uncomment after annual statistics locking logic is implemented.
-                //return _.range(2017, new Date().getFullYear() + 1);
-            };
+        .factory('AnnualStatisticsYears', function ($resource) {
+            return $resource('/api/v1/riistanhoitoyhdistys/:rhyId/annualstatisticsyears', {rhyId: '@rhyId'}, {
+                'get': {method: 'GET', isArray: true}
+            });
         })
 
         .service('RhyAnnualStatisticsViewState', function ($state) {
@@ -661,11 +661,15 @@
             this.openLuke = function (statistics) {
                 var updateFn = function (data) {
                     delete data.sum;
+                    delete data.isWillowGrouseAndCarnivoreDnaEditable;
                     return update(statistics.id, 'luke', data);
                 };
 
+                // Some of the fields are editable only after 2019
+                var lukeStatistics = angular.extend({}, statistics.luke, {isWillowGrouseAndCarnivoreDnaEditable: statistics.year > 2019});
+
                 return RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
-                    statistics.luke, 'rhy/annualstats/misc/edit-game-calculations.html', updateFn);
+                    lukeStatistics, 'rhy/annualstats/misc/edit-game-calculations.html', updateFn);
             };
 
             this.openMetsahallitus = function (statistics) {
@@ -1019,7 +1023,7 @@
                 statistics: '<',
                 allSpeciesNames: '<'
             },
-            controller: function (GameSpeciesCodes) {
+            controller: function (GameSpeciesCodes, $translate) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
@@ -1038,6 +1042,7 @@
                             name: $ctrl.allSpeciesNames[speciesCode]
                         };
                     });
+                    $ctrl.speciesCodeNamePairs.push({code: -1, name: $translate.instant("rhy.annualStats.srva.otherSpecies")});
                 };
             }
         })
@@ -1061,6 +1066,7 @@
                 this.$onInit = function () {
                     $ctrl.speciesList = _.map($ctrl.speciesCodeNamePairs, function (pair) {
                         return {
+                            code: pair.code,
                             name: pair.name,
                             amount: $ctrl.srva.accident[pair.code]
                         };
@@ -1082,6 +1088,7 @@
                 this.$onInit = function () {
                     $ctrl.speciesList = _.map($ctrl.speciesCodeNamePairs, function (pair) {
                         return {
+                            code: pair.code,
                             name: pair.name,
                             amount: $ctrl.events[pair.code]
                         };

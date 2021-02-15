@@ -24,9 +24,9 @@ import java.util.List;
 import static fi.riista.feature.harvestregistry.quartz.HarvestRegistrySynchronizerService.REGISTRY_START_TIME_STAMP;
 import static fi.riista.util.DateUtil.now;
 import static fi.riista.util.DateUtil.toDateNullSafe;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 public class HarvestRegistrySynchronizerServiceTest extends EmbeddedDatabaseTest {
 
@@ -72,9 +72,8 @@ public class HarvestRegistrySynchronizerServiceTest extends EmbeddedDatabaseTest
     @Test
     public void testHarvestIsSynchronized() {
         createHarvest();
-        persistInNewTransaction();
 
-        runInTransaction(service::synchronize);
+        onSavedAndAuthenticated(createNewAdmin(), service::synchronize);
 
         runInTransaction(() -> {
             final List<HarvestRegistryItem> items = itemRepository.findAll();
@@ -86,9 +85,8 @@ public class HarvestRegistrySynchronizerServiceTest extends EmbeddedDatabaseTest
     @Test
     public void testHarvestDeleteCascadesToRegistryItem() {
         createHarvest();
-        persistInNewTransaction();
 
-        runInTransaction(service::synchronize);
+        onSavedAndAuthenticated(createNewAdmin(), service::synchronize);
 
         runInTransaction(() -> {
             final List<HarvestRegistryItem> items = itemRepository.findAll();
@@ -108,10 +106,10 @@ public class HarvestRegistrySynchronizerServiceTest extends EmbeddedDatabaseTest
         // remove object created in setup
         runInTransaction(integrationRepository::deleteAll);
 
-        runInTransaction(service::synchronize);
+        onSavedAndAuthenticated(createNewAdmin(), service::synchronize);
 
         runInTransaction(() -> {
-            final Integration integration = integrationRepository.findOne(Integration.HARVEST_REGISTRY_SYNC_ID);
+            final Integration integration = integrationRepository.findById(Integration.HARVEST_REGISTRY_SYNC_ID).orElse(null);
             assertEquals(REGISTRY_START_TIME_STAMP.plusWeeks(1), integration.getLastRun().toLocalDate());
         });
     }
@@ -121,14 +119,15 @@ public class HarvestRegistrySynchronizerServiceTest extends EmbeddedDatabaseTest
         for (int i = 0; i < 500; ++i) {
             createHarvest();
         }
-        persistInNewTransaction();
 
-        // Arbitrary count of 510 should still reveal N+1 issues with 500 harvests, (500 inserts plus 10)
-        assertMaxQueryCount(510, service::synchronize);
+        onSavedAndAuthenticated(createNewAdmin(), () -> {
+            // Arbitrary count of 510 should still reveal N+1 issues with 500 harvests, (500 inserts plus 10)
+            assertMaxQueryCount(510, service::synchronize);
 
-        runInTransaction(() -> {
-            final List<HarvestRegistryItem> items = itemRepository.findAll();
-            assertThat(items, hasSize(500));
+            runInTransaction(() -> {
+                final List<HarvestRegistryItem> items = itemRepository.findAll();
+                assertThat(items, hasSize(500));
+            });
         });
     }
 

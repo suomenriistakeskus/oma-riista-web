@@ -2,6 +2,7 @@ package fi.riista.feature.mail;
 
 import com.github.jknack.handlebars.Options;
 import fi.riista.util.Locales;
+import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.context.MessageSource;
 
@@ -45,6 +46,10 @@ public class HandlebarsHelperSource {
 
     public static CharSequence timestamp(Date input, String format) {
         return DateTimeFormat.forPattern(format).print(input.getTime());
+    }
+
+    public static CharSequence dateTime(DateTime input, String format) {
+        return DateTimeFormat.forPattern(format).print(input);
     }
 
     public static CharSequence enumName(Enum<?> input) {

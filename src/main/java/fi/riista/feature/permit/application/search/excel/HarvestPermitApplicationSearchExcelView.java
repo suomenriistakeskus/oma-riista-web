@@ -2,8 +2,10 @@ package fi.riista.feature.permit.application.search.excel;
 
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.common.decision.DecisionStatus;
+import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
-import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmountDTO;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.ExcelHelper;
 import fi.riista.util.LocalisedString;
@@ -18,14 +20,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static fi.riista.util.DateUtil.DATE_FORMAT_FINNISH;
 import static fi.riista.util.DateUtil.now;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
 
 public class HarvestPermitApplicationSearchExcelView extends AbstractXlsxView {
     private static final String LOCALISATION_PREFIX = "HarvestPermitApplicationSearchExcelFeature.";
 
-    private List<HarvestPermitApplicationExcelResultDTO> results;
-
-    private EnumLocaliser localiser;
+    private final List<HarvestPermitApplicationExcelResultDTO> results;
+    private final EnumLocaliser localiser;
 
     public HarvestPermitApplicationSearchExcelView(final List<HarvestPermitApplicationExcelResultDTO> results,
                                                    final EnumLocaliser localiser) {
@@ -56,38 +60,97 @@ public class HarvestPermitApplicationSearchExcelView extends AbstractXlsxView {
                 "species",
                 "decisionType",
                 "decisionStatus",
+                "decisionPublishDate",
                 "decisionGrantStatus",
                 "decisionLegalStatus",
                 "protectedAreaType",
                 "derogationReasons",
-                "forbiddenMethods"
+                "forbiddenMethods",
+                "appliedAmount",
+                "year",
+                "grantedAmount"
         }));
-
 
         results.forEach(dto -> {
 
-            helper.appendRow()
-                    .appendNumberCell(dto.getApplicationNumber())
-                    .appendTextCell(dto.getContactPerson())
-                    .appendTextCell(dto.getPermitHolder().getName())
-                    .appendNumberCell(dto.getApplicationYear())
-                    .appendTextCell(i18nEnum(dto.getHarvestPermitCategory()))
-                    .appendTextCell(localiser.getTranslation(dto.getRkaName()))
-                    .appendTextCell(localiser.getTranslation(dto.getRhyName()))
-                    .appendTextCell(dto.getSubmitDate().toString("d.M.yyyy"))
-                    .appendTextCell(dto.getHandler())
-                    .appendTextCellWrapping(i18n(dto.getGameSpeciesNames()))
-                    .appendTextCell(i18nEnum(dto.getDecisionType()))
-                    .appendTextCell(resolveUnifiedStatus(dto))
-                    .appendTextCell(resolveDecisionGrantState(dto))
-                    .appendTextCell(i18nEnum(dto.getAppealStatus()))
-                    .appendTextCellWrapping(i18nEnumSet(dto.getProtectedAreaTypes()))
-                    .appendTextCellWrapping(i18nEnumSet(dto.getDecisionDerogationReasonTypes()))
-                    .appendTextCellWrapping(i18nEnumSet(dto.getForbiddenMethodTypes()));
+            final List<GameSpeciesDTO> appliedGameSpecies = dto.getGameSpecies();
+            final Map<Integer, HarvestPermitApplicationSpeciesAmountDTO> appliedAmounts = dto.getAppliedSpeciesAmountsBySpecies();
+            final Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>> decisionSpeciesAmounts = dto.getDecisionSpeciesAmountsBySpecies();
 
+            if (appliedGameSpecies == null || appliedGameSpecies.isEmpty()) {
+                // No species in application
+                appendRow(helper, dto);
+            } else {
+                appliedGameSpecies.forEach(appliedSpecies -> {
+                    if (decisionSpeciesAmounts == null || decisionSpeciesAmounts.isEmpty()) {
+                        // Only applied amounts, no decision available
+                        final int officialCode = appliedSpecies.getCode();
+                        final Float appliedAmount = appliedAmounts.get(officialCode).getSpecimenAmount();
+                        appendRow(helper, dto, LocalisedString.fromMap(appliedSpecies.getName()), appliedAmount);
+                    } else {
+                        // Decision and application species available
+                        final List<Integer> grantedYears = decisionSpeciesAmounts.keySet().stream()
+                                .distinct()
+                                .sorted()
+                                .collect(toList());
+
+                        grantedYears.forEach(grantedYear -> {
+                            final int officialCode = appliedSpecies.getCode();
+                            final Float appliedAmount = appliedAmounts.get(officialCode).getSpecimenAmount();
+                            final Float decisionAmount = decisionSpeciesAmounts.get(grantedYear).get(officialCode).getSpecimenAmount();
+                            appendRow(helper, dto, LocalisedString.fromMap(appliedSpecies.getName()), appliedAmount, grantedYear, decisionAmount);
+                        });
+                    }
+                });
+            }
         });
 
         helper.autoSizeColumns();
+    }
+
+    private void appendRow(final ExcelHelper helper,
+                           final HarvestPermitApplicationExcelResultDTO dto) {
+        appendRow(helper, dto, null, null);
+    }
+
+    private void appendRow(final ExcelHelper helper,
+                           final HarvestPermitApplicationExcelResultDTO dto,
+                           final LocalisedString speciesName,
+                           final Float appliedAmount) {
+        appendRow(helper, dto, speciesName, appliedAmount, null, null);
+    }
+
+    private void appendRow(final ExcelHelper helper,
+                           final HarvestPermitApplicationExcelResultDTO dto,
+                           final LocalisedString speciesName,
+                           final Float appliedAmount,
+                           final Integer grantedYear,
+                           final Float decisionAmount) {
+        helper.appendRow()
+                .appendNumberCell(dto.getApplicationNumber())
+                .appendTextCell(dto.getContactPerson())
+                .appendTextCell(dto.getPermitHolder().getName())
+                .appendNumberCell(dto.getApplicationYear())
+                .appendTextCell(i18nEnum(dto.getHarvestPermitCategory()))
+                .appendTextCell(localiser.getTranslation(dto.getRkaName()))
+                .appendTextCell(localiser.getTranslation(dto.getRhyName()))
+                .appendTextCell(dto.getSubmitDate().toString(DATE_FORMAT_FINNISH))
+                .appendTextCell(dto.getHandler())
+                .appendTextCellWrapping(localiser.getTranslation(speciesName))
+                .appendTextCell(i18nEnum(dto.getDecisionType()))
+                .appendTextCell(resolveUnifiedStatus(dto))
+                .appendTextCell(ofNullable(dto.getDecisionPublishDate())
+                        .map(tstamp -> tstamp.toString(DATE_FORMAT_FINNISH))
+                        .orElse(null))
+                .appendTextCell(resolveDecisionGrantState(dto))
+                .appendTextCell(i18nEnum(dto.getAppealStatus()))
+                .appendTextCellWrapping(i18nEnumSet(dto.getProtectedAreaTypes()))
+                .appendTextCellWrapping(i18nEnumSet(dto.getDecisionDerogationReasonTypes()))
+                .appendTextCellWrapping(i18nEnumSet(dto.getForbiddenMethodTypes()))
+                .appendNumberCell(appliedAmount)
+                .appendNumberCell(grantedYear)
+                .appendNumberCell(decisionAmount);
+
     }
 
     private String createFilename() {
@@ -95,7 +158,7 @@ public class HarvestPermitApplicationSearchExcelView extends AbstractXlsxView {
     }
 
     private String resolveDecisionGrantState(final HarvestPermitApplicationExcelResultDTO dto) {
-        if (dto.getDecisionStatus() == PermitDecision.Status.DRAFT) {
+        if (dto.getDecisionStatus() == DecisionStatus.DRAFT) {
             return "";
         }
         return i18nEnum(dto.getGrantStatus());
@@ -112,7 +175,7 @@ public class HarvestPermitApplicationSearchExcelView extends AbstractXlsxView {
     }
 
     private String i18nEnum(final Enum<?> value) {
-        return localiser.getTranslation(localiser.resourceKey(value));
+        return localiser.getTranslation(EnumLocaliser.resourceKey(value));
     }
 
     private String i18n(final String key) {

@@ -1,6 +1,8 @@
 package fi.riista.feature.permit.decision.derogation;
 
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.gamediary.GameCategory;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.application.DeliveryAddress;
@@ -32,6 +34,7 @@ public class PermitDecisionDerogationServiceTest extends EmbeddedDatabaseTest {
     private PermitDecision decision;
     private HarvestPermitApplication application;
 
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -54,6 +57,18 @@ public class PermitDecisionDerogationServiceTest extends EmbeddedDatabaseTest {
         });
     }
 
+
+    @Test
+    public void testValidMammal() {
+        application = createMammalPermitApplication();
+        decision = model().newPermitDecision(application);
+        decision.setHandler(handler);
+        decision.setStatusDraft();
+
+        onSavedAndAuthenticated(handler, () -> {
+            permitDecisionDerogationService.requireDecisionDerogationEditable(decision.getId());
+        });
+    }
 
     @Test
     public void testCannotEditDerogationForLockedDecision() {
@@ -115,6 +130,22 @@ public class PermitDecisionDerogationServiceTest extends EmbeddedDatabaseTest {
         application.setDeliveryAddress(DeliveryAddress.createFromPersonNullable(application.getContactPerson()));
         final HarvestPermitApplicationSpeciesAmount harvestPermitApplicationSpeciesAmount =
                 model().newHarvestPermitApplicationSpeciesAmount(application, model().newGameSpecies(), 1.0f, 4);
+        application.setSpeciesAmounts(Collections.singletonList(harvestPermitApplicationSpeciesAmount));
+        return application;
+    }
+
+    private HarvestPermitApplication createMammalPermitApplication() {
+        final HarvestPermitApplication application =
+                model().newHarvestPermitApplication(rhy, null, HarvestPermitCategory.MAMMAL);
+        model().newMammalPermitApplication(application);
+
+        application.setDeliveryAddress(DeliveryAddress.createFromPersonNullable(application.getContactPerson()));
+        final HarvestPermitApplicationSpeciesAmount harvestPermitApplicationSpeciesAmount =
+                model().newHarvestPermitApplicationSpeciesAmount(application,
+                        model().newGameSpecies(GameSpecies.OFFICIAL_CODE_RABBIT,
+                                GameCategory.GAME_MAMMAL, "m-fi", "m-sv", "m-en"),
+                        1.0f,
+                        4);
         application.setSpeciesAmounts(Collections.singletonList(harvestPermitApplicationSpeciesAmount));
         return application;
     }

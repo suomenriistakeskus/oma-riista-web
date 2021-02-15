@@ -83,8 +83,8 @@ public class PermitDecisionForbiddenMethodFeature {
             }
         }
 
-        permitDecisionForbiddenMethodRepository.save(toCreate);
-        permitDecisionForbiddenMethodRepository.delete(toDelete);
+        permitDecisionForbiddenMethodRepository.saveAll(toCreate);
+        permitDecisionForbiddenMethodRepository.deleteAll(toDelete);
         permitDecisionSpeciesAmountRepository.setForbiddenMethodComplete(decision, gameSpecies);
     }
 

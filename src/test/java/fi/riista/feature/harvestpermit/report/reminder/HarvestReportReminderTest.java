@@ -13,6 +13,7 @@ import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.junit.Test;
+import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
 import java.util.Map;
@@ -20,10 +21,10 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
 
@@ -57,13 +58,18 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
         }
     }
 
+    @Test(expected = AccessDeniedException.class)
+    public void testNotAuthorized() {
+        createHarvest(HarvestReportRequired.NOT_REQUIRED, AuthorIsRegistered.REGISTERED);
+
+        onSavedAndAuthenticated(createNewModerator(), () -> assertEquals(0, callSendRemindersAfterInitialDelay().size()));
+    }
+
     @Test
     public void testHarvestReportNotRequired() {
         createHarvest(HarvestReportRequired.NOT_REQUIRED, AuthorIsRegistered.REGISTERED);
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEquals(0, callSendRemindersAfterInitialDelay().size()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEquals(0, callSendRemindersAfterInitialDelay().size()));
     }
 
     @Test
@@ -75,9 +81,7 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
         harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.REJECTED);
         harvest.setRhy(permit.getRhy());
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEquals(0, callSendRemindersAfterInitialDelay().size()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEquals(0, callSendRemindersAfterInitialDelay().size()));
     }
 
     @Test
@@ -89,27 +93,21 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
         harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
         harvest.setRhy(permit.getRhy());
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getAuthor()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getAuthor()));
     }
 
     @Test
     public void testNoShooter() {
         final Harvest harvest = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED);
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getAuthor()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getAuthor()));
     }
 
     @Test
     public void testWithShooter() {
         final Harvest harvest = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED, ShooterIsRegistered.REGISTERED);
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getAuthor(), harvest.getActualShooter()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getAuthor(), harvest.getActualShooter()));
     }
 
     @Test
@@ -119,45 +117,35 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
         harvest.setHarvestReportAuthor(harvest.getAuthor());
         harvest.setHarvestReportDate(DateUtil.now());
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEquals(0, callSendRemindersAfterInitialDelay().size()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEquals(0, callSendRemindersAfterInitialDelay().size()));
     }
 
     @Test
     public void testAuthorIsNotRegistered() {
         final Harvest harvest = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.NOT_REGISTERED, ShooterIsRegistered.REGISTERED);
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getActualShooter()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getActualShooter()));
     }
 
     @Test
     public void testAuthorIsRegisteredButNotActive() {
         final Harvest harvest = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED_BUT_INACTIVE, ShooterIsRegistered.REGISTERED);
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getActualShooter()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getActualShooter()));
     }
 
     @Test
     public void testShooterIsRegisteredButNotActive() {
         final Harvest harvest = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED, ShooterIsRegistered.REGISTERED_BUT_INACTIVE);
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getAuthor()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getAuthor()));
     }
 
     @Test
     public void testNobodyIsActive() {
         createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED_BUT_INACTIVE, ShooterIsRegistered.REGISTERED_BUT_INACTIVE);
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEquals(0, callSendRemindersAfterInitialDelay().size()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEquals(0, callSendRemindersAfterInitialDelay().size()));
     }
 
     @Test
@@ -165,9 +153,7 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
         final Harvest harvest = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED, ShooterIsRegistered.REGISTERED);
         harvest.getActualShooter().setEmail(null);
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getAuthor()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getAuthor()));
     }
 
     @Test
@@ -175,9 +161,7 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
         final Harvest harvest = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED, ShooterIsRegistered.REGISTERED);
         harvest.getAuthor().setEmail(null);
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getActualShooter()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEmails(callSendRemindersAfterInitialDelay(), harvest.getActualShooter()));
     }
 
     @Test
@@ -186,9 +170,7 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
         harvest.getAuthor().setEmail("");
         harvest.getActualShooter().setEmail("");
 
-        persistInNewTransaction();
-
-        runInTransaction(() -> assertEmails(callSendRemindersAfterInitialDelay()));
+        onSavedAndAuthenticated(createNewAdmin(), () -> assertEmails(callSendRemindersAfterInitialDelay()));
     }
 
     @Test
@@ -196,9 +178,7 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
         try {
             createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED);
 
-            persistInNewTransaction();
-
-            runInTransaction(() -> {
+            onSavedAndAuthenticated(createNewAdmin(), () -> {
                 DateTime fakeNow = getTestStartTime().plus(HarvestReportReminderFeature.FIRST_REMINDER_DELAY).minusSeconds(1);
                 DateTimeUtils.setCurrentMillisFixed(fakeNow.getMillis());
 
@@ -222,7 +202,7 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
             final DateTime fakeNow = getTestStartTime().plus(HarvestReportReminderFeature.FIRST_REMINDER_DELAY).plusSeconds(1);
             DateTimeUtils.setCurrentMillisFixed(fakeNow.getMillis());
 
-            runInTransaction(() -> {
+            onSavedAndAuthenticated(createNewAdmin(), () -> {
                 final Map<Long, Set<String>> res = harvestReportReminder.sendReminders();
 
                 assertEquals(1, res.size());
@@ -245,12 +225,10 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
             final Harvest harvest = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED);
             harvest.setEmailReminderSentTime(getTestStartTime());
 
-            persistInNewTransaction();
-
             final DateTime fakeNow = getTestStartTime().plus(HarvestReportReminderFeature.REMINDER_INTERVAL).minusSeconds(1);
             DateTimeUtils.setCurrentMillisFixed(fakeNow.getMillis());
 
-            runInTransaction(() -> {
+            onSavedAndAuthenticated(createNewAdmin(), () -> {
                 final Map<Long, Set<String>> res = harvestReportReminder.sendReminders();
                 assertEquals(0, res.size());
             });
@@ -271,7 +249,7 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
             final DateTime fakeNow = getTestStartTime().plus(HarvestReportReminderFeature.REMINDER_INTERVAL).plusSeconds(1);
             DateTimeUtils.setCurrentMillisFixed(fakeNow.getMillis());
 
-            runInTransaction(() -> {
+            onSavedAndAuthenticated(createNewAdmin(), () -> {
                 final Map<Long, Set<String>> res = harvestReportReminder.sendReminders();
 
                 assertEquals(1, res.size());
@@ -299,7 +277,7 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
             final DateTime fakeNow = getTestStartTime().plus(HarvestReportReminderFeature.LAST_REMINDER_DELAY).minusSeconds(1);
             DateTimeUtils.setCurrentMillisFixed(fakeNow.getMillis());
 
-            runInTransaction(() -> {
+            onSavedAndAuthenticated(createNewAdmin(), () -> {
                 final Map<Long, Set<String>> res = harvestReportReminder.sendReminders();
 
                 assertEquals(1, res.size());
@@ -322,12 +300,10 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
             final Harvest harvest = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED);
             harvest.setEmailReminderSentTime(getTestStartTime());
 
-            persistInNewTransaction();
-
             final DateTime fakeNow = getTestStartTime().plus(HarvestReportReminderFeature.LAST_REMINDER_DELAY).plusSeconds(1);
             DateTimeUtils.setCurrentMillisFixed(fakeNow.getMillis());
 
-            runInTransaction(() -> {
+            onSavedAndAuthenticated(createNewAdmin(), () -> {
                 Map<Long, Set<String>> res = harvestReportReminder.sendReminders();
 
                 assertEquals(0, res.size());
@@ -349,12 +325,10 @@ public class HarvestReportReminderTest extends EmbeddedDatabaseTest {
             final Harvest harvest = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.REGISTERED);
             final Harvest harvest2 = createHarvest(HarvestReportRequired.REQUIRED, AuthorIsRegistered.NOT_REGISTERED);
 
-            persistInNewTransaction();
+            onSavedAndAuthenticated(createNewAdmin(), () -> {
+                final DateTime fakeNow = getTestStartTime().plus(HarvestReportReminderFeature.FIRST_REMINDER_DELAY).plusSeconds(1);
+                DateTimeUtils.setCurrentMillisFixed(fakeNow.getMillis());
 
-            final DateTime fakeNow = getTestStartTime().plus(HarvestReportReminderFeature.FIRST_REMINDER_DELAY).plusSeconds(1);
-            DateTimeUtils.setCurrentMillisFixed(fakeNow.getMillis());
-
-            runInTransaction(() -> {
                 final Map<Long, Set<String>> res = harvestReportReminder.sendReminders();
 
                 assertEquals(1, res.size());

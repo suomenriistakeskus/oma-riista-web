@@ -1,7 +1,9 @@
 package fi.riista.feature.permit.application;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.PathBuilder;
@@ -21,14 +23,19 @@ import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.gamediary.harvest.specimen.QHarvestSpecimen;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
+import fi.riista.feature.harvestpermit.QHarvestPermit;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.amendment.QAmendmentApplicationData;
 import fi.riista.feature.permit.application.conflict.HarvestPermitApplicationConflictPalsta;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchDTO;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchQueryBuilder;
+import fi.riista.feature.common.decision.DecisionStatus;
+import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.feature.permit.decision.revision.QPermitDecisionRevision;
 import fi.riista.sql.SQKiinteistoNimet;
@@ -36,6 +43,7 @@ import fi.riista.sql.SQPalstaalue;
 import fi.riista.sql.SQZone;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import io.vavr.Tuple3;
 import org.apache.commons.lang3.StringUtils;
 import org.geolatte.geom.Geometry;
 import org.slf4j.Logger;
@@ -50,14 +58,27 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static fi.riista.feature.common.decision.GrantStatus.RESTRICTED;
+import static fi.riista.feature.common.decision.GrantStatus.UNCHANGED;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
+import static java.util.function.Function.identity;
 
 @Repository
 public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitApplicationRepositoryCustom {
     private static final Logger LOG = LoggerFactory.getLogger(HarvestPermitApplicationRepositoryImpl.class);
     private static final int MIN_INTERSECTION_SIZE = 1000;
+
+    private static final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
+    private static final QPermitDecisionRevision REV = QPermitDecisionRevision.permitDecisionRevision;
+    private static final QPermitDecision DECISION = QPermitDecision.permitDecision;
+    private static final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
 
     @Resource
     private SQLQueryFactory sqlQueryFactory;
@@ -71,7 +92,6 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
         final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
         final QPermitDecisionRevision REV = QPermitDecisionRevision.permitDecisionRevision;
         final QPermitDecision DECISION = QPermitDecision.permitDecision;
-
         final List<Long> decisionIds = jpqlQueryFactory.select(REV.permitDecision.id)
                 .from(REV)
                 .where(REV.cancelled.isFalse())
@@ -81,12 +101,90 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
                 .distinct()
                 .fetch();
 
+        if (decisionIds.isEmpty()) {
+            return emptyList();
+        }
+
         return jpqlQueryFactory.select(APPLICATION)
                 .from(DECISION)
                 .join(DECISION.application, APPLICATION)
                 .where(DECISION.id.in(decisionIds))
                 .orderBy(APPLICATION.applicationYear.desc(), APPLICATION.applicationNumber.desc())
                 .fetch();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HarvestPermitApplication> listByAnnualPermitsToRenew(final Long handlerId) {
+
+        final Set<Long> decisionIds = fetchDecisionIdsToRenew();
+
+        if (decisionIds.isEmpty()) {
+            return emptyList();
+        }
+
+        BooleanExpression predicate =
+                buildPredicateForApprovedAndPublishedDecisionsIn(decisionIds);
+        if (handlerId != null) {
+            predicate = predicate.and(DECISION.handler.id.eq(handlerId));
+        }
+        return jpqlQueryFactory.select(APPLICATION)
+                .from(DECISION)
+                .innerJoin(DECISION.application, APPLICATION)
+                .where(predicate)
+                .orderBy(APPLICATION.applicationYear.desc(), APPLICATION.applicationNumber.desc())
+                .fetch();
+    }
+
+    private static BooleanExpression buildPredicateForApprovedAndPublishedDecisionsIn(final Set<Long> decisionIds) {
+        return DECISION.id.in(decisionIds)
+                .and(DECISION.status.eq(DecisionStatus.PUBLISHED)
+                        .and(DECISION.grantStatus.in(UNCHANGED, RESTRICTED)));
+    }
+
+    private Set<Long> fetchDecisionIdsToRenew() {
+        // Fetch all annual permits from last year onwards, where renewal is not cancelled
+        final List<Tuple> tuples = jpqlQueryFactory.select(PERMIT.permitDecision.id, PERMIT.permitYear,
+                PERMIT.harvestReportState)
+                .from(PERMIT)
+                .join(PERMIT.permitDecision, DECISION)
+                .where(PERMIT.permitYear.goe(DateUtil.currentYear() - 1))
+                .where(PERMIT.permitTypeCode.eq(PermitTypeCode.ANNUAL_UNPROTECTED_BIRD))
+                .where(DECISION.decisionType.eq(PermitDecision.DecisionType.HARVEST_PERMIT))
+                .fetch();
+
+
+        // Group newest permit by decision
+        final Map<Long, Tuple3<Long, Integer, HarvestReportState>> newestPermitByDecision = tuples.stream()
+                .map(tuple -> new Tuple3<>(tuple.get(PERMIT.permitDecision.id),
+                        tuple.get(PERMIT.permitYear),
+                        tuple.get(PERMIT.harvestReportState)))
+                .collect(Collectors.toMap(
+                        tuple -> tuple._1(),
+                        identity(),
+                        (first, second) -> first._2() > second._2() ? first : second));
+
+        // Select decisions with newest permit having approved harvest report
+        return newestPermitByDecision.entrySet().stream()
+                .filter(e -> e.getValue()._3() == HarvestReportState.APPROVED)
+                .map(e -> e.getKey())
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Integer> getAnnualPermitsToRenewByHandlerId() {
+        final Set<Long> decisionIds = fetchDecisionIdsToRenew();
+        if (decisionIds.isEmpty()) {
+            return emptyMap();
+        }
+
+
+        return jpqlQueryFactory
+                .from(DECISION)
+                .where(buildPredicateForApprovedAndPublishedDecisionsIn(decisionIds))
+                .groupBy(DECISION.handler.id)
+                .transform(groupBy(DECISION.handler.id).as(DECISION.count().intValue()));
     }
 
     @Override
@@ -187,18 +285,20 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
     }
 
     private HarvestPermitApplicationSearchQueryBuilder baseSearchQueryApplications(final HarvestPermitApplicationSearchDTO dto) {
-        final HarvestPermitApplicationSearchQueryBuilder builder = new HarvestPermitApplicationSearchQueryBuilder(jpqlQueryFactory)
-                .withStatus(dto.getStatus())
-                .withDecisionType(dto.getDecisionType())
-                .withAppealStatus(dto.getAppealStatus())
-                .withGrantStatus(dto.getGrantStatus())
-                .withProtectedArea(dto.getProtectedArea())
-                .withDerogationReason(dto.getDerogationReason())
-                .withForbiddenMethod(dto.getForbiddenMethod())
-                .withHarvestPermitCategory(dto.getHarvestPermitCategory())
-                .withGameSpeciesCode(dto.getGameSpeciesCode())
-                .withHuntingYear(dto.getHuntingYear())
-                .withHandler(dto.getHandlerId());
+        final HarvestPermitApplicationSearchQueryBuilder builder =
+                new HarvestPermitApplicationSearchQueryBuilder(jpqlQueryFactory)
+                        .withStatus(dto.getStatus())
+                        .withDecisionType(dto.getDecisionType())
+                        .withAppealStatus(dto.getAppealStatus())
+                        .withGrantStatus(dto.getGrantStatus())
+                        .withProtectedArea(dto.getProtectedArea())
+                        .withDerogationReason(dto.getDerogationReason())
+                        .withForbiddenMethod(dto.getForbiddenMethod())
+                        .withHarvestPermitCategory(dto.getHarvestPermitCategory())
+                        .withGameSpeciesCode(dto.getGameSpeciesCode())
+                        .withHuntingYear(dto.getHuntingYear())
+                        .withValidityYears(dto.getValidityYears())
+                        .withHandler(dto.getHandlerId());
 
         if (StringUtils.isNotBlank(dto.getRhyOfficialCode())) {
             builder.withRhy(dto.getRhyOfficialCode());
@@ -242,7 +342,8 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
                         .from(g1).join(g2).on(g1Geometry.intersects(g2Geometry)))
                 .with(g4, SQLExpressions
                         .select(PA1.id, Expressions.numberOperation(Double.class, SpatialOps.AREA,
-                                PA1.geom.intersection(g3Geometry)).sum().as("area_size"))
+                                PA1.geom.intersection(g3Geometry)).sum().as(
+                                "area_size"))
                         .from(g3).join(PA1).on(PA1.geom.intersects(g3Geometry))
                         .where(g3Geometry.geometryType().in("ST_Polygon", "ST_MultiPolygon"))
                         .groupBy(PA1.id))
@@ -255,7 +356,8 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
                 .fetch()
                 .stream()
                 .map(tuple -> {
-                    final HarvestPermitApplicationConflictPalsta conflictPalsta = new HarvestPermitApplicationConflictPalsta();
+                    final HarvestPermitApplicationConflictPalsta conflictPalsta =
+                            new HarvestPermitApplicationConflictPalsta();
                     conflictPalsta.setFirstApplication(firstApplication);
                     conflictPalsta.setSecondApplication(secondApplication);
                     conflictPalsta.setPalstaId(tuple.get(PA2.id));
@@ -270,7 +372,8 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
 
     private static GeometryExpression<Geometry> stSubDivide(final GeometryExpression geom,
                                                             final SimpleExpression count) {
-        return GeometryExpressions.asGeometry(Expressions.template(Geometry.class, "ST_SubDivide({0},{1})", geom, count));
+        return GeometryExpressions.asGeometry(Expressions.template(Geometry.class, "ST_SubDivide({0},{1})", geom,
+                count));
     }
 
     private static GeometryExpression<Geometry> stDump(final Expression geom) {

@@ -2,8 +2,8 @@ package fi.riista.feature.account;
 
 import fi.riista.util.Patterns;
 import fi.riista.validation.PhoneNumber;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.Pattern;

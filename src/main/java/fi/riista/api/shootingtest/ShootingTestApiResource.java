@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Locale;
 
 @RestController
-@RequestMapping(value = ShootingTestApiResource.URL_PREFIX, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = ShootingTestApiResource.URL_PREFIX, produces = MediaType.APPLICATION_JSON_VALUE)
 public class ShootingTestApiResource {
 
     /* package */ static final String URL_PREFIX = "/api/v1/shootingtest";
@@ -66,6 +66,13 @@ public class ShootingTestApiResource {
     @GetMapping(value = "/rhy/{rhyId:\\d+}/calendarevents")
     public List<ShootingTestCalendarEventDTO> listRecentCalendarEvents(@PathVariable final long rhyId) {
         return shootingTestFeature.listCalendarEvents(rhyId);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/rhy/{rhyId:\\d+}/calendarevents/year/{year:\\d+}")
+    public List<ShootingTestCalendarEventDTO> listCalendarEventsByYear(@PathVariable final long rhyId,
+                                                                       @PathVariable final int year) {
+        return shootingTestFeature.listCalendarEvents(rhyId, year);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)

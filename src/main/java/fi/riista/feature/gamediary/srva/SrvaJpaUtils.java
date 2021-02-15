@@ -54,14 +54,14 @@ public class SrvaJpaUtils {
     public static Map<SrvaEvent, List<SrvaSpecimen>> getSpecimensGroupedBySrvaEvent(
             final Collection<SrvaEvent> srvaEvents, final SrvaSpecimenRepository srvaSpecimenRepo) {
 
-        return JpaGroupingUtils.groupRelations(srvaEvents, SrvaSpecimen_.event, srvaSpecimenRepo, new JpaSort(SrvaSpecimen_.id));
+        return JpaGroupingUtils.groupRelations(srvaEvents, SrvaSpecimen_.event, srvaSpecimenRepo, JpaSort.of(SrvaSpecimen_.id));
     }
 
     @Nonnull
     public static Map<SrvaEvent, List<SrvaMethod>> getMethodsGroupedBySrvaEvent(
             final Collection<SrvaEvent> srvaEvents, final SrvaMethodRepository srvaMethodRepo) {
 
-        return JpaGroupingUtils.groupRelations(srvaEvents, SrvaMethod_.event, srvaMethodRepo, new JpaSort(SrvaMethod_.id));
+        return JpaGroupingUtils.groupRelations(srvaEvents, SrvaMethod_.event, srvaMethodRepo, JpaSort.of(SrvaMethod_.id));
     }
 
     @Nonnull

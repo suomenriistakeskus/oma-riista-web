@@ -9,7 +9,7 @@ import fi.riista.feature.huntingclub.QHuntingClub;
 import fi.riista.feature.huntingclub.permit.statistics.ClubHuntingSummaryBasicInfoDTO;
 import fi.riista.feature.huntingclub.permit.statistics.ClubHuntingSummaryBasicInfoService;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
-import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.integration.common.export.huntingsummaries.CSUM_ClubHuntingSummary;
 import fi.riista.integration.common.export.huntingsummaries.CSUM_GeoLocation;
 import fi.riista.integration.common.export.huntingsummaries.CSUM_HuntingSummaries;
@@ -163,7 +163,7 @@ public class CommonHuntingSummaryExportFeature {
         return summary
                 .withHuntingEndDate(dto.getHuntingEndDate())
                 .withPermitNumber(permitInfo.getPermitNumber())
-                .withPermitYear(PermitNumberUtil.extractYear(permitInfo.getPermitNumber()))
+                .withPermitYear(DocumentNumberUtil.extractYear(permitInfo.getPermitNumber()))
                 .withClubOfficialCode(partnerInfo.getOfficialCode())
                 .withClubNameFinnish(partnerInfo.getClubName())
                 .withGameSpeciesCode(dto.getGameSpeciesCode())

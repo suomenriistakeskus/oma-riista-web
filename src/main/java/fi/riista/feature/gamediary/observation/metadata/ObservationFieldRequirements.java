@@ -16,7 +16,9 @@ import static fi.riista.feature.common.entity.Required.YES;
 public class ObservationFieldRequirements {
 
     // Observation field names
+    public static final String FIELD_OBSERVATION_CATEGORY = "observationCategory";
     public static final String FIELD_WITHIN_MOOSE_HUNTING = "withinMooseHunting";
+    public static final String FIELD_WITHIN_DEER_HUNTING = "withinDeerHunting";
     public static final String FIELD_AMOUNT = "amount";
     public static final String FIELD_MOOSELIKE_MALE_AMOUNT = "mooselikeMaleAmount";
     public static final String FIELD_MOOSELIKE_FEMALE_AMOUNT = "mooselikeFemaleAmount";
@@ -30,6 +32,8 @@ public class ObservationFieldRequirements {
     public static final String FIELD_OBSERVER_NAME = "observerName";
     public static final String FIELD_OBSERVER_PHONE_NUMBER = "observerPhoneNumber";
     public static final String FIELD_OFFICIAL_ADDITIONAL_INFO = "officialAdditionalInfo";
+    public static final String FIELD_DEER_HUNTING_TYPE = "deerHuntingType";
+    public static final String FIELD_DEER_HUNTING_TYPE_DESCRIPTION = "deerHuntingTypeDescription";
 
     // Observation specimen field names
     public static final String FIELD_AGE = "age";
@@ -39,20 +43,18 @@ public class ObservationFieldRequirements {
     public static final String FIELD_STATE = "state";
     public static final String FIELD_MARKING = "marking";
 
-    public static Map<String, Required> getStaticBaseFields(
-            @Nonnull final ObservationContextSensitiveFields ctxFields) {
+    public static Map<String, Required> getStaticBaseFields(@Nonnull final ObservationContextSensitiveFields ctxFields) {
 
         return builderForStaticContextSensitiveBaseFields(ctxFields).build();
     }
 
-    public static Map<String, Required> getStaticBaseFields(
-            @Nonnull final ObservationBaseFields baseFields,
-            @Nonnull final ObservationContextSensitiveFields ctxFields) {
+    public static Map<String, Required> getStaticBaseFields(@Nonnull final ObservationBaseFields baseFields,
+                                                            @Nonnull final ObservationContextSensitiveFields ctxFields) {
 
         Objects.requireNonNull(baseFields, "baseFields is null");
 
         return builderForStaticContextSensitiveBaseFields(ctxFields)
-                .put(FIELD_WITHIN_MOOSE_HUNTING, baseFields.getWithinMooseHunting())
+                .put(FIELD_OBSERVATION_CATEGORY, YES)
                 .build();
     }
 
@@ -107,6 +109,8 @@ public class ObservationFieldRequirements {
                 .put(FIELD_OBSERVER_NAME, ctxFields.getObserverName())
                 .put(FIELD_OBSERVER_PHONE_NUMBER, ctxFields.getObserverPhoneNumber())
                 .put(FIELD_OFFICIAL_ADDITIONAL_INFO, ctxFields.getOfficialAdditionalInfo())
+                .put(FIELD_DEER_HUNTING_TYPE, ctxFields.getDeerHuntingType())
+                .put(FIELD_DEER_HUNTING_TYPE_DESCRIPTION, ctxFields.getDeerHuntingTypeDescription())
                 .build();
     }
 

@@ -41,11 +41,17 @@ angular.module('app.jht.area.list', [])
         bindings: {
             area: '<'
         },
-        controller: function ($state, ModeratorAreas, TranslatedBlockUI, FetchAndSaveBlob) {
+        controller: function ($state, ModeratorAreas, ModeratorAreaCopyModal, TranslatedBlockUI, FetchAndSaveBlob) {
             var $ctrl = this;
 
             $ctrl.delete = function () {
                 ModeratorAreas.delete({id: $ctrl.area.id}).$promise.then(function () {
+                    $state.reload();
+                });
+            };
+
+            $ctrl.copyArea = function () {
+                ModeratorAreaCopyModal.copyModeratorArea($ctrl.area).then(function () {
                     $state.reload();
                 });
             };
@@ -64,6 +70,39 @@ angular.module('app.jht.area.list', [])
 
             $ctrl.isAreaWithGeometry = function () {
                 return _.get($ctrl.area, 'size.all.total') > 0;
+            };
+        }
+    })
+
+    .service('ModeratorAreaCopyModal', function ($uibModal, ModeratorAreas) {
+        this.copyModeratorArea = function (area) {
+            return $uibModal.open({
+                templateUrl: 'jht/area/list/area-copy.html',
+                controller: ModalController,
+                controllerAs: '$ctrl',
+                bindToController: true,
+                resolve: {
+                    area: _.constant(area)
+                }
+            }).result.then(function (res) {
+                return ModeratorAreas.copy({id: res.id}, res).$promise;
+            });
+        };
+
+        function ModalController($uibModalInstance, area) {
+            var $ctrl = this;
+
+            $ctrl.areaCopyData = {
+                id: area.id,
+                year: area.year
+            };
+
+            $ctrl.save = function () {
+                $uibModalInstance.close($ctrl.areaCopyData);
+            };
+
+            $ctrl.cancel = function () {
+                $uibModalInstance.dismiss();
             };
         }
     })

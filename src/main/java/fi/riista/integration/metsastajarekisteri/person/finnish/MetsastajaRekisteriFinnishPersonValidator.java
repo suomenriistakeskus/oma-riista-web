@@ -12,7 +12,8 @@ import fi.riista.util.DateUtil;
 import fi.riista.validation.FinnishSocialSecurityNumberValidator;
 import fi.riista.validation.Validators;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.validator.internal.constraintvalidators.EmailValidator;
+import org.hibernate.validator.internal.constraintvalidators.bv.EmailValidator;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.slf4j.Logger;
@@ -108,12 +109,19 @@ public class MetsastajaRekisteriFinnishPersonValidator
         }
 
         final LocalDate birthDate = FinnishSocialSecurityNumberValidator.parseBirthDate(person.getSsn());
-        final Period age = DateUtil.calculateAge(birthDate, DateUtil.now());
+        final DateTime now = DateUtil.now();
+        final Period age = DateUtil.calculateAge(birthDate, now);
 
         if (age.getYears() > InnofactorConstants.MAX_PERSON_AGE) {
             LOG.warn("Invalid SSN, person is too old: {}", person.getSsn());
 
             throw new IllegalAgeException("Illegal age " + age.getYears());
+        }
+
+        if (birthDate.isAfter(now.toLocalDate())) {
+            LOG.warn("Invalid SSN, birth date in the future: {}", person.getSsn());
+
+            throw new IllegalAgeException("Illegal ssn, birth date in the future");
         }
 
         if (!Validators.isValidHunterNumber(person.getHunterNumber())) {

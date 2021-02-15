@@ -30,7 +30,6 @@ import fi.riista.util.EnumUtils;
 import fi.riista.util.F;
 import fi.riista.util.JaxbUtils;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDateTime;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -40,7 +39,7 @@ import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.List;
 
-import static fi.riista.integration.common.export.RvrConstants.RVR_HARVEST_SPECIES;
+import static fi.riista.integration.common.export.RvrConstants.RVR_SPECIES;
 import static java.util.stream.Collectors.toList;
 
 @Service
@@ -58,7 +57,7 @@ public class CommonHarvestExportFeature {
     private static final QHarvestSpecimen SPECIMEN = QHarvestSpecimen.harvestSpecimen;
 
     private static final BooleanExpression RVR_SPECIES_PREDICATE =
-            SPECIES.officialCode.in(RVR_HARVEST_SPECIES);
+            SPECIES.officialCode.in(RVR_SPECIES);
 
     private static final BooleanExpression OFFICIAL_HARVEST =
             HARVEST.huntingDayOfGroup.id.isNotNull()
@@ -121,7 +120,7 @@ public class CommonHarvestExportFeature {
         return new CHAR_Harvest()
                 .withHarvestId(tuple.get(HARVEST.id))
                 .withRhyNumber(tuple.get(RHY.officialCode))
-                .withPointOfTime(new LocalDateTime(tuple.get(HARVEST.pointOfTime).getTime()))
+                .withPointOfTime(tuple.get(HARVEST.pointOfTime).toLocalDateTime())
                 .withGeoLocation(convertLocation(tuple.get(HARVEST.geoLocation)))
                 .withGameSpeciesCode(tuple.get(SPECIES.officialCode))
                 .withAmount(tuple.get(HARVEST.amount))
@@ -180,14 +179,18 @@ public class CommonHarvestExportFeature {
     }
 
     private static CHAR_Specimen createSpecimenFromTuple(final Tuple t) {
+        final Double weight = t.get(SPECIMEN.weight);
+        final Double measuredWeight = t.get(SPECIMEN.weightMeasured);
+        final Double estimatedWeight = t.get(SPECIMEN.weightEstimated);
+
         return new CHAR_Specimen()
                 .withHarvestId(t.get(SPECIMEN.harvest.id))
                 .withGender(EnumUtils.convertNullableByEnumName(CHAR_GameGender.class,
                         t.get(SPECIMEN.gender)))
                 .withAge(EnumUtils.convertNullableByEnumName(CHAR_GameAge.class, t.get(SPECIMEN.age)))
-                .withWeight(t.get(SPECIMEN.weight))
-                .withWeightEstimated(t.get(SPECIMEN.weightEstimated))
-                .withWeightMeasured(t.get(SPECIMEN.weightMeasured))
+                .withWeight(F.firstNonNull(weight, measuredWeight, estimatedWeight))
+                .withWeightEstimated(estimatedWeight)
+                .withWeightMeasured(measuredWeight)
                 .withFitnessClass(EnumUtils.convertNullableByEnumName(CHAR_GameFitnessClass.class,
                         t.get(SPECIMEN.fitnessClass)))
                 .withAntlersType(EnumUtils.convertNullableByEnumName(CHAR_GameAntlersType.class,
@@ -224,7 +227,7 @@ public class CommonHarvestExportFeature {
         final Range<DateTime> range = DateUtil.monthAsRange(year, month);
 
         return HARVEST.pointOfTime.between(
-                range.lowerEndpoint().toDate(),
-                range.upperEndpoint().toDate());
+                range.lowerEndpoint(),
+                range.upperEndpoint());
     }
 }

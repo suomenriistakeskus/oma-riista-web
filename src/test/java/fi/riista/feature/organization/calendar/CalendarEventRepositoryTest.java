@@ -9,6 +9,7 @@ import org.joda.time.LocalTime;
 import org.junit.Test;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 
 import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKILPAILU;
@@ -172,4 +173,176 @@ public class CalendarEventRepositoryTest extends EmbeddedDatabaseTest {
         assertEquals(eventDate3.toDate(), result.get(0).getDate());
 
     }
+
+    @Test
+    public void testGetPagedRhyAndRka() {
+        final RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue();
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        rhy.setParentOrganisation(rka);
+        final Riistanhoitoyhdistys anotherRhy = model().newRiistanhoitoyhdistys();
+
+        final Venue venue = model().newVenue();
+
+        final CalendarEvent event = model().newCalendarEvent(rka, VUOSIKOKOUS, eventDate1);
+        model().newAdditionalCalendarEvent(event, eventDate2, new LocalTime(12, 0), venue);
+        model().newCalendarEvent(anotherRhy, AMPUMAKILPAILU, eventDate2);
+        model().newCalendarEvent(rhy, METSASTAJATUTKINTO, eventDate3);
+
+        persistInNewTransaction();
+
+        final CalendarEventSearchParamsDTO params = new CalendarEventSearchParamsDTO();
+        params.setRhyIds(Arrays.asList(rhy.getOfficialCode()));
+
+        List<CalendarEventSearchResultDTO> result = calendarEventRepository.getCalendarEvents(params);
+
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        assertEquals(VUOSIKOKOUS, result.get(0).getCalendarEventType());
+        assertEquals(eventDate1.toDate(), result.get(0).getDate());
+        assertEquals(VUOSIKOKOUS, result.get(1).getCalendarEventType());
+        assertEquals(eventDate2.toDate(), result.get(1).getDate());
+        assertEquals(METSASTAJATUTKINTO, result.get(2).getCalendarEventType());
+        assertEquals(eventDate3.toDate(), result.get(2).getDate());
+    }
+
+    @Test
+    public void testGetTrainingEvents() {
+        RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue();
+        Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys(rka);
+
+        model().newCalendarEvent(rhy, CalendarEventType.METSASTYKSENJOHTAJA_HIRVIELAIMET, eventDate1);
+        model().newCalendarEvent(rhy, CalendarEventType.PETOYHDYSHENKILO_KOULUTUS, eventDate2);
+        model().newCalendarEvent(rhy, CalendarEventType.AMPUMAKILPAILU, eventDate3);
+
+        persistInNewTransaction();
+
+        CalendarEventSearchParamsDTO params = new CalendarEventSearchParamsDTO();
+        params.setCalendarEventTypes(CalendarEventGroupType.getCalenderEventTypes(CalendarEventGroupType.KOULUTUSTILAISUUDET));
+        List<CalendarEventSearchResultDTO> result = calendarEventRepository.getCalendarEvents(params);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(CalendarEventType.METSASTYKSENJOHTAJA_HIRVIELAIMET, result.get(0).getCalendarEventType());
+        assertEquals(eventDate1.toDate(), result.get(0).getDate());
+        assertEquals(CalendarEventType.PETOYHDYSHENKILO_KOULUTUS, result.get(1).getCalendarEventType());
+        assertEquals(eventDate2.toDate(), result.get(1).getDate());
+    }
+
+    @Test
+    public void testGetTrainingEvents_remoteOnly() {
+        RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue();
+        Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys(rka);
+
+        final CalendarEvent remoteEvent1 = model().newCalendarEvent(rhy, CalendarEventType.METSASTYKSENJOHTAJA_HIRVIELAIMET, eventDate1);
+        remoteEvent1.setRemoteEvent(true);
+        final CalendarEvent remoteEvent2 = model().newCalendarEvent(rhy, CalendarEventType.PETOYHDYSHENKILO_KOULUTUS, eventDate2);
+        remoteEvent2.setRemoteEvent(true);
+        model().newCalendarEvent(rhy, CalendarEventType.SRVAKOULUTUS, eventDate3);
+
+        persistInNewTransaction();
+
+        CalendarEventSearchParamsDTO params = new CalendarEventSearchParamsDTO();
+        params.setCalendarEventTypes(CalendarEventGroupType.getCalenderEventTypes(CalendarEventGroupType.ETAKOULUTUKSET));
+        params.setRemoteEvents(true);
+        List<CalendarEventSearchResultDTO> result = calendarEventRepository.getCalendarEvents(params);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(CalendarEventType.METSASTYKSENJOHTAJA_HIRVIELAIMET, result.get(0).getCalendarEventType());
+        assertEquals(eventDate1.toDate(), result.get(0).getDate());
+        assertEquals(CalendarEventType.PETOYHDYSHENKILO_KOULUTUS, result.get(1).getCalendarEventType());
+        assertEquals(eventDate2.toDate(), result.get(1).getDate());
+    }
+
+    @Test
+    public void testGetContests() {
+        RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue();
+        Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys(rka);
+
+        model().newCalendarEvent(rhy, CalendarEventType.AMPUMAKILPAILU, eventDate1);
+        model().newCalendarEvent(rhy, CalendarEventType.RIISTAPOLKUKILPAILU, eventDate2);
+        model().newCalendarEvent(rhy, CalendarEventType.RIISTAKANTOJEN_HOITO_KOULUTUS, eventDate3);
+
+        persistInNewTransaction();
+
+        CalendarEventSearchParamsDTO params = new CalendarEventSearchParamsDTO();
+        params.setCalendarEventTypes(CalendarEventGroupType.getCalenderEventTypes(CalendarEventGroupType.KILPAILUT));
+        List<CalendarEventSearchResultDTO> result = calendarEventRepository.getCalendarEvents(params);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(CalendarEventType.AMPUMAKILPAILU, result.get(0).getCalendarEventType());
+        assertEquals(eventDate1.toDate(), result.get(0).getDate());
+        assertEquals(CalendarEventType.RIISTAPOLKUKILPAILU, result.get(1).getCalendarEventType());
+        assertEquals(eventDate2.toDate(), result.get(1).getDate());
+    }
+
+    @Test
+    public void testGetOtherEvents() {
+        RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue();
+        Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys(rka);
+
+        model().newCalendarEvent(rhy, CalendarEventType.NUORISOTAPAHTUMA, eventDate1);
+        model().newCalendarEvent(rhy, CalendarEventType.ERATAPAHTUMA, eventDate2);
+        model().newCalendarEvent(rhy, CalendarEventType.RIISTAKANTOJEN_HOITO_KOULUTUS, eventDate3);
+
+        persistInNewTransaction();
+
+        CalendarEventSearchParamsDTO params = new CalendarEventSearchParamsDTO();
+        params.setCalendarEventTypes(CalendarEventGroupType.getCalenderEventTypes(CalendarEventGroupType.MUUT_TAPAHTUMAT));
+        List<CalendarEventSearchResultDTO> result = calendarEventRepository.getCalendarEvents(params);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals(CalendarEventType.NUORISOTAPAHTUMA, result.get(0).getCalendarEventType());
+        assertEquals(eventDate1.toDate(), result.get(0).getDate());
+        assertEquals(CalendarEventType.ERATAPAHTUMA, result.get(1).getCalendarEventType());
+        assertEquals(eventDate2.toDate(), result.get(1).getDate());
+    }
+
+    @Test
+    public void testGetIndividualEvents() {
+        RiistakeskuksenAlue rka = model().newRiistakeskuksenAlue();
+        Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys(rka);
+
+        model().newCalendarEvent(rhy, CalendarEventType.METSASTAJATUTKINTO, eventDate1);
+        model().newCalendarEvent(rhy, CalendarEventType.METSASTAJAKURSSI, eventDate1);
+        model().newCalendarEvent(rhy, CalendarEventType.AMPUMAKOE, eventDate2);
+        model().newCalendarEvent(rhy, CalendarEventType.JOUSIAMPUMAKOE, eventDate2);
+        model().newCalendarEvent(rhy, CalendarEventType.VUOSIKOKOUS, eventDate2);
+
+        persistInNewTransaction();
+
+        CalendarEventSearchParamsDTO params = new CalendarEventSearchParamsDTO();
+        params.setCalendarEventTypes(CalendarEventGroupType.getCalenderEventTypes(CalendarEventGroupType.METSASTAJATUTKINTO));
+        List<CalendarEventSearchResultDTO> result = calendarEventRepository.getCalendarEvents(params);
+
+        assertNotNull(result);
+        assertEquals(CalendarEventType.METSASTAJATUTKINTO, result.get(0).getCalendarEventType());
+
+        params.setCalendarEventTypes(CalendarEventGroupType.getCalenderEventTypes(CalendarEventGroupType.METSASTAJAKURSSI));
+        result = calendarEventRepository.getCalendarEvents(params);
+
+        assertNotNull(result);
+        assertEquals(CalendarEventType.METSASTAJAKURSSI, result.get(0).getCalendarEventType());
+
+        params.setCalendarEventTypes(CalendarEventGroupType.getCalenderEventTypes(CalendarEventGroupType.AMPUMAKOE));
+        result = calendarEventRepository.getCalendarEvents(params);
+
+        assertNotNull(result);
+        assertEquals(CalendarEventType.AMPUMAKOE, result.get(0).getCalendarEventType());
+
+        params.setCalendarEventTypes(CalendarEventGroupType.getCalenderEventTypes(CalendarEventGroupType.JOUSIAMPUMAKOE));
+        result = calendarEventRepository.getCalendarEvents(params);
+
+        assertNotNull(result);
+        assertEquals(CalendarEventType.JOUSIAMPUMAKOE, result.get(0).getCalendarEventType());
+
+        params.setCalendarEventTypes(CalendarEventGroupType.getCalenderEventTypes(CalendarEventGroupType.VUOSIKOKOUS));
+        result = calendarEventRepository.getCalendarEvents(params);
+
+        assertNotNull(result);
+        assertEquals(CalendarEventType.VUOSIKOKOUS, result.get(0).getCalendarEventType());
+    }
+
 }

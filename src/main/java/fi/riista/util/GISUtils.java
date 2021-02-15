@@ -8,18 +8,6 @@ import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.querydsl.spatial.GeometryExpression;
 import com.querydsl.spatial.GeometryExpressions;
-import com.vividsolutions.jts.algorithm.CGAlgorithms;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.geom.Polygonal;
-import com.vividsolutions.jts.geom.PrecisionModel;
-import com.vividsolutions.jts.geom.util.GeometryEditor;
-import com.vividsolutions.jts.index.strtree.STRtree;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBReader;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gis.GISBounds;
 import io.vavr.Tuple2;
@@ -28,6 +16,20 @@ import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
 import org.geojson.jackson.CrsType;
+import org.locationtech.jts.algorithm.Area;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.Polygonal;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.geom.util.GeometryEditor;
+import org.locationtech.jts.index.strtree.STRtree;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
+import org.locationtech.jts.io.WKBWriter;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -133,6 +135,11 @@ public final class GISUtils {
         }
     }
 
+    public static byte[] writeToPostgisWkb(final Geometry geometry) {
+        final WKBWriter wkbReader = new WKBWriter();
+        return wkbReader.write(geometry);
+    }
+
     public static double[] getGeoJsonBBox(final Geometry geometry) {
         return Optional.ofNullable(geometry)
                 .filter(g -> g instanceof Polygonal && !g.isEmpty())
@@ -200,7 +207,7 @@ public final class GISUtils {
 
             final Polygon polygon = (Polygon) geometry;
             final LinearRing shell = (LinearRing) polygon.getExteriorRing();
-            final double exteriorAreaSize = Math.abs(CGAlgorithms.signedArea(shell.getCoordinateSequence()));
+            final double exteriorAreaSize = Math.abs(Area.ofRingSigned(shell.getCoordinateSequence()));
 
             if (exteriorAreaSize < minimumExteriorSize) {
                 return null;
@@ -211,7 +218,7 @@ public final class GISUtils {
             for (int i = 0; i < polygon.getNumInteriorRing(); i++) {
                 final LinearRing hole = (LinearRing) polygon.getInteriorRingN(i);
 
-                final double holeAreaSize = Math.abs(CGAlgorithms.signedArea(hole.getCoordinateSequence()));
+                final double holeAreaSize = Math.abs(Area.ofRingSigned(hole.getCoordinateSequence()));
 
                 if (holeAreaSize >= minimumInteriorSize) {
                     holes.add(hole);
@@ -292,6 +299,11 @@ public final class GISUtils {
             }
         }
         return null;
+    }
+
+    public static Point createPoint(final @Nonnull GeoLocation geoLocation){
+        return getGeometryFactory(SRID.ETRS_TM35FIN)
+                .createPoint(new Coordinate(geoLocation.getLongitude(), geoLocation.getLatitude()));
     }
 
     public static GeometryExpression<?> createPointWithDefaultSRID(@Nonnull final NumberPath<Integer> longitude,

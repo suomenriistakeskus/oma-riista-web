@@ -18,7 +18,7 @@ import javax.validation.Valid;
 import java.util.Locale;
 
 @RestController
-@RequestMapping(value = HarvestRegistryApiResource.URL_PREFIX, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = HarvestRegistryApiResource.URL_PREFIX, produces = MediaType.APPLICATION_JSON_VALUE)
 public class HarvestRegistryApiResource {
     public static final String URL_PREFIX = "/api/v1/harvestregistry";
 

@@ -1,0 +1,81 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title">
+            <span translate="harvestpermit.wizard.lawsectionten.species.instruction"></span>
+        </p>
+        <p>
+            <span translate="harvestpermit.wizard.lawsectionten.species.instruction2"></span>
+        </p>
+    </div>
+</div>
+
+<form name="speciesAmountForm" r-force-show-errors-check-validity>
+    <div class="row">
+        <div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
+            <span translate="harvestpermit.wizard.species.species"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="btn-group btn-group-justified" style="margin-bottom: 10px">
+                <a class="btn btn-default"
+                   ng-model="$ctrl.speciesAmount.gameSpeciesCode"
+                   uib-btn-radio="48251">
+                                <span class="fa fa-fw fa-check text-primary"
+                                      ng-show="$ctrl.speciesAmount.gameSpeciesCode === 48251"></span>
+                    <span ng-bind="48251 | translateSpeciesCode"></span>
+                </a>
+                <a class="btn btn-default"
+                   ng-model="$ctrl.speciesAmount.gameSpeciesCode"
+                   uib-btn-radio="200555">
+                                <span class="fa fa-fw fa-check text-primary"
+                                      ng-show="$ctrl.speciesAmount.gameSpeciesCode === 200555"></span>
+                    <span ng-bind="200555 | translateSpeciesCode"></span>
+                </a>
+                <a class="btn btn-default"
+                   ng-model="$ctrl.speciesAmount.gameSpeciesCode"
+                   uib-btn-radio="27048">
+                                <span class="fa fa-fw fa-check text-primary"
+                                      ng-show="$ctrl.speciesAmount.gameSpeciesCode === 27048"></span>
+                    <span ng-bind="27048 | translateSpeciesCode"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
+            <span translate="harvestpermit.wizard.lawsectionten.species.speciesAmount"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-6 col-sm-4 col-md-4 col-lg-3">
+            <div class="form-group" show-errors>
+                <div class="input-group">
+                    <input type="number" class="form-control no-spinner"
+                           name="speciesAmount"
+                           id="speciesAmount"
+                           ng-model="$ctrl.speciesAmount.amount"
+                           required
+                           min="1" max="99999" step="1"
+                           r-click-select
+                    >
+                    <div class="input-group-addon">
+                        <span translate="global.pcs"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(speciesAmountForm)"
+        previous="$ctrl.previous(speciesAmountForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(speciesAmountForm)">
+</permit-application-wizard-navigation>

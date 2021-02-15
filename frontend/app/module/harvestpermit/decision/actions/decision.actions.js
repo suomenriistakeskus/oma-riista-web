@@ -1,7 +1,7 @@
 'use strict';
 
 angular.module('app.harvestpermit.decision.actions', [])
-    .constant('PermitDecisionActionConstants', {
+    .constant('DecisionActionConstants', {
         actionType: [
             'SELVITYSPYYNTO',
             'SELVITYS',
@@ -25,8 +25,7 @@ angular.module('app.harvestpermit.decision.actions', [])
             update: {method: 'PUT'},
             delete: {method: 'DELETE'},
             listAttachments: {method: 'GET', url: apiPrefix + '/attachment', isArray: true},
-            addAttachment: {method: 'GET', url: apiPrefix + '/attachment'},
-            getAttachment: {method: 'GET', url: apiPrefix + '/attachment/:attachmentId'},
+            getAttachment: {method: 'POST', url: apiPrefix + '/attachment/:attachmentId'},
             deleteAttachment: {method: 'DELETE', url: apiPrefix + '/attachment/:attachmentId'},
         });
     })
@@ -166,13 +165,13 @@ angular.module('app.harvestpermit.decision.actions', [])
         };
 
         function ModalController($uibModalInstance, $filter, Helpers,
-                                 PermitDecisionAction, PermitDecisionActionConstants,
+                                 PermitDecisionAction, DecisionActionConstants,
                                  action, decisionId) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                $ctrl.actionTypes = PermitDecisionActionConstants.actionType;
-                $ctrl.communicationTypes = PermitDecisionActionConstants.communicationTypes;
+                $ctrl.actionTypes = DecisionActionConstants.actionType;
+                $ctrl.communicationTypes = DecisionActionConstants.communicationTypes;
 
                 var initAction = function (action) {
                     var dateFilter = $filter('date');
@@ -237,7 +236,7 @@ angular.module('app.harvestpermit.decision.actions', [])
         };
 
         function ModalController($uibModalInstance, $filter, Helpers, FormPostService,
-                                 PermitDecisionAction, PermitDecisionActionConstants,
+                                 PermitDecisionAction, DecisionActionConstants,
                                  decisionId, actionId, readOnly, attachments, reloadAttachmentsFn) {
             var $ctrl = this;
 

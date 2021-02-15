@@ -1,0 +1,58 @@
+<div class="row">
+
+    <div class="col-md-12 r-dog-unleash-header">
+        {{ 'harvestpermit.wizard.dogunleash.eventDetails.eventTypes.' + $ctrl.event.eventType | translate }}
+        <r-show-dates begin-date="::$ctrl.event.beginDate" end-date="::$ctrl.event.endDate"></r-show-dates>
+    </div>
+    <!-- left column -->
+    <div class="col-md-6">
+        <table class="table">
+            <tbody>
+            <tr>
+                <th translate="harvestpermit.wizard.dogunleash.eventDetails.dogsAmount"></th>
+                <td class="text-right" ng-bind="::$ctrl.event.dogsAmount"></td>
+            </tr>
+            <tr>
+                <th translate="harvestpermit.wizard.dogunleash.eventDetails.eventDate"></th>
+                <td class="text-right">
+                    <r-show-dates begin-date="::$ctrl.event.beginDate" end-date="::$ctrl.event.endDate"></r-show-dates>
+                </td>
+            </tr>
+            <tr>
+                <th translate="harvestpermit.wizard.dogunleash.eventDetails.geoLocation"></th>
+                <td class="text-right" translate="global.geoLocation.coordinatesTextShort"
+                    translate-values="::$ctrl.event.geoLocation"></td>
+            </tr>
+            <tr>
+                <th translate="harvestpermit.wizard.dogunleash.eventDetails.naturaArea"></th>
+                <td class="text-right" ng-bind="::$ctrl.event.naturaArea"></td>
+            </tr>
+            <tr>
+                <th translate="harvestpermit.wizard.dogunleash.eventDetails.contactName"></th>
+                <td class="text-right">
+                    <p ng-bind="::$ctrl.event.contactName"></p>
+                    <p ng-bind="::$ctrl.event.contactPhone"></p>
+                    <p><a ng-bind="::$ctrl.event.contactMail" href="mailto:{{::$ctrl.event.contactMail}}"></a></p>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- right column -->
+
+    <div class="col-md-6">
+        <table class="table-single-column">
+            <tbody>
+            <tr><th translate="harvestpermit.wizard.dogunleash.eventDetails.eventDescription"></th></tr>
+            <tr><td>
+                <r-paragraphed-text content="::$ctrl.event.eventDescription"></r-paragraphed-text>
+            </td></tr>
+            <tr><th translate="harvestpermit.wizard.dogunleash.eventDetails.locationDescription"></th></tr>
+            <tr><td><r-paragraphed-text content="::$ctrl.event.locationDescription"></r-paragraphed-text></td></tr>
+            <tr><th translate="harvestpermit.wizard.dogunleash.eventDetails.additionalInfo"></th></tr>
+            <tr><td><r-paragraphed-text content="::$ctrl.event.additionalInfo"></r-paragraphed-text></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>

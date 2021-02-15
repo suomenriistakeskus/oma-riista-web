@@ -110,7 +110,7 @@ public class PermitDecisionApplicationSummaryModel {
                                                         final Locale locale) {
         return new SpeciesAmount(
                 StringUtils.capitalize(spa.getGameSpecies().getNameLocalisation().getTranslation(locale)),
-                spa.getAmount(),
+                spa.getSpecimenAmount(),
                 spa.getMooselikeDescription());
     }
 

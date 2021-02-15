@@ -554,6 +554,17 @@ public final class F {
         return optional.map(ImmutableList::of).orElseGet(ImmutableList::of);
     }
 
+    /**
+     * @param object Value to be mapped
+     * @param mapper Mapper function for value
+     * @return mapped value if value is not null, otherwise null
+     */
+    public static <T, U> U mapNullable(@Nullable final T object, @Nonnull Function<T, U> mapper) {
+        requireNonNull(mapper, "Mapper function is null");
+        
+        return Optional.ofNullable(object).map(mapper).orElse(null);
+    }
+
     private F() {
         throw new AssertionError();
     }

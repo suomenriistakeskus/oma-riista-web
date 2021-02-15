@@ -2,22 +2,11 @@ package fi.riista.feature.permit.application.statistics;
 
 import fi.riista.feature.organization.OrganisationNameDTO;
 
-import java.util.Map;
+import java.util.List;
 
 public class HarvestPermitApplicationStatusTableDTO {
     private OrganisationNameDTO rka;
-
-    /**
-     * <pre>
-     * {
-     *   "MOOSELIKE" -> {"H" -> 1, "K" -> 2, "V" -> 3},
-     *   "MOOSELIKE_NEW" -> {"H" -> ...                  },
-     *   "BIRD" -> {"H" -> ...                  },
-     *   ...
-     * }
-     * </pre>
-     */
-    private Map<String, Map<String, Integer>> permitCategoryToStatus;
+    private List<HarvestPermitApplicationStatusItemDTO> categoryStatuses;
 
     public OrganisationNameDTO getRka() {
         return rka;
@@ -27,11 +16,11 @@ public class HarvestPermitApplicationStatusTableDTO {
         this.rka = rka;
     }
 
-    public Map<String, Map<String, Integer>> getPermitCategoryToStatus() {
-        return permitCategoryToStatus;
+    public List<HarvestPermitApplicationStatusItemDTO> getCategoryStatuses() {
+        return categoryStatuses;
     }
 
-    public void setPermitCategoryToStatus(Map<String, Map<String, Integer>> permitCategoryToStatus) {
-        this.permitCategoryToStatus = permitCategoryToStatus;
+    public void setCategoryStatuses(final List<HarvestPermitApplicationStatusItemDTO> categoryStatuses) {
+        this.categoryStatuses = categoryStatuses;
     }
 }

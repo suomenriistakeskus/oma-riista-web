@@ -1,12 +1,16 @@
 package fi.riista.integration.metsahallitus.permit;
 
+import com.google.common.collect.ImmutableList;
 import org.hibernate.validator.constraints.SafeHtml;
 
+import java.util.List;
 import java.util.StringJoiner;
 
 public class MetsahallitusPermitImportDTO {
 
-    public static final String PAID = "160";
+    public static final String PAID_1 = "160";
+    public static final String PAID_2 = "162";
+    public static final List<String> PAID_CODES = ImmutableList.of(PAID_1, PAID_2);
 
     // Tieto onko lupa maksettu vai peruttu. Muita rivejä ei tulisi siirtää.
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)

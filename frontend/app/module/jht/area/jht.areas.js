@@ -21,6 +21,11 @@ angular.module('app.jht.area', [])
             combinedFeatures: {
                 method: 'GET',
                 url: apiPrefix + '/combinedFeatures'
+            },
+            copy: {
+                method: 'POST',
+                url: apiPrefix + '/copy',
+                params: {year: '@year'}
             }
         });
     })

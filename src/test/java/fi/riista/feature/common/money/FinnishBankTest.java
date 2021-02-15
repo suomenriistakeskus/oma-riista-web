@@ -23,7 +23,7 @@ public class FinnishBankTest {
             Iban.valueOf(BankAccountNumbers.PERMIT_DECISION_FEE_NORDEA), FinnishBank.NORDEA);
 
     private static final Bic BIC_FOR_UNKNOWN_BANK = Bic.valueOf("BANKFIHH");
-    private static final Iban IBAN_FOR_UNKNOWN_BANK = Iban.valueOf("FI7747722260000694");
+    private static final Iban IBAN_FOR_FOREIGN_BANK = Iban.valueOf("FR7630006000011234567890189");
 
     @Test
     public void testResolveFromBic_forKnownBanks() {
@@ -51,7 +51,7 @@ public class FinnishBankTest {
 
     @Test
     public void testResolveFromIban_forUnknownBank() {
-        assertNull(FinnishBank.resolveFromIban(IBAN_FOR_UNKNOWN_BANK));
+        assertNull(FinnishBank.resolveFromIban(IBAN_FOR_FOREIGN_BANK));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class FinnishBankTest {
 
     @Test
     public void testResolveBic_withIbanOfUnknownBank() {
-        assertNull(FinnishBank.resolveBic(IBAN_FOR_UNKNOWN_BANK));
+        assertNull(FinnishBank.resolveBic(IBAN_FOR_FOREIGN_BANK));
     }
 
     @Test

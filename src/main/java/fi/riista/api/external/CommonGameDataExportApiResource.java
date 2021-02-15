@@ -40,7 +40,7 @@ public class CommonGameDataExportApiResource {
     private CommonHuntingSummaryExportFeature commonHuntingSummaryExportFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/observation", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/observation", produces = MediaType.APPLICATION_JSON_VALUE)
     public COBS_Observations getObservations(
             final @RequestParam("year") int year, final @RequestParam("month") int month) {
         return commonObservationExportFeature.exportObservations(year, month);
@@ -53,7 +53,7 @@ public class CommonGameDataExportApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/harvest", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/harvest", produces = MediaType.APPLICATION_JSON_VALUE)
     public CHAR_Harvests getHarvests(final @RequestParam("year") int year, final @RequestParam("month") int month) {
         return commonHarvestExportFeature.exportAllHarvests(year, month);
     }
@@ -65,7 +65,7 @@ public class CommonGameDataExportApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/harvest/rvr", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/harvest/rvr", produces = MediaType.APPLICATION_JSON_VALUE)
     public CHAR_Harvests getRVRHarvests(final @RequestParam("year") int year, final @RequestParam("month") int month) {
         return commonHarvestExportFeature.exportRVRHarvests(year, month);
     }
@@ -77,7 +77,7 @@ public class CommonGameDataExportApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/srva", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/srva", produces = MediaType.APPLICATION_JSON_VALUE)
     public CEV_SrvaEvents getSrvaEvents(final @RequestParam("year") int year, final @RequestParam("month") int month) {
         return commonSrvaEventExportFeature.exportSrvaEvents(year, month);
     }
@@ -89,7 +89,7 @@ public class CommonGameDataExportApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/permit", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/permit", produces = MediaType.APPLICATION_JSON_VALUE)
     public CPER_Permits getPermits(final @RequestParam("year") int year) {
         return commonHarvestPermitExportFeature.exportPermits(year);
     }
@@ -101,7 +101,7 @@ public class CommonGameDataExportApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/huntingsummary", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/huntingsummary", produces = MediaType.APPLICATION_JSON_VALUE)
     public CSUM_HuntingSummaries getMooseHuntingSummaries(final @RequestParam("year") int year) {
         return commonHuntingSummaryExportFeature.exportHuntingSummaries(year);
     }

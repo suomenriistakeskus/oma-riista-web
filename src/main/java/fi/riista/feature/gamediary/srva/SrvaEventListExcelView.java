@@ -44,9 +44,6 @@ public class SrvaEventListExcelView extends AbstractXlsxView {
             "SrvaEventExportExcel.fromMobile",
             "lastNameOfAuthor",
             "firstNameOfAuthor",
-            "addressOfAuthor",
-            "postalCodeOfAuthor",
-            "postOfficeOfAuthor",
             "phoneNumberOfAuthor",
             "emailOfAuthor"
     };
@@ -100,9 +97,6 @@ public class SrvaEventListExcelView extends AbstractXlsxView {
                     .appendTextCell(localiser.getTranslation(dto.isFromMobile()))
                     .appendTextCell(dto.getSubmitterLastName())
                     .appendTextCell(dto.getSubmitterFirstName())
-                    .appendTextCell(dto.getSubmitterAddress())
-                    .appendTextCell(dto.getSubmitterPostalCode())
-                    .appendTextCell(dto.getSubmitterPostalResidence())
                     .appendTextCell(dto.getSubmitterPhone())
                     .appendTextCell(dto.getSubmitterEmail());
         }

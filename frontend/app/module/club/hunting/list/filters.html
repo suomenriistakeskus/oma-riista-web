@@ -120,12 +120,30 @@
     <div class="form-group">
         <div class="checkbox">
             <label>
-                <input type="checkbox" name="onlyRejected" id=onlyRejected
+                <input type="checkbox" name="onlyRejected" id="onlyRejected"
                        ng-model="$ctrl.onlyRejected"
-                       ng-change="$ctrl.onOnlyRejectedChange()">
-                <span>
-                    {{$ctrl.mooseGroupSelected ? 'club.hunting.showOnlyRejectedHarvestsAndObservations' : 'club.hunting.showOnlyRejectedHarvests' | translate}}
-                </span>
+                       ng-change="$ctrl.onChangeFiltering()">
+                <span translate="club.hunting.{{$ctrl.observationsViable ? 'showOnlyRejectedHarvestsAndObservations' : 'showOnlyRejectedHarvests'}}"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group" ng-if="$ctrl.observationsViable">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="showHarvests" id="showHarvests"
+                       ng-model="$ctrl.showHarvests"
+                       ng-change="$ctrl.onChangeFiltering()">
+                <span translate="gamediary.search.showHarvest"></span>
+            </label>
+        </div>
+    </div>
+    <div class="form-group" ng-if="$ctrl.observationsViable">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" name="showObservations" id="showObservations"
+                       ng-model="$ctrl.showObservations"
+                       ng-change="$ctrl.onChangeFiltering()">
+                <span translate="gamediary.search.showObservation"></span>
             </label>
         </div>
     </div>

@@ -1,8 +1,8 @@
 package fi.riista.feature.huntingclub.area;
 
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.querydsl.jpa.impl.JPAQuery;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
@@ -33,6 +33,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -40,6 +41,7 @@ import static fi.riista.util.Collect.groupingByIdOf;
 import static fi.riista.util.Collect.idSet;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
 
 @Component
@@ -66,10 +68,20 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
     @PersistenceContext
     private EntityManager entityManager;
 
-    // Cache query result because it will always execute full table scan.
-    // Query result is only changed after manual SQL update recalculating changed geometries.
-    private Supplier<Set<Long>> changedZoneCache = Suppliers.memoizeWithExpiration(
-            () -> ImmutableSet.copyOf(gisQueryService.findZonesWithChanges()), 1, TimeUnit.MINUTES);
+    private final LoadingCache<Long, Boolean> changedZoneCache = CacheBuilder.newBuilder()
+            .expireAfterAccess(1, TimeUnit.MINUTES)
+            .build(new CacheLoader<Long, Boolean>() {
+                @Override
+                public Boolean load(final Long id) {
+                    return gisQueryService.findZonesWithChanges(singleton(id)).get(id);
+                }
+
+                @Override
+                public Map<Long, Boolean> loadAll(final Iterable<? extends Long> keys) {
+                    final Set<Long> ids = F.stream(keys).collect(toSet());
+                    return gisQueryService.findZonesWithChanges(ids);
+                }
+            });
 
     @Nonnull
     @Override
@@ -84,7 +96,7 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
 
         final Function<HuntingClubArea, HuntingClub> areaToClubMapping = getAreaToClubMapping(list);
         final Function<HuntingClubArea, GISZoneWithoutGeometryDTO> areaToZoneMapping = createAreaSizeMapping(list);
-        final Set<Long> zonesWithChanges = findChangedZonesForAreas(list);
+        final Map<Long, Boolean> zoneChanges = findChangedZonesForAreas(list);
         final List<Long> attachedAreas = listAreaWithAttachedGroup(list);
 
         final Map<HuntingClubArea, LastModifierDTO> lastModifierMapping = lastModifierService.getLastModifiers(list);
@@ -102,7 +114,7 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
             dto.setLastModifierName(modifier.getFullName());
             dto.setLastModifierRiistakeskus(modifier.isAdminOrModerator());
 
-            dto.setHasPendingZoneChanges(zonesWithChanges.contains(F.getId(zone)));
+            dto.setHasPendingZoneChanges(zoneChanges.getOrDefault(F.getId(zone), false));
             dto.setAttachedToGroup(attachedAreas.contains(area.getId()));
 
             if (activeUserIsAdminOrModerator) {
@@ -170,11 +182,13 @@ public class HuntingClubAreaDTOTransformer extends ListTransformer<HuntingClubAr
         return occupations.stream().anyMatch(o -> occupationType.contains(o.getOccupationType()));
     }
 
-    private Set<Long> findChangedZonesForAreas(final Collection<HuntingClubArea> areas) {
-        final Set<Long> zoneIds = areas.stream().map(HuntingClubArea::getZone).collect(idSet());
+    private Map<Long, Boolean> findChangedZonesForAreas(final Collection<HuntingClubArea> areas) {
+        try {
+            final Set<Long> zoneIds = areas.stream().map(HuntingClubArea::getZone).collect(idSet());
+            return changedZoneCache.getAll(zoneIds);
 
-        return changedZoneCache.get().stream()
-                .filter(zoneIds::contains)
-                .collect(toSet());
+        } catch (final ExecutionException ee) {
+            throw new RuntimeException(ee);
+        }
     }
 }

@@ -11,6 +11,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -71,5 +72,11 @@ public class SamlLoginHelper {
         }
 
         return new SamlAuthenticationResult(auth.getErrors(), auth.getLastErrorReason(), relayState);
+    }
+
+    public List<String> processLogoutRequest(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
+        final Auth auth = new Auth(samlSettings, request, response);
+        auth.processSLO();
+        return auth.getErrors();
     }
 }

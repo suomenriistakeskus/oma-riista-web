@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -92,7 +93,8 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
     @Override
     @Transactional
     public OccupationDTO create(final OccupationDTO dto) {
-        return occupationRepository.alreadyExists(dto) ? dto : super.create(dto);
+        checkArgument(!occupationRepository.alreadyExists(dto), "Person already has occupation in group.");
+        return super.create(dto);
     }
 
     @Override
@@ -206,7 +208,7 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
                 JpaSpecs.equal(Occupation_.organisation, org),
                 JpaSpecs.equal(Occupation_.occupationType, OccupationType.RYHMAN_METSASTYKSENJOHTAJA),
                 JpaSpecs.notSoftDeleted()
-        ), new JpaSort(Sort.Direction.ASC, Occupation_.callOrder));
+        ), JpaSort.of(Sort.Direction.ASC, Occupation_.callOrder));
 
         updateOccupationsContactOrder(orderedExistingLeaders);
     }
@@ -218,7 +220,7 @@ public class GroupMemberCrudFeature extends AbstractCrudFeature<Long, Occupation
         final HuntingClub club = huntingClubRepository.getOne(group.getParentOrganisation().getId());
         userAuthorizationHelper.assertClubContactOrModerator(club);
 
-        final List<Occupation> occupations = Lists.newArrayList(occupationRepository.findAll(memberIds));
+        final List<Occupation> occupations = Lists.newArrayList(occupationRepository.findAllById(memberIds));
         final Ordering<HasID<Long>> orderByList = Ordering
                 .explicit(memberIds).nullsLast()
                 .onResultOf(F::getId);

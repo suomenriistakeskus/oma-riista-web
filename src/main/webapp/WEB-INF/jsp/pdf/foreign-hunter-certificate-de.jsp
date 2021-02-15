@@ -127,7 +127,7 @@
             1. August <joda:format value="${model.huntingCardStart}" pattern="yyyy" />
             bis 31. Juli <joda:format value="${model.huntingCardEnd}" pattern="yyyy" /><br/>
             Jäger mit gültigem Jagdschein<br/>
-            Nordische Länder und EU-Mitgliedsstaaten für Jagdausflüge mit einer Dauer von bis zu 60 Tagen<br/>
+            Nordische Länder, EU-Mitgliedsstaaten und Schweiz für Jagdausflüge mit einer Dauer von bis zu 60 Tagen<br/>
         </div>
     </div>
 

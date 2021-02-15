@@ -21,7 +21,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/v1/club/group/{groupId:\\d+}/member", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/club/group/{groupId:\\d+}/member", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ClubGroupMemberApiResource {
 
     @Resource
@@ -45,7 +45,7 @@ public class ClubGroupMemberApiResource {
     @RequestMapping(
             method = RequestMethod.GET,
             value = "/{id:\\d+}/locked",
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public ImmutableMap<String, Boolean> isLocked(@PathVariable long groupId,
                                                   @PathVariable long id) {
         return ImmutableMap.of("isLocked", crudFeature.isLocked(id));
@@ -62,7 +62,7 @@ public class ClubGroupMemberApiResource {
     @RequestMapping(
             method = RequestMethod.PUT,
             value = "/{id:\\d+}/type",
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE)
     public OccupationDTO updateMemberType(@PathVariable long groupId,
                                           @PathVariable long id,
                                           @RequestBody @Valid GroupMemberTypeDTO dto) {

@@ -49,6 +49,11 @@
             </div>
         </div>
 
+        <div r-geolocation-input="entry.geoLocation"
+             overridden-template="common/map/geolocation_input_club_hunting.html"
+             ng-if="isModerator">
+        </div>
+
         <hunting-day-time-select diary-entry="entry"
                                  create="createHuntingDayForObservation()"
                                  hunting-days="huntingDays"

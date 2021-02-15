@@ -1,0 +1,38 @@
+
+<div class="modal-header">
+    <button riista-modal-close></button>
+
+    <h3 class="modal-title" translate="harvestpermit.wizard.dogdisturbance.eventDetails.importContactsTitle"></h3>
+</div>
+
+<div class="modal-body">
+
+    <table class="table table-hover">
+        <tr>
+            <th translate="harvestpermit.wizard.dogdisturbance.eventDetails.contactName"></th>
+            <th translate="harvestpermit.wizard.dogdisturbance.eventDetails.contactPhone"></th>
+            <th translate="harvestpermit.wizard.dogdisturbance.eventDetails.contactMail"></th>
+            <th></th>
+        </tr>
+        <tr ng-repeat="contact in $modalCtrl.contacts | orderBy:'id' track by contact.id">
+            <td>{{::contact.name}}</td>
+            <td>{{::contact.phone}}</td>
+            <td>{{::contact.mail}}</td>
+            <td><a ng-click="$modalCtrl.import(contact.id)">
+                <span translate="global.button.select"></span>
+            </a></td>
+        </tr>
+    </table>
+
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default"
+            ng-click="$modalCtrl.importAll()"
+            translate="global.button.selectAll"></button>
+
+    <button type="button" class="btn btn-primary"
+            ng-click="$modalCtrl.ok()"
+            translate="global.button.close"></button>
+</div>
+

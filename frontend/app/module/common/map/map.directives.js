@@ -409,9 +409,11 @@ angular.module('app.common.map.directives', [])
 
         return {
             restrict: 'A',
-            templateUrl: 'common/map/geolocation_input.html',
             scope: {
                 geoLocation: '=rGeolocationInput'
+            },
+            templateUrl: function (elem, attr) {
+                return attr.overriddenTemplate || 'common/map/geolocation_input.html';
             },
             controllerAs: '$ctrl',
             controller: function ($scope) {
@@ -440,6 +442,33 @@ angular.module('app.common.map.directives', [])
                         }
                     }
                 };
+            }
+        };
+    })
+
+    .directive('rNaturaAreaInfo', function($parse, WGS84, GIS) {
+        return {
+            restrict: "A",
+            scope: false,
+            replace: false,
+            require: 'leaflet',
+            link: function ($scope, element, attrs, mapController) {
+                var geoLocationGetter = $parse(attrs.rGeolocationMarker);
+                var naturaAreaInfoGetter = $parse(attrs.rNaturaAreaInfo);
+
+                mapController.getMap().then(function (map) {
+                    $scope.$watch(geoLocationGetter, function (geoLocation) {
+                        if (_.isNil(geoLocation) || _.isNil(geoLocation.latitude) || _.isNil(geoLocation.longitude)) {
+                            return;
+                        }
+
+                        var storeResponse = function (rsp) {
+                            naturaAreaInfoGetter.assign($scope, rsp.data);
+                        };
+
+                        GIS.getNaturaAreaInfo(map, geoLocation).then(storeResponse);
+                    });
+                });
             }
         };
     })

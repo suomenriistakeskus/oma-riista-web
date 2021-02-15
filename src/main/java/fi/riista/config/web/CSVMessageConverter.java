@@ -35,7 +35,7 @@ public class CSVMessageConverter extends AbstractHttpMessageConverter<CSVHttpRes
     @Override
     protected CSVHttpResponse readInternal(Class<? extends CSVHttpResponse> clazz, HttpInputMessage inputMessage) {
 
-        throw new HttpMessageNotReadableException("Not implemented");
+        throw new HttpMessageNotReadableException("Not implemented", inputMessage);
     }
 
     @Override

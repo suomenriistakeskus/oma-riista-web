@@ -6,15 +6,21 @@ import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.address.NullSafeAddress;
+import fi.riista.feature.organization.calendar.CalendarEventGroupType;
 import fi.riista.feature.organization.calendar.CalendarEventType;
 import fi.riista.feature.organization.calendar.Venue;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationBoardRepresentationRole;
+import fi.riista.feature.organization.occupation.OccupationGroupType;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.pub.calendar.PublicCalendarEventDTO;
+import fi.riista.feature.pub.calendar.PublicCalendarEventGroupTypeDTO;
 import fi.riista.feature.pub.calendar.PublicCalendarEventTypeDTO;
 import fi.riista.feature.pub.calendar.PublicVenueDTO;
+import fi.riista.feature.pub.occupation.PublicOccupationBoardRepresentationDTO;
 import fi.riista.feature.pub.occupation.PublicOccupationDTO;
+import fi.riista.feature.pub.occupation.PublicOccupationGroupTypeDTO;
 import fi.riista.feature.pub.occupation.PublicOccupationTypeDTO;
 import fi.riista.feature.pub.occupation.PublicOrganisationDTO;
 import fi.riista.util.LocalisedString;
@@ -48,7 +54,9 @@ public class PublicDTOFactory {
         rhyNumberString = enumLocaliser.getLocalisedString("rhyNumber");
     }
 
-    public static PublicOccupationDTO createOrganisationWithSubOrganisations(final Occupation occupation, final PublicOccupationTypeDTO occType) {
+    public static PublicOccupationDTO createOrganisationWithSubOrganisations(final Occupation occupation,
+                                                                             final PublicOccupationTypeDTO occType,
+                                                                             final PublicOccupationBoardRepresentationDTO boardRepresentation){
         final Person person = occupation.getPerson();
         final String personName = String.format("%s %s", person.getByName(), person.getLastName());
 
@@ -58,6 +66,8 @@ public class PublicDTOFactory {
         dto.setEmail(person.getEmail());
         dto.setPhoneNumber(person.getPhoneNumber());
         dto.setAdditionalInfo(occupation.getAdditionalInfo());
+
+        dto.setBoardRepresentation(boardRepresentation);
 
         final OccupationType occupationType = occupation.getOccupationType();
         final NullSafeAddress address = NullSafeAddress.of(person.getAddress());
@@ -205,12 +215,37 @@ public class PublicDTOFactory {
         return new PublicCalendarEventTypeDTO(calendarEventType, name);
     }
 
+    public PublicCalendarEventGroupTypeDTO create(final CalendarEventGroupType calendarEventGroupType) {
+        final String name = enumLocaliser.getTranslation(calendarEventGroupType);
+        return new PublicCalendarEventGroupTypeDTO(calendarEventGroupType, name);
+    }
+
     public PublicOccupationTypeDTO create(final OccupationType occType, final OrganisationType orgType) {
         final String name = enumLocaliser.getTranslation(getLocalisationKey(occType, orgType));
         return new PublicOccupationTypeDTO(name, occType, orgType);
     }
 
+    public PublicOccupationGroupTypeDTO createGroupType(final OccupationGroupType groupType, final OrganisationType orgType) {
+        final String name = enumLocaliser.getTranslation(getLocalisationKey(groupType, orgType));
+        return new PublicOccupationGroupTypeDTO(name, groupType, orgType);
+    }
+
+    public PublicOccupationBoardRepresentationDTO create(final OccupationBoardRepresentationRole occupationBoardRepresentationRole) {
+        if (occupationBoardRepresentationRole == null) {
+            return null;
+        }
+
+        final String name = enumLocaliser.getTranslation(String.format("%s.%s",
+                PublicOccupationBoardRepresentationDTO.class.getSimpleName(),
+                occupationBoardRepresentationRole));
+        return new PublicOccupationBoardRepresentationDTO(name, occupationBoardRepresentationRole);
+    }
+
     private static String getLocalisationKey(final OccupationType occType, final OrganisationType orgType) {
         return String.format("%s.%s.%s", PublicOccupationTypeDTO.class.getSimpleName(), orgType, occType);
+    }
+
+    private static String getLocalisationKey(final OccupationGroupType groupType, final OrganisationType orgType) {
+        return String.format("%s.%s.%s", PublicOccupationGroupTypeDTO.class.getSimpleName(), orgType, groupType);
     }
 }

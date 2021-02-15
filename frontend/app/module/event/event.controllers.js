@@ -2,10 +2,10 @@
 
 angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
     .controller('EventListController',
-        function ($scope, $uibModal, Helpers, NotificationService, EventsByYear, EventTypes, Venues, orgId, AnnualStatisticsAvailableYears) {
+        function ($scope, $uibModal, Helpers, NotificationService, EventsByYear, EventTypes, Venues, orgId, availableYears, calendarYear) {
             $scope.events = [];
-            $scope.availableYears = AnnualStatisticsAvailableYears.get();
-            $scope.calendarYear = _.last($scope.availableYears);
+            $scope.availableYears = availableYears;
+            $scope.calendarYear = calendarYear;
             $scope.eventTypeFilter = null;
             EventTypes.then(function (result) {
                 $scope.eventTypes = result.data;
@@ -64,7 +64,7 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                     resolve: {
                         orgId: Helpers.wrapToFunction(orgId),
                         eventTypes: Helpers.wrapToFunction(EventTypes),
-                        event: Helpers.wrapToFunction({publicVisibility: true, excludedFromStatistics:false}),
+                        event: Helpers.wrapToFunction({publicVisibility: true, excludedFromStatistics: false, remoteEvent: false}),
                         venues: function () {
                             return Venues.query({orgId: orgId});
                         }
@@ -185,7 +185,7 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 SRVAKOULUTUS: true,
                 PETOYHDYSHENKILO_KOULUTUS: true,
                 VAHINKOKOULUTUS: true,
-                TILAISUUS_KOULUILLLE: true,
+                TILAISUUS_KOULUILLE: true,
                 OPPILAITOSTILAISUUS: true,
                 NUORISOTILAISUUS: true,
                 AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS: true,
@@ -200,7 +200,8 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 AMPUMAKOULUTUS: true,
                 JALJESTAJAKOULUTUS: true,
                 MUU_TAPAHTUMA: true,
-                RHY_HALLITUKSEN_KOKOUS: false
+                RHY_HALLITUKSEN_KOKOUS: false,
+                HIRVIELAINTEN_VEROTUSSUUNNITTELU: true
             };
 
             $scope.eventTypes = eventTypes.data;
@@ -339,6 +340,31 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
             };
             $scope.cancel = function () {
                 $uibModalInstance.dismiss('cancel');
+            };
+
+            $scope.remoteEventsAllowed = [
+                'METSASTYKSENJOHTAJA_HIRVIELAIMET',
+                'METSASTYKSENJOHTAJA_SUURPEDOT',
+                'METSASTAJAKOULUTUS_HIRVIELAIMET',
+                'METSASTAJAKOULUTUS_SUURPEDOT',
+                'SRVAKOULUTUS',
+                'PETOYHDYSHENKILO_KOULUTUS',
+                'VAHINKOKOULUTUS',
+                'AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS',
+                'METSASTAJATUTKINNONVASTAANOTTAJA_KOULUTUS',
+                'RIISTAVAHINKOTARKASTAJA_KOULUTUS',
+                'METSASTYKSENVALVOJA_KOULUTUS',
+                'PIENPETOJEN_PYYNTI_KOULUTUS',
+                'RIISTALASKENTA_KOULUTUS',
+                'RIISTAKANTOJEN_HOITO_KOULUTUS',
+                'RIISTAN_ELINYMPARISTON_HOITO_KOULUTUS',
+                'MUU_RIISTANHOITOKOULUTUS',
+                'AMPUMAKOULUTUS',
+                'JALJESTAJAKOULUTUS'
+            ];
+
+            $scope.isRemoteEventAllowed = function (eventType) {
+                return _.includes($scope.remoteEventsAllowed, eventType);
             };
         })
     .controller('EventRemoveController',

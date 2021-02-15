@@ -2,10 +2,10 @@
     <thead>
     <tr>
         <th style="width: 15%" translate="harvestpermit.wizard.species.table.headerSpecies"></th>
-        <th style="width: 10%" translate="harvestpermit.wizard.bird.period.beginDate"></th>
-        <th style="width: 10%" translate="harvestpermit.wizard.bird.period.endDate"></th>
-        <th style="width: 20%" translate="harvestpermit.wizard.bird.period.validityYears"></th>
-        <th translate="harvestpermit.wizard.bird.period.periodAdditionalInfo"></th>
+        <th style="width: 10%" translate="harvestpermit.wizard.period.beginDate"></th>
+        <th style="width: 10%" translate="harvestpermit.wizard.period.endDate"></th>
+        <th style="width: 20%" translate="harvestpermit.wizard.period.validityYears"></th>
+        <th translate="harvestpermit.wizard.period.periodAdditionalInfo"></th>
     </tr>
     </thead>
     <tbody>
@@ -21,11 +21,11 @@
         </td>
         <td ng-switch="$ctrl.years">
             <div ng-switch-when="0"><span translate="harvestpermit.wizard.bird.period.validityLimitless"></span></div>
-            <div ng-switch-when="1"><span translate="harvestpermit.wizard.bird.period.validity1year"></span></div>
-            <div ng-switch-when="2"><span translate="harvestpermit.wizard.bird.period.validity2years"></span></div>
-            <div ng-switch-when="3"><span translate="harvestpermit.wizard.bird.period.validity3years"></span></div>
-            <div ng-switch-when="4"><span translate="harvestpermit.wizard.bird.period.validity4years"></span></div>
-            <div ng-switch-when="5"><span translate="harvestpermit.wizard.bird.period.validity5years"></span></div>
+            <div ng-switch-when="1"><span translate="harvestpermit.wizard.period.validity1year"></span></div>
+            <div ng-switch-when="2"><span translate="harvestpermit.wizard.period.validity2years"></span></div>
+            <div ng-switch-when="3"><span translate="harvestpermit.wizard.period.validity3years"></span></div>
+            <div ng-switch-when="4"><span translate="harvestpermit.wizard.period.validity4years"></span></div>
+            <div ng-switch-when="5"><span translate="harvestpermit.wizard.period.validity5years"></span></div>
         </td>
         <td>
             <span ng-bind="spa.additionalPeriodInfo"></span>

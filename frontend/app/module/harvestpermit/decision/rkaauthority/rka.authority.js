@@ -1,18 +1,17 @@
 'use strict';
 
 angular.module('app.harvestpermit.decision.rkaauthority', [])
-    .factory('DecisionRkaAuthority', function ($resource) {
+    .factory('RkaAuthority', function ($resource) {
         var apiPrefix = 'api/v1/decision/rkaauthority/:id';
 
         return $resource(apiPrefix, {id: '@id'}, {
             update: {method: 'PUT'},
             delete: {method: 'DELETE'},
-            listByRka: {method: 'GET', url: apiPrefix + '/rka/:rkaId', isArray: true},
-            listByDecision: {method: 'GET', url: apiPrefix + '/decision/:decisionId', isArray: true},
+            listByRka: {method: 'GET', url: apiPrefix + '/rka/:rkaId', isArray: true}
         });
     })
     .controller('DecisionRkaAuthorityListControler', function ($state, NotificationService,
-                                                               DecisionRkaAuthority, DecisionRkaAuthorityModal,
+                                                               RkaAuthority, DecisionRkaAuthorityModal,
                                                                rkaId, authorities) {
         var $ctrl = this;
         $ctrl.$onInit = function () {
@@ -33,7 +32,7 @@ angular.module('app.harvestpermit.decision.rkaauthority', [])
 
         function doEdit(authority) {
             DecisionRkaAuthorityModal.open(authority).then(function (authority) {
-                var method = !authority.id ? DecisionRkaAuthority.save : DecisionRkaAuthority.update;
+                var method = !authority.id ? RkaAuthority.save : RkaAuthority.update;
                 return method(authority).$promise;
             }).then(reload, failure);
         }
@@ -46,7 +45,7 @@ angular.module('app.harvestpermit.decision.rkaauthority', [])
             doEdit(authority);
         };
         $ctrl.remove = function (authority) {
-            DecisionRkaAuthority.delete(authority).$promise.then(reload, failure);
+            RkaAuthority.delete(authority).$promise.then(reload, failure);
         };
 
     })

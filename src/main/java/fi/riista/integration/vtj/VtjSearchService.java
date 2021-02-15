@@ -96,7 +96,7 @@ public class VtjSearchService {
         person.setHomeMunicipalityCode(municipalityCode);
 
         final Municipality municipality =
-                Optional.ofNullable(municipalityCode).map(municipalityRepository::findOne).orElse(null);
+                Optional.ofNullable(municipalityCode).flatMap(municipalityRepository::findById).orElse(null);
         person.setHomeMunicipality(municipality);
 
         if (StringUtils.isNotBlank(henkilo.getKuolintiedot().getKuolinpvm())) {

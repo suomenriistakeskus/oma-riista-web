@@ -16,8 +16,8 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Optional;
 
-import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE;
-import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE_2;
+import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE_OP;
+import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE_OP_2;
 import static fi.riista.test.Asserts.assertEmpty;
 import static fi.riista.test.TestUtils.ld;
 import static fi.riista.util.DateUtil.today;
@@ -42,8 +42,8 @@ public class AccountStatementImportFeatureTest extends EmbeddedDatabaseTest {
     public void testImportAccountTransfers_smokeTest() {
         final LocalDate date = ld(2018, 1, 8);
 
-        final AccountStatementLine firstInput = newAccountStatementLine(LINE_SAMPLE);
-        final AccountStatementLine secondInput = newAccountStatementLine(LINE_SAMPLE_2);
+        final AccountStatementLine firstInput = newAccountStatementLine(LINE_SAMPLE_OP);
+        final AccountStatementLine secondInput = newAccountStatementLine(LINE_SAMPLE_OP_2);
 
         onSavedAndAuthenticated(createNewAdmin(), () -> {
             feature.importAccountTransfers(newAccountStatement(date, firstInput, secondInput));
@@ -56,7 +56,7 @@ public class AccountStatementImportFeatureTest extends EmbeddedDatabaseTest {
 
             assertEquals(1, batchRepo.findAll().size());
 
-            final List<AccountTransfer> transfers = transferRepo.findAll(new JpaSort(AccountTransfer_.id));
+            final List<AccountTransfer> transfers = transferRepo.findAll(JpaSort.of(AccountTransfer_.id));
 
             assertEquals(2, transfers.size());
 
@@ -70,7 +70,7 @@ public class AccountStatementImportFeatureTest extends EmbeddedDatabaseTest {
         final LocalDate date = ld(2018, 1, 8);
 
         final AccountStatement firstInput = newAccountStatement(date,
-                newAccountStatementLine(LINE_SAMPLE), newAccountStatementLine(LINE_SAMPLE_2));
+                newAccountStatementLine(LINE_SAMPLE_OP), newAccountStatementLine(LINE_SAMPLE_OP_2));
 
         final AccountStatement secondInput = newAccountStatement(date);
 
@@ -84,7 +84,7 @@ public class AccountStatementImportFeatureTest extends EmbeddedDatabaseTest {
     public void testImportAccountTransfers_mustFailOnInvalidData() {
         final LocalDate date = today();
 
-        final AccountStatementLine line = newAccountStatementLine(LINE_SAMPLE);
+        final AccountStatementLine line = newAccountStatementLine(LINE_SAMPLE_OP);
         line.setCreditorReference("1234");
 
         onSavedAndAuthenticated(createNewAdmin(), () -> {
@@ -104,7 +104,7 @@ public class AccountStatementImportFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private static AccountStatementLine newAccountStatementLine(final String str) {
-        return AccountStatementParser.parseLine(str, Optional.empty());
+        return AccountStatementParser.parseAccountTransferLine(str, Optional.empty());
     }
 
     private static void assertTransferResult(final AccountStatementLine input, final AccountTransfer output) {

@@ -1,0 +1,25 @@
+<div class="btn-group r-decision-document-section-header-btn-group"
+     ng-if="$ctrl.showButtons()">
+    <label class="btn btn-default r-decision-document-section-header-label"
+           ng-change="$ctrl.toggleComplete()"
+           ng-model="$ctrl.fieldValue"
+           uib-btn-radio="false">
+        <span class="fa fa-fw fa-lg fa-check-circle text-muted"
+              ng-class="{'invisible': $ctrl.isComplete()}"></span>
+        <span translate="decision.section.incomplete"></span>
+    </label>
+
+    <label class="btn r-decision-document-section-header-label"
+           ng-class="$ctrl.isComplete() ? 'btn-primary': 'btn-default'"
+           ng-disabled="!$ctrl.canBeCompleted()"
+           ng-change="$ctrl.toggleComplete()"
+           ng-model="$ctrl.fieldValue"
+           uib-btn-radio="true">
+        <span class="fa fa-fw fa-lg fa-ban text-danger"
+              ng-show="!$ctrl.canBeCompleted()"></span>
+        <span class="fa fa-fw fa-lg fa-check-circle"
+              ng-show="$ctrl.canBeCompleted()"
+              ng-class="{'invisible': !$ctrl.isComplete()}"></span>
+        <span translate="decision.section.complete"></span>
+    </label>
+</div>

@@ -1,11 +1,10 @@
 package fi.riista.feature.permit.application;
 
 import fi.riista.validation.Validators;
-import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
-import org.springframework.util.StringUtils;
 
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -34,9 +33,8 @@ public class PermitHolderDTO implements Serializable {
             case OTHER:
                 return true;
             case BUSINESS:
-                return Validators.isValidBusinessId(code);
             case RY:
-                return StringUtils.hasText(code) && code.length() <= 7;
+                return Validators.isValidBusinessId(code);
         }
 
         return false;

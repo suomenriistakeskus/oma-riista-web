@@ -6,12 +6,18 @@ import org.springframework.data.domain.Persistable;
 import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Access(value = AccessType.FIELD)
@@ -27,6 +33,22 @@ public class Municipality implements HasID<String>, Persistable<String> {
     @Size(max = 255)
     @Column(nullable = false, length = 255)
     private String nameSwedish;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean active;
+
+    public Set<String> getRhyIds() {
+        return rhyIds;
+    }
+
+    public void setRhyIds(Set<String> rhyIds) {
+        this.rhyIds = rhyIds;
+    }
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Column(name = "rhy_official_code")
+    @CollectionTable(name = "municipality_rhy", joinColumns = @JoinColumn(name = "official_code"))
+    private Set<String> rhyIds = new HashSet<>();
 
     // Should not be created by application
     Municipality() {

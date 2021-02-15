@@ -157,6 +157,10 @@ angular.module('app.login.services', [])
                 return occupation.occupationType === 'PETOYHDYSHENKILO';
             });
         };
+
+        this.isDeerPilotUser = function() {
+            return authentication && authentication.deerPilotUser;
+        };
     })
 
     .service('LoginService', function ($http, authService, MapState) {

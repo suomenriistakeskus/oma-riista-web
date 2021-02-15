@@ -36,13 +36,14 @@ public class HarvestDTOTransformer extends HarvestDTOTransformerBase<HarvestDTO>
     @Resource
     private HarvestQuotaRepository harvestQuotaRepository;
 
-    @Override
-    protected List<HarvestDTO> transform(@Nonnull final List<Harvest> harvests) {
+    protected List<HarvestDTO> transform(@Nonnull final List<Harvest> harvests,
+                                         @Nonnull final HarvestSpecVersion specVersion) {
+
         final SystemUser activeUser = activeUserService.requireActiveUser();
 
-        final Function<Harvest, GameSpecies> harvestToSpecies = getGameDiaryEntryToSpeciesMapping(harvests);
-        final Function<Harvest, Person> harvestToAuthor = getGameDiaryEntryToAuthorMapping(harvests);
-        final Function<Harvest, Person> harvestToHunter = getHarvestToHunterMapping(harvests);
+        final Function<Harvest, GameSpecies> harvestToSpecies = getHarvestToSpeciesMapping(harvests);
+        final Function<Harvest, Person> harvestToAuthor = getHarvestToAuthorMapping(harvests);
+        final Function<Harvest, Person> harvestToHunter = getHarvestToShooterMapping(harvests);
 
         final Function<Harvest, HarvestPermit> harvestToPermit = getHarvestToPermitMapping(harvests);
         final Function<Harvest, HarvestQuota> harvestToQuota = getHarvestToQuotaMapping(harvests);
@@ -51,12 +52,14 @@ public class HarvestDTOTransformer extends HarvestDTOTransformerBase<HarvestDTO>
         final Map<Harvest, List<GameDiaryImage>> groupedImages = getImagesGroupedByHarvests(harvests);
 
         final Map<Harvest, Organisation> harvestToGroupOfHuntingDay = getGroupOfHuntingDay(harvests);
-        final Function<Harvest, Person> harvestToHuntingDayApprover = getApproverToHuntingDay(harvests);
+        final Function<Harvest, Person> harvestToHuntingDayApprover = getHarvestToApproverToHuntingDayMapping(harvests);
 
         final Predicate<Harvest> groupHuntingStatusTester = h -> h.getHuntingDayOfGroup() != null;
         final Predicate<Harvest> contactPersonTester = getContactPersonOfPermittedHarvestTester(activeUser.getPerson());
 
         return harvests.stream().filter(Objects::nonNull).map(harvest -> {
+            final GameSpecies species = harvestToSpecies.apply(harvest);
+
             final Person author = harvestToAuthor.apply(harvest);
             final Person hunter = harvestToHunter.apply(harvest);
             final Organisation groupOfHuntingDay = harvestToGroupOfHuntingDay.get(harvest);
@@ -66,15 +69,14 @@ public class HarvestDTOTransformer extends HarvestDTOTransformerBase<HarvestDTO>
             final Person authenticatedPerson = activeUser.getPerson();
 
             final boolean authorOrActor = author.equals(authenticatedPerson) || hunter.equals(authenticatedPerson);
-            final boolean canEdit = HarvestLockedCondition.canEdit(
-                    authenticatedPerson, harvest, null,
-                    groupHuntingStatusTester, contactPersonTester);
+            final boolean canEdit = HarvestLockedCondition
+                    .canEditFromWeb(authenticatedPerson, harvest, groupHuntingStatusTester, contactPersonTester);
 
-            final HarvestDTO dto = HarvestDTO.builder()
+            final HarvestDTO dto = HarvestDTO.builder(specVersion)
                     .populateWith(harvest)
-                    .populateWith(harvestToSpecies.apply(harvest))
+                    .withGameSpeciesCode(species.getOfficialCode())
                     .populateWith(harvestToPermit.apply(harvest))
-                    .populateSpecimensWith(groupedSpecimens.get(harvest))
+                    .withSpecimensMappedFrom(groupedSpecimens.get(harvest))
                     .populateWith(groupedImages.get(harvest))
                     .withAuthorInfo(author)
                     .withActorInfo(hunter)
@@ -99,28 +101,22 @@ public class HarvestDTOTransformer extends HarvestDTOTransformerBase<HarvestDTO>
         }).collect(toList());
     }
 
-    private Function<Harvest, Person> getHarvestToHunterMapping(final Iterable<Harvest> harvests) {
-        return createGameDiaryEntryToPersonMapping(harvests, Harvest::getActualShooter);
-    }
-
     private Function<Harvest, HarvestQuota> getHarvestToQuotaMapping(final Iterable<Harvest> harvests) {
         return CriteriaUtils.singleQueryFunction(harvests, Harvest::getHarvestQuota, harvestQuotaRepository, false);
-    }
-
-    private Function<Harvest, Person> getApproverToHuntingDay(final Iterable<Harvest> harvests) {
-        return createGameDiaryEntryToPersonMapping(harvests, Harvest::getApproverToHuntingDay, false);
     }
 
     private Map<Harvest, Organisation> getGroupOfHuntingDay(final List<Harvest> harvests) {
         final QHarvest harvest = QHarvest.harvest;
         final QGroupHuntingDay day = QGroupHuntingDay.groupHuntingDay;
         final QHuntingClubGroup group = QHuntingClubGroup.huntingClubGroup;
+
         return queryFactory.select(harvest, group)
                 .from(harvest)
                 .join(harvest.huntingDayOfGroup, day)
                 .join(day.group, group)
                 .where(harvest.in(harvests))
                 .fetch()
-                .stream().collect(toMap(t -> t.get(0, Harvest.class), t -> t.get(1, HuntingClubGroup.class)));
+                .stream()
+                .collect(toMap(t -> t.get(0, Harvest.class), t -> t.get(1, HuntingClubGroup.class)));
     }
 }

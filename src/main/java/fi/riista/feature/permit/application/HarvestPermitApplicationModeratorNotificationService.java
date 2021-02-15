@@ -44,7 +44,7 @@ public class HarvestPermitApplicationModeratorNotificationService {
                 .appendBody(formatMessageBody(application)).build());
     }
 
-    private String formatMessageBody(final HarvestPermitApplication application) {
+    private static String formatMessageBody(final HarvestPermitApplication application) {
         final HarvestPermitCategory harvestPermitCategory = application.getHarvestPermitCategory();
         final Riistanhoitoyhdistys rhy = application.getRhy();
         final Organisation rka = rhy.getParentOrganisation();

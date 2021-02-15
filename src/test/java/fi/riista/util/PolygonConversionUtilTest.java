@@ -1,10 +1,10 @@
 package fi.riista.util;
 
-import com.vividsolutions.jts.geom.Geometry;
 import org.geojson.LngLatAlt;
 import org.geojson.MultiPolygon;
 import org.geojson.Polygon;
 import org.junit.Test;
+import org.locationtech.jts.geom.Geometry;
 
 import static org.junit.Assert.assertEquals;
 

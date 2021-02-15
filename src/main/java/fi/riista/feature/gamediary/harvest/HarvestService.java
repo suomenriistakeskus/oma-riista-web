@@ -11,18 +11,19 @@ import fi.riista.feature.huntingclub.hunting.ClubHuntingStatusService;
 import fi.riista.feature.organization.person.Person;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
-import java.util.Objects;
 import java.util.function.Predicate;
 
-@Service
+@Component
 public class HarvestService {
+
     private static final Logger LOG = LoggerFactory.getLogger(HarvestService.class);
 
     @Resource
@@ -56,34 +57,46 @@ public class HarvestService {
         }
     }
 
-    // harvestSpecVersion should be defined for mobile and undefined for web
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public boolean canBusinessFieldsBeUpdated(final Person activePerson,
-                                              @Nonnull final Harvest harvest,
-                                              final HarvestSpecVersion harvestSpecVersion) {
-        Objects.requireNonNull(harvest, "harvest is null");
+    public boolean canBusinessFieldsBeUpdatedFromWeb(@Nullable final Person activePerson, @Nonnull final Harvest harvest) {
+        final Predicate<Harvest> groupHuntingStatusLockedTester = createGroupHuntingStatusLockedTester();
+        final Predicate<Harvest> contactPersonTester = HarvestLockedCondition.createContactPersonTester(activePerson);
+
+        return HarvestLockedCondition
+                .canEditFromWeb(activePerson, harvest, groupHuntingStatusLockedTester, contactPersonTester);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean canBusinessFieldsBeUpdatedFromMobile(@Nonnull final Person activePerson,
+                                                        @Nonnull final Harvest harvest,
+                                                        @Nonnull final HarvestSpecVersion harvestSpecVersion) {
 
         // for mobile should be canEdit=false if attached to hunting day
         final Predicate<Harvest> groupHuntingStatusLockedTester = createGroupHuntingStatusLockedTester();
         final Predicate<Harvest> contactPersonTester = HarvestLockedCondition.createContactPersonTester(activePerson);
 
-        return HarvestLockedCondition.canEdit(activePerson, harvest, harvestSpecVersion,
-                groupHuntingStatusLockedTester, contactPersonTester);
+        return HarvestLockedCondition.canEditFromMobile(
+                activePerson, harvest, harvestSpecVersion, groupHuntingStatusLockedTester, contactPersonTester);
     }
 
     private Predicate<Harvest> createGroupHuntingStatusLockedTester() {
-        return harvest -> clubHuntingStatusService.isDiaryEntryLocked(harvest);
+        return clubHuntingStatusService::isHarvestLocked;
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public HarvestChangeHistory updateMutableFields(final Harvest harvest,
                                                     final MobileHarvestDTO dto,
                                                     final SystemUser activeUser,
-                                                    final boolean businessFieldsCanBeUpdated) {
+                                                    final boolean businessFieldsCanBeUpdated,
+                                                    final boolean isDeerPilotUser) {
         final HarvestChangeHistory historyEvent;
 
         if (businessFieldsCanBeUpdated) {
-            final HarvestUpdater harvestMutator = HarvestUpdater.create(harvestMutationFactory, harvest, activeUser);
+            final boolean isDeerPilotActive = isDeerPilotUser && dto.getHarvestSpecVersion().supportsDeerHuntingType();
+
+            final HarvestUpdater harvestMutator =
+                    HarvestUpdater.create(harvestMutationFactory, harvest, activeUser, isDeerPilotActive);
+
             harvestMutator.execute(harvest, dto);
             historyEvent = harvestMutator.createHistoryEventIfRequiredForPerson(harvest);
 
@@ -109,14 +122,18 @@ public class HarvestService {
     public HarvestChangeHistory updateMutableFields(final Harvest harvest,
                                                     final HarvestDTO dto,
                                                     final SystemUser activeUser,
-                                                    final boolean businessFieldsCanBeUpdated) {
-        final Person currentPerson = activeUser.getPerson();
+                                                    final boolean businessFieldsCanBeUpdated,
+                                                    final boolean isDeerPilotActive) {
+
         final HarvestChangeHistory historyEvent;
 
         if (businessFieldsCanBeUpdated) {
-            final HarvestUpdater harvestMutator = HarvestUpdater.create(harvestMutationFactory, harvest, activeUser);
+            final HarvestUpdater harvestMutator =
+                    HarvestUpdater.create(harvestMutationFactory, harvest, activeUser, isDeerPilotActive);
             final HarvestReportingType reportingType = harvestMutator.execute(harvest, dto);
-            historyEvent = harvestMutator.createHistoryEventIfRequired(activeUser, harvest, reportingType, dto.getModeratorReasonForChange());
+
+            historyEvent = harvestMutator
+                    .createHistoryEventIfRequired(activeUser, harvest, reportingType,dto.getModeratorReasonForChange());
 
             if (harvestMutator.shouldSendHarvestNotificationEmail(harvest)) {
                 commitHookService.runInTransactionAfterCommit(() -> {
@@ -132,16 +149,14 @@ public class HarvestService {
             }
         }
 
-        if (harvest.isAuthorOrActor(currentPerson)) {
-            harvest.setDescription(dto.getDescription());
-        }
-
         if (activeUser.isModeratorOrAdmin()) {
             harvest.setLukeStatus(dto.getLukeStatus());
 
             if (StringUtils.hasText(dto.getHarvestReportMemo())) {
                 harvest.setHarvestReportMemo(dto.getHarvestReportMemo());
             }
+        } else if (harvest.isAuthorOrActor(activeUser.requirePerson())) {
+            harvest.setDescription(dto.getDescription());
         }
 
         return historyEvent;

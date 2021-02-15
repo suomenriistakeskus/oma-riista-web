@@ -36,6 +36,14 @@ angular.module('app.rhy.services', [])
                 url: 'api/v1/riistanhoitoyhdistys/searchparams/orgs',
                 params: {id: '@id'},
                 isArray: true
+            }, getSrvaRotation:{
+                method: 'GET',
+                url: 'api/v1/riistanhoitoyhdistys/:id/srva-rotation',
+                params:{id: '@id'}
+            }, updateSrvaRotation:{
+                method: 'POST',
+                url: 'api/v1/riistanhoitoyhdistys/:id/srva-rotation',
+                params:{id: '@id'}
             }
         });
     });

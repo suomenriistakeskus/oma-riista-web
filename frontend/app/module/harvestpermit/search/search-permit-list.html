@@ -25,9 +25,21 @@
             <div ng-bind="::permit.permitType"></div>
             <div ng-repeat="speciesAmount in ::permit.speciesAmounts">
                 <span name-translated="speciesAmount.gameSpecies.name"></span>
-                <span>
+                <span ng-if="::speciesAmount.amount">
                     <span ng-bind="::speciesAmount.amount"></span>
                     <span translate="harvestpermit.pcs"></span>
+                </span>
+                <span ng-if="::speciesAmount.nestAmount">
+                    <span ng-bind="::speciesAmount.nestAmount"></span>
+                    <span translate="harvestpermit.nestAmount"></span>
+                </span>
+                <span ng-if="::speciesAmount.eggAmount">
+                    <span ng-bind="::speciesAmount.eggAmount"></span>
+                    <span translate="harvestpermit.eggAmount"></span>
+                </span>
+                <span ng-if="::speciesAmount.constructionAmount">
+                    <span ng-bind="::speciesAmount.constructionAmount"></span>
+                    <span translate="harvestpermit.constructionAmount"></span>
                 </span>
                 <span>{{::(speciesAmount | speciesAmountIntervalText)}}</span>
             </div>
@@ -40,7 +52,8 @@
         <td class="text-right">
             <button class="btn btn-default"
                     ng-if="$ctrl.showOpenPermit"
-                    ui-sref="permitmanagement.dashboard({permitId:permit.id})">
+                    ui-sref="permitmanagement.dashboard({permitId:permit.id})"
+                    ng-disabled="!$ctrl.hasPermission(permit)">
                 <span translate="global.button.open"></span>
             </button>
         </td>

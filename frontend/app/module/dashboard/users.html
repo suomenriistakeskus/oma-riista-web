@@ -2,31 +2,31 @@
     <thead>
     <tr>
         <td><span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
-        <td>Rekisteröitynyt (Salasana)</td>
-        <td>Kaikki</td>
+        <td translate="reporting.dashboard.usersTab.users.registered"></td>
+        <td translate="reporting.dashboard.usersTab.users.all"></td>
     </tr>
     </thead>
     <tr>
-        <td class="col-sm-6">Henkilöitä</td>
-        <td class="col-sm-6">{{$ctrl.metrics.countNormalUser}}</td>
-        <td class="col-sm-6">{{$ctrl.metrics.countPerson}}</td>
+        <td class="col-sm-6" translate="reporting.dashboard.usersTab.users.persons"></td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.countNormalUser"></td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.countPerson"></td>
     </tr>
 
     <tr>
-        <td>Henkilöitä joilla voimassaoleva tehtävä organisaatiossa</td>
-        <td>{{$ctrl.metrics.countNormalUserWithOccupationAndPassword}}</td>
-        <td>{{$ctrl.metrics.countAllPeopleWithOccupation}}</td>
+        <td translate="reporting.dashboard.usersTab.users.personsWithOccupation"></td>
+        <td ng-bind="::$ctrl.metrics.countNormalUserWithOccupationAndPassword"></td>
+        <td ng-bind="::$ctrl.metrics.countAllPeopleWithOccupation"></td>
     </tr>
 
     <tr>
-        <td>Moderaattoreita</td>
-        <td>{{$ctrl.metrics.countModeratorWithPassword}}</td>
-        <td>{{$ctrl.metrics.countAllModerators}}</td>
+        <td translate="reporting.dashboard.usersTab.users.moderators"></td>
+        <td ng-bind="::$ctrl.metrics.countModeratorWithPassword"></td>
+        <td ng-bind="::$ctrl.metrics.countAllModerators"></td>
     </tr>
 
     <tr>
-        <td>Toiminnanohjaajia</td>
-        <td>{{$ctrl.metrics.countRHYToiminnanohjaajaWithPassword}}</td>
-        <td>{{$ctrl.metrics.countAllRHYToiminnanohjaaja}}</td>
+        <td translate="reporting.dashboard.usersTab.users.coordinators"></td>
+        <td ng-bind="::$ctrl.metrics.countRHYToiminnanohjaajaWithPassword"></td>
+        <td ng-bind="::$ctrl.metrics.countAllRHYToiminnanohjaaja"></td>
     </tr>
 </table>

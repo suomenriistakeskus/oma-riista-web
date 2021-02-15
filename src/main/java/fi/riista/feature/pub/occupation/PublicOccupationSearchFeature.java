@@ -16,6 +16,7 @@ import fi.riista.feature.organization.Organisation_;
 import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.QRiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationGroupType;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.QOccupation;
@@ -23,7 +24,7 @@ import fi.riista.feature.pub.PublicDTOFactory;
 import fi.riista.feature.pub.rhy.RhyWithRkaResultDTO;
 import fi.riista.util.F;
 import org.springframework.data.jpa.domain.JpaSort;
-import org.springframework.data.jpa.domain.Specifications;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +71,7 @@ public class PublicOccupationSearchFeature {
     public PublicOrganisationDTO getRiistakeskus() {
         // Sort order is not critical since only one result is expected from the query.
         final List<Organisation> rk =
-                organisationRepository.findByOrganisationType(OrganisationType.RK, new JpaSort(Organisation_.id));
+                organisationRepository.findByOrganisationType(OrganisationType.RK, JpaSort.of(Organisation_.id));
 
         if (rk.size() != 1) {
             throw new IllegalStateException("Invariant violation: There must be only one Riistakeskus organisation");
@@ -163,7 +164,7 @@ public class PublicOccupationSearchFeature {
 
 
         final Set<Long> organisationIds = result.stream().map(Occupation::getOrganisation).collect(idSet());
-        final List<Organisation> resultOrganisations = organisationRepository.findAll(Specifications
+        final List<Organisation> resultOrganisations = organisationRepository.findAll(Specification
                 .where(inCollection(Organisation_.id, organisationIds))
                 .and(fetch(Organisation_.address, JoinType.LEFT)));
 
@@ -179,7 +180,9 @@ public class PublicOccupationSearchFeature {
                 .map(occupation -> {
                     final PublicOccupationTypeDTO dto = dtoFactory.create(
                             occupation.getOccupationType(), occupation.getOrganisation().getOrganisationType());
-                    return PublicDTOFactory.createOrganisationWithSubOrganisations(occupation, dto);
+                    final PublicOccupationBoardRepresentationDTO boardRepresentation =
+                            dtoFactory.create(occupation.getBoardRepresentation());
+                    return PublicDTOFactory.createOrganisationWithSubOrganisations(occupation, dto, boardRepresentation);
                 })
                 .collect(toList());
     }
@@ -190,16 +193,18 @@ public class PublicOccupationSearchFeature {
         return F.mapNonNullsToList(resultOrganisations, org -> dtoFactory.createWithoutSuborganisations(org, emptyMap(), rhyToCoordinator));
     }
 
-    public List<PublicOccupationTypeDTO> getAllOccupationTypes() {
+    public List<PublicOccupationGroupTypeDTO> getAllOccupationGroupTypes() {
         // Use EnumSet for correct ordering
-        return EnumSet.of(OrganisationType.RHY, OrganisationType.RK, OrganisationType.VRN, OrganisationType.ARN,
-                OrganisationType.RKA).stream()
-                .flatMap(orgType -> OccupationType.getApplicableTypes(orgType).stream()
-                        .map(occType -> dtoFactory.create(occType, orgType)))
-                .collect(toList());
+        final List<PublicOccupationGroupTypeDTO> allGroupOccupations =
+                EnumSet.of(OrganisationType.RHY, OrganisationType.RK, OrganisationType.VRN, OrganisationType.ARN, OrganisationType.RKA).stream()
+                        .flatMap(orgType -> OccupationGroupType.getApplicableTypes(orgType).stream()
+                                .map(groupType -> dtoFactory.createGroupType(groupType, orgType)))
+                        .collect(toList());
+
+        return allGroupOccupations;
     }
 
-    private NumberExpression<Integer> createOrdinalSortExpressionForOccupationType() {
+    private static NumberExpression<Integer> createOrdinalSortExpressionForOccupationType() {
 
         CaseBuilder.Cases<Integer, NumberExpression<Integer>> expression = null;
 

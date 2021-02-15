@@ -48,7 +48,7 @@ public class HarvestPermitContactPersonFeatureTest extends EmbeddedDatabaseTest 
                         // should be ignored
                         HarvestPermitContactPersonDTO.create(originalContactPerson)));
 
-                assertEmpty(contactPersonRepository.findAll(F.getUniqueIds(oldContactPerson1, oldContactPerson2)));
+                assertEmpty(contactPersonRepository.findAllById(F.getUniqueIds(oldContactPerson1, oldContactPerson2)));
 
                 final List<HarvestPermitContactPerson> updatedContactPersons =
                         contactPersonRepository.findByHarvestPermit(permit);

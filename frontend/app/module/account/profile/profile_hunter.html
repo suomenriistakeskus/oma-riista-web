@@ -1,5 +1,5 @@
 <div class="panel panel-default"
-     ng-if="$ctrl.profile && $ctrl.profile.hunterNumber">
+     ng-if="::($ctrl.profile && $ctrl.profile.hunterNumber)">
     <div class="panel-heading">
         <h3 class="panel-title" translate="account.profile.title.hunterRegistry"></h3>
     </div>
@@ -68,6 +68,16 @@
                         <span class="text-danger"
                               ng-show="::($ctrl.profile.huntingPaymentPending && !$ctrl.profile.hunterExamExpirationDate)"
                               translate="account.profile.mr.paymentPending">
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="col-xs-6">
+                        <span translate="account.profile.mr.paymentDate"></span>
+                    </th>
+                    <td>
+                        <span ng-show="::$ctrl.profile.huntingPaymentDate">
+                            {{::($ctrl.profile.huntingPaymentDate | date:'d.M.yyyy')}}
                         </span>
                     </td>
                 </tr>

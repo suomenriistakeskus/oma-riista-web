@@ -3,8 +3,6 @@ package fi.riista.integration.common.export;
 import fi.riista.config.Constants;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.SystemUserPrivilege;
-import fi.riista.feature.gamediary.GameAge;
-import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.specimen.GameAntlersType;
@@ -35,7 +33,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static fi.riista.integration.common.export.RvrConstants.RVR_HARVEST_SPECIES;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_OTTER;
+import static fi.riista.feature.gamediary.fixture.HarvestSpecimenType.ADULT_MALE;
+import static fi.riista.integration.common.export.RvrConstants.RVR_SPECIES;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -191,9 +191,9 @@ public class CommonHarvestExportFeatureTest extends EmbeddedDatabaseTest {
         final DateTime dateTime = toDateTime(2018, 02, 11);
         final Harvest harvest = createHarvest(dateTime);
 
-        final HarvestSpecimen specimen =
-                model().newHarvestSpecimen(harvest, GameAge.ADULT, GameGender.MALE);
+        final HarvestSpecimen specimen = model().newHarvestSpecimen(harvest, ADULT_MALE);
         specimen.setWeightEstimated(250.0);
+        specimen.setWeightMeasured(null);
         specimen.setNotEdible(false);
         specimen.setFitnessClass(GameFitnessClass.ERINOMAINEN);
         specimen.setAntlersWidth(4);
@@ -216,8 +216,9 @@ public class CommonHarvestExportFeatureTest extends EmbeddedDatabaseTest {
             // Estimated weight should be assigned to weight as described in the schema documentation
             Assert.assertNotNull(resultSpecimen.getWeight());
 
-            Assert.assertEquals(specimen.getWeight(), resultSpecimen.getWeight());
-            Assert.assertEquals(specimen.getWeightEstimated(), resultSpecimen.getWeightEstimated());
+            Assert.assertEquals(specimen.getWeightEstimated(), resultSpecimen.getWeight(), 0.01);
+            Assert.assertEquals(specimen.getWeightEstimated(), resultSpecimen.getWeightEstimated(), 0.01);
+            Assert.assertNull(resultSpecimen.getWeightMeasured());
             Assert.assertEquals(specimen.getFitnessClass().name(), resultSpecimen.getFitnessClass().name());
             Assert.assertEquals(specimen.getAntlersType().name(), resultSpecimen.getAntlersType().name());
             Assert.assertEquals(specimen.getAntlersWidth(), resultSpecimen.getAntlersWidth());
@@ -227,7 +228,6 @@ public class CommonHarvestExportFeatureTest extends EmbeddedDatabaseTest {
 
             Assert.assertNull(specimen.getWeightMeasured());
         });
-
     }
 
     // RVR SPECIFIC
@@ -294,14 +294,14 @@ public class CommonHarvestExportFeatureTest extends EmbeddedDatabaseTest {
         final DateTime dateTime = toDateTime(2018, 02, 11);
 
         Arrays.stream(GameSpecies.ALL_GAME_SPECIES_CODES)
-                .filter(code -> !RVR_HARVEST_SPECIES.contains(code))
+                .filter(code -> !RVR_SPECIES.contains(code))
                 .forEach(code -> {
                     final Harvest harvest =
                             model().newHarvest(model().newGameSpecies(code),
                                     harvestPerson,
                                     harvestPerson);
                     harvest.setGeoLocation(geoLocation());
-                    harvest.setPointOfTime(dateTime.toDate());
+                    harvest.setPointOfTime(dateTime);
                     harvest.setRhy(rhy);
                     markHarvestReportApproved(harvest);
                 });
@@ -315,18 +315,38 @@ public class CommonHarvestExportFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
+    @Test
+    public void testExportRVRHarvests_otter() {
+        final DateTime dateTime = toDateTime(2021, 1, 14);
+        final HarvestPermit permit = model().newHarvestPermit();
+
+        final GameSpecies otter = model().newGameSpecies(OFFICIAL_CODE_OTTER);
+
+        final Harvest harvest = model().newHarvest(permit, otter);
+        harvest.setPointOfTime(dateTime);
+        harvest.setHarvestReportDate(dateTime);
+        harvest.setHarvestReportState(HarvestReportState.APPROVED);
+        harvest.setHarvestReportAuthor(harvestPerson);
+        harvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
+
+        onSavedAndAuthenticated(apiRvrUser, () -> {
+            final CHAR_Harvests result = feature.exportRVRHarvests(dateTime.getYear(), dateTime.getMonthOfYear());
+            assertOfficialHarvest(result);
+        });
+    }
+
     private Harvest createBearHarvest(DateTime dateTime) {
         final Harvest bearHarvest =
                 model().newHarvest(bearSpecies,
                         harvestPerson,
                         harvestPerson);
         bearHarvest.setGeoLocation(geoLocation());
-        bearHarvest.setPointOfTime(dateTime.toDate());
+        bearHarvest.setPointOfTime(dateTime);
         bearHarvest.setRhy(rhy);
         return bearHarvest;
     }
 
-    private void assertOfficialHarvest(final CHAR_Harvests result) {
+    private static void assertOfficialHarvest(final CHAR_Harvests result) {
 
         Assert.assertEquals(1, result.getHarvest().size());
         final CHAR_Harvest h = result.getHarvest().iterator().next();
@@ -334,15 +354,14 @@ public class CommonHarvestExportFeatureTest extends EmbeddedDatabaseTest {
 
     }
 
-    private DateTime toDateTime(final int year, final int month, final int day) {
+    private static DateTime toDateTime(final int year, final int month, final int day) {
         // Search criteria uses inclusive search parameter, so one millisecond is added
         return new DateTime(year, month, day, 0, 0, 0, 1, Constants.DEFAULT_TIMEZONE);
     }
 
     private Harvest createHarvest(final DateTime date) {
-
         final Harvest o = model().newHarvest(mooseSpecies, harvestPerson);
-        o.setPointOfTime(date.toDate());
+        o.setPointOfTime(date);
         o.setRhy(rhy);
         return o;
     }

@@ -83,7 +83,7 @@ public class UnfinishedMooselikePermitsService {
                 .leftJoin(ORIG_CONTACT_PERSON.mrAddress, MR_ADDRESS)
                 .leftJoin(ORIG_CONTACT_PERSON.otherAddress, OTHER_ADDRESS)
                 .where(SPECIES_AMOUNT.mooselikeHuntingFinished.isFalse(),
-                        SPECIES_AMOUNT.validOnHuntingYear(huntingYear),
+                        PERMIT.permitYear.eq(huntingYear),
                         PERMIT.isMooselikePermit())
                 .orderBy(PERMIT.permitNumber.asc(), SPECIES.nameFinnish.asc())
                 .fetch()

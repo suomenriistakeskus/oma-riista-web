@@ -1,15 +1,12 @@
 package fi.riista.feature.permit.invoice.pdf;
 
 import com.google.common.base.Joiner;
+import fi.riista.common.AcroFormPdfBuilder;
 import fi.riista.util.PdfWriter;
 import fi.riista.util.RiistakeskusConstants;
-import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDResources;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
-import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.apache.pdfbox.pdmodel.interactive.form.PDTextField;
 import org.springframework.core.io.ClassPathResource;
@@ -20,7 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
-class PermitDecisionInvoicePdfBuilder {
+class PermitDecisionInvoicePdfBuilder extends AcroFormPdfBuilder {
     private static final ClassPathResource PDF_TEMPLATE = new ClassPathResource("tilisiirtolomake-bottom.pdf");
 
     static byte[] getPdf(final PermitDecisionInvoicePdfModel model) throws IOException {
@@ -33,13 +30,12 @@ class PermitDecisionInvoicePdfBuilder {
 
     private final PDDocument pdfDocument;
     private final PDPage pdfPage;
-    private final PDAcroForm acroForm;
     private final PermitDecisionInvoicePdfModel model;
 
     private PermitDecisionInvoicePdfBuilder(final PDDocument pdfDocument, final PermitDecisionInvoicePdfModel model) {
+        super(pdfDocument);
         this.pdfDocument = Objects.requireNonNull(pdfDocument);
         this.pdfPage = Objects.requireNonNull(pdfDocument.getPage(0));
-        this.acroForm = Objects.requireNonNull(pdfDocument.getDocumentCatalog().getAcroForm());
         this.model = Objects.requireNonNull(model);
     }
 
@@ -156,7 +152,6 @@ class PermitDecisionInvoicePdfBuilder {
         textField("viitenumero", model.getInvoiceReferenceForHuman());
         textField("lisatiedot", model.getInvoiceAdditionalInfo());
 
-        this.acroForm.setNeedAppearances(false);
 
         // Fix annotations
         for (PDPage page : this.pdfDocument.getPages()) {
@@ -164,12 +159,6 @@ class PermitDecisionInvoicePdfBuilder {
                 annot.setPage(page);
             }
         }
-
-        // Define font resources names used in PDF template
-        final PDResources dr = new PDResources();
-        dr.put(COSName.getPDFName("Helv"), PDType1Font.HELVETICA);
-        dr.put(COSName.getPDFName("HeBo"), PDType1Font.HELVETICA_BOLD);
-        this.acroForm.setDefaultResources(dr);
 
         // Convert form fields to text
         this.acroForm.flatten();

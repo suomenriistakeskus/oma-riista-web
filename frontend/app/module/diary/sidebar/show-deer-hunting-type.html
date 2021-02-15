@@ -1,0 +1,16 @@
+<div ng-if="::!!$ctrl.entry.deerHuntingType">
+    <h5 translate="gamediary.form.deerHuntingType"></h5>
+    <div ng-switch="::$ctrl.entry.deerHuntingType">
+        <p ng-switch-when="OTHER">
+            <span translate="gamediary.deerHuntingType.OTHER"></span>
+            <span>:&nbsp</span>
+            <span ng-if="::!!$ctrl.entry.deerHuntingOtherTypeDescription"
+                  ng-bind="::$ctrl.entry.deerHuntingOtherTypeDescription"></span>
+            <span ng-if="::!$ctrl.entry.deerHuntingOtherTypeDescription"
+                  translate="gamediary.deerHuntingType.NOT_GIVEN"></span>
+        </p>
+        <p ng-switch-default>
+            <span ng-bind="::('gamediary.deerHuntingType.' + $ctrl.entry.deerHuntingType | translate)"></span>
+        </p>
+    </div>
+</div>

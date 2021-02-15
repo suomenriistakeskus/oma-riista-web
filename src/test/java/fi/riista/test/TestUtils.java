@@ -1,10 +1,10 @@
 package fi.riista.test;
 
-import com.google.common.base.Preconditions;
 import fi.riista.config.Constants;
 import fi.riista.feature.error.RevisionConflictException;
 import fi.riista.feature.gamediary.OutOfBoundsSpecimenAmountException;
 import fi.riista.feature.gamediary.harvest.specimen.MultipleSpecimenNotAllowedException;
+import fi.riista.util.F;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.hibernate.SessionFactory;
@@ -15,15 +15,18 @@ import org.joda.time.LocalTime;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
 
+import javax.annotation.Nonnull;
 import javax.persistence.EntityManager;
 import javax.validation.ValidationException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 import static org.junit.Assert.fail;
 
 public final class TestUtils {
@@ -66,15 +69,15 @@ public final class TestUtils {
         return new LocalDate(year, monthOfYear, dayOfMonth);
     }
 
-    public static final DateTime dt(final LocalDate date) {
+    public static DateTime dt(final LocalDate date) {
         return dt(date, 0);
     }
 
-    public static final DateTime dt(final LocalDate date, final int hourOfDay) {
+    public static DateTime dt(final LocalDate date, final int hourOfDay) {
         return dt(date, hourOfDay, 0);
     }
 
-    public static final DateTime dt(final LocalDate date, final int hourOfDay, final int minuteOfHour) {
+    public static DateTime dt(final LocalDate date, final int hourOfDay, final int minuteOfHour) {
         return dt(date, hourOfDay, minuteOfHour, 0);
     }
 
@@ -138,8 +141,8 @@ public final class TestUtils {
     }
 
     public static <T> List<T> createList(final int count, final Supplier<T> supplier) {
-        Preconditions.checkArgument(count >= 0, "count must be >= 0");
-        Objects.requireNonNull(supplier);
+        checkArgument(count >= 0, "count must be >= 0");
+        requireNonNull(supplier);
 
         final List<T> ret = new ArrayList<>(count);
 
@@ -151,13 +154,21 @@ public final class TestUtils {
     }
 
     public static Executor times(final int count) {
-        Preconditions.checkArgument(count >= 0, "count must be >= 0");
+        checkArgument(count >= 0, "count must be >= 0");
 
         return command -> {
             for (int i = 0; i < count; i++) {
                 command.run();
             }
         };
+    }
+
+    @Nonnull
+    @SafeVarargs
+    public static <T> List<T> concatAndShuffle(@Nonnull final List<? extends T>... lists) {
+        final List<T> ret = F.concat(lists);
+        Collections.shuffle(ret);
+        return ret;
     }
 
     public interface Executor {

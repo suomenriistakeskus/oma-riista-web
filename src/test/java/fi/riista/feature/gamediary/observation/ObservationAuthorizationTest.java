@@ -16,6 +16,8 @@ import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static fi.riista.feature.gamediary.observation.ObservationAuthorization.Permission.LINK_OBSERVATION_TO_HUNTING_DAY_OF_GROUP;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.MOOSE_HUNTING;
+import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.DELETE;
 import static fi.riista.security.EntityPermission.READ;
@@ -97,15 +99,15 @@ public class ObservationAuthorizationTest extends GameDiaryEntryAuthorizationTes
 
     @Override
     protected Observation create() {
-        return model().newObservation(true);
+        return model().newObservation(MOOSE_HUNTING);
     }
 
     @Override
     protected Observation create(final GameSpecies species, final Person author) {
-        return model().newObservation(species, author, true);
+        return model().newObservation(species, author, MOOSE_HUNTING);
     }
 
     protected Observation createNonShareableForClub(final GameSpecies species, final Person author) {
-        return model().newObservation(species, author, false);
+        return model().newObservation(species, author, NORMAL);
     }
 }

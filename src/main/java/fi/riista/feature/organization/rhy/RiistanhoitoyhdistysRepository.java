@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.Collection;
 import java.util.List;
 
-public interface RiistanhoitoyhdistysRepository extends BaseRepository<Riistanhoitoyhdistys, Long> {
+public interface RiistanhoitoyhdistysRepository extends BaseRepository<Riistanhoitoyhdistys, Long>, RiistanhoitoyhdistysRepositoryCustom {
 
     Riistanhoitoyhdistys findByOfficialCode(String officialCode);
 

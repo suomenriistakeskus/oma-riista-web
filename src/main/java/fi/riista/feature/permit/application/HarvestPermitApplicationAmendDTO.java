@@ -1,6 +1,6 @@
 package fi.riista.feature.permit.application;
 
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 

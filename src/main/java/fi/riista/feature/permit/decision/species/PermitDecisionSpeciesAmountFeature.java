@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toMap;
 
@@ -48,11 +50,11 @@ public class PermitDecisionSpeciesAmountFeature {
     public List<PermitDecisionSpeciesAmountDTO> getSpeciesAmounts(final long decisionId) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.READ);
         final HarvestPermitApplication application = decision.getApplication();
-        final Function<Integer, Float> applicationAmountMapping = getApplicationAmountMapping(application);
+        final Function<Integer, HarvestPermitApplicationSpeciesAmount> applicationAmountMapping = getApplicationAmountMapping(application);
 
         return F.mapNonNullsToList(permitDecisionSpeciesAmountRepository.findByPermitDecision(decision), spa -> {
             final int speciesCode = spa.getGameSpecies().getOfficialCode();
-            final float applicationAmount = applicationAmountMapping.apply(speciesCode);
+            final HarvestPermitApplicationSpeciesAmount applicationAmount = applicationAmountMapping.apply(speciesCode);
 
             return PermitDecisionSpeciesAmountDTO.create(spa, application, applicationAmount);
         });
@@ -61,19 +63,18 @@ public class PermitDecisionSpeciesAmountFeature {
     @Transactional
     public void saveSpeciesAmounts(final long decisionId, final List<PermitDecisionSpeciesAmountDTO> dtoList) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.UPDATE);
-        decision.assertStatus(PermitDecision.Status.DRAFT);
-        decision.assertHandler(activeUserService.requireActiveUser());
+        decision.assertEditableBy(activeUserService.requireActiveUser());
         final HarvestPermitApplication application = decision.getApplication();
 
         final Function<PermitDecisionSpeciesAmountDTO, PermitDecisionSpeciesAmount> dtoToEntity =
                 createEntityLookup(decision);
 
         // VALIDATE
-        final Function<Integer, Float> applicationAmountMapping = getApplicationAmountMapping(application);
+        final Function<Integer, HarvestPermitApplicationSpeciesAmount> applicationAmountMapping = getApplicationAmountMapping(application);
 
         dtoList.forEach(dto -> {
             final PermitDecisionSpeciesAmount entity = dtoToEntity.apply(dto);
-            final float applicationAmount = applicationAmountMapping.apply(dto.getGameSpeciesCode());
+            final HarvestPermitApplicationSpeciesAmount applicationAmount = applicationAmountMapping.apply(dto.getGameSpeciesCode());
             validateSpeciesAmount(entity, dto, applicationAmount);
         });
 
@@ -103,20 +104,47 @@ public class PermitDecisionSpeciesAmountFeature {
         return new IllegalArgumentException(String.format("Species amount id=%d not found", dto.getId()));
     }
 
-    private Function<Integer, Float> getApplicationAmountMapping(final HarvestPermitApplication application) {
-        final Map<Integer, Float> mapping = applicationSpeciesAmountRepository
+    private Function<Integer, HarvestPermitApplicationSpeciesAmount> getApplicationAmountMapping(final HarvestPermitApplication application) {
+        final Map<Integer, HarvestPermitApplicationSpeciesAmount> mapping = applicationSpeciesAmountRepository
                 .findByHarvestPermitApplication(application).stream()
-                .collect(toMap(a -> a.getGameSpecies().getOfficialCode(), HarvestPermitApplicationSpeciesAmount::getAmount));
+                .collect(toMap(a -> a.getGameSpecies().getOfficialCode(), a -> a));
 
-        return speciesCode -> mapping.getOrDefault(speciesCode, 0f);
+        return speciesCode -> mapping.getOrDefault(speciesCode, null);
     }
 
     private static void validateSpeciesAmount(final @Nonnull PermitDecisionSpeciesAmount spa,
                                               final @Nonnull PermitDecisionSpeciesAmountDTO dto,
-                                              final float applicationAmount) {
-        if (dto.getAmount() > applicationAmount) {
+                                              final @Nonnull HarvestPermitApplicationSpeciesAmount applicationSpa) {
+
+        final Float harvestAmount = dto.getSpecimenAmount();
+        final Float applicationAmount = applicationSpa.getSpecimenAmount();
+        if (harvestAmount != null && applicationAmount == null ||
+                harvestAmount == null && applicationAmount != null ||
+                harvestAmount != null && harvestAmount > applicationAmount) {
             throw new IllegalArgumentException(String.format("Amount %.1f exceeds value in application %.1f",
-                    dto.getAmount(), applicationAmount));
+                    harvestAmount, applicationAmount));
+        }
+
+        final List<Integer> nestRemovalAmounts =
+                Stream.of(dto.getNestAmount(),
+                        dto.getEggAmount(),
+                        dto.getConstructionAmount())
+                        .collect(Collectors.toList());
+        final List<Integer> nestRemovalAppAmounts =
+                Stream.of(applicationSpa.getNestAmount(),
+                        applicationSpa.getEggAmount(),
+                        applicationSpa.getConstructionAmount())
+                        .collect(Collectors.toList());
+
+        for (int i = 0; i < nestRemovalAmounts.size(); i++) {
+            final Integer amount = nestRemovalAmounts.get(i);
+            final Integer appAmount = nestRemovalAppAmounts.get(i);
+            if (amount == null && appAmount != null ||
+                    amount != null && appAmount == null ||
+                    amount != null && amount > appAmount) {
+                throw new IllegalArgumentException(String.format("Amount %.1f exceeds value in application %.1f",
+                        amount, appAmount));
+            }
         }
 
         PermitDecisionSpeciesAmountDateRestriction.create(spa).assertValid(dto);
@@ -125,7 +153,10 @@ public class PermitDecisionSpeciesAmountFeature {
     private static void updateSpeciesAmount(final @Nonnull PermitDecisionSpeciesAmount entity,
                                             final @Nonnull PermitDecisionSpeciesAmountDTO dto) {
         entity.copyDatesFrom(dto);
-        entity.setAmount(dto.getAmount());
+        entity.setSpecimenAmount(dto.getSpecimenAmount());
+        entity.setNestAmount(dto.getNestAmount());
+        entity.setEggAmount(dto.getEggAmount());
+        entity.setConstructionAmount(dto.getConstructionAmount());
         entity.setAmountComplete(true);
 
         if (dto.getRestrictionAmount() != null && dto.getRestrictionType() != null) {

@@ -87,7 +87,8 @@ public class HuntingClubContactService {
                 .join(OCCUAPATION.person, PERSON).fetchJoin()
                 .join(OCCUAPATION.organisation, CLUB._super).fetchJoin()
                 .join(CLUB.parentOrganisation, RHY._super)
-                .where(OCCUAPATION.validAndNotDeleted(),
+                .where(CLUB.active.isTrue(),
+                        OCCUAPATION.validAndNotDeleted(),
                         OCCUAPATION.occupationType.eq(OccupationType.SEURAN_YHDYSHENKILO),
                         RHY.id.eq(rhyId)
                 ).orderBy(OCCUAPATION.organisation.nameFinnish.asc(), OCCUAPATION.callOrder.asc().nullsLast())

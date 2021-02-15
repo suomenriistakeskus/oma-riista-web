@@ -45,6 +45,10 @@ public class SQGameObservation extends RelationalPathSpatial<SQGameObservation> 
 
     public final DateTimePath<java.sql.Timestamp> creationTime = createDateTime("creationTime", java.sql.Timestamp.class);
 
+    public final StringPath deerHuntingType = createString("deerHuntingType");
+
+    public final StringPath deerHuntingTypeDescription = createString("deerHuntingTypeDescription");
+
     public final NumberPath<Long> deletedByUserId = createNumber("deletedByUserId", Long.class);
 
     public final DateTimePath<java.sql.Timestamp> deletionTime = createDateTime("deletionTime", java.sql.Timestamp.class);
@@ -93,6 +97,8 @@ public class SQGameObservation extends RelationalPathSpatial<SQGameObservation> 
 
     public final NumberPath<Integer> mooselikeUnknownSpecimenAmount = createNumber("mooselikeUnknownSpecimenAmount", Integer.class);
 
+    public final StringPath observationCategory = createString("observationCategory");
+
     public final StringPath observationType = createString("observationType");
 
     public final NumberPath<Long> observerId = createNumber("observerId", Long.class);
@@ -115,17 +121,21 @@ public class SQGameObservation extends RelationalPathSpatial<SQGameObservation> 
 
     public final com.querydsl.sql.PrimaryKey<SQGameObservation> gameObservationPkey = createPrimaryKey(gameObservationId);
 
-    public final com.querydsl.sql.ForeignKey<SQObservationType> gameObservationObservationTypeFk = createForeignKey(observationType, "name");
-
-    public final com.querydsl.sql.ForeignKey<SQPerson> gameObservationApproverToHuntingDayPersonIdFk = createForeignKey(approverToHuntingDayId, "person_id");
-
     public final com.querydsl.sql.ForeignKey<SQPerson> gameObservationObserverFk = createForeignKey(observerId, "person_id");
+
+    public final com.querydsl.sql.ForeignKey<SQObservationCategory> gameObservationObservationCategoryFk = createForeignKey(observationCategory, "name");
 
     public final com.querydsl.sql.ForeignKey<SQGroupHuntingDay> gameObservationGroupHuntingDayFk = createForeignKey(groupHuntingDayId, "group_hunting_day_id");
 
     public final com.querydsl.sql.ForeignKey<SQOrganisation> gameObservationRhyFk = createForeignKey(rhyId, "organisation_id");
 
     public final com.querydsl.sql.ForeignKey<SQPerson> gameObservationAuthorFk = createForeignKey(authorId, "person_id");
+
+    public final com.querydsl.sql.ForeignKey<SQObservationType> gameObservationObservationTypeFk = createForeignKey(observationType, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQDeerHuntingType> gameObservationDeerHuntingTypeFk = createForeignKey(deerHuntingType, "name");
+
+    public final com.querydsl.sql.ForeignKey<SQPerson> gameObservationApproverToHuntingDayPersonIdFk = createForeignKey(approverToHuntingDayId, "person_id");
 
     public final com.querydsl.sql.ForeignKey<SQGameSpecies> gameObservationSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
 
@@ -170,6 +180,8 @@ public class SQGameObservation extends RelationalPathSpatial<SQGameObservation> 
         addMetadata(consistencyVersion, ColumnMetadata.named("consistency_version").withIndex(2).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(createdByUserId, ColumnMetadata.named("created_by_user_id").withIndex(3).ofType(Types.BIGINT).withSize(19));
         addMetadata(creationTime, ColumnMetadata.named("creation_time").withIndex(6).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
+        addMetadata(deerHuntingType, ColumnMetadata.named("deer_hunting_type").withIndex(45).ofType(Types.VARCHAR).withSize(255));
+        addMetadata(deerHuntingTypeDescription, ColumnMetadata.named("deer_hunting_type_description").withIndex(46).ofType(Types.VARCHAR).withSize(255));
         addMetadata(deletedByUserId, ColumnMetadata.named("deleted_by_user_id").withIndex(4).ofType(Types.BIGINT).withSize(19));
         addMetadata(deletionTime, ColumnMetadata.named("deletion_time").withIndex(8).ofType(Types.TIMESTAMP).withSize(35).withDigits(6));
         addMetadata(description, ColumnMetadata.named("description").withIndex(18).ofType(Types.VARCHAR).withSize(2147483647));
@@ -194,6 +206,7 @@ public class SQGameObservation extends RelationalPathSpatial<SQGameObservation> 
         addMetadata(mooselikeFemaleAmount, ColumnMetadata.named("mooselike_female_amount").withIndex(28).ofType(Types.INTEGER).withSize(10));
         addMetadata(mooselikeMaleAmount, ColumnMetadata.named("mooselike_male_amount").withIndex(27).ofType(Types.INTEGER).withSize(10));
         addMetadata(mooselikeUnknownSpecimenAmount, ColumnMetadata.named("mooselike_unknown_specimen_amount").withIndex(33).ofType(Types.INTEGER).withSize(10));
+        addMetadata(observationCategory, ColumnMetadata.named("observation_category").withIndex(44).ofType(Types.VARCHAR).withSize(255));
         addMetadata(observationType, ColumnMetadata.named("observation_type").withIndex(25).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(observerId, ColumnMetadata.named("observer_id").withIndex(20).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(observerName, ColumnMetadata.named("observer_name").withIndex(39).ofType(Types.VARCHAR).withSize(255));

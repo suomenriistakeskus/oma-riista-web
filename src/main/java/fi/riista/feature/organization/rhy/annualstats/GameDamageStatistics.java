@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonGetter;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
 import fi.riista.util.NumberUtils;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -29,7 +30,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class GameDamageStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<GameDamageStatistics>,
+        AnnualStatisticsManuallyEditableFields<GameDamageStatistics>,
         Serializable {
 
     public static final GameDamageStatistics reduce(@Nullable final GameDamageStatistics a,
@@ -62,6 +63,9 @@ public class GameDamageStatistics
     @Column(name = "mooselike_damage_inspection_locations")
     private Integer mooselikeDamageInspectionLocations;
 
+    @Column(name = "mooselike_damage_inspection_locations_overridden", nullable = false)
+    private boolean mooselikeDamageInspectionLocationsOverridden;
+
     // Hirvieläimet, tarkastuksista aiheutuneet kustannukset euroina
     @Min(0)
     @Column(name = "mooselike_damage_inspection_expenses")
@@ -71,6 +75,9 @@ public class GameDamageStatistics
     @Min(0)
     @Column(name = "large_carnivore_damage_inspection_locations")
     private Integer largeCarnivoreDamageInspectionLocations;
+
+    @Column(name = "large_carnivore_damage_inspection_locations_overridden", nullable = false)
+    private boolean largeCarnivoreDamageInspectionLocationsOverridden;
 
     // Suurpedot, tarkastuksista aiheutuneet kustannukset euroina
     @Min(0)
@@ -83,6 +90,7 @@ public class GameDamageStatistics
     private Integer gameDamageInspectors;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "game_damage_last_modified")
     private DateTime lastModified;
 
@@ -93,8 +101,10 @@ public class GameDamageStatistics
         requireNonNull(that);
 
         this.mooselikeDamageInspectionLocations = that.mooselikeDamageInspectionLocations;
+        this.mooselikeDamageInspectionLocationsOverridden = that.mooselikeDamageInspectionLocationsOverridden;
         this.mooselikeDamageInspectionExpenses = that.mooselikeDamageInspectionExpenses;
         this.largeCarnivoreDamageInspectionLocations = that.largeCarnivoreDamageInspectionLocations;
+        this.largeCarnivoreDamageInspectionLocationsOverridden = that.largeCarnivoreDamageInspectionLocationsOverridden;
         this.largeCarnivoreDamageInspectionExpenses = that.largeCarnivoreDamageInspectionExpenses;
         this.gameDamageInspectors = that.gameDamageInspectors;
         this.lastModified = that.lastModified;
@@ -119,8 +129,15 @@ public class GameDamageStatistics
     public void assignFrom(@Nonnull final GameDamageStatistics that) {
         // Includes manually updateable fields only.
 
+        if (!Objects.equals(this.mooselikeDamageInspectionLocations, that.mooselikeDamageInspectionLocations)) {
+            this.mooselikeDamageInspectionLocationsOverridden = true;
+        }
         this.mooselikeDamageInspectionLocations = that.mooselikeDamageInspectionLocations;
         this.mooselikeDamageInspectionExpenses = that.mooselikeDamageInspectionExpenses;
+
+        if (!Objects.equals(this.largeCarnivoreDamageInspectionLocations, that.largeCarnivoreDamageInspectionLocations)) {
+            this.largeCarnivoreDamageInspectionLocationsOverridden = true;
+        }
         this.largeCarnivoreDamageInspectionLocations = that.largeCarnivoreDamageInspectionLocations;
         this.largeCarnivoreDamageInspectionExpenses = that.largeCarnivoreDamageInspectionExpenses;
     }
@@ -162,6 +179,14 @@ public class GameDamageStatistics
         this.mooselikeDamageInspectionLocations = mooselikeDamageInspectionLocations;
     }
 
+    public boolean isMooselikeDamageInspectionLocationsOverridden() {
+        return mooselikeDamageInspectionLocationsOverridden;
+    }
+
+    public void setMooselikeDamageInspectionLocationsOverridden(final boolean mooselikeDamageInspectionLocationsOverridden) {
+        this.mooselikeDamageInspectionLocationsOverridden = mooselikeDamageInspectionLocationsOverridden;
+    }
+
     public BigDecimal getMooselikeDamageInspectionExpenses() {
         return mooselikeDamageInspectionExpenses;
     }
@@ -176,6 +201,14 @@ public class GameDamageStatistics
 
     public void setLargeCarnivoreDamageInspectionLocations(final Integer largeCarnivoreDamageInspectionLocations) {
         this.largeCarnivoreDamageInspectionLocations = largeCarnivoreDamageInspectionLocations;
+    }
+
+    public boolean isLargeCarnivoreDamageInspectionLocationsOverridden() {
+        return largeCarnivoreDamageInspectionLocationsOverridden;
+    }
+
+    public void setLargeCarnivoreDamageInspectionLocationsOverridden(final boolean largeCarnivoreDamageInspectionLocationsOverridden) {
+        this.largeCarnivoreDamageInspectionLocationsOverridden = largeCarnivoreDamageInspectionLocationsOverridden;
     }
 
     public BigDecimal getLargeCarnivoreDamageInspectionExpenses() {

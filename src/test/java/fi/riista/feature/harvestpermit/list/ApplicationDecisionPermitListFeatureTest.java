@@ -3,7 +3,7 @@ package fi.riista.feature.harvestpermit.list;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.decision.PermitDecision;
@@ -21,11 +21,11 @@ import java.util.List;
 import java.util.Objects;
 
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.MOOSELIKE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 public class ApplicationDecisionPermitListFeatureTest extends EmbeddedDatabaseTest {
 
@@ -58,7 +58,7 @@ public class ApplicationDecisionPermitListFeatureTest extends EmbeddedDatabaseTe
         application4.setApplicationNumber(20004);
         application4.setContactPerson(person);
         final PermitDecision decision4 = model().newPermitDecision(application4);
-        final String permitNumber4 = PermitNumberUtil.createPermitNumber(decision4.getDecisionYear(), 1, decision4.getDecisionNumber());
+        final String permitNumber4 = DocumentNumberUtil.createDocumentNumber(decision4.getDecisionYear(), 1, decision4.getDecisionNumber());
         final HarvestPermit permit4 = model().newHarvestPermit(rhy, permitNumber4);
         model().newHarvestPermitContactPerson(permit4, person);
         permit4.setPermitDecision(decision4);
@@ -68,12 +68,12 @@ public class ApplicationDecisionPermitListFeatureTest extends EmbeddedDatabaseTe
         application5.setApplicationNumber(20005);
         // this decision won't be listed because not contact person
         final PermitDecision decision5 = model().newPermitDecision(application5);
-        final String permitNumber5 = PermitNumberUtil.createPermitNumber(decision5.getDecisionYear(), 1, decision5.getDecisionNumber());
+        final String permitNumber5 = DocumentNumberUtil.createDocumentNumber(decision5.getDecisionYear(), 1, decision5.getDecisionNumber());
         final HarvestPermit permit5 = model().newHarvestPermit(rhy, permitNumber5);
         model().newHarvestPermitContactPerson(permit5, person);
         permit5.setPermitDecision(decision5);
 
-        final String permitNumber6 = PermitNumberUtil.createPermitNumber(DateUtil.today().getYear(), 1, 30000);
+        final String permitNumber6 = DocumentNumberUtil.createDocumentNumber(DateUtil.currentYear(), 1, 30000);
         final HarvestPermit permit6 = model().newHarvestPermit(rhy, permitNumber6);
         permit6.setOriginalContactPerson(person);
 
@@ -140,9 +140,9 @@ public class ApplicationDecisionPermitListFeatureTest extends EmbeddedDatabaseTe
         });
     }
 
-    private TypeSafeMatcher<ApplicationDecisionPermitListDTO> dtoIsEqual(final HarvestPermitApplication application,
-                                                                         final PermitDecision decision,
-                                                                         final HarvestPermit permit) {
+    private static TypeSafeMatcher<ApplicationDecisionPermitListDTO> dtoIsEqual(final HarvestPermitApplication application,
+                                                                                final PermitDecision decision,
+                                                                                final HarvestPermit permit) {
         return new CustomTypeSafeMatcher<ApplicationDecisionPermitListDTO>("") {
             @Override
             protected boolean matchesSafely(final ApplicationDecisionPermitListDTO dto) {

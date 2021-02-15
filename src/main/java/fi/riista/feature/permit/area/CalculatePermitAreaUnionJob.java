@@ -3,6 +3,7 @@ package fi.riista.feature.permit.area;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.common.util.concurrent.UncheckedTimeoutException;
+import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +25,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import static fi.riista.feature.permit.area.HarvestPermitArea.CALCULATION_RETRY_PERIOD;
 
 @Component
 public class CalculatePermitAreaUnionJob {
@@ -108,9 +111,9 @@ public class CalculatePermitAreaUnionJob {
     }
 
     private Optional<Long> getFirstPendingZoneId() {
-        final JpaSort sort = new JpaSort(Sort.Direction.ASC, HarvestPermitArea_.statusTime);
-        final PageRequest pageRequest = new PageRequest(0, 1, sort);
-        final DateTime processingSince = DateTime.now().minusHours(1);
+        final JpaSort sort = JpaSort.of(Sort.Direction.ASC, HarvestPermitArea_.statusTime);
+        final PageRequest pageRequest = PageRequest.of(0, 1, sort);
+        final DateTime processingSince = DateUtil.now().minus(CALCULATION_RETRY_PERIOD);
 
         return harvestPermitAreaRepository
                 .findInStatusPendingOrProcessingTooLong(processingSince, pageRequest)

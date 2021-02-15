@@ -7,6 +7,7 @@ import fi.riista.feature.permit.application.email.HarvestPermitApplicationNotifi
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,17 @@ public class HarvestPermitApplicationAsyncFeature {
 
     @Resource
     private UserRepository userRepository;
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
+    @Transactional(rollbackFor = Exception.class)
+    public String createArchiveIfMissing(final long applicationId) throws Exception {
+        if (permitApplicationArchiveService.isArchiveMissing(applicationId)) {
+            doCreateArchive(applicationId);
+            return "created";
+        } else {
+            return "exists";
+        }
+    }
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -63,6 +75,10 @@ public class HarvestPermitApplicationAsyncFeature {
 
     @Async
     public void asyncCreateArchive(final long applicationId) throws Exception {
+        doCreateArchive(applicationId);
+    }
+
+    private void doCreateArchive(final long applicationId) throws Exception {
         final PermitApplicationArchiveDTO dto = permitApplicationArchiveService.getDataForArchive(applicationId);
 
         Path archivePath = null;

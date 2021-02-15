@@ -25,6 +25,7 @@
                     <select name="gameSpeciesId" id="gameSpeciesId"
                             class="form-control"
                             ng-model="entry.gameSpeciesCode"
+                            ng-change="gameSpeciesChange()"
                             ng-options="s.code as getGameName(s.code, s) group by getCategoryName(s.categoryId) for s in species | orderBy:['categoryId', 'translatedName']"
                             ie10-optgroup-fix
                             ng-disabled="!entry.canEdit || species.length < 2"><option value=""></option>
@@ -41,7 +42,23 @@
             <div class="col-xs-7 checkbox">
                 <label>
                     <input type="checkbox" name="withinMooseHunting" id="withinMooseHunting"
-                           ng-model="entry.withinMooseHunting"
+                           ng-model="viewState.withinMooseHunting"
+                           ng-change="updateCategory()"
+                           ng-disabled="!entry.canEdit">
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('withinDeerHunting')">
+            <label for="withinDeerHunting" class="col-xs-5 control-label">
+                <span translate="gamediary.form.withinDeerHunting"></span>
+            </label>
+
+            <div class="col-xs-7 checkbox">
+                <label>
+                    <input type="checkbox" name="withinDeerHunting" id="withinDeerHunting"
+                           ng-model="viewState.withinDeerHunting"
+                           ng-change="updateCategory()"
                            ng-disabled="!entry.canEdit">
                 </label>
             </div>
@@ -58,10 +75,42 @@
                     <select name="observationType" id="observationType"
                             class="form-control"
                             ng-model="entry.observationType"
+                            ng-change="observationTypeChange()"
                             ng-options="type as ('observation.type.' + type) | translate for type in getAvailableObservationTypes()"
                             ng-disabled="!entry.canEdit"><option value=""></option>
                     </select>
                 </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('deerHuntingType')">
+            <div ng-class="{ 'has-error': (!entry.deerHuntingType) }">
+                <label for="deerHuntingType" class="col-xs-5 control-label">
+                    <span translate="gamediary.form.deerHuntingType"></span>
+                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
+                </label>
+
+                <div class="col-xs-7">
+                    <select name="deerHuntingType" id="deerHuntingType"
+                            class="form-control"
+                            ng-model="entry.deerHuntingType"
+                            ng-options="type as ('gamediary.deerHuntingType.' + type) | translate for type in getAvailableDeerHuntingTypes()"
+                            ng-disabled="!entry.canEdit"><option value=""></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" ng-if="isFieldVisible('deerHuntingTypeDescription') && entry.deerHuntingType === 'OTHER'" show-errors>
+            <label for="description" class="control-label col-xs-5">
+                <span translate="gamediary.form.deerHuntingTypeDescription"></span>
+            </label>
+
+            <div class="col-xs-7">
+                <textarea name="deerHuntingTypeDescription" id="deerHuntingTypeDescription"
+                          class="form-control"
+                          rows="3"
+                          ng-model="entry.deerHuntingTypeDescription"></textarea>
             </div>
         </div>
 
@@ -142,6 +191,7 @@
                     <input type="number" name="totalSpecimenAmount" id="totalSpecimenAmount"
                            class="form-control"
                            ng-model="entry.totalSpecimenAmount"
+                           ng-change="totalSpecimenAmountChange()"
                            ng-required="isFieldRequired('amount')"
                            ng-disabled="!entry.canEdit || !entry.gameSpeciesCode"
                            min="1" ng-max="maxSpecimenCount"/>

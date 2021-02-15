@@ -2,11 +2,11 @@ package fi.riista.feature.permit.decision.document;
 
 import fi.riista.feature.permit.application.bird.BirdPermitApplicationSummaryDTO;
 import fi.riista.feature.permit.application.bird.amount.BirdPermitApplicationSpeciesAmountDTO;
-import fi.riista.feature.permit.application.bird.attachments.BirdPermitApplicationAttachmentDTO;
-import fi.riista.feature.permit.application.bird.damage.BirdPermitApplicationDamageDTO;
-import fi.riista.feature.permit.application.bird.forbidden.BirdPermitApplicationForbiddenMethodsSpeciesDTO;
 import fi.riista.feature.permit.application.bird.period.BirdPermitApplicationSpeciesPeriodDTO;
-import fi.riista.feature.permit.application.bird.population.BirdPermitApplicationSpeciesPopulationDTO;
+import fi.riista.feature.permit.application.derogation.attachments.DerogationPermitApplicationAttachmentDTO;
+import fi.riista.feature.permit.application.derogation.damage.DerogationPermitApplicationDamageDTO;
+import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethodsSpeciesDTO;
+import fi.riista.feature.permit.application.derogation.population.DerogationPermitApplicationSpeciesPopulationDTO;
 import fi.riista.util.Locales;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -18,6 +18,9 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+
+import static fi.riista.feature.permit.decision.document.PermitDecisionTextUtils.escape;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 public class PermitDecisionBirdApplicationSummaryGenerator {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormat.forPattern("d.M.");
@@ -148,26 +151,35 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
     }
 
     private void createProtectedArea(final StringBuilder sb) {
-        sb.append("\n\n");
-        sb.append(i18n("Hakemusalue:", "Ansökningsområde:"));
-        sb.append("\n\n");
+        sb.append("\n\n")
+        .append(i18n("Hakemusalue:", "Ansökningsområde:"))
+        .append("\n\n");
+
+        final String areaDescription = model.getAreaDescription();
+
         sb.append("---|---:\n");
-        cell2(sb, i18nKey("bird.application.area.name"), model.getProtectedArea().getName());
-        cell2(sb, i18nKey("bird.application.area.address"), model.getProtectedArea().getStreetAddress());
-        cell2(sb, i18nKey("bird.application.area.postalcode"), model.getProtectedArea().getPostalCode());
-        cell2(sb, i18nKey("bird.application.area.city"), model.getProtectedArea().getCity());
+        cell2(sb, i18nKey("bird.application.area.name"), escape(model.getProtectedArea().getName()));
+        cell2(sb, i18nKey("bird.application.area.address"), escape(model.getProtectedArea().getStreetAddress()));
+        cell2(sb, i18nKey("bird.application.area.postalcode"), escape(model.getProtectedArea().getPostalCode()));
+        cell2(sb, i18nKey("bird.application.area.city"), escape(model.getProtectedArea().getCity()));
         cell2(sb, i18nKey("bird.application.area.size"), "" + model.getProtectedArea().getProtectedAreSize() + " ha");
+        if (isNotBlank(areaDescription)) {
+            cell2(sb, i18nKey("bird.application.area.areaDescription"), escape(areaDescription));
+        }
+
         sb.append("\n\n");
 
-        sb.append(i18nKey("bird.application.area.type"));
-        sb.append(":\n");
-        sb.append(i18nKey("bird.application.area.type." + model.getProtectedArea().getProtectedAreaType()));
-        sb.append("\n\n");
+        sb.append(i18nKey("bird.application.area.type"))
+                .append(":\n")
+                .append(i18nKey("bird.application.area.type." + model.getProtectedArea().getProtectedAreaType()))
+                .append("\n\n");
 
-        sb.append(i18nKey("bird.application.area.map"));
-        sb.append(":\n");
+        if (!model.getAreaAttachments().isEmpty()) {
+            sb.append(i18nKey("bird.application.area.map"))
+                    .append(":\n");
+        }
 
-        for (final BirdPermitApplicationAttachmentDTO s : model.getAreaAttachments()) {
+        for (final DerogationPermitApplicationAttachmentDTO s : model.getAreaAttachments()) {
             sb.append("\\- ");
             sb.append(s.getName());
             sb.append("\n");
@@ -176,7 +188,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append("\n\n");
         sb.append(i18nKey("bird.application.area.rights"));
         sb.append(":\n");
-        sb.append(model.getProtectedArea().getDescriptionOfRights());
+        sb.append(escape(model.getProtectedArea().getDescriptionOfRights()));
         sb.append("\n\n");
     }
 
@@ -236,7 +248,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
             sb.append(i18nKey("bird.application.forbidden.32"));
             sb.append(": ");
             sb.append("\n");
-            sb.append(model.getForbiddenMethods().getDeviateSection32());
+            sb.append(escape(model.getForbiddenMethods().getDeviateSection32()));
             sb.append("\n");
         }
 
@@ -252,7 +264,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
             }
 
             if (StringUtils.hasText(model.getForbiddenMethods().getDeviateSection33())) {
-                sb.append(model.getForbiddenMethods().getDeviateSection33());
+                sb.append(escape(model.getForbiddenMethods().getDeviateSection33()));
                 sb.append("\n");
             }
         }
@@ -269,7 +281,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
             }
 
             if (StringUtils.hasText(model.getForbiddenMethods().getDeviateSection34())) {
-                sb.append(model.getForbiddenMethods().getDeviateSection34());
+                sb.append(escape(model.getForbiddenMethods().getDeviateSection34()));
                 sb.append("\n");
             }
         }
@@ -279,7 +291,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
             sb.append(i18nKey("bird.application.forbidden.35"));
             sb.append(": ");
             sb.append("\n");
-            sb.append(model.getForbiddenMethods().getDeviateSection35());
+            sb.append(escape(model.getForbiddenMethods().getDeviateSection35()));
             sb.append("\n");
         }
 
@@ -288,7 +300,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
             sb.append(i18nKey("bird.application.forbidden.51"));
             sb.append(": ");
             sb.append("\n");
-            sb.append(model.getForbiddenMethods().getDeviateSection51());
+            sb.append(escape(model.getForbiddenMethods().getDeviateSection51()));
             sb.append("\n");
         }
 
@@ -300,13 +312,14 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.forbidden.justification"));
         sb.append(":\n");
 
-        for (final BirdPermitApplicationForbiddenMethodsSpeciesDTO dto : model.getForbiddenMethods().getSpeciesJustifications()) {
+        for (final DerogationPermitApplicationForbiddenMethodsSpeciesDTO dto :
+                model.getForbiddenMethods().getSpeciesJustifications()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
 
             if (dto.isActive()) {
-                sb.append(dto.getJustification());
+                sb.append(escape(dto.getJustification()));
             } else {
                 sb.append(i18nKey("bird.application.forbidden.not.applicable"));
             }
@@ -324,7 +337,7 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.damage.amount"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationDamageDTO dto : model.getDamage()) {
+        for (DerogationPermitApplicationDamageDTO dto : model.getDamage()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
@@ -336,11 +349,11 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.damage.description"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationDamageDTO dto : model.getDamage()) {
+        for (DerogationPermitApplicationDamageDTO dto : model.getDamage()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
-            sb.append(dto.getCausedDamageDescription());
+            sb.append(escape(dto.getCausedDamageDescription()));
             sb.append("\n");
         }
 
@@ -348,11 +361,11 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.damage.eviction.method"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationDamageDTO dto : model.getDamage()) {
+        for (DerogationPermitApplicationDamageDTO dto : model.getDamage()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
-            sb.append(dto.getEvictionMeasureDescription());
+            sb.append(escape(dto.getEvictionMeasureDescription()));
             sb.append("\n");
         }
 
@@ -360,11 +373,11 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.damage.eviction.effects"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationDamageDTO dto : model.getDamage()) {
+        for (DerogationPermitApplicationDamageDTO dto : model.getDamage()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
-            sb.append(dto.getEvictionMeasureEffect());
+            sb.append(escape(dto.getEvictionMeasureEffect()));
             sb.append("\n");
         }
 
@@ -378,11 +391,11 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.population.amount"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationSpeciesPopulationDTO dto : model.getPopulation()) {
+        for (DerogationPermitApplicationSpeciesPopulationDTO dto : model.getPopulation()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
-            sb.append(dto.getPopulationAmount());
+            sb.append(escape(dto.getPopulationAmount()));
             sb.append("\n");
         }
 
@@ -390,11 +403,11 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
         sb.append(i18nKey("bird.application.population.description"));
         sb.append(":\n");
 
-        for (BirdPermitApplicationSpeciesPopulationDTO dto : model.getPopulation()) {
+        for (DerogationPermitApplicationSpeciesPopulationDTO dto : model.getPopulation()) {
             sb.append("\\- ");
             sb.append(speciesName(dto.getGameSpeciesCode()));
             sb.append(": ");
-            sb.append(dto.getPopulationDescription());
+            sb.append(escape(dto.getPopulationDescription()));
             sb.append("\n");
         }
 
@@ -406,14 +419,14 @@ public class PermitDecisionBirdApplicationSummaryGenerator {
             sb.append(i18n("Liitteet", "Bilagor"));
             sb.append("\n");
 
-            for (BirdPermitApplicationAttachmentDTO s : model.getOtherAttachments()) {
+            for (DerogationPermitApplicationAttachmentDTO s : model.getOtherAttachments()) {
                 sb.append("\\- ");
                 sb.append(s.getName());
                 sb.append("\n");
 
                 if (StringUtils.hasText(s.getAdditionalInfo())) {
-                    sb.append(s.getAdditionalInfo());
-                    sb.append("\n");
+                    sb.append(escape(s.getAdditionalInfo()))
+                            .append("\n");
                 }
             }
 

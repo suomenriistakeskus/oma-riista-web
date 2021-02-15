@@ -31,10 +31,11 @@ public interface RhyAnnualStatisticsTestDataPopulator extends ValueGeneratorMixi
         accident.setBears(8);
         accident.setWolves(9);
         accident.setWolverines(10);
+        accident.setOtherSpecies(11);
 
         srva.setTrafficAccidents(1 + 2 + 3 + 4 + 5); // mooselikes
         srva.setRailwayAccidents(7 + 8 + 9 + 10); // large carnivores
-        srva.setOtherAccidents(6); // wild boars
+        srva.setOtherAccidents(6 + 11); // wild boars + other species
 
         final SrvaSpeciesCountStatistics deportation = srva.getDeportation();
         deportation.setMooses(11);
@@ -47,6 +48,7 @@ public interface RhyAnnualStatisticsTestDataPopulator extends ValueGeneratorMixi
         deportation.setBears(18);
         deportation.setWolves(19);
         deportation.setWolverines(20);
+        deportation.setOtherSpecies(21);
 
         final SrvaSpeciesCountStatistics injury = srva.getInjury();
         injury.setMooses(21);
@@ -59,6 +61,7 @@ public interface RhyAnnualStatisticsTestDataPopulator extends ValueGeneratorMixi
         injury.setBears(28);
         injury.setWolves(29);
         injury.setWolverines(30);
+        injury.setOtherSpecies(31);
 
         srva.setTotalSrvaWorkHours(31);
         srva.setSrvaParticipants(32);
@@ -184,15 +187,25 @@ public interface RhyAnnualStatisticsTestDataPopulator extends ValueGeneratorMixi
             luke.setWaterBirdBroods(117);
             luke.setCarnivoreContactPersons(118);
         }
+        if (year >= 2019) {
+            luke.setNorthernLaplandWillowGrouseLines(119);
+            luke.setCarnivoreDnaCollectors(120);
+        }
 
         final MetsahallitusStatistics metsahallitus = statistics.getOrCreateMetsahallitus();
-        metsahallitus.setSmallGameLicensesSoldByMetsahallitus(119);
+        metsahallitus.setSmallGameLicensesSoldByMetsahallitus(121);
     }
 
     default void populateWithMatchingSubsidyTotalQuantities(@Nonnull final RhyAnnualStatistics statistics,
                                                             final Integer i) {
 
         populateWithMatchingSubsidyTotalQuantities(statistics, i, i, i, i, i, i, i, i, i, i, i);
+    }
+
+    default void populateAllWithMatchingSubsidyTotalQuantities(@Nonnull final RhyAnnualStatistics statistics,
+                                                               final Integer i) {
+
+        populateAllWithMatchingSubsidyTotalQuantities(statistics, i, i, i, i, i, i, i, i, i, i, i);
     }
 
     default void populateWithMatchingSubsidyTotalQuantities(@Nonnull final RhyAnnualStatistics statistics,
@@ -232,6 +245,102 @@ public interface RhyAnnualStatisticsTestDataPopulator extends ValueGeneratorMixi
         statistics.getOrCreateOtherHuntingRelated().setMooselikeTaxationPlanningEvents(mooselikeTaxationPlanningEvents);
         statistics.getOrCreateOtherHuntingRelated().setWolfTerritoryWorkgroups(wolfTerritoryWorkgroups);
         statistics.setSrva(srva);
+        statistics.getOrCreateMetsahallitus().setSmallGameLicensesSoldByMetsahallitus(soldMhLicenses);
+
+    }
+
+    default void populateAllWithMatchingSubsidyTotalQuantities(@Nonnull final RhyAnnualStatistics statistics,
+                                                               final Integer rhyMembers,
+                                                               final Integer hunterExamTrainingEvents,
+                                                               final Integer hunterTrainingEvents,
+                                                               final Integer studentAndYouthTrainingEvents,
+                                                               final Integer huntingControlEvents,
+                                                               final Integer lukeCalculations,
+                                                               final Integer lukeCarnivoreContactPersons,
+                                                               final Integer mooselikeTaxationPlanningEvents,
+                                                               final Integer wolfTerritoryWorkgroups,
+                                                               final Integer srvaMooselikeEvents,
+                                                               final Integer soldMhLicenses) {
+        statistics.getOrCreateBasicInfo().setRhyMembers(rhyMembers);
+
+        final HunterTrainingStatistics hunterTraining = statistics.getOrCreateHunterTraining();
+        hunterTraining.setMooselikeHuntingTrainingEvents(hunterTrainingEvents);
+        hunterTraining.setMooselikeHuntingLeaderTrainingParticipants(0);
+        hunterTraining.setCarnivoreHuntingLeaderTrainingEvents(hunterTrainingEvents);
+        hunterTraining.setCarnivoreHuntingLeaderTrainingParticipants(0);
+        hunterTraining.setMooselikeHuntingTrainingParticipants(0);
+        hunterTraining.setCarnivoreHuntingTrainingEvents(hunterTrainingEvents);
+        hunterTraining.setCarnivoreHuntingTrainingParticipants(0);
+        hunterTraining.setSrvaTrainingEvents(hunterTrainingEvents);
+        hunterTraining.setSrvaTrainingParticipants(0);
+        hunterTraining.setCarnivoreContactPersonTrainingEvents(hunterTrainingEvents);
+        hunterTraining.setCarnivoreContactPersonTrainingParticipants(0);
+        hunterTraining.setAccidentPreventionTrainingEvents(hunterTrainingEvents);
+        hunterTraining.setAccidentPreventionTrainingParticipants(0);
+
+        final YouthTrainingStatistics youthTraining = statistics.getOrCreateYouthTraining();
+        youthTraining.setSchoolTrainingEvents(studentAndYouthTrainingEvents);
+        youthTraining.setSchoolTrainingParticipants(0);
+        youthTraining.setCollegeTrainingEvents(studentAndYouthTrainingEvents);
+        youthTraining.setCollegeTrainingParticipants(0);
+        youthTraining.setOtherYouthTargetedTrainingEvents(studentAndYouthTrainingEvents);
+        youthTraining.setOtherYouthTargetedTrainingParticipants(0);
+
+        final SrvaEventStatistics srva = statistics.getOrCreateSrva();
+        srva.getAccident().setMooses(srvaMooselikeEvents);
+        srva.getAccident().setWhiteTailedDeers(srvaMooselikeEvents);
+        srva.getAccident().setRoeDeers(srvaMooselikeEvents);
+        srva.getAccident().setFallowDeers(srvaMooselikeEvents);
+        srva.getDeportation().setMooses(srvaMooselikeEvents);
+        srva.getDeportation().setWhiteTailedDeers(srvaMooselikeEvents);
+        srva.getDeportation().setRoeDeers(srvaMooselikeEvents);
+        srva.getDeportation().setFallowDeers(srvaMooselikeEvents);
+        srva.getInjury().setMooses(srvaMooselikeEvents);
+        srva.getInjury().setWhiteTailedDeers(srvaMooselikeEvents);
+        srva.getInjury().setRoeDeers(srvaMooselikeEvents);
+        srva.getInjury().setFallowDeers(srvaMooselikeEvents);
+
+        final LukeStatistics luke = statistics.getOrCreateLuke();
+        luke.setWinterGameTriangles(lukeCalculations);
+        luke.setCarnivoreContactPersons(lukeCarnivoreContactPersons);
+        luke.setCarnivoreDnaCollectors(lukeCarnivoreContactPersons);
+        luke.setSummerGameTriangles(lukeCalculations);
+        luke.setFieldTriangles(lukeCalculations);
+        luke.setWaterBirdBroods(lukeCalculations);
+        luke.setWaterBirdCouples(lukeCalculations);
+        luke.setNorthernLaplandWillowGrouseLines(lukeCalculations);
+
+        statistics.getOrCreateHunterExamTraining().setHunterExamTrainingEvents(hunterExamTrainingEvents);
+
+        final JHTTrainingStatistics jhtTraining = statistics.getOrCreateJhtTraining();
+        jhtTraining.setGameDamageTrainingEvents(hunterTrainingEvents);
+        jhtTraining.setGameDamageTrainingParticipants(0);
+        jhtTraining.setHunterExamOfficialTrainingEvents(hunterTrainingEvents);
+        jhtTraining.setHunterExamOfficialTrainingParticipants(0);
+        jhtTraining.setHuntingControlTrainingEvents(hunterTrainingEvents);
+        jhtTraining.setHuntingControlTrainingParticipants(0);
+        jhtTraining.setShootingTestTrainingEvents(hunterTrainingEvents);
+        jhtTraining.setShootingTestTrainingParticipants(0);
+
+        final OtherHunterTrainingStatistics otherHunterTraining = statistics.getOrCreateOtherHunterTraining();
+        otherHunterTraining.setSmallCarnivoreHuntingTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setSmallCarnivoreHuntingTrainingParticipants(0);
+        otherHunterTraining.setGameCountingTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setGameCountingTrainingParticipants(0);
+        otherHunterTraining.setGamePopulationManagementTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setGamePopulationManagementTrainingParticipants(0);
+        otherHunterTraining.setGameEnvironmentalCareTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setGameEnvironmentalCareTrainingParticipants(0);
+        otherHunterTraining.setOtherGamekeepingTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setOtherGamekeepingTrainingParticipants(0);
+        otherHunterTraining.setShootingTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setShootingTrainingParticipants(0);
+        otherHunterTraining.setTrackerTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setTrackerTrainingParticipants(0);
+
+        statistics.getOrCreateHuntingControl().setHuntingControlEvents(huntingControlEvents);
+        statistics.getOrCreateOtherHuntingRelated().setMooselikeTaxationPlanningEvents(mooselikeTaxationPlanningEvents);
+        statistics.getOrCreateOtherHuntingRelated().setWolfTerritoryWorkgroups(wolfTerritoryWorkgroups);
         statistics.getOrCreateMetsahallitus().setSmallGameLicensesSoldByMetsahallitus(soldMhLicenses);
     }
 }

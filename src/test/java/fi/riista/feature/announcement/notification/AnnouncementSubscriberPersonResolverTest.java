@@ -44,12 +44,12 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         }
     }
 
-    private static class TestPerson {
+    private static class TestReceiver {
         private final String email;
         private final String pushToken;
 
-        public TestPerson(final Person person, final MobileClientDevice clientDevice) {
-            this.email = Objects.requireNonNull(person).getEmail();
+        public TestReceiver(final String email, final MobileClientDevice clientDevice) {
+            this.email = email;
             this.pushToken = Objects.requireNonNull(clientDevice).getPushToken();
         }
 
@@ -77,8 +77,8 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         return announcement;
     }
 
-    private List<TestSubscriber> createTestSubscribers(final Organisation subscriberOrganisation,
-                                                       final EnumSet<OccupationType> occupationTypes) {
+    private static List<TestSubscriber> createTestSubscribers(final Organisation subscriberOrganisation,
+                                                              final EnumSet<OccupationType> occupationTypes) {
         final List<TestSubscriber> subscribers = new LinkedList<>();
 
         for (final OccupationType occupationType : occupationTypes) {
@@ -89,12 +89,12 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
     }
 
     private void assertSubscribers(final Announcement announcement,
-                                   final TestPerson... expectedPersons) {
+                                   final TestReceiver... expectedReceivers) {
         runInTransaction(() -> {
             final AnnouncementNotificationTargets targets = announcementSubscriberPersonResolver.collectTargets(announcement, true);
 
-            final List<String> expectedEmails = F.mapNonNullsToList(expectedPersons, TestPerson::getEmail);
-            final List<String> expectedPushTokens = F.mapNonNullsToList(expectedPersons, TestPerson::getPushToken);
+            final List<String> expectedEmails = F.mapNonNullsToList(expectedReceivers, TestReceiver::getEmail);
+            final List<String> expectedPushTokens = F.mapNonNullsToList(expectedReceivers, TestReceiver::getPushToken);
 
             assertEquals(expectedEmails.size(), targets.getEmails().size());
             assertEquals(expectedPushTokens.size(), targets.getPushTokens().size());
@@ -140,9 +140,9 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         persistInNewTransaction();
 
         assertSubscribers(announcement,
-                new TestPerson(person1, client1),
-                new TestPerson(person4, client4),
-                new TestPerson(person5, client5));
+                new TestReceiver(rhy1.getEmail(), client1),
+                new TestReceiver(person4.getEmail(), client4),
+                new TestReceiver(person5.getEmail(), client5));
     }
 
     // CLUB -> CLUB
@@ -167,7 +167,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person1, client1), new TestPerson(person2, client2));
+        assertSubscribers(announcement, new TestReceiver(person1.getEmail(), client1), new TestReceiver(person2.getEmail(), client2));
     }
 
     @Test
@@ -193,7 +193,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person2, client2));
+        assertSubscribers(announcement, new TestReceiver(person2.getEmail(), client2));
     }
 
     @Test
@@ -218,7 +218,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person1, client1));
+        assertSubscribers(announcement, new TestReceiver(person1.getEmail(), client1));
     }
 
     @Test
@@ -238,7 +238,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person, client));
+        assertSubscribers(announcement, new TestReceiver(person.getEmail(), client));
     }
 
     @Test
@@ -260,7 +260,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person1, client1), new TestPerson(person2, client2));
+        assertSubscribers(announcement, new TestReceiver(person1.getEmail(), client1), new TestReceiver(person2.getEmail(), client2));
     }
 
     @Test
@@ -286,7 +286,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person, client));
+        assertSubscribers(announcement, new TestReceiver(person.getEmail(), client));
     }
 
     @Test
@@ -345,8 +345,8 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement1, new TestPerson(person1, client1), new TestPerson(person2, client2));
-        assertSubscribers(announcement2, new TestPerson(person3, client3), new TestPerson(person4, client4));
+        assertSubscribers(announcement1, new TestReceiver(person1.getEmail(), client1), new TestReceiver(person2.getEmail(), client2));
+        assertSubscribers(announcement2, new TestReceiver(person3.getEmail(), client3), new TestReceiver(person4.getEmail(), client4));
     }
 
     @Test
@@ -373,7 +373,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person2, client2));
+        assertSubscribers(announcement, new TestReceiver(person2.getEmail(), client2));
     }
 
     // RKA -> CLUB
@@ -410,7 +410,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person1, client1), new TestPerson(person2, client2));
+        assertSubscribers(announcement, new TestReceiver(person1.getEmail(), client1), new TestReceiver(person2.getEmail(), client2));
     }
 
     // RK -> CLUB
@@ -448,7 +448,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person1, client1), new TestPerson(person2, client2), new TestPerson(person3, client3), new TestPerson(person4, client4));
+        assertSubscribers(announcement, new TestReceiver(person1.getEmail(), client1), new TestReceiver(person2.getEmail(), client2), new TestReceiver(person3.getEmail(), client3), new TestReceiver(person4.getEmail(), client4));
     }
 
     // RK -> RHY
@@ -459,14 +459,18 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         final RiistakeskuksenAlue rka2 = model().newRiistakeskuksenAlue();
         final Organisation rk = rka1.getParentOrganisation();
         final Riistanhoitoyhdistys rhy1 = model().newRiistanhoitoyhdistys(rka1);
+        rhy1.setEmail("rhy1-email@invalid.com");
         final Riistanhoitoyhdistys rhy2 = model().newRiistanhoitoyhdistys(rka2);
+        rhy2.setEmail("rhy2-email@invalid.com");
+        final Riistanhoitoyhdistys rhy3 = model().newRiistanhoitoyhdistys(rka2);
+        rhy3.setEmail("rhy3-email@invalid.com");
         final HuntingClub club = model().newHuntingClub(rhy1);
 
-        final Person person1 = model().newPerson();
-        final Person person2 = model().newPerson();
-        final Person person3 = model().newPerson();
-        final Person person4 = model().newPerson();
-        final Person person5 = model().newPerson();
+        final Person person1 = model().newPerson(rhy1);
+        final Person person2 = model().newPerson(rhy1);
+        final Person person3 = model().newPerson(rhy2);
+        final Person person4 = model().newPerson(rhy2);
+        final Person person5 = model().newPerson(rhy3);
 
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
@@ -486,7 +490,46 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person1, client1), new TestPerson(person3, client3));
+        assertSubscribers(announcement, new TestReceiver(rhy1.getEmail(), client1), new TestReceiver(rhy2.getEmail(), client3));
+    }
+
+    @Test
+    public void testRkToRhyCoordinator_fallbackCoordinatorEmail() {
+        final RiistakeskuksenAlue rka1 = model().newRiistakeskuksenAlue();
+        final RiistakeskuksenAlue rka2 = model().newRiistakeskuksenAlue();
+        final Organisation rk = rka1.getParentOrganisation();
+        final Riistanhoitoyhdistys rhy1 = model().newRiistanhoitoyhdistys(rka1);
+        rhy1.setEmail("rhy1-email@invalid.com");
+        final Riistanhoitoyhdistys rhy2 = model().newRiistanhoitoyhdistys(rka2);
+        final Riistanhoitoyhdistys rhy3 = model().newRiistanhoitoyhdistys(rka2);
+        rhy3.setEmail("rhy3-email@invalid.com");
+        final HuntingClub club = model().newHuntingClub(rhy1);
+
+        final Person person1 = model().newPerson(rhy1);
+        final Person person2 = model().newPerson(rhy1);
+        final Person person3 = model().newPerson(rhy2);
+        final Person person4 = model().newPerson(rhy2);
+        final Person person5 = model().newPerson(rhy3);
+
+        final MobileClientDevice client1 = model().newMobileClientDevice(person1);
+        final MobileClientDevice client2 = model().newMobileClientDevice(person2);
+        final MobileClientDevice client3 = model().newMobileClientDevice(person3);
+        final MobileClientDevice client4 = model().newMobileClientDevice(person4);
+        final MobileClientDevice client5 = model().newMobileClientDevice(person5);
+
+        model().newOccupation(rhy1, person1, OccupationType.TOIMINNANOHJAAJA);
+        model().newOccupation(rhy1, person2, OccupationType.SRVA_YHTEYSHENKILO);
+        model().newOccupation(rhy2, person3, OccupationType.TOIMINNANOHJAAJA);
+        model().newOccupation(rhy2, person4, OccupationType.SRVA_YHTEYSHENKILO);
+        model().newOccupation(club, person5, OccupationType.SEURAN_JASEN);
+
+        final EnumSet<OccupationType> targetOccupations = EnumSet.of(OccupationType.TOIMINNANOHJAAJA);
+
+        final Announcement announcement = createAnnouncement(createTestSubscribers(rk, targetOccupations));
+
+        persistInNewTransaction();
+
+        assertSubscribers(announcement, new TestReceiver(rhy1.getEmail(), client1), new TestReceiver(person3.getEmail(), client3));
     }
 
     // RHY -> RHY members
@@ -513,6 +556,6 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         persistInNewTransaction();
 
-        assertSubscribers(announcement, new TestPerson(person1, client1));
+        assertSubscribers(announcement, new TestReceiver(person1.getEmail(), client1));
     }
 }

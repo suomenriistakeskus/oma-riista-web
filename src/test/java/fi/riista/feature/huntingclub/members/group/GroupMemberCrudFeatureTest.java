@@ -27,11 +27,12 @@ import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_ME
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
 import static fi.riista.feature.organization.person.ContactInfoShare.ALL_MEMBERS;
 import static fi.riista.feature.organization.person.ContactInfoShare.ONLY_OFFICIALS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 public class GroupMemberCrudFeatureTest extends AbstractClubSpecificOccupationCrudFeatureTest
         implements HuntingGroupFixtureMixin {
@@ -162,6 +163,20 @@ public class GroupMemberCrudFeatureTest extends AbstractClubSpecificOccupationCr
         }));
     }
 
+    @Test
+    public void testLeaderCreateMember_personAlreadyLeader() {
+        withMooseHuntingGroupFixture(fixture -> onSavedAndAuthenticated(createUser(fixture.clubContact), () -> {
+            final OccupationDTO createdLeader = doCreateGroupMember(fixture, RYHMAN_METSASTYKSENJOHTAJA);
+
+            final OccupationDTO duplicateOccupation = new OccupationDTO();
+            duplicateOccupation.setPersonId(createdLeader.getPersonId());
+            duplicateOccupation.setOccupationType(RYHMAN_JASEN);
+            duplicateOccupation.setOrganisationId(createdLeader.getOrganisationId());
+
+            assertThrows(IllegalArgumentException.class, () -> crudFeature.create(duplicateOccupation));
+        }));
+    }
+
     // Create leader
 
     @Test
@@ -188,12 +203,12 @@ public class GroupMemberCrudFeatureTest extends AbstractClubSpecificOccupationCr
         }));
     }
 
-    private void doCreateGroupMember(final HuntingGroupFixture fixture, final OccupationType occType) {
+    private OccupationDTO doCreateGroupMember(final HuntingGroupFixture fixture, final OccupationType occType) {
         final OccupationDTO dto = new OccupationDTO();
         dto.setPersonId(fixture.clubMember.getId());
         dto.setOrganisationId(fixture.group.getId());
         dto.setOccupationType(occType);
-        crudFeature.create(dto);
+        return crudFeature.create(dto);
     }
 
     // Change member to leader
@@ -298,4 +313,5 @@ public class GroupMemberCrudFeatureTest extends AbstractClubSpecificOccupationCr
                     crudFeature.updateContactOrder(fixture.group.getId(), F.getNonNullIds(newOcc, fixture.groupLeader)));
         });
     }
+
 }

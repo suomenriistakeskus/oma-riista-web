@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Locale;
 
 @RestController
-@RequestMapping(value = "/api/v1/search", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+@RequestMapping(value = "/api/v1/search", produces = MediaType.APPLICATION_JSON_VALUE)
 public class SearchApiResource {
 
     @Resource

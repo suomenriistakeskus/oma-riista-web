@@ -5,6 +5,7 @@ import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import org.joda.time.LocalDate;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +34,7 @@ public class HarvestPermitLockedByDateService {
     private boolean disableForTesting = false;
 
     private boolean lockTestEnabled() {
-        if (springEnvironment.acceptsProfiles(Constants.EMBEDDED_DATABASE)) {
+        if (springEnvironment.acceptsProfiles(Profiles.of(Constants.EMBEDDED_DATABASE))) {
             return !disableForTesting;
         }
 

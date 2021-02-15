@@ -1,9 +1,8 @@
 package fi.riista.feature.permit.decision.publish;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
+import fi.riista.config.quartz.RunAsAdminJob;
 import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,14 +14,14 @@ import javax.annotation.Resource;
         enabledProperty = "permit.decision.postal.queue.notification.enabled",
         cronExpression = "${permit.decision.postal.queue.notification.schedule}"
 )
-public class PostalQueueNotificationJob implements Job {
+public class PostalQueueNotificationJob extends RunAsAdminJob {
     private static final Logger LOG = LoggerFactory.getLogger(PostalQueueNotificationJob.class);
 
     @Resource
     private PostalQueueNotificationFeature postalQueueNotificationFeature;
 
     @Override
-    public void execute(JobExecutionContext jobExecutionContext) {
+    public void executeAsAdmin() {
         try {
             LOG.info("Starting ...");
             postalQueueNotificationFeature.sendPostalQueueNotification();

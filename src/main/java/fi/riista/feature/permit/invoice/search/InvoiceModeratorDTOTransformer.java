@@ -3,6 +3,7 @@ package fi.riista.feature.permit.invoice.search;
 import com.google.common.collect.Sets;
 import com.querydsl.core.types.dsl.BooleanPath;
 import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
@@ -11,7 +12,7 @@ import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermitSpeciesAmount;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.address.AddressRepository;
-import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
 import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.feature.permit.invoice.Invoice;
@@ -112,7 +113,7 @@ public class InvoiceModeratorDTOTransformer extends ListTransformer<Invoice, Inv
                 .map(InvoiceStateChangeEvent::getUserId);
 
         final Set<Long> moderatorIds = Stream.concat(paymentModeratorIds, actorIds).collect(toSet());
-        final Map<Long, SystemUser> userById = F.indexById(userRepository.findAll(moderatorIds));
+        final Map<Long, SystemUser> userById = F.indexById(userRepository.findAllById(moderatorIds));
 
         return invoices.stream().map(invoice -> {
 
@@ -152,6 +153,7 @@ public class InvoiceModeratorDTOTransformer extends ListTransformer<Invoice, Inv
             if (decisionIdPermitNumber != null) {
                 dto.setPermitDecisionId(decisionIdPermitNumber.decisionId);
                 dto.setPermitNumber(decisionIdPermitNumber.permitNumber);
+                dto.setPermitTypeCode(decisionIdPermitNumber.permitTypeCode);
             }
 
             if (invoiceType == PERMIT_PROCESSING) {
@@ -214,7 +216,7 @@ public class InvoiceModeratorDTOTransformer extends ListTransformer<Invoice, Inv
                 invoices,
                 InvoicePaymentLine_.invoice,
                 paymentLineRepository,
-                new JpaSort(Direction.DESC, InvoicePaymentLine_.paymentDate, InvoicePaymentLine_.id));
+                JpaSort.of(Direction.DESC, InvoicePaymentLine_.paymentDate, InvoicePaymentLine_.id));
     }
 
     private Map<Invoice, List<InvoiceStateChangeEvent>> getActionsGroupedByInvoices(final Collection<Invoice> invoices) {
@@ -222,7 +224,7 @@ public class InvoiceModeratorDTOTransformer extends ListTransformer<Invoice, Inv
                 invoices,
                 InvoiceStateChangeEvent_.invoice,
                 invoiceStateChangeEventRepository,
-                new JpaSort(BaseEntityEvent_.eventTime));
+                JpaSort.of(BaseEntityEvent_.eventTime));
     }
 
     private Map<Long, DecisionIdPermitNumber> getDecisionIdPermitNumberMapping(final List<Invoice> decisionInvoices,
@@ -249,9 +251,11 @@ public class InvoiceModeratorDTOTransformer extends ListTransformer<Invoice, Inv
         final NumberPath<Integer> decisionYearPath = PERMIT_DECISION.decisionYear;
         final NumberPath<Integer> decisionNumberPath = PERMIT_DECISION.decisionNumber;
         final NumberPath<Integer> validityYearPath = PERMIT_DECISION.validityYears;
+        final StringPath permitTypeCodePath = PERMIT_DECISION.permitTypeCode;
 
         return queryFactory
-                .select(invoiceIdPath, decisionIdPath, decisionYearPath, decisionNumberPath, validityYearPath)
+                .select(invoiceIdPath, decisionIdPath, decisionYearPath, decisionNumberPath,
+                        validityYearPath, permitTypeCodePath)
                 .from(PERMIT_DECISION_INVOICE)
                 .join(PERMIT_DECISION_INVOICE.decision, PERMIT_DECISION)
                 .join(PERMIT_DECISION.application, APPLICATION)
@@ -261,7 +265,7 @@ public class InvoiceModeratorDTOTransformer extends ListTransformer<Invoice, Inv
                 .collect(toMap(
                         t -> t.get(invoiceIdPath),
                         t -> new DecisionIdPermitNumber(t.get(decisionIdPath), t.get(decisionYearPath),
-                                t.get(decisionNumberPath), t.get(validityYearPath))));
+                                t.get(decisionNumberPath), t.get(validityYearPath), t.get(permitTypeCodePath))));
     }
 
     private Map<Long, DecisionIdPermitNumber> getDecisionIdPermitNumberMappingOfHarvestInvoices(final List<Invoice> invoices) {
@@ -276,9 +280,11 @@ public class InvoiceModeratorDTOTransformer extends ListTransformer<Invoice, Inv
         final NumberPath<Integer> decisionYearPath = PERMIT_DECISION.decisionYear;
         final NumberPath<Integer> decisionNumberPath = PERMIT_DECISION.decisionNumber;
         final NumberPath<Integer> validityYearPath = PERMIT_DECISION.validityYears;
+        final StringPath permitTypeCodePath = PERMIT_DECISION.permitTypeCode;
 
         return queryFactory
-                .select(HARVEST_INVOICE.invoice.id, decisionIdPath,  decisionYearPath, decisionNumberPath, validityYearPath)
+                .select(HARVEST_INVOICE.invoice.id, decisionIdPath,  decisionYearPath, decisionNumberPath,
+                        validityYearPath, permitTypeCodePath)
                 .from(HARVEST_INVOICE)
                 .join(HARVEST_INVOICE.speciesAmount, SPECIES_AMOUNT)
                 .join(SPECIES_AMOUNT.harvestPermit, PERMIT)
@@ -290,17 +296,19 @@ public class InvoiceModeratorDTOTransformer extends ListTransformer<Invoice, Inv
                 .collect(toMap(
                         t -> t.get(invoiceIdPath),
                         t -> new DecisionIdPermitNumber(t.get(decisionIdPath), t.get(decisionYearPath),
-                                t.get(decisionNumberPath), t.get(validityYearPath))));
+                                t.get(decisionNumberPath), t.get(validityYearPath), t.get(permitTypeCodePath))));
     }
 
     private static class DecisionIdPermitNumber {
 
         public final long decisionId;
         public final String permitNumber;
+        public final String permitTypeCode;
 
-        DecisionIdPermitNumber(final long decisionId, final int year, final int orderNumber, final int validityYears) {
+        DecisionIdPermitNumber(final long decisionId, final int year, final int orderNumber, final int validityYears, final String permitTypeCode) {
             this.decisionId = decisionId;
-            this.permitNumber = PermitNumberUtil.createPermitNumber(year, validityYears, orderNumber);
+            this.permitNumber = DocumentNumberUtil.createDocumentNumber(year, validityYears, orderNumber);
+            this.permitTypeCode = permitTypeCode;
         }
     }
 

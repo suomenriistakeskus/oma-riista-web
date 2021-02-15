@@ -1,6 +1,7 @@
 package fi.riista.feature.permit.decision.delivery;
 
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysCoordinatorService;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.util.F;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,6 +55,10 @@ public class PermitDecisionDeliveryService {
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public List<PermitDecisionDeliveryDTO> generateRhyDeliveryDTOs(final PermitDecision decision) {
+        if (PermitTypeCode.isDisabilityPermitTypeCode(decision.getPermitTypeCode())) {
+            return Collections.emptyList();
+        }
+
         return F.stream(decision.getApplication().getRhy(), decision.getApplication().getRelatedRhys())
                 .map(rhy -> {
                     final String name = rhy.getNameLocalisation().getAnyTranslation(decision.getLocale());

@@ -14,10 +14,10 @@ import fi.riista.integration.srva.rvr.RVR_SrvaEvents;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
-import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
@@ -47,6 +47,11 @@ public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
     @Before
     public void initRhy() {
         this.rhy = model().newRiistanhoitoyhdistys();
+    }
+
+    @After
+    public void tearDown() {
+        srvaExportFeature.invalidatePublicDtoCache();
     }
 
     @Test(expected = AccessDeniedException.class)
@@ -113,7 +118,7 @@ public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
         assertEquals(event.getConsistencyVersion().intValue(), rvrEvent.getRev());
         assertEquals(event.getGeoLocation().getLatitude(), rvrEvent.getGeoLocation().getLatitude());
         assertEquals(event.getGeoLocation().getLongitude(), rvrEvent.getGeoLocation().getLongitude());
-        assertEquals(new DateTime(event.getPointOfTime().getTime()), rvrEvent.getPointOfTime());
+        assertEquals(event.getPointOfTime(), rvrEvent.getPointOfTime());
         assertEquals(event.getOtherSpeciesDescription(), rvrEvent.getOtherSpeciesDescription());
         assertEquals(event.getTotalSpecimenAmount(), rvrEvent.getTotalSpecimenAmount());
         assertEquals(event.getPersonCount(), rvrEvent.getPersonCount());
@@ -213,7 +218,7 @@ public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
         assertEquals(accidentEvent.getTotalSpecimenAmount(), dto.getTotalSpecimenAmount());
         assertEquals(accidentEvent.getEventName(), dto.getEventName());
         assertEquals(accidentEvent.getEventType(), dto.getEventType());
-        assertEquals(accidentEvent.getPointOfTime(), dto.getPointOfTime().toDate());
+        assertEquals(accidentEvent.getPointOfTime(), dto.getPointOfTime());
         assertEquals(accidentEvent.getGeoLocation().getLatitude(), dto.getGeoLocation().getLatitude());
         assertEquals(accidentEvent.getGeoLocation().getLongitude(), dto.getGeoLocation().getLongitude());
     }
@@ -253,9 +258,12 @@ public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
             final SrvaEvent accidentEvent2017 = createSrvaEventWithNameAndState(ACCIDENT, APPROVED, user, moose, 2017);
             final SrvaEvent accidentEvent2018 = createSrvaEventWithNameAndState(ACCIDENT, APPROVED, user, moose, 2018);
 
-            accidentEvent2016.setEventType(some(EnumSet.of(SrvaEventTypeEnum.TRAFFIC_ACCIDENT, SrvaEventTypeEnum.RAILWAY_ACCIDENT)));
-            accidentEvent2017.setEventType(some(EnumSet.of(SrvaEventTypeEnum.TRAFFIC_ACCIDENT, SrvaEventTypeEnum.RAILWAY_ACCIDENT)));
-            accidentEvent2018.setEventType(some(EnumSet.of(SrvaEventTypeEnum.TRAFFIC_ACCIDENT, SrvaEventTypeEnum.RAILWAY_ACCIDENT)));
+            accidentEvent2016.setEventType(some(EnumSet.of(SrvaEventTypeEnum.TRAFFIC_ACCIDENT,
+                    SrvaEventTypeEnum.RAILWAY_ACCIDENT)));
+            accidentEvent2017.setEventType(some(EnumSet.of(SrvaEventTypeEnum.TRAFFIC_ACCIDENT,
+                    SrvaEventTypeEnum.RAILWAY_ACCIDENT)));
+            accidentEvent2018.setEventType(some(EnumSet.of(SrvaEventTypeEnum.TRAFFIC_ACCIDENT,
+                    SrvaEventTypeEnum.RAILWAY_ACCIDENT)));
 
             persistInNewTransaction();
 
@@ -275,7 +283,7 @@ public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private static int pointOfTimeToYear(final SrvaEvent accidentEvent) {
-        return DateUtil.toDateTimeNullSafe(accidentEvent.getPointOfTime()).getYear();
+        return accidentEvent.getPointOfTime().getYear();
     }
 
     @Test
@@ -300,8 +308,8 @@ public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
         event.setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(name)));
         event.setState(state);
         event.setSpecies(species);
-        event.setPointOfTime(new LocalDate(year, 1,1)
-                .toDateTime(new LocalTime(12, 0)).toDate());
+        event.setPointOfTime(new LocalDate(year, 1, 1)
+                .toDateTime(new LocalTime(12, 0)));
 
         if (state != UNFINISHED) {
             event.setApproverAsUser(user);

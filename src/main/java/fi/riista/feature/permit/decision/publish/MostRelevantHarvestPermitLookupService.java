@@ -8,6 +8,7 @@ import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmountRepository;
 import fi.riista.util.Collect;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
@@ -28,7 +29,7 @@ public class MostRelevantHarvestPermitLookupService {
     @Resource
     private PermitDecisionSpeciesAmountRepository permitDecisionSpeciesAmountRepository;
 
-    @Transactional(readOnly = true, noRollbackFor = RuntimeException.class)
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public HarvestPermit lookupMostRelevant(final @Nonnull PermitDecision permitDecision) {
         requireNonNull(permitDecision);
 

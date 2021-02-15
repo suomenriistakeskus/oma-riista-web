@@ -30,7 +30,7 @@ public class CarnivorePermitApplicationSpeciesAmountDTO {
                 new CarnivorePermitApplicationSpeciesAmountDTO(application);
 
         requireNonNull(spa);
-        dto.setAmount(spa.getAmount());
+        dto.setAmount(spa.getSpecimenAmount());
         dto.setBegin(spa.getBeginDate());
         dto.setEnd(spa.getEndDate());
         return dto;

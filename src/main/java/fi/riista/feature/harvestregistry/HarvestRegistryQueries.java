@@ -16,8 +16,8 @@ public class HarvestRegistryQueries {
 
     public static Predicate predicateFromDTO(final HarvestRegistryRequestDTO dto) {
         BooleanExpression predicate = ITEM.pointOfTime.between(
-                DateUtil.toDateNullSafe(dto.getBeginDate()),
-                DateUtil.toDateNullSafe(dto.getEndDate()));
+                DateUtil.toDateTimeNullSafe(dto.getBeginDate()),
+                DateUtil.toDateTimeNullSafe(dto.getEndDate()));
 
         if (!dto.isAllSpecies()) {
             predicate = predicate.and(ITEM.species.officialCode.in(dto.getSpecies()));

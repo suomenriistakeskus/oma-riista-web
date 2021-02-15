@@ -11,22 +11,19 @@ public class SubsidyCompensationInputDTO implements SubsidyCompensationNeed {
 
     private final String rhyCode;
 
-    private final BigDecimal totalSubsidyCalculatedForCurrentYear;
-    private final BigDecimal subsidyGrantedInFirstBatchOfCurrentYear;
+    private final BigDecimal calculatedSubsidy;
 
     private final BigDecimal subsidyLowerLimitBasedOnLastYear;
 
     private final boolean alreadyCompensated;
 
     public SubsidyCompensationInputDTO(@Nonnull final String rhyCode,
-                                       @Nonnull final BigDecimal totalSubsidyCalculatedForCurrentYear,
-                                       @Nonnull final BigDecimal subsidyGrantedInFirstBatchOfCurrentYear,
+                                       @Nonnull final BigDecimal calculatedSubsidy,
                                        @Nonnull final BigDecimal subsidyLowerLimitBasedOnLastYear,
                                        final boolean alreadyCompensated) {
 
         this.rhyCode = requireNonNull(rhyCode);
-        this.totalSubsidyCalculatedForCurrentYear = requireNonNull(totalSubsidyCalculatedForCurrentYear);
-        this.subsidyGrantedInFirstBatchOfCurrentYear = requireNonNull(subsidyGrantedInFirstBatchOfCurrentYear);
+        this.calculatedSubsidy = requireNonNull(calculatedSubsidy);
         this.subsidyLowerLimitBasedOnLastYear = requireNonNull(subsidyLowerLimitBasedOnLastYear);
         this.alreadyCompensated = alreadyCompensated;
 
@@ -38,13 +35,8 @@ public class SubsidyCompensationInputDTO implements SubsidyCompensationNeed {
     }
 
     @Override
-    public BigDecimal countDifferenceOfTotalCalculatedSubsidyToLowerLimit() {
-        return totalSubsidyCalculatedForCurrentYear.subtract(subsidyLowerLimitBasedOnLastYear);
-    }
-
-    @Override
-    public BigDecimal getCalculatedSubsidyForSecondBatch() {
-        return totalSubsidyCalculatedForCurrentYear.subtract(subsidyGrantedInFirstBatchOfCurrentYear);
+    public BigDecimal countDifferenceOfCalculatedSubsidyToLowerLimit() {
+        return calculatedSubsidy.subtract(subsidyLowerLimitBasedOnLastYear);
     }
 
     // Accessors -->
@@ -53,12 +45,9 @@ public class SubsidyCompensationInputDTO implements SubsidyCompensationNeed {
         return rhyCode;
     }
 
-    public BigDecimal getTotalSubsidyCalculatedForCurrentYear() {
-        return totalSubsidyCalculatedForCurrentYear;
-    }
-
-    public BigDecimal getSubsidyGrantedInFirstBatchOfCurrentYear() {
-        return subsidyGrantedInFirstBatchOfCurrentYear;
+    @Override
+    public BigDecimal getCalculatedSubsidy() {
+        return calculatedSubsidy;
     }
 
     public BigDecimal getSubsidyLowerLimitBasedOnLastYear() {

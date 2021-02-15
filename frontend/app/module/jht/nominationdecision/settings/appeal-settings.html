@@ -1,0 +1,55 @@
+<form name="form" role="form" class="form form-horizontal" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="decision.settings.appeal.title"></h3>
+    </div>
+
+    <div class="modal-body" style="min-height: 220px">
+        <div class="form-group row">
+            <label class="col-xs-5 control-label" translate="decision.settings.appeal.isAppealInitiated"></label>
+
+            <div class="col-xs-7">
+                <div class="btn-group btn-group-justified">
+                    <label class="btn btn-default"
+                           uib-btn-radio="false"
+                           ng-model="$ctrl.appealInitiated">
+                        <span translate="global.no"></span>
+                    </label>
+
+                    <label class="btn btn-default"
+                           uib-btn-radio="true"
+                           ng-model="$ctrl.appealInitiated">
+                        <span translate="global.yes"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group row" show-errors ng-if="$ctrl.appealInitiated">
+            <label for="appealStatus" class="col-xs-5 control-label">
+                <span translate="decision.settings.appeal.appealStatus"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-6">
+                <select class="form-control" id="appealStatus" name="appealStatus"
+                        ng-options="a as ('decision.appealStatus.' + a) | translate for a in $ctrl.appealStatusOptions"
+                        ng-model="$ctrl.appealStatus" required>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid"
+                translate="global.button.ok">
+        </button>
+    </div>
+</form>

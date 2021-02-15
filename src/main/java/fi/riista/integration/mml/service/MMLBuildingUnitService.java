@@ -3,14 +3,14 @@ package fi.riista.integration.mml.service;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import fi.riista.feature.gis.GISPoint;
 import fi.riista.integration.mml.support.InspireWFSConstants;
 import fi.riista.integration.mml.support.MMLWebFeatureServiceRequestTemplate;
 import fi.riista.integration.mml.support.WFS20Filters;
 import fi.riista.integration.mml.support.WFSDomUtil;
 import fi.riista.util.GISUtils;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -66,7 +66,7 @@ public class MMLBuildingUnitService {
         final NodeList nodeSet = WFSDomUtil.getNodeSet(XPATH_POSLIST_TEXT, document);
         final Splitter coordSplitter = Splitter.on(CharMatcher.whitespace());
 
-        final List<com.vividsolutions.jts.geom.Point> result = new LinkedList<>();
+        final List<org.locationtech.jts.geom.Point> result = new LinkedList<>();
 
         for (int i = 0; i < nodeSet.getLength(); i++) {
             final Iterable<String> posList = coordSplitter.split(nodeSet.item(i).getTextContent());
@@ -81,7 +81,7 @@ public class MMLBuildingUnitService {
             }
         }
 
-        final com.vividsolutions.jts.geom.Point refPoint =
+        final org.locationtech.jts.geom.Point refPoint =
                 geometryFactory.createPoint(new Coordinate(position.getLongitude(), position.getLatitude()));
 
         return result.stream().mapToDouble(p -> p.distance(refPoint)).min();

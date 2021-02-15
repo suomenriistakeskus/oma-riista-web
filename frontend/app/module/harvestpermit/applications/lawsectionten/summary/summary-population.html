@@ -1,0 +1,15 @@
+<div>
+    <p>
+        <strong ng-bind="::($ctrl.population.gameSpeciesCode | translateSpeciesCode | uppercase)"></strong>
+    </p>
+
+    <div>
+        <p translate="harvestpermit.wizard.bird.population.populationAmount"></p>
+        <div class="well" ng-bind="::($ctrl.population.populationAmount)"></div>
+    </div>
+
+    <div>
+        <p translate="harvestpermit.wizard.bird.population.populationDescription"></p>
+        <div class="well" ng-bind="::($ctrl.population.populationDescription)"></div>
+    </div>
+</div>

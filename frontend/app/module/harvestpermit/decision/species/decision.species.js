@@ -12,12 +12,50 @@ angular.module('app.harvestpermit.decision.species', [])
         });
     })
 
+    .service('PermitDecisionSpeciesAmountUtils', function (Helpers) {
+        var self = this;
+
+        self.checkPeriodLessThanYear = function(beginDate, endDate, endDate2) {
+            beginDate = Helpers.toMoment(beginDate, 'YYYY-MM-DD');
+            endDate = Helpers.toMoment(endDate, 'YYYY-MM-DD');
+            endDate2 = Helpers.toMoment(endDate2, 'YYYY-MM-DD');
+
+            if (beginDate && beginDate.isValid()) {
+                var diff;
+
+                if (endDate2 && endDate2.isValid()) {
+                    diff = endDate2.diff(beginDate, 'years', true);
+                } else if (endDate && endDate.isValid()) {
+                    diff = endDate.diff(beginDate, 'years', true);
+                } else {
+                    return true;
+                }
+
+                return diff <= 1;
+            }
+
+            return true;
+        };
+
+        self.checkIntervalsDoNotOverlap = function(beginDate2, endDate) {
+            endDate = Helpers.toMoment(endDate, 'YYYY-MM-DD');
+            beginDate2 = Helpers.toMoment(beginDate2, 'YYYY-MM-DD');
+
+            if (!beginDate2 || !endDate || !endDate.isValid() || !beginDate2.isValid()) {
+                return true;
+            }
+
+            return beginDate2.isAfter(endDate);
+        };
+
+    })
+
     .service('PermitDecisionSpeciesAmountModal', function ($uibModal) {
         this.open = function (decisionId, gameSpeciesCode, permitTypeCode) {
             return $uibModal.open({
                 templateUrl: 'harvestpermit/decision/species/species-amount.html',
                 controllerAs: '$ctrl',
-                controller: ModalController,
+                controller: 'PermitDecisionEditSpeciesAmountsModalController',
                 size: 'lg',
                 resolve: {
                     decisionId: _.constant(decisionId),
@@ -43,102 +81,112 @@ angular.module('app.harvestpermit.decision.species', [])
                 }
             }).result;
         };
+    })
 
-        function ModalController($uibModalInstance, Helpers, HuntingYearService, NotificationService,
-                                 GameSpeciesCodes, PermitDecisionSpecies,
-                                 decisionId, gameSpeciesCode, speciesAmountList, permitTypeCode) {
-            var $ctrl = this;
+    .service('NonHarvestDecisionSpeciesAmountModal', function ($uibModal) {
+        this.open = function (decisionId, gameSpeciesCode, permitTypeCode) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/decision/species/non-harvest-species-amount.html',
+                controllerAs: '$ctrl',
+                controller: 'PermitDecisionEditSpeciesAmountsModalController',
+                size: 'lg',
+                resolve: {
+                    decisionId: _.constant(decisionId),
+                    gameSpeciesCode: _.constant(gameSpeciesCode),
+                    permitTypeCode: _.constant(permitTypeCode),
+                    speciesAmountList: function ($filter, PermitDecisionSpecies) {
+                        return PermitDecisionSpecies.getSpecies({
+                            decisionId: decisionId
 
-            $ctrl.$onInit = function () {
-                $ctrl.gameSpeciesCode = gameSpeciesCode;
-                $ctrl.speciesAmountList = speciesAmountList;
-                $ctrl.restrictionsInUse = permitTypeCode === '100' && GameSpeciesCodes.isMooselike(gameSpeciesCode);
+                        }).$promise.then(function (speciesAmountList) {
+                            var dateFilter = $filter('date');
 
-                if (!$ctrl.restrictionsInUse) {
-                    _.forEach($ctrl.speciesAmountList, function (spa) {
-                        spa.restrictionType = null;
-                        spa.restrictionAmount = null;
-                    });
-                }
-            };
-
-            $ctrl.save = function () {
-                var dtoList = _.map($ctrl.speciesAmountList, function (spa) {
-                    var hasRestriction = !!spa.restrictionType && spa.restrictionAmount > 0;
-
-                    return {
-                        id: spa.id,
-                        gameSpeciesCode: spa.gameSpeciesCode,
-                        beginDate: spa.beginDate,
-                        endDate: spa.endDate,
-                        amount: spa.amount,
-                        beginDate2: spa.beginDate2,
-                        endDate2: spa.endDate2,
-                        restrictionType: hasRestriction ? spa.restrictionType : null,
-                        restrictionAmount: hasRestriction ? spa.restrictionAmount : null
-                    };
-                });
-
-                PermitDecisionSpecies.updateSpecies({decisionId: decisionId}, {list: dtoList}).$promise.then(function () {
-                    $uibModalInstance.close();
-
-                }, function () {
-                    NotificationService.showDefaultFailure();
-                });
-            };
-
-            $ctrl.cancel = function () {
-                $uibModalInstance.dismiss('cancel');
-            };
-
-            $ctrl.isValid = function (form) {
-                return form.$valid && _.every($ctrl.speciesAmountList, function (spa) {
-                    return checkIntervalsDoNotOverlap(spa.beginDate2, spa.endDate) &&
-                        checkPeriodLessThanYear(spa.beginDate, spa.endDate, spa.endDate2);
-                });
-            };
-
-            $ctrl.showOverlapError = function (spa) {
-                return !checkIntervalsDoNotOverlap(spa.beginDate2, spa.endDate);
-            };
-
-            $ctrl.showDurationError = function (spa) {
-                return !checkPeriodLessThanYear(spa.beginDate, spa.endDate, spa.endDate2);
-            };
-
-            function checkPeriodLessThanYear(beginDate, endDate, endDate2) {
-                beginDate = Helpers.toMoment(beginDate, 'YYYY-MM-DD');
-                endDate = Helpers.toMoment(endDate, 'YYYY-MM-DD');
-                endDate2 = Helpers.toMoment(endDate2, 'YYYY-MM-DD');
-
-                if (beginDate && beginDate.isValid()) {
-                    var diff;
-
-                    if (endDate2 && endDate2.isValid()) {
-                        diff = endDate2.diff(beginDate, 'days', true);
-                    } else if (endDate && endDate.isValid()) {
-                        diff = endDate.diff(beginDate, 'days', true);
-                    } else {
-                        return true;
+                            return _.chain(speciesAmountList)
+                                .filter({gameSpeciesCode: gameSpeciesCode})
+                                .map(function (spa) {
+                                    spa.year = dateFilter(spa.beginDate, 'yyyy');
+                                    return spa;
+                                })
+                                .sortBy('year')
+                                .value();
+                        });
                     }
-
-                    return diff <= 365;
                 }
+            }).result;
+        };
+    })
 
-                return true;
+    .controller('PermitDecisionEditSpeciesAmountsModalController', function ($uibModalInstance, Helpers, HuntingYearService, NotificationService,
+                                                                             GameSpeciesCodes, PermitDecisionSpecies, PermitDecisionSpeciesAmountUtils,
+                                                                             PermitTypes, Species,
+                                                                             decisionId, gameSpeciesCode, speciesAmountList, permitTypeCode) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.gameSpeciesCode = gameSpeciesCode;
+            $ctrl.speciesAmountList = speciesAmountList;
+            $ctrl.restrictionsInUse = permitTypeCode === PermitTypes.MOOSELIKE && GameSpeciesCodes.isMooselike(gameSpeciesCode);
+            $ctrl.nestRemovalApplicationType = permitTypeCode === PermitTypes.NEST_REMOVAL_BASED;
+
+            if (!$ctrl.restrictionsInUse) {
+                _.forEach($ctrl.speciesAmountList, function (spa) {
+                    spa.restrictionType = null;
+                    spa.restrictionAmount = null;
+                });
             }
+        };
 
-            function checkIntervalsDoNotOverlap(beginDate2, endDate) {
-                endDate = Helpers.toMoment(endDate, 'YYYY-MM-DD');
-                beginDate2 = Helpers.toMoment(beginDate2, 'YYYY-MM-DD');
+        $ctrl.save = function () {
+            var dtoList = _.map($ctrl.speciesAmountList, function (spa) {
+                var hasRestriction = !!spa.restrictionType && spa.restrictionAmount > 0;
 
-                if (!beginDate2 || !endDate || !endDate.isValid() || !beginDate2.isValid()) {
-                    return true;
-                }
+                return {
+                    id: spa.id,
+                    gameSpeciesCode: spa.gameSpeciesCode,
+                    beginDate: spa.beginDate,
+                    endDate: spa.endDate,
+                    specimenAmount: spa.specimenAmount,
+                    nestAmount: spa.nestAmount,
+                    eggAmount: spa.eggAmount,
+                    constructionAmount: spa.constructionAmount,
+                    beginDate2: spa.beginDate2,
+                    endDate2: spa.endDate2,
+                    restrictionType: hasRestriction ? spa.restrictionType : null,
+                    restrictionAmount: hasRestriction ? spa.restrictionAmount : null
+                };
+            });
 
-                return beginDate2.isAfter(endDate);
-            }
-        }
+            PermitDecisionSpecies.updateSpecies({decisionId: decisionId}, {list: dtoList}).$promise.then(function () {
+                $uibModalInstance.close();
+
+            }, function () {
+                NotificationService.showDefaultFailure();
+            });
+        };
+
+        $ctrl.cancel = function () {
+            $uibModalInstance.dismiss('cancel');
+        };
+
+        $ctrl.isValid = function (form) {
+            return form.$valid && _.every($ctrl.speciesAmountList, function (spa) {
+                return PermitDecisionSpeciesAmountUtils.checkIntervalsDoNotOverlap(spa.beginDate2, spa.endDate) &&
+                    PermitDecisionSpeciesAmountUtils.checkPeriodLessThanYear(spa.beginDate, spa.endDate, spa.endDate2);
+            });
+        };
+
+        $ctrl.showOverlapError = function (spa) {
+            return !PermitDecisionSpeciesAmountUtils.checkIntervalsDoNotOverlap(spa.beginDate2, spa.endDate);
+        };
+
+        $ctrl.showDurationError = function (spa) {
+            return !PermitDecisionSpeciesAmountUtils.checkPeriodLessThanYear(spa.beginDate, spa.endDate, spa.endDate2);
+        };
+
+        $ctrl.isBirdPermitSpecies = function (speciesCode) {
+            return Species.isBirdPermitSpecies(speciesCode);
+        };
+
     })
 
     .service('PermitDecisionSpeciesMethodModal', function ($uibModal) {

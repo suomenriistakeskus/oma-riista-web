@@ -32,7 +32,7 @@ public class GroupHuntingDayDTOTransformer extends ListTransformer<GroupHuntingD
             dto.setHuntingMethod(entity.getHuntingMethod());
             dto.setNumberOfHunters(entity.getNumberOfHunters());
             dto.setNumberOfHounds(entity.getNumberOfHounds());
-
+            dto.setCreatedBySystem(entity.isCreatedBySystem());
             return dto;
         }).collect(toList());
     }

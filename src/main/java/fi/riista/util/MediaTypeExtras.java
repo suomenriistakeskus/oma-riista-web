@@ -27,4 +27,6 @@ public class MediaTypeExtras {
 
     public static final String APPLICATION_ZIP_VALUE = "application/zip";
     public static final MediaType APPLICATION_ZIP = MediaType.parseMediaType(APPLICATION_ZIP_VALUE);
+
+    public static final String APPLICATION_WORD_VALUE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 }

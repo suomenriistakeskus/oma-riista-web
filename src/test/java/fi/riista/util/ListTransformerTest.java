@@ -40,7 +40,7 @@ class LazyInitializationTestTransformer extends ListTransformer<SystemUser, Set<
     public List<Set<SystemUserPrivilege>> transformNonTransactionally(@Nonnull final List<SystemUser> users) {
         final Set<Long> userIds = F.getUniqueIds(Objects.requireNonNull(users));
 
-        return F.mapNonNullsToList(userRepo.findAll(userIds),
+        return F.mapNonNullsToList(userRepo.findAllById(userIds),
                 user -> user == null ? null : ImmutableSet.copyOf(user.getPrivileges()));
     }
 }

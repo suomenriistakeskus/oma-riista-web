@@ -39,13 +39,17 @@ public class SQObservationBaseFields extends RelationalPathSpatial<SQObservation
 
     public final DateTimePath<java.sql.Timestamp> modificationTime = createDateTime("modificationTime", java.sql.Timestamp.class);
 
+    public final StringPath withinDeerHunting = createString("withinDeerHunting");
+
     public final StringPath withinMooseHunting = createString("withinMooseHunting");
 
     public final com.querydsl.sql.PrimaryKey<SQObservationBaseFields> observationBaseFieldsPkey = createPrimaryKey(id);
 
-    public final com.querydsl.sql.ForeignKey<SQRequired> observationBaseFieldsWithinMooseHuntingFk = createForeignKey(withinMooseHunting, "name");
+    public final com.querydsl.sql.ForeignKey<SQRequiredWithinDeerPilot> observationBaseFieldsWithinDeerHuntingFk = createForeignKey(withinDeerHunting, "name");
 
     public final com.querydsl.sql.ForeignKey<SQGameSpecies> observationBaseFieldsSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
+
+    public final com.querydsl.sql.ForeignKey<SQRequired> observationBaseFieldsWithinMooseHuntingFk = createForeignKey(withinMooseHunting, "name");
 
     public SQObservationBaseFields(String variable) {
         super(SQObservationBaseFields.class, forVariable(variable), "public", "observation_base_fields");
@@ -79,6 +83,7 @@ public class SQObservationBaseFields extends RelationalPathSpatial<SQObservation
         addMetadata(id, ColumnMetadata.named("id").withIndex(1).ofType(Types.BIGINT).withSize(19).notNull());
         addMetadata(metadataVersion, ColumnMetadata.named("metadata_version").withIndex(4).ofType(Types.INTEGER).withSize(10).notNull());
         addMetadata(modificationTime, ColumnMetadata.named("modification_time").withIndex(6).ofType(Types.TIMESTAMP).withSize(35).withDigits(6).notNull());
+        addMetadata(withinDeerHunting, ColumnMetadata.named("within_deer_hunting").withIndex(8).ofType(Types.VARCHAR).withSize(255).notNull());
         addMetadata(withinMooseHunting, ColumnMetadata.named("within_moose_hunting").withIndex(7).ofType(Types.VARCHAR).withSize(255).notNull());
     }
 

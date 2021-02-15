@@ -47,11 +47,16 @@ public class HarvestPermitModificationRestriction {
 
     private boolean hasReportedData(final HarvestPermit harvestPermit) {
         return hasReportedHarvests(harvestPermit) ||
+                huntingFinished(harvestPermit) ||
                 hasGroupHuntingDays(harvestPermit) ||
                 hasPermitHolderFinishedMooseLikeHunting(harvestPermit) ||
                 hasMooseHuntingSummaries(harvestPermit) ||
                 hasBasicClubHuntingSummaries(harvestPermit) ||
                 hasPermitHarvestInvoice(harvestPermit);
+    }
+
+    private static boolean huntingFinished(final HarvestPermit harvestPermit) {
+        return harvestPermit.getHarvestReportState() != null;
     }
 
     private boolean hasSingleAmountForHarvestSpecies(final HarvestPermit harvestPermit) {

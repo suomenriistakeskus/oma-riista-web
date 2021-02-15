@@ -1,0 +1,47 @@
+.r-dog-unleash {
+
+  .glyphicon {
+    color: @r-green;
+  }
+
+  textarea {
+    resize: none;
+  }
+
+  .mandatory-field:after {
+    font-family: FontAwesome;
+    content: "\f069";
+    color: @r-red;
+    font-size: small;
+    white-space: nowrap;
+    margin-left: 6px;
+  }
+
+  :required {
+    border-left-width: 5px;
+    border-left-color: lightgrey;
+  }
+
+  :required:valid {
+    border-left-color: @r-green;
+  }
+
+  .ng-touched:invalid,
+  .has-error input:valid,
+  select:invalid {
+    border-left-color: @r-red;
+  }
+
+}
+
+.r-dog-unleash-header {
+  text-transform: uppercase;
+  font-family: @font-family-open-sans;
+  font-weight: bold;
+  font-size: 13px;
+  line-height: 18px;
+  color: #737373;
+  padding: 8px 16px 8px;
+}
+
+@import "attachments/dogunleash.attachments.less";

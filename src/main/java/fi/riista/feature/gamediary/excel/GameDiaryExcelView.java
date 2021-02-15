@@ -73,9 +73,9 @@ public class GameDiaryExcelView extends AbstractXlsxView {
                 .map(i18n::getTranslation)
                 .collect(Collectors.toList()));
 
-        for (HarvestDTO harvest : harvests) {
+        for (final HarvestDTO harvest : harvests) {
             final List<HarvestSpecimenDTO> specimens = harvest.getSpecimens();
-            final int specimensSize = ofNullable(specimens).map(List::size).orElse(0);
+            final int specimensSize = specimens.size();
             final int amount = harvest.getAmount();
 
             if (specimensSize < amount) {
@@ -85,7 +85,7 @@ public class GameDiaryExcelView extends AbstractXlsxView {
                 addHarvestFields(helper, harvest, amount - specimensSize);
             }
 
-            for (HarvestSpecimenDTO specimen : specimens) {
+            for (final HarvestSpecimenDTO specimen : specimens) {
                 helper.appendRow();
 
                 addCommonColumns(helper, harvest, harvest.getAuthorInfo(), harvest.getActorInfo());

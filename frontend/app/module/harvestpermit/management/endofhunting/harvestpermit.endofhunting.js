@@ -43,7 +43,7 @@ angular.module('app.harvestpermit.management.endofhunting', [])
                 && moosePermit.permitHolderFinishedHunting
                 && (!moosePermit.huntingFinishedByModeration || isModerator);
 
-            $ctrl.isFinishHuntingByModeratorOverrideVisible = isModerator && !moosePermit.permitHolderFinishedHunting;
+            $ctrl.isFinishHuntingByAdminOverrideVisible = ActiveRoleService.isAdmin() && !moosePermit.permitHolderFinishedHunting;
         };
 
         $ctrl.getGameSpeciesName = function () {
@@ -95,7 +95,7 @@ angular.module('app.harvestpermit.management.endofhunting', [])
             });
         };
 
-        $ctrl.finishHuntingByModeratorOverride = function () {
+        $ctrl.finishHuntingByAdminOverride = function () {
             $state.go('permitmanagement.override', {permitId: moosePermit.id, speciesCode: gameSpeciesCode});
         };
     })
@@ -252,5 +252,85 @@ angular.module('app.harvestpermit.management.endofhunting', [])
                 updatePager();
                 $ctrl.updatePager = updatePager;
             };
+        }
+    })
+
+    .factory('EndOfHuntingNestRemovalReport', function ($resource) {
+        var prefix = 'api/v1/harvestreport/permit/nestremoval/:id';
+        return $resource(prefix, {id: '@id'}, {
+            moderatorCreate: {
+                method: 'POST',
+                url: prefix + '/moderator'
+            }
+        });
+    })
+
+    .service('EndOfHuntingNestRemovalReportModal', function ($uibModal) {
+        this.openModal = function (permitId) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/management/endofhunting/end-of-hunting-nest-removal-report.html',
+                resolve: {
+                    report: function (EndOfHuntingNestRemovalReport) {
+                        return EndOfHuntingNestRemovalReport.get({id: permitId}).$promise;
+                    }
+                },
+                controller: ModalController,
+                controllerAs: '$ctrl',
+                bindToController: true,
+                size: 'lg'
+            }).result;
+        };
+
+        function ModalController($uibModalInstance, NotificationService, PermitEndOfHuntingReport,
+                                 EndOfHuntingNestRemovalReport, ActiveRoleService, report) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.report = report;
+                $ctrl.hasUsages = $ctrl.report.usages && $ctrl.report.usages.length;
+                $ctrl.isModerator = ActiveRoleService.isModerator();
+                $ctrl.showAdditionalComments = $ctrl.isModerator ||
+                    ($ctrl.report.harvestReportState === 'APPROVED' &&
+                        $ctrl.report.endOfHuntingReportComments);
+            };
+
+            $ctrl.create = function () {
+                var promise;
+                if (ActiveRoleService.isModerator()) {
+                    promise = EndOfHuntingNestRemovalReport
+                        .moderatorCreate({id: report.permitId}, {endOfHuntingReportComments: $ctrl.report.endOfHuntingReportComments})
+                        .$promise;
+                } else {
+                    promise = EndOfHuntingNestRemovalReport.save({id: report.permitId}).$promise;
+                }
+                handleActionResultPromise(promise);
+            };
+
+            $ctrl.remove = function () {
+                var promise = PermitEndOfHuntingReport.delete({id: report.permitId}).$promise;
+                handleActionResultPromise(promise);
+            };
+
+            $ctrl.accept = function () {
+                var bodyParams = {
+                    to: 'APPROVED',
+                    id: report.permitId,
+                    rev: report.permitRev,
+                    endOfHuntingReportComments: {
+                        endOfHuntingReportComments: $ctrl.report.endOfHuntingReportComments
+                    }
+                };
+                var promise = PermitEndOfHuntingReport.changeState({id: report.permitId}, bodyParams).$promise;
+                handleActionResultPromise(promise);
+            };
+
+            function handleActionResultPromise($promise) {
+                $promise.then(function () {
+                    NotificationService.showDefaultSuccess();
+                    $uibModalInstance.close();
+                }, function () {
+                    NotificationService.showDefaultFailure();
+                });
+            }
         }
     });

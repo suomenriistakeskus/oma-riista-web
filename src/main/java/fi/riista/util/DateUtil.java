@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 public final class DateUtil {
@@ -81,6 +82,16 @@ public final class DateUtil {
     }
 
     @Nullable
+    public static DateTime toDateTimeNullSafe(@Nullable final LocalDateTime date) {
+        return date == null ? null : date.toDateTime(Constants.DEFAULT_TIMEZONE);
+    }
+
+    @Nullable
+    public static LocalDate toLocalDateNullSafe(@Nullable final DateTime date) {
+        return date == null ? null : date.toLocalDate();
+    }
+
+    @Nullable
     public static LocalDate toLocalDateNullSafe(@Nullable final Date date) {
         return date == null ? null : new LocalDate(date, Constants.DEFAULT_TIMEZONE);
     }
@@ -88,6 +99,16 @@ public final class DateUtil {
     @Nullable
     public static LocalDateTime toLocalDateTimeNullSafe(@Nullable final Date date) {
         return date == null ? null : new LocalDateTime(date, Constants.DEFAULT_TIMEZONE);
+    }
+
+    @Nullable
+    public static LocalTime toLocalTimeNullSafe(@Nullable final Date date) {
+        return Optional.ofNullable(date)
+                .map(d->{
+                    final LocalDateTime localDateTime = toLocalDateTimeNullSafe(d);
+                    return new LocalTime(localDateTime.getHourOfDay(), localDateTime.getMinuteOfHour());
+                })
+                .orElse(null);
     }
 
     @Nullable

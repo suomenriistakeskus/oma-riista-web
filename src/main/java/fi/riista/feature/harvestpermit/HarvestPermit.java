@@ -14,7 +14,7 @@ import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHunti
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.feature.permit.decision.PermitDecision;
@@ -280,6 +280,10 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
         return PermitTypeCode.isAmendmentPermitTypeCode(this.permitTypeCode);
     }
 
+    public boolean isNestRemovalPermit() {
+        return PermitTypeCode.isNestRemovalPermitTypeCode(this.permitTypeCode);
+    }
+
     public boolean hasContactPerson(final Person person) {
         if (originalContactPerson != null && originalContactPerson.equals(person)) {
             return true;
@@ -332,7 +336,7 @@ public class HarvestPermit extends LifecycleEntity<Long> implements HasHarvestRe
 
     public static HarvestPermit create(@Nonnull final String permitNumber) {
         requireNonNull(permitNumber);
-        return new HarvestPermit(permitNumber, PermitNumberUtil.extractYear(permitNumber));
+        return new HarvestPermit(permitNumber, DocumentNumberUtil.extractYear(permitNumber));
     }
 
     // For Hibernate

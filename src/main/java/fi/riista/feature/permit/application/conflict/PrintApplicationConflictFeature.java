@@ -1,7 +1,6 @@
 package fi.riista.feature.permit.application.conflict;
 
 import com.google.common.collect.Lists;
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.common.entity.PropertyIdentifier;
 import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
@@ -24,6 +23,7 @@ import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
@@ -86,7 +87,7 @@ public class PrintApplicationConflictFeature {
         return mergeOutput(componentPdfPaths, unionPdfPath);
     }
 
-    private byte[] mergeOutput(final List<Path> componentPdfPaths, final Path unionPdfPath) throws IOException {
+    private static byte[] mergeOutput(final List<Path> componentPdfPaths, final Path unionPdfPath) throws IOException {
         final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
         final PDFMergerUtility pdfMerger = new PDFMergerUtility();
@@ -108,8 +109,8 @@ public class PrintApplicationConflictFeature {
         return bos.toByteArray();
     }
 
-    private void renderPageOfProperties(final PDDocument pdfDocument,
-                                        final List<PrintApplicationConflictMapModel.PropertyInfo> propertyList) throws IOException {
+    private static void renderPageOfProperties(final PDDocument pdfDocument,
+                                               final List<PrintApplicationConflictMapModel.PropertyInfo> propertyList) throws IOException {
         final PDPage pdfPage = new PDPage(PDRectangle.A4);
         pdfDocument.addPage(pdfPage);
 
@@ -149,9 +150,9 @@ public class PrintApplicationConflictFeature {
 
         final List<PrintApplicationConflictMapModel.PropertyInfo> propertyNumberList = features.getFeatures().stream()
                 .map(f -> {
-                    final String propertyNumber = f.getProperty(GeoJSONConstants.PROPERTY_NUMBER);
+                    final String propertyNumber = getNullableProperty(f, GeoJSONConstants.PROPERTY_NUMBER);
                     final String propertyNumberDelimited = PropertyIdentifier.create(propertyNumber).getDelimitedValue();
-                    final String propertyName = f.getProperty(GeoJSONConstants.PROPERTY_NAME);
+                    final String propertyName = getNullableProperty(f, GeoJSONConstants.PROPERTY_NAME);
 
                     return new PrintApplicationConflictMapModel.PropertyInfo(propertyNumberDelimited, propertyName);
                 })
@@ -162,12 +163,12 @@ public class PrintApplicationConflictFeature {
         return new PrintApplicationConflictMapModel(unionModel, componentMapModels, propertyNumberList);
     }
 
-    private MapPdfModel createComponentMapModel(final Locale locale, final Feature f) {
+    private static MapPdfModel createComponentMapModel(final Locale locale, final Feature f) {
         final Geometry geometry = PolygonConversionUtil.geoJsonToJava(f.getGeometry(), GISUtils.SRID.ETRS_TM35FIN);
         final GISBounds bounds = GISBounds.create(geometry.getEnvelopeInternal());
-        final String propertyNumber = f.getProperty(GeoJSONConstants.PROPERTY_NUMBER);
+        final String propertyNumber = getNullableProperty(f, GeoJSONConstants.PROPERTY_NUMBER);
         final String propertyNumberDelimited = PropertyIdentifier.create(propertyNumber).getDelimitedValue();
-        final String propertyName = f.getProperty(GeoJSONConstants.PROPERTY_NAME);
+        final String propertyName = getNullableProperty(f, GeoJSONConstants.PROPERTY_NAME);
         final String propertyId = f.getId();
 
         return new MapPdfModel.Builder(locale)
@@ -178,7 +179,11 @@ public class PrintApplicationConflictFeature {
                 .build();
     }
 
-    private MapPdfModel createUnionMapModel(final Locale locale, final FeatureCollection features) {
+    private static String getNullableProperty(final Feature f, final String propertyName) {
+        return Optional.<String>ofNullable(f.getProperty(propertyName)).orElse("");
+    }
+
+    private static MapPdfModel createUnionMapModel(final Locale locale, final FeatureCollection features) {
         final List<Geometry> geometryList = features.getFeatures().stream()
                 .map(f -> PolygonConversionUtil.geoJsonToJava(f.getGeometry(), GISUtils.SRID.ETRS_TM35FIN))
                 .collect(toList());

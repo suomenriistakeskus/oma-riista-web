@@ -6,16 +6,16 @@
     <div class="col-xs-6">
         <ul class="nav nav-pills pull-right ">
             <li ng-class="{'active': $ctrl.isActiveTab('normal')}">
-                <a ng-click="$ctrl.showTab('normal')" translate="harvestpermit.decision.area.menu.area"></a>
+                <a ng-click="$ctrl.showTab('normal')" translate="decision.area.menu.area"></a>
             </li>
             <li ng-class="{'active': $ctrl.isActiveTab('partner')}">
-                <a ng-click="$ctrl.showTab('partner')" translate="harvestpermit.decision.area.menu.partners"></a>
+                <a ng-click="$ctrl.showTab('partner')" translate="decision.area.menu.partners"></a>
             </li>
             <li ng-class="{'active': $ctrl.isActiveTab('fragment')}">
-                <a ng-click="$ctrl.showTab('fragment')" translate="harvestpermit.decision.area.menu.fragments"></a>
+                <a ng-click="$ctrl.showTab('fragment')" translate="decision.area.menu.fragments"></a>
             </li>
             <li ng-class="{'active': $ctrl.isActiveTab('conflicts')}">
-                <a ng-click="$ctrl.showTab('conflicts')" translate="harvestpermit.decision.area.menu.conflicts"></a>
+                <a ng-click="$ctrl.showTab('conflicts')" translate="decision.area.menu.conflicts"></a>
             </li>
         </ul>
     </div>
@@ -32,12 +32,12 @@
         feature-collection="$ctrl.featureCollection"
 ></decision-application-partner-map>
 
-<decision-application-fragment-map
+<decision-application-fragments
         ng-if="$ctrl.isActiveTab('fragment')"
         application-id="$ctrl.applicationId"
         fragment-size-limit="$ctrl.fragmentSizeLimit"
         feature-collection="$ctrl.featureCollection"
-></decision-application-fragment-map>
+></decision-application-fragments>
 
 <harvest-permit-application-conflicts
         ng-if="$ctrl.isActiveTab('conflicts')"

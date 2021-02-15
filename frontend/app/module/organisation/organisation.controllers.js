@@ -47,7 +47,15 @@ angular.module('app.organisation.controllers', [])
             .state('organisation.events', {
                 url: '/events',
                 templateUrl: 'event/event_list.html',
-                controller: 'EventListController'
+                controller: 'EventListController',
+                resolve: {
+                    calendarYear: function () {
+                        return new Date().getFullYear();
+                    },
+                    availableYears: function (calendarYear) {
+                        return _.range(2017, calendarYear + 2);
+                    }
+                }
             })
             .state('organisation.locations', {
                 url: '/locations',
@@ -77,8 +85,8 @@ angular.module('app.organisation.controllers', [])
                     rkaId: function (orgId) {
                         return orgId;
                     },
-                    authorities: function (DecisionRkaAuthority, rkaId) {
-                        return DecisionRkaAuthority.listByRka({rkaId: rkaId});
+                    authorities: function (RkaAuthority, rkaId) {
+                        return RkaAuthority.listByRka({rkaId: rkaId});
                     }
                 }
             });

@@ -19,7 +19,8 @@ public enum FileType {
     FIVALDI_INVOICE_BATCH(StorageType.AWS_S3_BUCKET),
     IMAGE_UPLOAD(StorageType.AWS_S3_BUCKET),
     MOOSE_DATA_CARD(StorageType.AWS_S3_BUCKET),
-    SHOOTING_TEST_EXPORT(StorageType.AWS_S3_BUCKET);
+    SHOOTING_TEST_EXPORT(StorageType.AWS_S3_BUCKET),
+    HUNTING_CONTROL_ATTACHMENT(StorageType.AWS_S3_BUCKET);
 
     private final StorageType storageType;
 
@@ -34,7 +35,7 @@ public enum FileType {
     public String formatFilename(final PersistentFileMetadata metadata) {
         switch (this) {
             case MOOSE_DATA_CARD:
-                return metadata.getOriginalFilename() + "_" + metadata.getCreationTime().getTime();
+                return metadata.getOriginalFilename() + "_" + metadata.getCreationTime().getMillis();
 
             default:
                 // If there are concurrent transactions saving same file, then first transactions will commit, and all
@@ -86,6 +87,9 @@ public enum FileType {
 
             case FIVALDI_INVOICE_BATCH:
                 return "fivaldibatch/" + formatFilename(metadata);
+
+            case HUNTING_CONTROL_ATTACHMENT:
+                return "huntingcontrolattachment/" + formatFilename(metadata);
 
             default:
                 return formatFilename(metadata);

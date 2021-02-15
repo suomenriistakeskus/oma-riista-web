@@ -2,7 +2,7 @@ package fi.riista.feature.mail.admin;
 
 import fi.riista.validation.XssSafe;
 import org.hibernate.validator.constraints.Length;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.AssertTrue;

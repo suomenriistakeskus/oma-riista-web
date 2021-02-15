@@ -1,0 +1,116 @@
+<div class="row" style="margin-bottom: 15px">
+    <div class="col-xs-3" style="height: 800px; overflow: auto">
+        <form>
+            <div class="form-group">
+                <div class="btn-group btn-group-justified"
+                     ng-repeat="s in $ctrl.filterModes">
+                    <label class="btn"
+                           ng-class="$ctrl.filterNode === s ? 'btn-primary' : 'btn-default'"
+                           ng-model="$ctrl.filterMode"
+                           ng-change="$ctrl.updateShownFragments()"
+                           uib-btn-radio="s">
+                        <span translate="harvestpermit.application.fragment.filterModes.{{s}}"></span>
+                    </label>
+                </div>
+            </div>
+        </form>
+        <table class="table table-bordered table-striped">
+            <tbody>
+            <tr ng-repeat="f in $ctrl.shownFragments track by f.hash">
+                <td ng-click="$ctrl.zoomToFragment(f)">
+                    <label ng-switch="$ctrl.isFragment(f)">
+                        <img ng-switch-when="true" src="/static/decision/fragment.svg">
+                        <span ng-switch-when="false" class="text-primary fa fa-fw fa-lg fa-plus-circle"></span>
+                        <span ng-switch-default class="text-info fa fa-fw fa-lg fa-question"></span>
+                        <span ng-bind="::f.hash" ng-class="{'text-primary' : $ctrl.isSelectedFragment(f)}"></span>
+                        (<span ng-bind="f.bothSize.total | prettyAreaSize:2" class="text-right"></span>)
+                    </label>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-xs-9">
+        <div class="row" style="margin-bottom: 10px">
+            <div class="col-xs-5">
+                <label class="control-label" for="fragmentHash"
+                       translate="harvestpermit.application.fragment.hash"></label>
+                <strong id="fragmentHash" ng-bind="$ctrl.selectedFragment.hash"></strong>
+            </div>
+            <div class="col-xs-7 text-right">
+                <div class="btn-group">
+                    <label class="btn btn-default"
+                           ng-model="$ctrl.fragmentSizeLimitHa"
+                           ng-change="$ctrl.initializeMap()"
+                           uib-btn-radio="$ctrl.mooseFragmentSizeLimitHa">
+                        <span class="text-primary fa fa-check"
+                              ng-show="$ctrl.fragmentSizeLimitHa === $ctrl.mooseFragmentSizeLimitHa"></span>
+                        &nbsp;
+                        <span translate="harvestpermit.application.fragment.mooseFragment"></span>
+                    </label>
+
+                    <label class="btn btn-default"
+                           ng-model="$ctrl.fragmentSizeLimitHa"
+                           ng-change="$ctrl.initializeMap()"
+                           uib-btn-radio="$ctrl.deerFragmentSizeLimitHa">
+                        <span class="text-primary fa fa-check"
+                              ng-show="$ctrl.fragmentSizeLimitHa === $ctrl.deerFragmentSizeLimitHa"></span>
+                        &nbsp;
+                        <span translate="harvestpermit.application.fragment.deerFragment"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 10px">
+            <div class="col-xs-7">
+                <button type="button" class="btn btn-default"
+                        ng-disabled="!$ctrl.selectedFragment"
+                        ng-click="$ctrl.showDialog($ctrl.selectedFragment)"><span
+                        class="text-primary fa fa-lg fa-info-circle"></span>
+                </button>
+                <button type="button" class="btn btn-default"
+                        ng-disabled="!$ctrl.selectedFragment"
+                        ng-click="$ctrl.verifyFragment($ctrl.selectedFragment)">
+                    <img src="/static/decision/fragment.svg">
+                    <span translate="harvestpermit.application.fragment.confirm"></span>
+                </button>
+                <button type="button" class="btn btn-default"
+                        ng-disabled="!$ctrl.selectedFragment"
+                        ng-click="$ctrl.clearFragment($ctrl.selectedFragment)">
+                    <span class="text-primary fa fa-fw fa-lg fa-plus-circle"></span>
+                    <span translate="harvestpermit.application.fragment.clear"></span>
+                </button>
+            </div>
+
+            <div class="col-xs-2 text-right">
+                <button ng-show="$ctrl.filterMode === 'CONFIRMED'"
+                        class="btn btn-default"
+                        ng-click="$ctrl.printFragments()">
+                    <span class="fa fa-print fa-fw"></span>
+                    <span translate="harvestpermit.application.fragment.printMap"></span>
+                </button>
+            </div>
+
+            <div class="col-xs-3 text-right">
+                <button ng-show="$ctrl.filterMode === 'CONFIRMED'"
+                        class="btn btn-default"
+                        ng-click="$ctrl.exportFragmentExcel()">
+                    <span class="fa fa-fw fa-file-excel-o"></span>
+                    <span translate="decision.area.buttons.fragments"></span>
+                </button>
+            </div>
+        </div>
+
+        <leaflet id="{{ $ctrl.mapId }}"
+                 class="r-cursor-arrow"
+                 defaults="$ctrl.mapDefaults"
+                 layers="$ctrl.mapDefaults.mmlLayers"
+                 controls="$ctrl.mapDefaults.controls"
+                 bounds="$ctrl.mapState.viewBounds"
+                 event-broadcast="$ctrl.mapEvents"
+                 height="700px">
+        </leaflet>
+    </div>
+</div>
+

@@ -97,6 +97,23 @@ angular.module('app.dashboard', [])
             $ctrl.$onInit = function () {
                 $ctrl.metrics = $resource('/api/v1/dashboard/moosehunting').get();
             };
+
+        }
+    })
+    .component('dashboardDeerPilotStatistics', {
+        templateUrl: 'dashboard/deer-pilot-stats.html',
+        controller: function (FetchAndSaveBlob) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                // Initialize variables used by organisation selection component
+                $ctrl.areaCode = '000';
+                $ctrl.rhyCode = null;
+            };
+
+            $ctrl.exportDeerPilotMemberStats = function () {
+                FetchAndSaveBlob.post('api/v1/dashboard/deerpilot/excel/' + $ctrl.rhyCode);
+            };
         }
     })
     .component('dashboardHarvestObservations', {
@@ -146,6 +163,7 @@ angular.module('app.dashboard', [])
                 $ctrl.begin = HuntingYearService.getBeginDateStr(huntingYear);
                 $ctrl.end = HuntingYearService.getEndDateStr(huntingYear);
                 $ctrl.harvestReportOnly = false;
+                $ctrl.officialHarvestOnly = false;
             };
 
             $ctrl.selectSpeciesCode = function (gameSpeciesCode) {
@@ -158,12 +176,32 @@ angular.module('app.dashboard', [])
 
                 FormPostService.submitFormUsingBlankTarget('api/v1/dashboard/harvestSummary', {
                     harvestReportOnly: $ctrl.harvestReportOnly,
+                    officialHarvestOnly: $ctrl.officialHarvestOnly,
                     beginDate: Helpers.dateToString($ctrl.begin),
                     endDate: Helpers.dateToString($ctrl.end),
                     speciesCode: $ctrl.filterSpecies ? $ctrl.gameSpeciesCode : null,
                     organisationType: organisationType,
                     officialCode: officialCode
                 });
+            };
+        }
+    })
+    .component('dashboardEndOfHuntingReports', {
+        templateUrl: 'dashboard/end-of-hunting-reports.html',
+        controllerAs: '$ctrl',
+        controller: function (Species, GameSpeciesCodes, FetchAndSaveBlob, HuntingYearService) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.species = Species.getPermitBasedMooselike();
+                $ctrl.huntingYearOptions = HuntingYearService.createHuntingYearChoices();
+                $ctrl.selectedSpecies = _.find($ctrl.species, function (s) {
+                    return GameSpeciesCodes.isMoose(s.code);
+                });
+                $ctrl.selectedHuntingYear = _.last($ctrl.huntingYearOptions).year;
+            };
+
+            $ctrl.exportEndOfHuntingReports = function () {
+                FetchAndSaveBlob.post('api/v1/dashboard/mooselike/endofhunting/excel/' + $ctrl.selectedHuntingYear + '/' + $ctrl.selectedSpecies.code);
             };
         }
     })
@@ -301,4 +339,41 @@ angular.module('app.dashboard', [])
             };
         }
     })
-;
+    .component('dashboardEvents', {
+        templateUrl: 'dashboard/events.html',
+        controllerAs: '$ctrl',
+        controller: function (EventTypes, FetchAndSaveBlob) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                var currentYear = new Date().getFullYear();
+                // Show also the next year for event search
+                var endYear = currentYear + 1;
+                var beginYear = currentYear - 5;
+                $ctrl.availableYears = _.range(beginYear, endYear + 1);
+                $ctrl.selectedYear = currentYear;
+
+                EventTypes.then(function (result) {
+                    $ctrl.eventTypes = result.data;
+                });
+            };
+
+            $ctrl.exportToExcel = function () {
+                FetchAndSaveBlob.post('api/v1/dashboard/events', {
+                    rkaCode: $ctrl.areaCode,
+                    rhyCode: $ctrl.rhyCode,
+                    year: $ctrl.selectedYear,
+                    eventType: $ctrl.selectedEventType
+                });
+            };
+        }
+    })
+    .component('dashboardCarnivorePublicPdfDownloads', {
+        templateUrl: 'dashboard/carnivore-pdf-downloads.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.data = $resource('/api/v1/dashboard/carnivore/downloads').get();
+            };
+        }
+
+    });

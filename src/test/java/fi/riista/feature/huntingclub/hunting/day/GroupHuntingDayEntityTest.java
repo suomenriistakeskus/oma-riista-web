@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.hunting.day;
 
+import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
@@ -44,6 +45,20 @@ public class GroupHuntingDayEntityTest {
         assertTrue(day.containsInstant(end.minusSeconds(1)));
         assertFalse(day.containsInstant(start.minusSeconds(1)));
         assertFalse(day.containsInstant(end.plusSeconds(1)));
+    }
+
+    @Test
+    public void testCreateAllDayHuntingDayForGroup() {
+        final LocalDate today = today();
+        final HuntingClubGroup group = new HuntingClubGroup();
+
+        final GroupHuntingDay day = GroupHuntingDay.createAllDayHuntingDayForGroup(today, group);
+
+        assertEquals(today, day.getStartDate());
+        assertEquals(new LocalTime(0, 0), day.getStartTime());
+        assertEquals(today, day.getEndDate());
+        assertEquals(new LocalTime(23, 59), day.getEndTime());
+        assertEquals(group, day.getGroup());
     }
 
     private static LocalTime time() {

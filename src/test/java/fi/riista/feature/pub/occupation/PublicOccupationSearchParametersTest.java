@@ -1,5 +1,6 @@
 package fi.riista.feature.pub.occupation;
 
+import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
 import org.junit.Test;
@@ -33,7 +34,7 @@ public class PublicOccupationSearchParametersTest {
     @Test(expected = IllegalArgumentException.class)
     public void testOccupationTypeMissingOrganisationType() {
         PublicOccupationSearchParameters.builder()
-                .withOccupationType(OccupationType.SRVA_YHTEYSHENKILO)
+                .withOccupationType(ImmutableSet.of(OccupationType.SRVA_YHTEYSHENKILO))
                 .build();
     }
 
@@ -48,7 +49,7 @@ public class PublicOccupationSearchParametersTest {
     public void testDenyClubOrganisationType() {
         PublicOccupationSearchParameters.builder()
                 .withOrganisationType(OrganisationType.CLUB)
-                .withOccupationType(OccupationType.SEURAN_JASEN)
+                .withOccupationType(ImmutableSet.of(OccupationType.SEURAN_JASEN))
                 .build();
     }
 
@@ -56,7 +57,7 @@ public class PublicOccupationSearchParametersTest {
     public void testDenyGroupOrganisationType() {
         PublicOccupationSearchParameters.builder()
                 .withOrganisationType(OrganisationType.CLUBGROUP)
-                .withOccupationType(OccupationType.RYHMAN_JASEN)
+                .withOccupationType(ImmutableSet.of(OccupationType.RYHMAN_JASEN))
                 .build();
     }
 }

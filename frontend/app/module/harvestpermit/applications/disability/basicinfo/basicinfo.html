@@ -1,0 +1,117 @@
+<div class="alert alert-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p translate="harvestpermit.wizard.disability.basicInfo.instruction"></p>
+    </div>
+</div>
+
+<form name="disabilityBasicInfoForm" r-force-show-errors-check-validity>
+    <div class="row">
+        <div class="col-xs-12 col-md-6">
+            <div class="h3">
+                <span translate="harvestpermit.wizard.disability.basicInfo.title"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="useMotorVehicle"
+                           ng-model="$ctrl.basicInfo.useMotorVehicle">
+                    <span translate="harvestpermit.wizard.disability.basicInfo.useMotorVehicle"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="useVehicleForWeaponTransport"
+                           ng-model="$ctrl.basicInfo.useVehicleForWeaponTransport">
+                    <span translate="harvestpermit.wizard.disability.basicInfo.useVehicleForWeaponTransport"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-danger" ng-if="$ctrl.isReasonInvalid()"
+         translate="harvestpermit.wizard.disability.basicInfo.reasonInvalid">
+    </div>
+
+    <hr/>
+
+    <div class="row">
+        <div class="col-xs-6 col-sm-4 form-group" show-errors>
+            <label for="beginDate" class="control-label">
+                <span translate="global.beginDate"></span>
+            </label>
+
+            <div class="input-group" ng-controller="DatePickerController">
+                <input type="text" class="form-control"
+                       name="beginDate" id="beginDate"
+                       ng-model="$ctrl.basicInfo.beginDate"
+                       required
+                       date-between-min-max
+                       max-date="$ctrl.endDate"
+                       uib-datepicker-popup is-open="isDatePickerOpen"/>
+
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+            </div>
+            <p class="help-block has-error"
+               ng-show="disabilityBasicInfoForm.beginDate.$invalid"
+               ng-messages="disabilityBasicInfoForm.beginDate.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+
+        <div class="col-xs-6 col-sm-4 form-group" show-errors>
+            <label for="endDate" class="control-label">
+                <span translate="global.endDate"></span>
+            </label>
+
+            <div class="input-group" ng-controller="DatePickerController">
+                <input type="text" class="form-control"
+                       name="endDate" id="endDate"
+                       ng-model="$ctrl.basicInfo.endDate"
+                       required
+                       date-between-min-max
+                       min-date="$ctrl.beginDate"
+                       uib-datepicker-popup is-open="isDatePickerOpen"/>
+
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+            </div>
+            <p class="help-block has-error"
+               ng-show="disabilityBasicInfoForm.endDate.$invalid"
+               ng-messages="disabilityBasicInfoForm.endDate.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 text-danger"
+             ng-if="$ctrl.isEndDateBeforeBeginDate()"
+             translate="harvestpermit.wizard.disability.basicInfo.endDateBeforeBeginDate"></div>
+    </div>
+</form>
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(disabilityBasicInfoForm)"
+        previous="$ctrl.previous(disabilityBasicInfoForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(disabilityBasicInfoForm)">
+</permit-application-wizard-navigation>

@@ -3,6 +3,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
@@ -25,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class AnnualShootingTestStatistics
         implements AnnualStatisticsFieldsetReadiness,
-        AnnualStatisticsNonComputedFields<AnnualShootingTestStatistics>,
+        AnnualStatisticsManuallyEditableFields<AnnualShootingTestStatistics>,
         Serializable {
 
     public static final AnnualShootingTestStatistics reduce(@Nullable final AnnualShootingTestStatistics a,
@@ -71,6 +72,7 @@ public class AnnualShootingTestStatistics
     private Integer firearmTestEvents;
 
     // Updated when moderator overrides automatically computed value.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "firearm_test_events_last_overridden")
     private DateTime firearmTestEventsLastOverridden;
 
@@ -80,6 +82,7 @@ public class AnnualShootingTestStatistics
     private Integer bowTestEvents;
 
     // Updated when moderator overrides automatically computed value.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "bow_test_events_last_overridden")
     private DateTime bowTestEventsLastOverridden;
 
@@ -129,6 +132,7 @@ public class AnnualShootingTestStatistics
     private Integer shootingTestOfficials;
 
     // Updated when any of the manually updateable fields is changed.
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "shooting_tests_last_modified")
     private DateTime lastModified;
 

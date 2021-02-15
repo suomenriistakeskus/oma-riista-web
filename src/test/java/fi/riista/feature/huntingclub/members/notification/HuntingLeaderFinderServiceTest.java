@@ -259,7 +259,7 @@ public class HuntingLeaderFinderServiceTest extends EmbeddedDatabaseTest {
     private void findAndAssert(DateTime begin, DateTime end, Occupation... expecteds) {
         runInTransaction(() -> {
             final int currentHuntingYear = DateUtil.huntingYear();
-            assertLeaders(service.findChangedLeaders(begin.toDate(), end.toDate(), currentHuntingYear), expecteds);
+            assertLeaders(service.findChangedLeaders(begin, end, currentHuntingYear), expecteds);
         });
     }
 

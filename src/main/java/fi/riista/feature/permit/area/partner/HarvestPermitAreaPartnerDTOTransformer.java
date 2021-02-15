@@ -68,7 +68,7 @@ public class HarvestPermitAreaPartnerDTOTransformer
             final HuntingClubArea clubArea = clubAreaMapping.apply(p);
             final GISZoneSizeDTO areaSize = areaSizeMapping.apply(p);
 
-            final boolean hasChanged = p.getModificationTime().before(clubArea.getModificationTime());
+            final boolean hasChanged = p.getModificationTime().isBefore(clubArea.getModificationTime());
             final HarvestPermitAreaPartnerDTO.SourceAreaDTO sourceArea =
                     new HarvestPermitAreaPartnerDTO.SourceAreaDTO(clubArea, hasChanged);
 

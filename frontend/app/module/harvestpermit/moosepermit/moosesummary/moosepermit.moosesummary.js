@@ -127,8 +127,13 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
-            var year = Helpers.toMoment(speciesAmount.beginDate, 'YYYY-MM-DD').year();
-            $ctrl.show2017Fields = year && year >= 2017;
+            var beginYear = Helpers.toMoment(speciesAmount.beginDate, 'YYYY-MM-DD').year();
+
+            // Allow dates in summary to be from start of calendar year until the end date of permit
+            $ctrl.beginDate = Helpers.dateToString(new Date(beginYear, 0, 1));
+            $ctrl.endDate = speciesAmount.endDate2 || speciesAmount.endDate;
+
+            $ctrl.show2017Fields = beginYear && beginYear >= 2017;
 
             $ctrl.huntingSummary = mooseHuntingSummary;
             $ctrl.areaTypes = areaTypes;
@@ -167,6 +172,8 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
             _.forEach($ctrl.viewStateDateFields, function (fieldName) {
                 $ctrl[fieldName] = $ctrl.huntingSummary[fieldName];
             });
+
+            $ctrl.updateDateConstraints();
         };
 
         $ctrl.cancel = function () {
@@ -280,6 +287,17 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
 
         $ctrl.isValidForFinalSubmit = function (form) {
             return form.$valid && isHuntingAreaAndRemainingPopulationDefined();
+        };
+
+        $ctrl.updateDateConstraints = function () {
+            $ctrl.mooseHeatBeginDateMax = $ctrl.mooseHeatEndDate || $ctrl.endDate;
+            $ctrl.mooseHeatEndDateMin = $ctrl.mooseHeatBeginDate || $ctrl.beginDate;
+
+            $ctrl.mooseFawnBeginDateMax = $ctrl.mooseFawnEndDate || $ctrl.endDate;
+            $ctrl.mooseFawnEndDateMin = $ctrl.mooseFawnBeginDate || $ctrl.beginDate;
+
+            $ctrl.dateOfFirstDeerFlySeenMax = $ctrl.dateOfLastDeerFlySeen || $ctrl.endDate;
+            $ctrl.dateOfLastDeerFlySeenMin = $ctrl.dateOfFirstDeerFlySeen || $ctrl.beginDate;
         };
 
         function isHuntingAreaAndRemainingPopulationDefined() {

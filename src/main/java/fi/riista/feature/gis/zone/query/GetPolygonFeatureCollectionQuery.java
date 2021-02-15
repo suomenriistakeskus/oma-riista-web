@@ -1,11 +1,11 @@
 package fi.riista.feature.gis.zone.query;
 
-import com.vividsolutions.jts.geom.Geometry;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
 import fi.riista.util.GISUtils;
 import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 

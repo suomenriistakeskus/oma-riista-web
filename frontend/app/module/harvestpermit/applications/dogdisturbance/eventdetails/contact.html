@@ -1,0 +1,66 @@
+<form name="contactForm" r-force-show-errors-check-validity>
+
+    <div class="row form-group r-dog-disturbance">
+
+        <div class="col-xs-4"
+             ng-class="{ 'has-error': ((contactForm.contactName.$touched || !!contactForm.contactName.$modelValue) && contactForm.contactName.$invalid) }">
+
+            <input type="text" required valid-person-name
+                   name="contactName" id="contactName{{::$id}}"
+                   class="form-control"
+                   ng-model="$ctrl.contact.name"
+                   ng-change="$ctrl.change()">
+
+            <div class="help-block"
+                 ng-show="contactForm.contactName.$touched && contactForm.contactName.$invalid"
+                 ng-messages="contactForm.contactName.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </div>
+
+        </div>
+
+        <div class="col-xs-3 form-group"
+             ng-class="{ 'has-error': ((contactForm.contactPhone.$touched || !!contactForm.contactPhone.$modelValue) && contactForm.contactPhone.$invalid) }">
+
+            <input type="tel" pattern="[+]?[0-9]+" required validate-phonenumber
+                   name="contactPhone" id="contactPhone{{::$id}}"
+                   class="form-control"
+                   placeholder="{{ 'harvestpermit.wizard.dogdisturbance.eventDetails.contactPhonePlaceholder' | translate }}"
+                   ng-model="$ctrl.contact.phone"
+                   ng-change="$ctrl.change()">
+
+            <div class="help-block"
+                 ng-show="contactForm.contactPhone.$touched && contactForm.contactPhone.$invalid"
+                 ng-messages="contactForm.contactPhone.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </div>
+
+        </div>
+        <div class="col-xs-3 form-group"
+             ng-class="{ 'has-error': ((contactForm.contactMail.$touched || !!contactForm.contactMail.$modelValue) && contactForm.contactMail.$invalid) }">
+
+            <input type="email"
+                   name="contactMail" id="contactMail{{::$id}}"
+                   class="form-control"
+                   placeholder="{{ 'harvestpermit.wizard.dogdisturbance.eventDetails.contactMailPlaceholder' | translate }}"
+                   ng-model="$ctrl.contact.mail"
+                   ng-change="$ctrl.change()">
+
+            <div class="help-block"
+                 ng-show="contactForm.contactMail.$touched && contactForm.contactMail.$invalid"
+                 ng-messages="contactForm.contactMail.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </div>
+
+        </div>
+
+        <div class="col-xs-2" ng-show="$ctrl.deleteEnabled()">
+            <a class="btn btn-link"
+               ng-click="$ctrl.delete()">
+                <span class="glyphicon glyphicon-remove text-danger"></span>
+                <span class="text-danger" translate="global.button.delete"></span>
+            </a>
+        </div>
+
+    </div>
+</form>

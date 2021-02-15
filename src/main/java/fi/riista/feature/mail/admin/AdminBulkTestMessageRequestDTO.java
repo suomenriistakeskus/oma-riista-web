@@ -1,7 +1,7 @@
 package fi.riista.feature.mail.admin;
 
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 
 public class AdminBulkTestMessageRequestDTO extends AdminBulkMessageRequestDTO {
 

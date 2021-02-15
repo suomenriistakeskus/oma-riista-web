@@ -1,0 +1,54 @@
+<div class="form-group">
+    <label class="control-label">
+        <span translate="harvestreport.form.locationInput"></span>
+    </label>
+
+    <div class="form-control-wrapper">
+        <div class="form-group">
+            <label class="radio-inline"><input type="radio" ng-change="$ctrl.coordinateSystemChanged()"
+                                               ng-model="$ctrl.coordinateSystem"
+                                               value="ETRS-TM35FIN">ETRS-TM35FIN</label>
+            <label class="radio-inline"><input type="radio" ng-change="$ctrl.coordinateSystemChanged()"
+                                               ng-model="$ctrl.coordinateSystem" value="WGS84">ETRS89 (WGS84)</label>
+            <label class="radio-inline"><input type="radio" ng-change="$ctrl.coordinateSystemChanged()"
+                                               ng-model="$ctrl.coordinateSystem" value="KKJ">KKJ</label>
+        </div>
+    </div>
+
+    <label for="coordinateLat" class="control-label">
+        <span translate="global.geoLocation.lat"></span>
+    </label>
+
+    <div class="form-control-wrapper">
+        <div class="form-group">
+            <input type="text" id="coordinateLat" name="lat"
+                   class="form-control"
+                   ng-model="$ctrl.coordinatesInput.lat"/>
+
+        </div>
+    </div>
+
+    <label for="coordinateLon" class="control-label">
+        <span translate="global.geoLocation.lon"></span>
+    </label>
+    <div class="form-control-wrapper">
+        <div class="form-group">
+            <input type="text" id="coordinateLon" name="lon"
+                   class="form-control"
+                   ng-model="$ctrl.coordinatesInput.lng"/>
+
+        </div>
+    </div>
+
+    <label class="control-label">
+    </label>
+    <div class="form-control-wrapper">
+        <div class="form-group">
+            <a ng-click="$ctrl.setCoordinates()" class="btn btn-primary">
+                <span class="glyphicon glyphicon-map-marker"></span> &nbsp;
+                <span translate="harvestreport.form.setlocation"></span>
+            </a>
+        </div>
+    </div>
+
+</div>

@@ -3,7 +3,6 @@ package fi.riista.feature.gamediary.harvest.mutation.report;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestReportingType;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersionNotSupportedException;
 import fi.riista.feature.gamediary.harvest.HuntingMethod;
 import fi.riista.feature.gamediary.harvest.PermittedMethod;
 import fi.riista.feature.gamediary.harvest.mutation.HarvestMutationRole;
@@ -28,10 +27,6 @@ public class HarvestForPermitMutation implements HarvestMutationForReportType {
                                                   @Nonnull final HarvestPermit harvestPermit,
                                                   final PermittedMethod permittedMethod,
                                                   final HuntingMethod huntingMethod) {
-
-        if (!harvestSpecVersion.supportsHarvestPermitState()) {
-            throw HarvestSpecVersionNotSupportedException.permitNotSupported(harvestSpecVersion);
-        }
 
         if (harvestPermit.isHarvestReportApproved() || harvestPermit.isHarvestReportRejected()) {
             throw new EndOfHuntingReportExistsException();

@@ -27,7 +27,9 @@ public enum SystemUserPrivilege implements PersistableEnum {
     ALTER_INVOICE_PAYMENT(SystemUser.Role.ROLE_MODERATOR),
     MODERATE_RHY_ANNUAL_STATISTICS(SystemUser.Role.ROLE_MODERATOR),
     HARVEST_REGISTRY(SystemUser.Role.ROLE_MODERATOR),
-    EXPORT_HABIDES_REPORTS(SystemUser.Role.ROLE_MODERATOR);
+    EXPORT_HABIDES_REPORTS(SystemUser.Role.ROLE_MODERATOR),
+    SAVE_INCOMPLETE_HARVEST_DATA(SystemUser.Role.ROLE_MODERATOR),
+    MODERATE_DISABILITY_PERMIT_APPLICATION(SystemUser.Role.ROLE_MODERATOR);
 
     private final SystemUser.Role role;
 

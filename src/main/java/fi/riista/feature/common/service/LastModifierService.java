@@ -7,7 +7,6 @@ import fi.riista.feature.common.dto.LastModifierDTO;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
-import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.jpa.CriteriaUtils;
 import org.joda.time.DateTime;
@@ -40,7 +39,7 @@ public class LastModifierService {
     public LastModifierDTO getLastModifier(@Nonnull final LifecycleEntity<?> entity) {
         requireNonNull(entity);
 
-        final Function<LifecycleEntity<?>, SystemUser> getUser = e -> userRepository.findOne(e.getModifiedByUserId());
+        final Function<LifecycleEntity<?>, SystemUser> getUser = e -> userRepository.findById(e.getModifiedByUserId()).orElse(null);
 
         return getLastModifier(entity, getUser, SystemUser::getPerson);
     }
@@ -65,7 +64,7 @@ public class LastModifierService {
                                                                                   final Function<T, SystemUser> entityToUser,
                                                                                   final Function<SystemUser, Person> userToPerson) {
 
-        final DateTime timestamp = DateUtil.toDateTimeNullSafe(entity.getModificationTime());
+        final DateTime timestamp = entity.getModificationTime();
         final SystemUser user = entityToUser.apply(entity);
 
         // User might be null when entity is modified e.g. by a scheduled task.
@@ -85,7 +84,7 @@ public class LastModifierService {
     private List<SystemUser> findModifierUsers(final Iterable<? extends LifecycleEntity<?>> entities) {
         final Set<Long> modifierIds = F.mapNonNullsToSet(entities, LifecycleEntity::getModifiedByUserId);
 
-        return userRepository.findAll(modifierIds);
+        return userRepository.findAllById(modifierIds);
     }
 
     private Function<SystemUser, Person> createUserToPersonMapping(final Collection<SystemUser> users) {

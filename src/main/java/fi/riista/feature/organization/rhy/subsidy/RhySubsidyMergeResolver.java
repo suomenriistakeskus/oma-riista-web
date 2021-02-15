@@ -1,23 +1,29 @@
 package fi.riista.feature.organization.rhy.subsidy;
 
+import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.rhy.MergedRhyMapping;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysNameDTO;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticsExportDTO;
 import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
+import org.iban4j.Iban;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.function.Function;
 
 import static fi.riista.feature.organization.rhy.subsidy.SubsidyAllocationConstants.FIRST_SUBSIDY_YEAR;
 import static fi.riista.util.NumberUtils.nullableSum;
 import static java.lang.String.format;
+import static java.util.Comparator.comparing;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 public class RhySubsidyMergeResolver {
@@ -44,8 +50,7 @@ public class RhySubsidyMergeResolver {
         final Map<String, AnnualStatisticsExportDTO> mergedStatisticsIndex = MergedRhyMapping
                 .transformMerged(statisticsIndex, subsidyYear, (newRhyCode, statisticsToMerge) -> {
 
-                    return Optional
-                            .ofNullable(rhyNameIndex.get(newRhyCode))
+                    return ofNullable(rhyNameIndex.get(newRhyCode))
                             .map(newRhyNameDTO -> merge(newRhyNameDTO, statisticsToMerge))
                             .orElseThrow(() -> new IllegalStateException(format(
                                     "RHY with officialCode %s does not exist at year %d", newRhyCode, subsidyYear)));
@@ -77,6 +82,33 @@ public class RhySubsidyMergeResolver {
         mergeResult.setParentOrganisation(rka);
         return mergeResult;
     }
+
+    public List<AnnualStatisticsExportDTO> combine(final List<AnnualStatisticsExportDTO> previousYearStats,
+                                                   final List<AnnualStatisticsExportDTO> stats) {
+
+        final Function<AnnualStatisticsExportDTO, String> officialCodeExtractor =
+                dto -> dto.getOrganisation().getOfficialCode();
+
+        final Map<String, AnnualStatisticsExportDTO> previousYearMap = F.index(previousYearStats, officialCodeExtractor);
+        final Map<String, AnnualStatisticsExportDTO> map = F.index(stats, officialCodeExtractor);
+
+        final Map<String, AnnualStatisticsExportDTO> resultMap = new HashMap<>(map);
+        previousYearMap.forEach((k, v) ->
+                resultMap.merge(k, v, (dto1, dto2) ->
+                        ofNullable(rhyNameIndex.get(dto1.getOrganisation().getOfficialCode()))
+                                .map(nameInfo -> merge(nameInfo, Arrays.asList(dto1, dto2)))
+                                .map(dto -> {
+                                    final Iban iban = map.get(officialCodeExtractor.apply(dto1)).getBasicInfo().getIban();
+                                    dto.getBasicInfo().setIban(iban);
+                                    return dto;
+                                })
+                                .orElseThrow(NotFoundException::new)));
+
+        return resultMap.values().stream()
+                .sorted(comparing(officialCodeExtractor))
+                .collect(toList());
+    }
+
 
     public PreviouslyGrantedSubsidiesDTO mergePreviouslyGrantedSubsidies(
             @Nonnull final PreviouslyGrantedSubsidiesDTO grantedSubsidies) {

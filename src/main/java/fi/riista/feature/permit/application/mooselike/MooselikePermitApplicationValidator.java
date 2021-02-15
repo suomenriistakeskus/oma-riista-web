@@ -33,8 +33,7 @@ public class MooselikePermitApplicationValidator {
     public static void validateContent(final HarvestPermitApplication application) {
         requireNonNull(application);
 
-        ValidationUtil.validateSpeciesAmounts(application);
-        ValidationUtil.validateCommonContent(application);
+        ValidationUtil.validateCommonHarvestPermitContent(application);
 
         if (application.getPermitPartners().isEmpty()) {
             throw new IllegalStateException("partners is empty");

@@ -1,6 +1,7 @@
 package fi.riista.feature.permit.invoice.pdf;
 
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.invoice.Invoice;
 import fi.riista.feature.permit.invoice.decision.PermitDecisionInvoice;
@@ -30,7 +31,7 @@ public class PermitDecisionInvoicePdfFeature {
     @Transactional(readOnly = true, rollbackFor = IOException.class)
     public ResponseEntity<byte[]> getProcessingInvoicePdfFile(final long decisionId) throws IOException {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.READ);
-        decision.assertStatus(EnumSet.of(PermitDecision.Status.PUBLISHED));
+        decision.assertStatus(EnumSet.of(DecisionStatus.PUBLISHED));
 
         final PermitDecisionInvoice permitDecisionInvoice = permitDecisionInvoiceRepository.getByDecision(decision);
         final Invoice invoice = permitDecisionInvoice.getInvoice();

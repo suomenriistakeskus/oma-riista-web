@@ -14,6 +14,7 @@ import fi.riista.util.F;
 import fi.riista.util.Locales;
 import fi.riista.util.LocalisedString;
 import org.joda.time.LocalDate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ public class JHTOccupationExpiryResolver {
     @Resource
     private EnumLocaliser enumLocaliser;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public List<JHTOccupationExpiryDTO> resolve(final LocalDate expiryDate) {
         final QOccupation OCCUPATION = QOccupation.occupation;
@@ -84,6 +86,7 @@ public class JHTOccupationExpiryResolver {
                 .collect(Collectors.toList());
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public Map<Long, Set<String>> resolveRhyEmails(final List<JHTOccupationExpiryDTO> dtoList) {
         return riistanhoitoyhdistysEmailService.resolveEmails(

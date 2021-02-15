@@ -7,8 +7,8 @@
                 ng-if="viewState.moderatorView"
                 harvest="entry"></diary-harvest-author-shooter-moderator>
 
-        <diary-harvest-permit harvest-permit="viewState.harvestPermit"
-                              harvest="entry"
+        <diary-harvest-permit harvest="entry"
+                              harvest-permit="viewState.harvestPermit"
                               author-or-actor="viewState.authorOrActor"
                               fields="viewState.fields">
         </diary-harvest-permit>
@@ -32,6 +32,11 @@
                 harvest-date="viewState.date"
                 harvest-permit="viewState.harvestPermit">
         </diary-harvest-select-species>
+
+        <diary-harvest-deer-hunting-type-selection class="r-diary-harvest-content"
+                                                   harvest="entry"
+                                                   ng-if="isDeerHuntingTypeVisible()">
+        </diary-harvest-deer-hunting-type-selection>
 
         <h4 translate="gamediary.form.titleTimeAndPlace"></h4>
 
@@ -106,7 +111,7 @@
             </div>
         </div>
 
-        <div class="form-group" ng-show="isHarvestAreaVisible()" show-errors>
+        <div class="form-group" ng-show="isReportFieldVisible('harvestArea')" show-errors>
             <label for="harvestArea" class="col-xs-4 control-label">
                 <span translate="gamediary.form.harvestarea"></span>
                 <small class="glyphicon glyphicon-asterisk text-danger"></small>
@@ -190,7 +195,7 @@
 
         <hr/>
 
-        <div ng-if="viewState.moderatorView && isLukeStatusVisible()" class="form-group" show-errors>
+        <div ng-if="viewState.moderatorView && isReportFieldVisible('lukeStatus')" class="form-group" show-errors>
             <label for="lukeStatus" class="col-xs-4 control-label">
                 <span translate="gamediary.form.lukeStatus"></span>
             </label>

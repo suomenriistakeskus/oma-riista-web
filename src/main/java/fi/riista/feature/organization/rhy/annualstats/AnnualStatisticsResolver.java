@@ -18,31 +18,41 @@ import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.QPerson;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspectionEventRepository;
+import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEvent;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventRepository;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
 import fi.riista.feature.shootingtest.QShootingTestAttempt;
 import fi.riista.feature.shootingtest.QShootingTestEvent;
 import fi.riista.feature.shootingtest.QShootingTestParticipant;
 import fi.riista.feature.shootingtest.ShootingTestType;
 import fi.riista.sql.SQRhy;
+import fi.riista.util.DateUtil;
 import io.vavr.Lazy;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import org.iban4j.Iban;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import static com.querydsl.core.types.dsl.Expressions.cases;
+import static fi.riista.feature.gamediary.GameSpecies.LARGE_CARNIVORES;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_FALLOW_DEER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_LYNX;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_ROE_DEER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_UNKNOWN;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WILD_BOAR;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WILD_FOREST_REINDEER;
@@ -50,11 +60,14 @@ import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WOLF;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WOLVERINE;
 import static fi.riista.feature.gamediary.srva.SrvaEventNameEnum.ACCIDENT;
 import static fi.riista.feature.gamediary.srva.SrvaEventStateEnum.APPROVED;
+import static fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType.LARGE_CARNIVORE;
+import static fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType.MOOSELIKE;
 import static fi.riista.feature.permit.application.HarvestPermitApplication.Status.ACTIVE;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.QUALIFIED;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.REBATED;
 import static fi.riista.util.DateUtil.createDateInterval;
 import static fi.riista.util.DateUtil.today;
+import static fi.riista.util.NumberUtils.nullsafeIntSum;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
@@ -89,17 +102,23 @@ public class AnnualStatisticsResolver {
     private final Supplier<Integer> harvestPermitApplicationCountSupplier;
     private final Supplier<Integer> announcementCountSupplier;
     private final Supplier<Map<CalendarEventType, Integer>> eventParticipantCountSupplier;
+    private final Supplier<Map<GameDamageType, Long>> gameDamageCountSupplier;
+    private final Supplier<Tuple3<Integer, Integer, Integer>> huntingControlCountSupplier;
 
     public AnnualStatisticsResolver(@Nonnull final Riistanhoitoyhdistys rhy,
                                     final int calendarYear,
                                     @Nonnull final OccupationRepository occupationRepository,
                                     @Nonnull final CalendarEventRepository eventRepository,
+                                    @Nonnull final GameDamageInspectionEventRepository gameDamageInspectionEventRepository,
+                                    @Nonnull final HuntingControlEventRepository huntingControlEventRepository,
                                     @Nonnull final JPAQueryFactory jpaQueryFactory,
                                     @Nonnull final SQLQueryFactory sqlQueryFactory) {
 
         requireNonNull(rhy, "rhy is null");
         requireNonNull(occupationRepository, "occupationRepository is null");
         requireNonNull(eventRepository, "eventRepository is null");
+        requireNonNull(gameDamageInspectionEventRepository, "gameDamageInspectionEventRepository is null");
+        requireNonNull(huntingControlEventRepository, "huntingControlEventRepository is null");
         requireNonNull(jpaQueryFactory, "jpaQueryFactory is null");
         requireNonNull(sqlQueryFactory, "sqlQueryFactory is null");
 
@@ -147,6 +166,14 @@ public class AnnualStatisticsResolver {
         this.eventParticipantCountSupplier = Lazy.of(() -> {
             final LocalDate lastDate = today.isBefore(lastDayOfYear) ? today : lastDayOfYear;
             return eventRepository.countEventParticipants(rhy, firstDayOfYear, lastDate);
+        });
+
+        this.gameDamageCountSupplier = Lazy.of(() -> {
+            return countGameDamageEvents(rhy, calendarYear, gameDamageInspectionEventRepository);
+        });
+
+        this.huntingControlCountSupplier = Lazy.of(() -> {
+            return countHuntingControlEvents(rhy, calendarYear, huntingControlEventRepository);
         });
     }
 
@@ -212,6 +239,7 @@ public class AnnualStatisticsResolver {
         int bears = 0;
         int wolfs = 0;
         int wolverines = 0;
+        int otherSpecies = 0;
 
         final Map<Integer, Integer> countBySpeciesCode = srvaEventsCountsSupplier.get().get(category);
 
@@ -226,6 +254,7 @@ public class AnnualStatisticsResolver {
             bears = countBySpeciesCode.getOrDefault(OFFICIAL_CODE_BEAR, 0);
             wolfs = countBySpeciesCode.getOrDefault(OFFICIAL_CODE_WOLF, 0);
             wolverines = countBySpeciesCode.getOrDefault(OFFICIAL_CODE_WOLVERINE, 0);
+            otherSpecies = countBySpeciesCode.getOrDefault(OFFICIAL_CODE_UNKNOWN, 0);
         }
 
         stats.setMooses(mooses);
@@ -238,6 +267,7 @@ public class AnnualStatisticsResolver {
         stats.setBears(bears);
         stats.setWolves(wolfs);
         stats.setWolverines(wolverines);
+        stats.setOtherSpecies(otherSpecies);
 
         return stats;
     }
@@ -256,6 +286,22 @@ public class AnnualStatisticsResolver {
 
     public int getNumberOfAnnouncements() {
         return announcementCountSupplier.get();
+    }
+
+    public int getGameDamageInspectionEventCount(final GameDamageType gameDamageType) {
+        return gameDamageCountSupplier.get().getOrDefault(gameDamageType, 0L).intValue();
+    }
+
+    public int getHuntingControlEventCount() {
+        return huntingControlCountSupplier.get()._1;
+    }
+
+    public int getHuntingControlCustomersCount() {
+        return huntingControlCountSupplier.get()._2;
+    }
+
+    public int getHuntingControlProofOrdersCount() {
+        return huntingControlCountSupplier.get()._3;
     }
 
     private static Iban getIbanFromPreviousYear(final Riistanhoitoyhdistys rhy,
@@ -354,17 +400,19 @@ public class AnnualStatisticsResolver {
         return queryFactory
                 .select(SRVA_EVENT.eventName, SPECIES.officialCode, SRVA_EVENT.count())
                 .from(SRVA_EVENT)
-                .join(SRVA_EVENT.species, SPECIES)
+                .leftJoin(SRVA_EVENT.species, SPECIES)
                 .where(SRVA_EVENT.rhy.eq(rhy)
                         .and(SRVA_EVENT.state.eq(APPROVED))
-                        .and(SRVA_EVENT.pointOfTime.year().eq(calendarYear))
-                        .and(SPECIES.officialCode.in(SRVA_GAME_SPECIES_CODES)))
+                        .and(SRVA_EVENT.pointOfTime.year().eq(calendarYear)))
                 .groupBy(SRVA_EVENT.eventName, SPECIES.officialCode)
                 .fetch()
                 .stream()
                 .collect(groupingBy(
                         t -> t.get(SRVA_EVENT.eventName),
-                        toMap(t -> t.get(SPECIES.officialCode), t -> t.get(SRVA_EVENT.count()).intValue())));
+                        toMap(t -> {
+                            final Integer code = t.get(SPECIES.officialCode);
+                            return code != null ? code : OFFICIAL_CODE_UNKNOWN;
+                        }, t -> t.get(SRVA_EVENT.count()).intValue())));
     }
 
     private static Map<SrvaEventTypeEnum, Integer> countSrvaAccidentsByType(final Riistanhoitoyhdistys rhy,
@@ -377,11 +425,10 @@ public class AnnualStatisticsResolver {
         return queryFactory
                 .select(SRVA_EVENT.eventType, SRVA_EVENT.count())
                 .from(SRVA_EVENT)
-                .join(SRVA_EVENT.species, SPECIES)
+                .leftJoin(SRVA_EVENT.species, SPECIES)
                 .where(SRVA_EVENT.rhy.eq(rhy)
                         .and(SRVA_EVENT.state.eq(APPROVED))
                         .and(SRVA_EVENT.pointOfTime.year().eq(calendarYear))
-                        .and(SPECIES.officialCode.in(SRVA_GAME_SPECIES_CODES))
                         .and(SRVA_EVENT.eventName.eq(ACCIDENT)))
                 .groupBy(SRVA_EVENT.eventType)
                 .fetch()
@@ -418,5 +465,33 @@ public class AnnualStatisticsResolver {
                 .where(ANNOUNCEMENT.fromOrganisation.eq(rhy))
                 .where(ANNOUNCEMENT.lifecycleFields.creationTime.year().eq(calendarYear))
                 .fetchCount();
+    }
+
+    private static Map<GameDamageType, Long> countGameDamageEvents(final Riistanhoitoyhdistys rhy,
+                                                                   final int calendarYear,
+                                                                   final GameDamageInspectionEventRepository eventRepository) {
+        final Date startDate = DateUtil.toDateNullSafe(new LocalDate(calendarYear, 1, 1));
+        final Date endDate = DateUtil.toDateNullSafe(new LocalDate(calendarYear, 12, 31));
+
+        return eventRepository.findByRhyIdAndDateBetweenOrderByDateDesc(rhy.getId(), startDate, endDate)
+                .stream()
+                .map(event ->
+                        Tuple.of(LARGE_CARNIVORES.contains(event.getGameSpecies().getOfficialCode()) ? LARGE_CARNIVORE : MOOSELIKE,
+                                event.getId()))
+                .collect(groupingBy(Tuple2::_1, counting()));
+
+    }
+
+    private static Tuple3<Integer, Integer, Integer> countHuntingControlEvents(final Riistanhoitoyhdistys rhy,
+                                                                               final int calendarYear,
+                                                                               final HuntingControlEventRepository eventRepository) {
+        final LocalDate startDate = new LocalDate(calendarYear, 1, 1);
+        final LocalDate endDate = new LocalDate(calendarYear, 12, 31);
+
+        final List<HuntingControlEvent> events =
+                eventRepository.findByRhyIdAndDateBetweenOrderByDateDesc(rhy.getId(), startDate, endDate);
+        return Tuple.of(events.size(),
+                nullsafeIntSum(events, HuntingControlEvent::getCustomers),
+                nullsafeIntSum(events, HuntingControlEvent::getProofOrders));
     }
 }

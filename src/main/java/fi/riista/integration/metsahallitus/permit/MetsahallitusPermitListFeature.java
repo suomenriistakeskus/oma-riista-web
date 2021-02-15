@@ -32,7 +32,7 @@ public class MetsahallitusPermitListFeature {
         final List<MetsahallitusPermit> list = metsahallitusPermitRepository.findByPerson(person);
 
         return list.stream()
-                .filter(p -> MetsahallitusPermitImportDTO.PAID.equals(p.getStatus()))
+                .filter(p -> MetsahallitusPermitImportDTO.PAID_CODES.contains(p.getStatus()))
                 .map(MetsahallitusPermitListDTO::create)
                 .collect(toList());
     }

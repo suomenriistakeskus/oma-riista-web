@@ -13,7 +13,7 @@ import fi.riista.feature.organization.person.PersonWithNameDTO;
 import fi.riista.util.DtoUtil;
 import fi.riista.validation.DoNotValidate;
 import fi.riista.validation.FinnishBusinessId;
-import org.hibernate.validator.constraints.Email;
+import javax.validation.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
 

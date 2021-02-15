@@ -22,6 +22,8 @@ public class PublicOccupationDTO {
     private String postalCode;
     private String country;
 
+    private PublicOccupationBoardRepresentationDTO boardRepresentation;
+
     public PublicOccupationDTO(PublicOccupationTypeDTO occupationType, long orgId, String personName) {
         this.occupationType = occupationType;
         this.orgId = orgId;
@@ -102,5 +104,13 @@ public class PublicOccupationDTO {
 
     public void setCountry(String country) {
         this.country = country;
+    }
+
+    public PublicOccupationBoardRepresentationDTO getBoardRepresentation() {
+        return boardRepresentation;
+    }
+
+    public void setBoardRepresentation(final PublicOccupationBoardRepresentationDTO boardRepresentation) {
+        this.boardRepresentation = boardRepresentation;
     }
 }

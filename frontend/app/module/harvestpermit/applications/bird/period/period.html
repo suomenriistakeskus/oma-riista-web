@@ -20,7 +20,7 @@
             <div class="col-xs-3">
                 <div class="form-group" show-errors>
                     <label class="control-label" for="beginDate-{{::s.gameSpeciesCode}}"
-                           translate="harvestpermit.wizard.bird.period.beginDate"></label>
+                           translate="harvestpermit.wizard.period.beginDate"></label>
 
                     <div class="input-group r-dropdown-align-right"
                          ng-controller="DatePickerController">
@@ -53,7 +53,7 @@
             <div class="col-xs-3">
                 <div class="form-group" show-errors>
                     <label class="control-label" for="endDate-{{::s.gameSpeciesCode}}"
-                           translate="harvestpermit.wizard.bird.period.endDate"></label>
+                           translate="harvestpermit.wizard.period.endDate"></label>
 
                     <div class="input-group r-dropdown-align-right"
                          ng-controller="DatePickerController">
@@ -96,7 +96,7 @@
                 <div class="form-group" show-errors>
                     <label class="control-label"
                            for="additionalPeriodInfo-{{::s.gameSpeciesCode}}"
-                           translate="harvestpermit.wizard.bird.period.periodAdditionalInfo"></label>
+                           translate="harvestpermit.wizard.period.periodAdditionalInfo"></label>
 
                     <textarea class="form-control" rows="2"
                               name="additionalPeriodInfo-{{::s.gameSpeciesCode}}"
@@ -112,17 +112,17 @@
     <div class="row">
         <div class="col-md-6 col-md-offset-2">
             <div class="form-group" show-errors>
-                <label for="validityYears" translate="harvestpermit.wizard.bird.period.validityYears"></label>
+                <label for="validityYears" translate="harvestpermit.wizard.period.validityYears"></label>
                 <select name="validityYears" id="validityYears"
                         class="form-control"
                         required
                         ng-model="$ctrl.validityYears">
-                    <option value="" disabled translate="harvestpermit.wizard.bird.period.yearsNotSelected"></option>
-                    <option ng-value="1" translate="harvestpermit.wizard.bird.period.validity1year"></option>
-                    <option ng-value="2" translate="harvestpermit.wizard.bird.period.validity2years"></option>
-                    <option ng-value="3" translate="harvestpermit.wizard.bird.period.validity3years"></option>
-                    <option ng-value="4" translate="harvestpermit.wizard.bird.period.validity4years"></option>
-                    <option ng-value="5" translate="harvestpermit.wizard.bird.period.validity5years"></option>
+                    <option value="" disabled translate="harvestpermit.wizard.period.yearsNotSelected"></option>
+                    <option ng-value="1" translate="harvestpermit.wizard.period.validity1year"></option>
+                    <option ng-value="2" translate="harvestpermit.wizard.period.validity2years"></option>
+                    <option ng-value="3" translate="harvestpermit.wizard.period.validity3years"></option>
+                    <option ng-value="4" translate="harvestpermit.wizard.period.validity4years"></option>
+                    <option ng-value="5" translate="harvestpermit.wizard.period.validity5years"></option>
                     <option ng-value="0" translate="harvestpermit.wizard.bird.period.validityLimitless"></option>
                 </select>
             </div>

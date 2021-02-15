@@ -73,51 +73,57 @@ public class AccountAreaApiResource {
     @Resource
     private MapPdfRemoteService mapPdfRemoteService;
 
-    @GetMapping(value = "/page/me", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/page/me", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public Slice<PersonalAreaDTO> listMinePaged(@RequestParam int page,
                                                 @RequestParam int size) {
-        return personalAreaListFeature.listMinePaged(new PageRequest(page, size, Sort.Direction.DESC, "id"));
+        return personalAreaListFeature.listMinePaged(PageRequest.of(page, size, Sort.Direction.DESC, "id"));
     }
 
-    @GetMapping(value = "/page/{personId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/page/{personId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public Slice<PersonalAreaDTO> listForPersonPaged(@PathVariable long personId,
                                                      @RequestParam int page,
                                                      @RequestParam int size) {
         return personalAreaListFeature.listForPersonPaged(
                 personId,
-                new PageRequest(page, size, Sort.Direction.DESC, "id"));
+                PageRequest.of(page, size, Sort.Direction.DESC, "id"));
     }
 
-    @GetMapping(value = "/list/me", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/list/me", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<PersonalAreaDTO> listMine() {
         return personalAreaListFeature.listMine();
     }
 
 
-    @GetMapping(value = "/list/{personId:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/list/{personId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<PersonalAreaDTO> listForPerson(@PathVariable long personId) {
         return personalAreaListFeature.listForPerson(personId);
     }
 
-    @GetMapping(value = "/{id:\\d+}", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @GetMapping(value = "/by-external-id/{externalId:\\w+}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    public PersonalAreaDTO readByExternalId(final @PathVariable String externalId) {
+        return personalAreaCrudFeature.readByExternalIdNoAuthorization(externalId);
+    }
+
+    @GetMapping(value = "/{id:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public PersonalAreaDTO read(@PathVariable Long id) {
         return personalAreaCrudFeature.read(id);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public PersonalAreaDTO createArea(@RequestBody @Validated PersonalAreaDTO dto) {
         return personalAreaCrudFeature.create(dto);
     }
 
     @PutMapping(value = "/{id:\\d+}",
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public PersonalAreaDTO updateArea(@PathVariable Long id, @RequestBody @Validated PersonalAreaDTO dto) {
         dto.setId(id);
         return personalAreaCrudFeature.update(dto);
@@ -131,8 +137,8 @@ public class AccountAreaApiResource {
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping(value = "/{id:\\d+}/copy",
-            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
     public void copyArea(@PathVariable long id, final Locale locale) {
         personalAreaCopyFeature.copy(id, locale);
     }
@@ -146,8 +152,8 @@ public class AccountAreaApiResource {
     @ResponseStatus(HttpStatus.CREATED)
     @PutMapping(value = "/{id:\\d+}/features", produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
     public void updateGeoJSON(@PathVariable long id, @RequestBody @Valid FeatureCollection featureCollection) {
-        final long zoneId = personalAreaZoneFeature.updateGeoJSON(id, featureCollection);
-        personalAreaZoneFeature.updateAreaSize(zoneId);
+        personalAreaZoneFeature.updateGeoJSON(id, featureCollection);
+        personalAreaZoneFeature.updateAreaSize(id);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)

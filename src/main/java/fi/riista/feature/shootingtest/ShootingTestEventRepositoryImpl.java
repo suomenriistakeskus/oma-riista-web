@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 
-import static com.querydsl.jpa.JPAExpressions.selectOne;
 import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKOE;
 import static fi.riista.feature.organization.calendar.CalendarEventType.JOUSIAMPUMAKOE;
 
@@ -28,15 +27,9 @@ public class ShootingTestEventRepositoryImpl implements ShootingTestEventReposit
 
         final QCalendarEvent CALENDAR_EVENT = QCalendarEvent.calendarEvent;
         final QShootingTestEvent SHOOTING_TEST_EVENT = QShootingTestEvent.shootingTestEvent;
-        final QShootingTestParticipant PARTICIPANT = QShootingTestParticipant.shootingTestParticipant;
-
-        final BooleanExpression noParticipantsRegistered = selectOne()
-                .from(PARTICIPANT)
-                .where(PARTICIPANT.shootingTestEvent.eq(SHOOTING_TEST_EVENT))
-                .notExists();
 
         final BooleanExpression eventStatePredicate =
-                SHOOTING_TEST_EVENT.lockedTime.isNull().or(noParticipantsRegistered);
+                SHOOTING_TEST_EVENT.lockedTime.isNull();
 
         return jpaQueryFactory
                 .select(CALENDAR_EVENT.id.count())

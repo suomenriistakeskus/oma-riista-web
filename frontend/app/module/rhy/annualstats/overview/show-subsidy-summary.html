@@ -53,8 +53,8 @@
                         <td num-pieces="::$ctrl.statistics.luke.sum"></td>
                     </tr>
                     <tr>
-                        <td class="col-xs-9" translate="rhy.annualStats.overview.subsidySummary.lukeCarnivoreContactPersons"></td>
-                        <td num-persons="::$ctrl.statistics.luke.carnivoreContactPersons"></td>
+                        <td class="col-xs-9" computed-marker-title="rhy.annualStats.overview.subsidySummary.lukeCarnivoreContactPersons"></td>
+                        <td num-persons="::([$ctrl.statistics.luke.carnivoreContactPersons, $ctrl.statistics.luke.carnivoreDnaCollectors] | sumFinite)"></td>
                     </tr>
 
                     <tr class="subtitle-row">

@@ -33,9 +33,9 @@ public class PermitDecisionSpeciesAmountDateRestriction {
     public LocalDate resolveMinBeginDate() {
         switch (permitTypeCode) {
             case PermitTypeCode.MOOSELIKE:
-            case PermitTypeCode.MOOSELIKE_AMENDMENT:
                 return DateUtil.huntingYearBeginDate(decisionYear);
-
+            case PermitTypeCode.MOOSELIKE_AMENDMENT:
+                return DateUtil.huntingYearBeginDate(DateUtil.huntingYear());
             case PermitTypeCode.FOWL_AND_UNPROTECTED_BIRD:
                 return new LocalDate(speciesYear, 1, 1);
         }
@@ -47,9 +47,9 @@ public class PermitDecisionSpeciesAmountDateRestriction {
     public LocalDate resolveMaxBeginDate() {
         switch (permitTypeCode) {
             case PermitTypeCode.MOOSELIKE:
-            case PermitTypeCode.MOOSELIKE_AMENDMENT:
                 return DateUtil.huntingYearEndDate(decisionYear);
-
+            case PermitTypeCode.MOOSELIKE_AMENDMENT:
+                return DateUtil.huntingYearEndDate(DateUtil.huntingYear());
             case PermitTypeCode.FOWL_AND_UNPROTECTED_BIRD:
                 return new LocalDate(speciesYear, 12, 31);
         }

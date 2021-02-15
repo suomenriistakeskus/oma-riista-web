@@ -1,9 +1,8 @@
 package fi.riista.feature.permit.application.conflict;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
+import fi.riista.config.quartz.RunAsAdminJob;
 import org.quartz.DisallowConcurrentExecution;
-import org.quartz.Job;
-import org.quartz.JobExecutionContext;
 
 import javax.annotation.Resource;
 
@@ -12,12 +11,12 @@ import javax.annotation.Resource;
         name = "ProcessHarvestPermitApplicationJob",
         enabledProperty = "process.harvest.permit.applications.enabled",
         cronExpression = "${process.harvest.permit.applications.schedule}")
-public class SearchApplicationConflictsJob implements Job {
+public class SearchApplicationConflictsJob extends RunAsAdminJob {
     @Resource
     private SearchApplicationConflictsRunner processHarvestPermitApplicationRunner;
 
     @Override
-    public void execute(final JobExecutionContext jobExecutionContext) {
+    public void executeAsAdmin() {
         processHarvestPermitApplicationRunner.run();
     }
 }

@@ -1,3 +1,20 @@
+<div ng-if="$ctrl.isCoordinatorOrModerator()" class="row">
+    <div class="form-group col-xs-4">
+        <label for="yearSelection" class="control-label">
+            <span translate="global.year"></span>
+        </label>
+
+        <select name="yearSelection" id="yearSelection"
+                class="form-control r-shooting-test-selection-width-auto"
+                ng-model="$ctrl.calendarYear"
+                ng-options="year for year in $ctrl.availableYears"
+                ng-change="$ctrl.onSelectedYearChanged()">
+
+            <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
+        </select>
+    </div>
+</div>
+
 <div class="r-event-list">
     <div class="table-responsive">
         <table class="table table-striped table-striped-2 no-inner-border table-condensed">
@@ -45,7 +62,7 @@
                     </div>
                 </td>
                 <td class="text-right">
-                    <button type="button" class="btn btn-default" ng-click="$ctrl.selectEvent(event.calendarEventId)">
+                    <button ng-if="$ctrl.isEventUpdateable(event)" type="button" class="btn btn-default" ng-click="$ctrl.selectEvent(event.calendarEventId)">
                         <span translate="global.button.select"></span>
                     </button>
                 </td>

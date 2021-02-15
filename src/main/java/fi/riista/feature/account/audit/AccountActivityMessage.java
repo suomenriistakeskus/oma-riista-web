@@ -1,6 +1,8 @@
 package fi.riista.feature.account.audit;
 
 import fi.riista.feature.common.entity.BaseEntity;
+import fi.riista.util.DateUtil;
+import org.joda.time.DateTime;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -12,11 +14,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.PrePersist;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Date;
 
 @Entity
 @Access(value = AccessType.FIELD)
@@ -36,10 +35,9 @@ public class AccountActivityMessage extends BaseEntity<Long> {
 
     private Long id;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @NotNull
     @Column(nullable = false, updatable = false)
-    private Date creationTime;
+    private DateTime creationTime;
 
     @NotNull
     @Column(nullable = false)
@@ -81,7 +79,7 @@ public class AccountActivityMessage extends BaseEntity<Long> {
     public AccountActivityMessage() {
     }
 
-    public Date getCreationTime() {
+    public DateTime getCreationTime() {
         return creationTime;
     }
 
@@ -135,6 +133,6 @@ public class AccountActivityMessage extends BaseEntity<Long> {
 
     @PrePersist
     protected void prePersist() {
-        creationTime = new Date();
+        creationTime = DateUtil.now();
     }
 }

@@ -1,0 +1,25 @@
+<div class="alert alert-info">
+    <span ng-if="$ctrl.areaInfo.geoLocation" class="fa fa-info-circle"></span>
+    <span ng-if="!$ctrl.areaInfo.geoLocation" class="fa fa-exclamation-triangle"></span>
+
+    <div class="alert-content">
+        <span class="alert-title" translate="harvestpermit.wizard.importing.map.areaTitle"></span>
+        <p translate="harvestpermit.wizard.importing.map.instruction"></p>
+    </div>
+</div>
+
+<ng-form name="importingAreaForm">
+
+    <!-- TODO: Figure out whether to copy or refactor this component out from bird wizard -->
+    <bird-application-location-editor protected-area="$ctrl.areaInfo"></bird-application-location-editor>
+
+</ng-form>
+
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(importingAreaForm)"
+        previous="$ctrl.previous(importingAreaForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(importingAreaForm)">
+</permit-application-wizard-navigation>

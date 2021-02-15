@@ -73,7 +73,7 @@ angular.module('app.moosepermit.list', [])
     .controller('MoosePermitListController', function ($state, $stateParams, $translate, $filter, HuntingYearService,
                                                        MoosePermitLeadersService, MoosePermitSelection,
                                                        MoosePermitListSelectedHuntingYearService,
-                                                       huntingYears, initialState, permits, selectedYearAndSpecies) {
+                                                       huntingYears, stateBase, permits, selectedYearAndSpecies) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
@@ -90,13 +90,13 @@ angular.module('app.moosepermit.list', [])
                 };
             }
 
-            $ctrl.table = createStateTransition(initialState + '.table');
-            $ctrl.map = createStateTransition(initialState + '.map');
-            $ctrl.lukereports = createStateTransition(initialState + '.lukereports');
-            $ctrl.rhystats = createStateTransition(initialState + '.rhystats');
+            $ctrl.table = createStateTransition(stateBase + '.moosepermit.table');
+            $ctrl.map = createStateTransition(stateBase + '.moosepermit.map');
+            $ctrl.lukereports = createStateTransition(stateBase + '.reports');
+            $ctrl.rhystats = createStateTransition(stateBase + '.moosepermit.rhystats');
 
-            if ($state.current.name === initialState) {
-                var defaultState = initialState + '.table';
+            if ($state.current.name === stateBase + '.moosepermit') {
+                var defaultState = stateBase + '.moosepermit.table';
                 var selectedPermitId = MoosePermitSelection.permitId;
 
                 if (selectedPermitId && _.some($ctrl.permits, ['id', selectedPermitId])) {
@@ -113,7 +113,7 @@ angular.module('app.moosepermit.list', [])
 
         $ctrl.onHuntingYearOrSpeciesChange = function () {
             // Go to initial state instead of reloading current, because currently selected permit might not have selected species
-            navigateToState(null, initialState, true);
+            navigateToState(null, stateBase + '.moosepermit', true);
         };
 
         var i18NFilter = $filter('rI18nNameFilter');
@@ -164,7 +164,7 @@ angular.module('app.moosepermit.list', [])
             rhystats: '&',
             selectedPermit: '<'
         },
-        controller: function ($state, $translate, ActiveRoleService, DeerHuntingSummaryService,
+        controller: function ($state, $translate, $stateParams, ActiveRoleService, DeerHuntingSummaryService,
                               GameSpeciesCodes, MooseHuntingSummaryService,
                               MapPdfModal, HarvestPermitPdfUrl,
                               MoosePermitPartnerDownloadModal) {
@@ -178,6 +178,8 @@ angular.module('app.moosepermit.list', [])
                 if (changes.selectedPermit) {
                     var permit = changes.selectedPermit.currentValue;
                     $ctrl.isMoosePermit = permit && GameSpeciesCodes.isMoose(permit.gameSpeciesCode);
+                    $ctrl.isMooseWhiteTailedDeerPermit = permit && GameSpeciesCodes.isWhiteTailedDeer(permit.gameSpeciesCode);
+                    $ctrl.huntingYear = $stateParams.huntingYear;
                 }
             };
 
@@ -213,7 +215,7 @@ angular.module('app.moosepermit.list', [])
     .controller('MoosePermitTableController', function ($filter, $state,
                                                         NotificationService, GameSpeciesCodes, ActiveRoleService,
                                                         MoosePermits, MoosePermitCounterService,
-                                                        permit, initialState, selectedYearAndSpecies) {
+                                                        permit, selectedYearAndSpecies) {
 
         var $ctrl = this;
 
@@ -235,7 +237,7 @@ angular.module('app.moosepermit.list', [])
             };
 
             $ctrl.navigateToClub = function (partner) {
-                $state.go('club.permit.table', {
+                $state.go('club.moosepermit.table', {
                     id: partner.huntingClubId,
                     permitId: $ctrl.permit.id,
                     huntingYear: selectedYearAndSpecies.huntingYear,

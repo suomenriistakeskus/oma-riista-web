@@ -6,10 +6,7 @@ import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.jpa.sql.JPASQLQuery;
 import com.querydsl.sql.SQLTemplates;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBReader;
+import fi.riista.config.Constants;
 import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.geojson.PalstaFeatureCollectionDifference;
 import fi.riista.feature.gis.zone.query.CalculateCombinedGeometryQueries;
@@ -32,6 +29,11 @@ import fi.riista.util.GISUtils;
 import fi.riista.util.JdbcTemplateEnhancer;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.joda.time.DateTime;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKBReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,7 @@ import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.sql.DataSource;
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static fi.riista.feature.gis.zone.GISZoneConstants.AREA_SIZE_CALCULATION_FAILED;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 
@@ -163,6 +167,12 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Geometry getStateGeometry(final Geometry geom, final GISUtils.SRID srid) {
+        return getStateGeometryQuery.execute(geom, srid);
+    }
+
+    @Override
     @Transactional
     public void calculateCombinedGeometry(final long zoneId) {
         calculateCombinedGeometryQueries.updateGeometry(zoneId);
@@ -217,8 +227,9 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
                     final Long zoneId = tuple.get(ZONE.zoneId);
                     final GISZoneSizeDTO size = createSizeDTO(tuple);
                     final GISZone.SourceType sourceType = GISZone.SourceType.valueOf(tuple.get(ZONE.sourceType));
+                    final Timestamp modificationTimestamp = tuple.get(ZONE.modificationTime);
 
-                    return new GISZoneWithoutGeometryDTO(zoneId, size, sourceType, tuple.get(ZONE.modificationTime));
+                    return new GISZoneWithoutGeometryDTO(zoneId, size, sourceType, new DateTime(modificationTimestamp.getTime(), Constants.DEFAULT_TIMEZONE));
                 }));
     }
 
@@ -238,14 +249,15 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
         return createSizeDTO(tuple);
     }
 
-    @Nullable
     private static GISZoneSizeDTO createSizeDTO(final Tuple tuple) {
         final double computedAreaSize = tuple.get(SQZone.zone.computedAreaSize);
         final double waterAreaSize = tuple.get(SQZone.zone.waterAreaSize);
 
         if (computedAreaSize < 0 || waterAreaSize < 0) {
-            // Area size has not been calculated yet
-            return null;
+            if (isCalculationFailed(computedAreaSize)) {
+                return GISZoneSizeDTO.createCalculationFailed();
+            }
+            return GISZoneSizeDTO.createCalculating();
         }
 
         final Double stateLandAreaSize = tuple.get(SQZone.zone.stateLandAreaSize);
@@ -253,9 +265,13 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
         final TotalLandWaterSizeDTO total = new TotalLandWaterSizeDTO(
                 computedAreaSize, computedAreaSize - waterAreaSize, waterAreaSize);
 
-        return new GISZoneSizeDTO(total,
+        return GISZoneSizeDTO.create(total,
                 stateLandAreaSize != null ? stateLandAreaSize : 0,
                 privateLandAreaSize != null ? privateLandAreaSize : 0);
+    }
+
+    private static boolean isCalculationFailed(final double computedAreaSize) {
+        return Math.abs(computedAreaSize - AREA_SIZE_CALCULATION_FAILED) < 0.01;
     }
 
     @Nullable
@@ -276,7 +292,7 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
                     final double privateLandArea = rs.getDouble("private_land_area");
 
                     final TotalLandWaterSizeDTO total = new TotalLandWaterSizeDTO(totalArea, landArea, waterArea);
-                    return totalArea > 0 ? new GISZoneSizeDTO(total, stateLandArea, privateLandArea) : null;
+                    return totalArea > 0 ? GISZoneSizeDTO.create(total, stateLandArea, privateLandArea) : null;
                 });
 
         return result.size() == 1 ? result.get(0) : null;
@@ -290,13 +306,15 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
         final GISZoneSizeDTO dto;
 
         if (!onlyStateLand) {
-            final double stateLandAreaSize = calculateZoneAreaSizeQueries.getSumOfStateLandAreaSize(zoneId);
+            // Ensure that negative areas will not be persisted due to rounding errors
+            final double stateLandAreaSize = Math.max(0,
+                    calculateZoneAreaSizeQueries.getSumOfStateLandAreaSize(zoneId));
             final double privateLandAreaSize = Math.max(0, all.getLand() - stateLandAreaSize);
-            dto = new GISZoneSizeDTO(all, stateLandAreaSize, privateLandAreaSize);
+            dto = GISZoneSizeDTO.create(all, stateLandAreaSize, privateLandAreaSize);
 
         } else {
             LOG.warn("Setting zone privateLandAreaSize explicitly to zero for zoneId={}", zoneId);
-            dto = new GISZoneSizeDTO(all, all.getLand(), 0);
+            dto = GISZoneSizeDTO.create(all, all.getLand(), 0);
         }
 
         calculateZoneAreaSizeQueries.updateAreaSize(zoneId, dto);
@@ -318,8 +336,8 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
 
     @Override
     @Transactional(readOnly = true)
-    public List<GISZoneSizeByOfficialCodeDTO> calculateVerotusLohkoAreaSize(long zoneId) {
-        return calculateZoneAreaSizeQueries.getSumOfAreaSizeByVerotusLohko(zoneId);
+    public List<GISZoneSizeByOfficialCodeDTO> calculateVerotusLohkoAreaSize(final int huntingYear, final long zoneId) {
+        return calculateZoneAreaSizeQueries.getSumOfAreaSizeByVerotusLohko(huntingYear, zoneId);
     }
 
     @Override
@@ -365,7 +383,8 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
                 .addValue("zoneIds", zoneIds);
 
         return namedParameterJdbcTemplate.query(
-                "SELECT ST_AsBinary(ST_SubDivide((ST_Dump(geom)).geom, :chunkSize)) AS geom FROM zone WHERE zone_id IN (:zoneIds)",
+                "SELECT ST_AsBinary(ST_SubDivide((ST_Dump(geom)).geom, :chunkSize)) AS geom FROM zone WHERE zone_id " +
+                        "IN (:zoneIds)",
                 params, (resultSet, i) -> {
                     final byte[] wkb = resultSet.getBytes("geom");
 

@@ -129,7 +129,7 @@ public class DashboardMooselikeHuntingService {
         final SQGameObservation observation = SQGameObservation.gameObservation;
 
         final Expression<Long> keyColumn = observation.gameSpeciesId;
-        final Expression<Integer> valueColumn = observation.amount.sum();
+        final Expression<Integer> valueColumn = observation.count().intValue();
 
         return sqlQueryFactory
                 .select(keyColumn, valueColumn)

@@ -1,0 +1,14 @@
+<div class="row">
+    <div class="col-xs-4">
+        <img class="fa-border text-center" ng-src="/static/elainlajikuvat/96x96/{{::$ctrl.speciesCode}}.jpg"/>
+    </div>
+    <div class="col-xs-8" >
+        <h5 class="harvest-title">
+            <span ng-bind="::$ctrl.speciesCode | translateSpeciesCode | uppercase"></span>
+        </h5>
+
+        <span ng-bind="::$ctrl.amount" class="harvest-count-value"></span>
+        <strong translate="global.pcs" class="species-amount-text"></strong>
+    </div>
+</div>
+

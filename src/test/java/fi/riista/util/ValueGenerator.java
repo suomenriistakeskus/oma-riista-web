@@ -1,11 +1,10 @@
 package fi.riista.util;
 
-import com.vividsolutions.jts.geom.Polygon;
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.money.FinnishBank;
 import fi.riista.feature.common.money.FinnishBankAccount;
-import fi.riista.feature.permit.PermitNumberUtil;
+import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.validation.FinnishCreditorReferenceValidator;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -14,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.iban4j.Bic;
 import org.iban4j.CountryCode;
 import org.iban4j.Iban;
+import org.locationtech.jts.geom.Polygon;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,6 +33,7 @@ import static java.util.stream.Collectors.toSet;
 public final class ValueGenerator {
 
     private static final int TEN_MILLION = 10_000_000;
+    private static final int DOCUMENT_NUMBERS_START = 10000;
 
     private static final DecimalFormat HTA_NUMBER_FORMATTER;
 
@@ -175,7 +176,7 @@ public final class ValueGenerator {
         final int minLatitude = 6754304;
         final int maxLatitude = 7593984;
         final int minLongitude = 375072;
-        final int maxLongitude = 563488;
+        final int maxLongitude = 556157;
 
         final int latOffset = numberGenerator.nextNonNegativeInt() * 100 % (maxLatitude - minLatitude);
         final int lngOffset = numberGenerator.nextNonNegativeInt() * 100 % (maxLongitude - minLongitude);
@@ -197,7 +198,7 @@ public final class ValueGenerator {
 
     @Nonnull
     public static String permitNumber(@Nonnull final NumberGenerator numberGenerator) {
-        return permitNumber(DateUtil.currentYear(), numberGenerator);
+        return permitNumber(DateUtil.huntingYear(), numberGenerator);
     }
 
     @Nonnull
@@ -211,7 +212,12 @@ public final class ValueGenerator {
                                       @Nonnull final NumberGenerator numberGenerator) {
 
         requireNonNull(numberGenerator);
-        return PermitNumberUtil.createPermitNumber(year, yearsValid, numberGenerator.nextNonNegativeInt());
+        return DocumentNumberUtil.createDocumentNumber(year, yearsValid, numberGenerator.nextNonNegativeInt());
+    }
+
+    @Nonnull
+    public static int documentOrderNumber(@Nonnull final NumberGenerator numberGenerator){
+        return DOCUMENT_NUMBERS_START + numberGenerator.nextPositiveInt();
     }
 
     public static Iban iban(@Nonnull final NumberGenerator numberGenerator) {

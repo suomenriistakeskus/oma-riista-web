@@ -1,20 +1,27 @@
 package fi.riista.feature.organization.calendar;
 
+import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.pub.calendar.PublicCalendarEventSearchDTO;
 import org.joda.time.LocalDate;
 
-import java.util.Optional;
+import java.util.Collection;
+import java.util.EnumSet;
+
+import static com.google.common.collect.Sets.immutableEnumSet;
+import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
 
 public class CalendarEventSearchParamsDTO {
 
     private String areaId;
-    private String rhyId;
-    private CalendarEventType calendarEventType;
+    private Collection<String>  rhyIds;
+    private ImmutableSet<CalendarEventType> calendarEventTypes;
     private LocalDate begin;
     private LocalDate end;
     private Boolean onlyPubliclyVisible;
     private Boolean onlyPublicEvents;
-    private int limit;
+    private Boolean remoteEvents;
+    private Integer limit;
     private int offset;
 
     // Only for testing
@@ -23,12 +30,33 @@ public class CalendarEventSearchParamsDTO {
         this.offset = 0;
     }
 
+    public CalendarEventSearchParamsDTO(final String areaId,
+                                        final Collection<String> rhyIds,
+                                        final ImmutableSet<CalendarEventType> calendarEventTypes,
+                                        final LocalDate begin,
+                                        final LocalDate end,
+                                        final Boolean onlyPubliclyVisible,
+                                        final Boolean onlyPublicEvents,
+                                        final Integer limit,
+                                        final int offset) {
+        this.areaId = areaId;
+        this.rhyIds = rhyIds;
+        this.calendarEventTypes = calendarEventTypes;
+        this.begin = begin;
+        this.end = end;
+        this.onlyPubliclyVisible = onlyPubliclyVisible;
+        this.onlyPublicEvents = onlyPublicEvents;
+        this.limit = limit;
+        this.offset = offset;
+    }
+
     public CalendarEventSearchParamsDTO(final PublicCalendarEventSearchDTO params,
                                         final int limit,
                                         final int offset) {
         this.areaId = params.getAreaId();
-        this.rhyId = params.getRhyId();
-        this.calendarEventType = params.getCalendarEventType();
+        this.rhyIds = ofNullable(params.getRhyIds()).orElse(emptyList());
+        this.calendarEventTypes = CalendarEventGroupType.getCalenderEventTypes(params.getCalendarEventType());
+        this.remoteEvents = params.getCalendarEventType() == CalendarEventGroupType.ETAKOULUTUKSET;
         this.begin = params.getBegin();
         this.end = params.getEnd();
         this.onlyPubliclyVisible = true;
@@ -45,20 +73,20 @@ public class CalendarEventSearchParamsDTO {
         this.areaId = areaId;
     }
 
-    public String getRhyId() {
-        return rhyId;
+    public Collection<String> getRhyIds() {
+        return ofNullable(rhyIds).orElse(emptyList());
     }
 
-    public void setRhyId(final String rhyId) {
-        this.rhyId = rhyId;
+    public void setRhyIds(final Collection<String> rhyIds) {
+        this.rhyIds = rhyIds;
     }
 
-    public CalendarEventType getCalendarEventType() {
-        return calendarEventType;
+    public ImmutableSet<CalendarEventType> getCalendarEventTypes() {
+        return calendarEventTypes == null ? immutableEnumSet(EnumSet.noneOf(CalendarEventType.class)) : calendarEventTypes;
     }
 
-    public void setCalendarEventType(final CalendarEventType calendarEventType) {
-        this.calendarEventType = calendarEventType;
+    public void setCalendarEventTypes(final ImmutableSet<CalendarEventType> calendarEventTypes) {
+        this.calendarEventTypes = calendarEventTypes;
     }
 
     public LocalDate getBegin() {
@@ -77,11 +105,11 @@ public class CalendarEventSearchParamsDTO {
         this.end = end;
     }
 
-    public int getLimit() {
+    public Integer getLimit() {
         return limit;
     }
 
-    public void setLimit(final int limit) {
+    public void setLimit(final Integer limit) {
         this.limit = limit;
     }
 
@@ -107,5 +135,13 @@ public class CalendarEventSearchParamsDTO {
 
     public void setOnlyPublicEvents(final Boolean onlyPublicEvents) {
         this.onlyPublicEvents = onlyPublicEvents;
+    }
+
+    public Boolean getRemoteEvents() {
+        return Boolean.TRUE.equals(remoteEvents);
+    }
+
+    public void setRemoteEvents(final Boolean remoteEvents) {
+        this.remoteEvents = remoteEvents;
     }
 }

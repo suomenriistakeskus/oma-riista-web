@@ -1,0 +1,42 @@
+<div class="row">
+    <div class="col-xs-4">
+        <p class="decision-section-title"
+           translate="decision.document.sectionId.{{$ctrl.sectionId}}"></p>
+    </div>
+
+    <div class="col-xs-4" ng-if="$ctrl.isHandler()">
+        <div class="btn-group r-decision-document-section-header-btn-group">
+            <label class="btn r-decision-document-section-header-label"
+                   ng-class="$ctrl.approved ? 'btn-default': 'btn-danger'"
+                   ng-change="$ctrl.toggleGrantStatus()"
+                   ng-model="$ctrl.approved"
+                   ng-disabled="$ctrl.isComplete()"
+                   uib-btn-radio="false">
+                <span class="fa fa-fw fa-lg fa-check-circle"
+                      ng-class="{'invisible': $ctrl.approved}"></span>
+                <span translate="global.rejected"></span>
+            </label>
+
+            <label class="btn r-decision-document-section-header-label"
+                   ng-class="$ctrl.approved ? 'btn-primary': 'btn-default'"
+                   ng-change="$ctrl.toggleGrantStatus()"
+                   ng-model="$ctrl.approved"
+                   ng-disabled="$ctrl.isComplete()"
+                   uib-btn-radio="true">
+                <span class="fa fa-fw fa-lg fa-check-circle text-muted"
+                      ng-class="{'invisible': !$ctrl.approved}"></span>
+                <span translate="global.approved"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="col-xs-4 text-right">
+        <permit-decision-section-header-buttons
+                decision="$ctrl.decision"
+                section-id="$ctrl.sectionId"
+                deny-complete="$ctrl.denyComplete()">
+        </permit-decision-section-header-buttons>
+    </div>
+</div>
+
+<hr class="invisible"/>

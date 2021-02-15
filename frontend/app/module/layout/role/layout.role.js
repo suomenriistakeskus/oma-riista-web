@@ -130,7 +130,8 @@ angular.module('app.layout.role', [])
         };
 
         this.isPrivilegedModerator = function (privilege) {
-            return this.isModerator() && AvailableRoleService.hasPrivilege(privilege);
+            return !!this.isAdmin() ||
+                (this.isModerator() && AvailableRoleService.hasPrivilege(privilege));
         };
 
         this.isSrvaContactPerson = function () {

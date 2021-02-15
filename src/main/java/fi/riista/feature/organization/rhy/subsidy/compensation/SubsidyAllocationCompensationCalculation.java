@@ -44,8 +44,7 @@ public final class SubsidyAllocationCompensationCalculation {
             final List<SubsidyCompensationInputDTO> inputs) {
 
         return inputs.stream().collect(toMap(
-                SubsidyCompensationInputDTO::getRhyCode,
-                SubsidyCompensationInputDTO::getCalculatedSubsidyForSecondBatch));
+                SubsidyCompensationInputDTO::getRhyCode, SubsidyCompensationInputDTO::getCalculatedSubsidy));
     }
 
     private static List<SubsidyAllocationCompensationRoundDTO> compensate(List<SubsidyCompensationInputDTO> inputs) {

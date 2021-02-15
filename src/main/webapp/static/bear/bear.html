@@ -4,7 +4,7 @@
     <title>Bear</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/loadjs/3.5.1/loadjs.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/loadjs/3.5.5/loadjs.min.js"></script>
 
     <script>
         (function() {
@@ -15,21 +15,17 @@
 
                 var fetchYears = $.ajax({
                     type: "GET",
-                    url: 'https://oma.riista.fi/api/v1/anon/saaliit/karhu/kaikki/vuodet.jsonp?_=' + ts,
-                    dataType: "jsonp",
+                    url: 'https://oma.riista.fi/api/v1/anon/saaliit/karhu/kaikki/vuodet?_=' + ts,
                     timeout: 2000,
-                    cache: false,
-                    crossDomain: true
+                    cache: false
                 });
 
                 var fetchData = function (year) {
                     return $.ajax({
                         type: "GET",
-                        url: 'https://oma.riista.fi/api/v1/anon/saaliit/karhu/kaikki.jsonp?year=' + year + '&_=' + ts,
-                        dataType: "jsonp",
+                        url: 'https://oma.riista.fi/api/v1/anon/saaliit/karhu/kaikki?year=' + year + '&_=' + ts,
                         timeout: 2000,
-                        cache: false,
-                        crossDomain: true
+                        cache: false
                     });
                 };
 

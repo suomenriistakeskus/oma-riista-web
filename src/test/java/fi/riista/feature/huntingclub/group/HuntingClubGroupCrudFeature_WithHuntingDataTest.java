@@ -134,7 +134,7 @@ public class HuntingClubGroupCrudFeature_WithHuntingDataTest extends EmbeddedDat
                 huntingClubGroupCrudFeature.delete(f.group.getId());
                 fail("Attempt to delete hunting group with hunting data should have failed even for moderator.");
             } catch (final CannotDeleteHuntingGroupWithHuntingDataException e) {
-                assertNotNull(huntingClubGroupRepository.findOne(f.group.getId()));
+                assertNotNull(huntingClubGroupRepository.findById(f.group.getId()).orElse(null));
             }
         }));
     }
@@ -193,7 +193,7 @@ public class HuntingClubGroupCrudFeature_WithHuntingDataTest extends EmbeddedDat
                     }
                 }
 
-                final HuntingClubGroup reloadedGroup = huntingClubGroupRepository.findOne(group.getId());
+                final HuntingClubGroup reloadedGroup = huntingClubGroupRepository.findById(group.getId()).orElse(null);
 
                 if (expectException) {
                     assertNotNull(reloadedGroup);

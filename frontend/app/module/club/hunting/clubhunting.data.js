@@ -278,12 +278,25 @@ angular.module('app.clubhunting.data', [])
             return loadData();
         };
 
-        this.filterDiary = function (beginDate, endDate, showOnlyRejected) {
+        this.filterDiary = function (beginDate, endDate, showOnlyRejected, showHarvests, showObservations) {
             return _.filter(data.diaryForGroup, function (entry) {
-                if (showOnlyRejected) {
-                    return !entry.huntingDayId && isEntryRejected(entry) && Helpers.dateWithinRange(entry.pointOfTime, beginDate, endDate);
+                if (entry.isHarvest() && !showHarvests || entry.isObservation() && !showObservations){
+                    return false;
                 }
-                return !isEntryRejected(entry) && Helpers.dateWithinRange(entry.pointOfTime, beginDate, endDate);
+
+                if (!Helpers.dateWithinRange(entry.pointOfTime, beginDate, endDate)) {
+                    return false;
+                }
+
+                var isLinkedWithHuntingDay = !_.isNil(entry.huntingDayId);
+
+                if (showOnlyRejected) {
+                    return isEntryRejected(entry) && !isLinkedWithHuntingDay;
+                }
+
+                var isProposedWithinDeerHuntingObservation = entry.isObservationWithinDeerHunting() && !isLinkedWithHuntingDay;
+
+                return !(isEntryRejected(entry) || isProposedWithinDeerHuntingObservation);
             });
         };
 
@@ -309,6 +322,11 @@ angular.module('app.clubhunting.data', [])
             return _.get(data, 'club.id');
         };
 
+        this.isWhiteTailedDeerPilotGroup = function () {
+            return GameSpeciesCodes.isWhiteTailedDeer(this.getSelectedSpeciesCode()) &&
+                _.get(data, 'huntingGroup.deerPilotGroup');
+        };
+
         this.find = function (type, id) {
             return _.find(data.diaryForGroup, function (entry) {
                 return entry.id === id && entry.type === type;
@@ -320,7 +338,7 @@ angular.module('app.clubhunting.data', [])
         };
 
         this.isMooseGroupSelected = function () {
-            return data.species && GameSpeciesCodes.isMoose(data.species.code) && data.huntingGroup;
+            return !!(data.species && GameSpeciesCodes.isMoose(data.species.code) && data.huntingGroup);
         };
 
         this.isAddHarvestVisible = function () {
@@ -337,5 +355,9 @@ angular.module('app.clubhunting.data', [])
 
         this.isEditPermitPossible = function () {
             return _.get(data.groupStatus, 'canEditPermit', false);
+        };
+
+        this.isObservationsViable = function () {
+            return this.isMooseGroupSelected() || this.isWhiteTailedDeerPilotGroup();
         };
     });

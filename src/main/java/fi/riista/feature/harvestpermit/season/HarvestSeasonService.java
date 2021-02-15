@@ -1,7 +1,8 @@
 package fi.riista.feature.harvestpermit.season;
 
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.gis.GISQueryService;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import org.joda.time.LocalDate;
@@ -14,6 +15,8 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
 
+import static java.util.Optional.ofNullable;
+
 @Service
 public class HarvestSeasonService {
 
@@ -23,13 +26,16 @@ public class HarvestSeasonService {
     @Resource
     private HarvestQuotaRepository harvestQuotaRepository;
 
+    @Resource
+    private GISQueryService gisQueryService;
+
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public Tuple2<HarvestSeason, HarvestQuota> findHarvestSeasonAndQuota(final @Nonnull GameSpecies gameSpecies,
-                                                                         final @Nonnull Riistanhoitoyhdistys rhy,
+                                                                         final @Nonnull GeoLocation location,
                                                                          final @Nonnull LocalDate harvestDate,
                                                                          final boolean failIfQuotaNotFound) {
         Objects.requireNonNull(gameSpecies, "gameSpecies is null");
-        Objects.requireNonNull(rhy, "rhy is null");
+        Objects.requireNonNull(location, "location is null");
         Objects.requireNonNull(harvestDate, "harvestDate is null");
 
         final List<HarvestSeason> validSeasonForHarvest =
@@ -44,11 +50,16 @@ public class HarvestSeasonService {
         }
 
         final HarvestSeason harvestSeason = validSeasonForHarvest.get(0);
-        final HarvestQuota harvestQuota = harvestQuotaRepository.findByHarvestSeasonAndRhy(harvestSeason, rhy);
+
+        final HarvestQuota harvestQuota =
+                ofNullable(HarvestArea.HarvestAreaType.getValidTypeFor(gameSpecies.getOfficialCode()))
+                .flatMap(areaType-> gisQueryService.findHarvestAreaByLocation(areaType, location))
+                .map(harvestArea-> harvestQuotaRepository.findByHarvestSeasonAndArea(harvestSeason, harvestArea))
+                .orElse(null);
 
         if (harvestQuota == null && harvestSeason.hasQuotas()) {
             if (failIfQuotaNotFound) {
-                throw HarvestQuotaNotFoundException.missingQuotaForRhy(gameSpecies, harvestDate, rhy);
+                throw HarvestQuotaNotFoundException.missingQuotaForLocation(gameSpecies, harvestDate, location);
             }
             return null;
         }

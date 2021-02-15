@@ -27,6 +27,7 @@ import static fi.riista.feature.permitplanning.hirvityvitys.JyvitysExcelCellColo
 import static fi.riista.feature.permitplanning.hirvityvitys.JyvitysExcelCellColours.USER_MODIFIABLE_FIELD_COLOUR;
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_APPLICANT;
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_APPLICATION_AMOUNT;
+import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_APPLICATION_NUMBER;
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_AREA_IN_OTHER_RHY;
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_PRIVATE_LAND;
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_SHOOTERS_ONLY_CLUB;
@@ -46,6 +47,7 @@ import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcel
 public class JyvitysExcelSummaryStyleApplier implements JyvitysExcelCellAddressManipulation {
 
     private static final List<JyvitysExcelSummaryStaticField> WRAPPED_TEXT_FIELDS = ImmutableList.of(
+            SUMMARY_APPLICATION_NUMBER,
             SUMMARY_APPLICANT,
             SUMMARY_PRIVATE_LAND,
             SUMMARY_STATE_LAND,

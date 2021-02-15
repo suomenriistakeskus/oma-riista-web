@@ -14,12 +14,22 @@ angular.module('app.harvestpermit.decision.attachments', [])
             });
         };
 
+        this.loadAdditionalAttachments = function (decisionId) {
+            return PermitDecision.getAttachments({id: decisionId}).$promise.then(function (attachmentList) {
+                return _.filter(attachmentList, ['orderingNumber', null]);
+            });
+        };
+
         this.downloadAttachment = function (decisionId, attachmentId) {
             FormPostService.submitFormUsingBlankTarget(self.getAttachmentUri(decisionId, attachmentId));
         };
 
         this.getAttachmentUri = function (decisionId, attachmentId) {
             return '/api/v1/decision/' + decisionId + '/attachment' + '/' + attachmentId;
+        };
+
+        this.getAdditionalAttachmentUri = function (decisionId, attachmentId) {
+            return '/api/v1/decision/' + decisionId + '/additional-attachment' + '/' + attachmentId;
         };
 
         this.deleteAttachment = function (decisionId, attachmentId) {
@@ -37,7 +47,7 @@ angular.module('app.harvestpermit.decision.attachments', [])
     .service('PermitDecisionAttachmentsModal', function ($uibModal) {
         this.open = function (decisionId, showDefaultMooseAttachmentButton) {
             return $uibModal.open({
-                templateUrl: 'harvestpermit/decision/attachments/attachments.html',
+                templateUrl: 'common/decision/attachments/attachments.html',
                 controllerAs: '$ctrl',
                 controller: ModalController,
                 size: 'lg',

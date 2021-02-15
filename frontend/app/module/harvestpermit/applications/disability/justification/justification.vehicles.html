@@ -1,0 +1,80 @@
+<div ng-repeat="vehicle in $ctrl.vehicles">
+    <div class="row" ng-show="$ctrl.vehicles.length > 1">
+        <div class="col-xs-4">
+            <h5>
+                <span translate="harvestpermit.wizard.vehicle.sectionTitle"></span>
+                <span>{{$index + 1}}</span>
+            </h5>
+        </div>
+        <div class="col-xs-2 pull-right">
+            <a class="btn btn-link"
+               ng-click="$ctrl.removeVehicle({keyValue: vehicle.key})">
+                <span class="fa fa-fw fa-remove text-danger"></span>
+                <span class="text-danger" translate="global.button.delete"></span>
+            </a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="form-group col-xs-4" show-errors>
+            <label class="control-label"
+                   for="vehicleType-{{vehicle.key}}"
+                   translate="harvestpermit.wizard.vehicle.title">
+            </label>
+            <select class="form-control"
+                    name="vehicleType-{{vehicle.key}}"
+                    id="vehicleType-{{vehicle.key}}"
+                    ng-model="vehicle.type"
+                    ng-options="type as ('harvestpermit.wizard.vehicle.type.' + type | translate) for type in ::$ctrl.vehicleTypes"
+                    required
+                    ie10-optgroup-fix>
+                <option disabled value="" translate="harvestpermit.wizard.vehicle.selectType"></option>
+            </select>
+        </div>
+        <div class="form-group col-xs-4" show-errors ng-if="vehicle.type === 'MUU'">
+            <label class="control-label"
+                   for="vehicleDescription-{{vehicle.key}}"
+                   translate="harvestpermit.wizard.vehicle.description">
+            </label>
+            <input name="vehicleDescription-{{vehicle.key}}" id="vehicleDescription-{{vehicle.key}}"
+                   class="form-control"
+                   ng-model="vehicle.description"
+                   minlength="2"
+                   maxlength="255"
+                   required/>
+            <p class="help-block has-error"
+               ng-show="disabilityJustificationForm['vehicleDescription-{{vehicle.key}}'].$invalid"
+               ng-messages="disabilityJustificationForm['vehicleDescription-{{vehicle.key}}'].$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 form-group" show-errors>
+            <label for="vehicleJustification-{{vehicle.key}}" class="control-label">
+                <span translate="harvestpermit.wizard.vehicle.justification"></span>
+            </label>
+
+            <textarea class="form-control" rows="4"
+                      name="vehicleJustification-{{vehicle.key}}"
+                      id="vehicleJustification-{{vehicle.key}}"
+                      ng-model="vehicle.justification"
+                      minlength="5"
+                      required></textarea>
+
+            <p class="help-block has-error"
+               ng-show="disabilityJustificationForm['vehicleJustification-{{vehicle.key}}'].$invalid"
+               ng-messages="disabilityJustificationForm['vehicleJustification-{{vehicle.key}}'].$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-3">
+        <button class="btn btn-primary btn-block"
+                type="button"
+                ng-click="$ctrl.addVehicle()"
+                translate="harvestpermit.wizard.vehicle.add"></button>
+    </div>
+</div>

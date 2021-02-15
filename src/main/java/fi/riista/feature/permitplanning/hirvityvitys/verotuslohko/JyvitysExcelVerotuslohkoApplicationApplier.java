@@ -15,6 +15,7 @@ import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.Jyvitys
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_AMOUNT_TOTAL;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_APPLICANT;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_APPLICATION_AMOUNT;
+import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_APPLICATION_NUMBER;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_CALF_QUOTA;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_PERMITS_PER_1000_HA;
 import static fi.riista.feature.permitplanning.hirvityvitys.verotuslohko.JyvitysExcelVerotuslohkoStaticField.VEROTUSLOHKO_PERMITS_PER_SHOOTER;
@@ -54,13 +55,16 @@ public class JyvitysExcelVerotuslohkoApplicationApplier {
     public static void apply(final JyvitysExcelApplicationDTO applicationDTO,
                              final JyvitysExcelApplicationVerotuslohkoDTO applicationVerotuslohkoDTO,
                              final Row row) {
-        final JyvitysExcelVerotuslohkoApplicationApplier applier = new JyvitysExcelVerotuslohkoApplicationApplier(applicationDTO, applicationVerotuslohkoDTO, row);
+        final JyvitysExcelVerotuslohkoApplicationApplier applier =
+                new JyvitysExcelVerotuslohkoApplicationApplier(applicationDTO, applicationVerotuslohkoDTO, row);
         applier.applyDto();
     }
 
     private void applyDto() {
         final String stateLandAddress = getCellAddress(VEROTUSLOHKO_STATE_LAND);
 
+        // Hakemusnumero
+        getCell(VEROTUSLOHKO_APPLICATION_NUMBER).setCellValue(applicationDTO.getApplicationNumber());
         // Hakija
         getCell(VEROTUSLOHKO_APPLICANT).setCellValue(applicationDTO.getApplicant());
         // Yksityismaat
@@ -93,8 +97,9 @@ public class JyvitysExcelVerotuslohkoApplicationApplier {
         getCell(VEROTUSLOHKO_SUGGESTION_ADULT).setCellFormula(getAdultSuggestionFormula());
     }
 
-    private String getAcceptedStateLandFormula(String stateLandAddress) {
-        return String.format("IF(%s < 1000, 0, %s)", stateLandAddress, stateLandAddress);
+    private static String getAcceptedStateLandFormula(String stateLandAddress) {
+        // TODO: OR-5059: Remove this column
+        return String.format("%s", stateLandAddress);
     }
 
     private String getTotalLandFormula(String stateLandAddress) {

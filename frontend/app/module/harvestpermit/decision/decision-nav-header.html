@@ -1,5 +1,11 @@
 <h3 style="margin: 0;">
-    <span ng-bind="'harvestpermit.wizard.summary.permitType.' + $ctrl.decision.permitTypeCode | translate"></span>
+    <span ng-if="!!$ctrl.decision.permitTypeCode"
+          ng-bind="'harvestpermit.wizard.summary.permitType.' + $ctrl.decision.permitTypeCode | translate"></span>
+    <!-- TODO: Cleanup or define separate component for nomination decisions -->
+    <span ng-if="!!$ctrl.decision.occupationType"
+        ng-bind="'jht.nomination.decision.decisionType.' + $ctrl.decision.decisionType | translate">
+    </span>
+
     <span ng-show="::$ctrl.isLocked"
           uib-tooltip="Päätös on lukittu"
           class="fa fa-fw fa-lock text-danger"></span>

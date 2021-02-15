@@ -137,7 +137,7 @@ public class HuntingLeaderChangeNotificationQueriesTest
     public void testGetGroupLeadersOfCurrentAndFutureHuntingYears_occupationMustBeActive() {
         withMooseHuntingGroupFixture(f -> {
 
-            f.groupLeaderOccupation.getLifecycleFields().setDeletionTime(DateUtil.now().toDate());
+            f.groupLeaderOccupation.getLifecycleFields().setDeletionTime(DateUtil.now());
 
             persistInNewTransaction();
 

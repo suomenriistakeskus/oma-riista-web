@@ -80,13 +80,13 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
 
     private void createHarvestsSheet(final Workbook workbook) {
         final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation("harvests"));
-        helper.appendHeaderRow(concatAndTranslate(getCommonHeaders(), "amount", "gender", "age", "weight",
-                "notEdible", "weightEstimated", "weightMeasured", "fitnessClass", "antlersType", "antlersWidth",
-                "antlerPointsLeft", "antlerPointsRight"));
+        helper.appendHeaderRow(concatAndTranslate(getCommonHeaders(), "amount", "solitaryCalf", "gender", "age",
+                "weight", "notEdible", "weightEstimated", "weightMeasured", "fitnessClass", "antlersType",
+                "antlersWidth", "antlerPointsLeft", "antlerPointsRight"));
 
-        for (HarvestDTO harvest : harvests) {
+        for (final HarvestDTO harvest : harvests) {
             final List<HarvestSpecimenDTO> specimens = harvest.getSpecimens();
-            final int specimensSize = ofNullable(specimens).map(List::size).orElse(0);
+            final int specimensSize = specimens.size();
             final int amount = harvest.getAmount();
 
             if (specimensSize != amount && amount != 1 || specimensSize == 0) {
@@ -99,10 +99,11 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
                 helper.appendRow();
                 addCommonColumns(helper, harvest);
                 helper.appendNumberCell(1)
+                        .appendTextCell(localiseBoolean(specimen.getAlone()))
                         .appendTextCell(localise(specimen.getGender()))
                         .appendTextCell(localise(specimen.getAge()))
                         .appendNumberCell(specimen.getWeight())
-                        .appendBoolCell(specimen.getNotEdible())
+                        .appendTextCell(localiseBoolean(specimen.getNotEdible()))
                         .appendNumberCell(specimen.getWeightEstimated())
                         .appendNumberCell(specimen.getWeightMeasured())
                         .appendTextCell(localise(specimen.getFitnessClass()))
@@ -260,10 +261,20 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
         return localiser.getTranslation(e);
     }
 
+    private <E extends Enum<E> & LocalisedEnum> String localiseBoolean(final Boolean value) {
+        if (value == null) {
+            return null;
+        }
+
+        return value
+                ? localiser.getTranslation("Boolean.true")
+                : localiser.getTranslation("Boolean.false");
+    }
+
     private static String[] getCommonHeaders() {
         return new String[]{
-                "commonId", "rhy", "rka", "date", "clockTime", "geolocationSource", "geolocationAccuracy", "latitude", "longitude",
-                "species"
+                "commonId", "rhy", "rka", "date", "clockTime", "geolocationSource", "geolocationAccuracy",
+                "latitude", "longitude", "species"
         };
     }
 

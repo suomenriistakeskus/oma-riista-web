@@ -115,17 +115,17 @@ public class CommonObservationExportFeature {
                            .join(OBSERVATION.rhy, RHY)
                            .join(OBSERVATION.species, SPECIES)
                            .where(OBSERVATION.pointOfTime.between(
-                                   range.lowerEndpoint().toDate(),
-                                   range.upperEndpoint().toDate()))
+                                   range.lowerEndpoint(),
+                                   range.upperEndpoint()))
                            .fetch();
     }
 
-    private COBS_Observation createObservationFromTuple(final Tuple tuple) {
+    private static COBS_Observation createObservationFromTuple(final Tuple tuple) {
         return new COBS_Observation()
                 .withObservationId(tuple.get(OBSERVATION.id))
                 .withRhyNumber(tuple.get(RHY.officialCode))
                 .withGameSpeciesCode(tuple.get(SPECIES.officialCode))
-                .withPointOfTime(new LocalDateTime(tuple.get(OBSERVATION.pointOfTime).getTime()))
+                .withPointOfTime(new LocalDateTime(tuple.get(OBSERVATION.pointOfTime)))
                 .withGeoLocation(convertLocation(tuple.get(OBSERVATION.geoLocation)))
                 .withObservationType(COBS_ObservationType.fromValue(tuple.get(OBSERVATION.observationType).name()))
                 .withAmount(tuple.get(OBSERVATION.amount))
@@ -141,7 +141,7 @@ public class CommonObservationExportFeature {
                 .withUnknownSpecimenAmount(tuple.get(OBSERVATION.mooselikeUnknownSpecimenAmount));
     }
 
-    private COBS_ObservationSpecimen createSpecimenFromTuple(final Tuple tuple) {
+    private static COBS_ObservationSpecimen createSpecimenFromTuple(final Tuple tuple) {
         return new COBS_ObservationSpecimen()
                 .withObservationId(tuple.get(SPECIMEN.observation.id))
                 .withGender(EnumUtils.convertNullableByEnumName(COBS_GameGender.class,
@@ -156,11 +156,11 @@ public class CommonObservationExportFeature {
                 .withLengthOfPaw(tuple.get(SPECIMEN.lengthOfPaw));
     }
 
-    private COBS_GeoLocation convertLocation(final GeoLocation location) {
+    private static COBS_GeoLocation convertLocation(final GeoLocation location) {
         return new COBS_GeoLocation().withLatitude(location.getLatitude()).withLongitude(location.getLongitude());
     }
 
-    private COBS_FemaleAndCalfs createFemaleAndCalfs(final Integer amount, final int calfs) {
+    private static COBS_FemaleAndCalfs createFemaleAndCalfs(final Integer amount, final int calfs) {
         // If amount is zero or null, return null so that xml will not contain empty item
         if (amount == null || amount == 0) {
             return null;

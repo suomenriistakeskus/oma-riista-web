@@ -1,8 +1,9 @@
 package fi.riista.feature.gamediary.observation.metadata;
 
-import fi.riista.feature.common.entity.Required;
+import fi.riista.feature.gamediary.DeerHuntingType;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationDTOBase;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.feature.gamediary.observation.specimen.GameMarking;
@@ -17,11 +18,11 @@ import io.vavr.Tuple2;
 
 import javax.annotation.Nonnull;
 import java.util.EnumSet;
-import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static fi.riista.feature.gamediary.GameSpecies.isLargeCarnivore;
 import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.fromIntValue;
+import static java.util.Objects.requireNonNull;
 
 public class ObservationMetadata extends ObservationSpecimenOps implements ValueGeneratorMixin {
 
@@ -34,7 +35,7 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
         super(baseFields.getSpecies().getOfficialCode(), fromIntValue(baseFields.getMetadataVersion()));
 
         this.baseFields = baseFields;
-        this.contextSensitiveFields = Objects.requireNonNull(contextSensitiveFields, "contextSensitiveFields is null");
+        this.contextSensitiveFields = requireNonNull(contextSensitiveFields, "contextSensitiveFields is null");
 
         checkArgument(baseFields.getSpecies().equals(contextSensitiveFields.getSpecies()), "Game species mismatch");
 
@@ -47,32 +48,36 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
                 "Conflicting metadata with regard to associability to moose hunting");
     }
 
-    public Boolean getWithinMooseHunting() {
-        return baseFields.getWithinMooseHunting() != Required.NO ? contextSensitiveFields.isWithinMooseHunting() : null;
+    public ObservationCategory getObservationCategory() {
+        return contextSensitiveFields.getObservationCategory();
     }
 
-    public boolean isAmountLegal(final boolean carnivoreAuthority) {
-        return contextSensitiveFields.getAmount().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal();
+    public boolean isAmountLegal(final boolean hasCarnivoreAuthority) {
+        return contextSensitiveFields.getAmount().isCarnivoreFieldAllowed(hasCarnivoreAuthority);
     }
 
     public boolean isAmountRequired() {
-        return contextSensitiveFields.getAmount().nonNullValueRequired();
+        return isAmountLegal(false);
     }
 
-    public ObservationMetadata withAmount(@Nonnull final DynamicObservationFieldPresence amount) {
-        Objects.requireNonNull(amount);
-        contextSensitiveFields.setAmount(amount);
-        return this;
-    }
+    public void mutateDeerHuntingTypeFields(@Nonnull final ObservationDTOBase dto) {
+        requireNonNull(dto);
 
-    public ObservationSpecimenDTO newObservationSpecimenDTO(final boolean carnivoreAuthority) {
-        final ObservationSpecimenDTO dto = new ObservationSpecimenDTO();
-        mutateContent(dto, carnivoreAuthority);
-        return dto;
+        if (contextSensitiveFields.getDeerHuntingType().isDeerHuntingFieldAllowed(/*isDeerPilotEnabled*/true)) {
+            dto.setDeerHuntingType(someOtherThan(dto.getDeerHuntingType(), DeerHuntingType.class));
+        } else {
+            throw new IllegalStateException("Cannot mutate deer pilot field: deerHuntingType");
+        }
+
+        if (contextSensitiveFields.getDeerHuntingTypeDescription().isDeerHuntingFieldAllowed(/*isDeerPilotEnabled*/true)) {
+            dto.setDeerHuntingTypeDescription("deerHuntingTypeDescription-" + nextPositiveInt());
+        } else {
+            throw new IllegalStateException("Cannot mutate deer pilot field: deerHuntingTypeDescription");
+        }
     }
 
     public void mutateMooselikeAmountFields(@Nonnull final ObservationDTOBase dto) {
-        Objects.requireNonNull(dto);
+        requireNonNull(dto);
 
         if (contextSensitiveFields.getMooselikeMaleAmount().isNonNullValueLegal()) {
             dto.setMooselikeMaleAmount(nextPositiveIntAtMost(50));
@@ -123,8 +128,21 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
         }
     }
 
-    public void mutateLargeCarnivoreFields(@Nonnull final ObservationDTOBase dto, final boolean carnivoreAuthority) {
-        Objects.requireNonNull(dto);
+    public void withMooselikeAmountFieldsCleared(@Nonnull final ObservationDTOBase dto) {
+        requireNonNull(dto);
+
+        dto.setMooselikeMaleAmount(null);
+        dto.setMooselikeFemaleAmount(null);
+        dto.setMooselikeFemale1CalfAmount(null);
+        dto.setMooselikeFemale2CalfsAmount(null);
+        dto.setMooselikeFemale3CalfsAmount(null);
+        dto.setMooselikeFemale4CalfsAmount(null);
+        dto.setMooselikeCalfAmount(null);
+        dto.setMooselikeUnknownSpecimenAmount(null);
+    }
+
+    public void mutateLargeCarnivoreFields(@Nonnull final ObservationDTOBase dto) {
+        requireNonNull(dto);
 
         if (supportsLargeCarnivoreFields() && isLargeCarnivore(getGameSpeciesCode())) {
             dto.setInYardDistanceToResidence(nextPositiveIntAtMost(100));
@@ -132,37 +150,43 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
             dto.setInYardDistanceToResidence(null);
         }
 
-        if (contextSensitiveFields.getVerifiedByCarnivoreAuthority().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+        if (contextSensitiveFields.getVerifiedByCarnivoreAuthority().isCarnivoreFieldAllowed(/*hasCarnivoreAuthority*/true)) {
             dto.setVerifiedByCarnivoreAuthority(someOtherThan(dto.getVerifiedByCarnivoreAuthority()));
         } else {
-            dto.setVerifiedByCarnivoreAuthority(null);
+            throw new IllegalStateException("Cannot mutate large carnivore field: verifiedByCarnivoreAuthority");
         }
 
-        if (contextSensitiveFields.getObserverName().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+        if (contextSensitiveFields.getObserverName().isCarnivoreFieldAllowed(/*hasCarnivoreAuthority*/true)) {
             dto.setObserverName("observerName-" + nextPositiveInt());
         } else {
-            dto.setObserverName(null);
+            throw new IllegalStateException("Cannot mutate large carnivore field: observerName");
         }
 
-        if (contextSensitiveFields.getObserverPhoneNumber().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+        if (contextSensitiveFields.getObserverPhoneNumber().isCarnivoreFieldAllowed(/*hasCarnivoreAuthority*/true)) {
             dto.setObserverPhoneNumber(phoneNumber());
         } else {
-            dto.setObserverPhoneNumber(null);
+            throw new IllegalStateException("Cannot mutate large carnivore field: observerPhoneNumber");
         }
 
-        if (contextSensitiveFields.getOfficialAdditionalInfo().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+        if (contextSensitiveFields.getOfficialAdditionalInfo().isCarnivoreFieldAllowed(/*hasCarnivoreAuthority*/true)) {
             dto.setOfficialAdditionalInfo("officialAdditionalInfo-" + nextPositiveInt());
         } else {
-            dto.setOfficialAdditionalInfo(null);
+            throw new IllegalStateException("Cannot mutate large carnivore field: officialAdditionalInfo");
         }
+    }
+
+    public ObservationSpecimenDTO newObservationSpecimenDTO(final boolean hasCarnivoreAuthority) {
+        final ObservationSpecimenDTO dto = new ObservationSpecimenDTO();
+        mutateContent(dto, hasCarnivoreAuthority);
+        return dto;
     }
 
     /**
      * Mutates content of given ObservationSpecimenDTO object. ID and revision
      * fields are left intact.
      */
-    public void mutateContent(@Nonnull final ObservationSpecimenDTO dto, final boolean carnivoreAuthority) {
-        Objects.requireNonNull(dto);
+    public void mutateContent(@Nonnull final ObservationSpecimenDTO dto, final boolean hasCarnivoreAuthority) {
+        requireNonNull(dto);
 
         if (contextSensitiveFields.getGender().isNonNullValueLegal()) {
             dto.setGender(someOtherThan(dto.getGender(), GameGender.class));
@@ -196,13 +220,13 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
             dto.setMarking(null);
         }
 
-        mutateLargeCarnivoreFields(dto, carnivoreAuthority);
+        mutateLargeCarnivoreFields(dto, hasCarnivoreAuthority);
     }
 
     private void mutateLargeCarnivoreFields(@Nonnull final ObservationSpecimenDTO dto,
-                                            final boolean carnivoreAuthority) {
+                                            final boolean hasCarnivoreAuthority) {
 
-        if (contextSensitiveFields.getWidthOfPaw().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+        if (contextSensitiveFields.getWidthOfPaw().isCarnivoreFieldAllowed(hasCarnivoreAuthority)) {
             final Double currentW = dto.getWidthOfPaw();
             final double replacingW =
                     currentW == null || currentW + 1.0 > ObservationSpecimenOps.MAX_PAW_WIDTH_OF_OTHER_LARGE_CARNIVORES
@@ -213,7 +237,7 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
             dto.setWidthOfPaw(null);
         }
 
-        if (contextSensitiveFields.getLengthOfPaw().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+        if (contextSensitiveFields.getLengthOfPaw().isCarnivoreFieldAllowed(hasCarnivoreAuthority)) {
             final Double currentL = dto.getLengthOfPaw();
             final double replacingL =
                     currentL == null || currentL + 1.0 > ObservationSpecimenOps.MAX_PAW_LENGTH_OF_LARGE_CARNIVORES
@@ -225,10 +249,10 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
         }
     }
 
-    public Tuple2<Double, Double> generateWidthAndLengthOfPaw(final boolean carnivoreAuthority) {
+    public Tuple2<Double, Double> generateWidthAndLengthOfPaw(final boolean hasCarnivoreAuthority) {
         Double widthOfPaw = null;
 
-        if (contextSensitiveFields.getWidthOfPaw().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+        if (contextSensitiveFields.getWidthOfPaw().isCarnivoreFieldAllowed(hasCarnivoreAuthority)) {
             final int iMinW = Double.valueOf(MIN_PAW_WIDTH_OF_LARGE_CARNIVORES).intValue();
             final int iMaxW = Double.valueOf(MAX_PAW_WIDTH_OF_OTHER_LARGE_CARNIVORES).intValue();
 
@@ -237,7 +261,7 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
 
         Double lengthOfPaw = null;
 
-        if (contextSensitiveFields.getLengthOfPaw().toSimpleFieldPresence(carnivoreAuthority).isNonNullValueLegal()) {
+        if (contextSensitiveFields.getLengthOfPaw().isCarnivoreFieldAllowed(hasCarnivoreAuthority)) {
             final int iMinL = Double.valueOf(MIN_PAW_LENGTH_OF_LARGE_CARNIVORES).intValue();
             final int iMaxL = Double.valueOf(MAX_PAW_LENGTH_OF_LARGE_CARNIVORES).intValue();
 
@@ -270,9 +294,5 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
 
     public ObservationType getObservationType() {
         return contextSensitiveFields.getObservationType();
-    }
-
-    public DynamicObservationFieldPresence getAmount() {
-        return contextSensitiveFields.getAmount();
     }
 }

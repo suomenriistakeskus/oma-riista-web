@@ -1,10 +1,7 @@
 package fi.riista.feature.permit.application.statistics;
 
-
-import com.google.common.collect.ImmutableList;
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
-import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
@@ -30,7 +27,7 @@ public class HarvestPermitApplicationStatisticsExcelView extends AbstractXlsxVie
         this.statuses = statuses;
     }
 
-    private String createFilename() {
+    private static String createFilename() {
         return String.format("Hakemukset-tilanne-%s.xlsx", Constants.FILENAME_TS_PATTERN.print(DateUtil.now()));
     }
 
@@ -50,55 +47,44 @@ public class HarvestPermitApplicationStatisticsExcelView extends AbstractXlsxVie
         final ExcelHelper helper = new ExcelHelper(workbook, "Hakemusten käsittelytilanne");
         helper.setDefaultColumnWidth(5);
 
-        final List<String> permitCategories = getPermitCategories();
+        addCategoryHeaderRow(helper);
+        addStatusHeaderRow(helper);
 
-        addCategoryHeaderRow(helper, permitCategories);
-        addStatusHeaderRow(helper, permitCategories);
-
-        addStatusRows(helper, permitCategories);
+        addStatusRows(helper);
 
         helper.autoSizeColumn(0);
     }
 
-    private void addCategoryHeaderRow(ExcelHelper helper, List<String> permitCategories) {
+    private void addCategoryHeaderRow(ExcelHelper helper) {
         helper.appendRow();
         helper.appendEmptyCell(1);
-        permitCategories.forEach(category -> {
-            helper.appendTextCell(i18n.getTranslation(I18N_PREFIX + category), HorizontalAlignment.CENTER).spanCurrentColumn(3);
+        statuses.get(0).getCategoryStatuses().forEach(categoryStatus -> {
+            helper.appendTextCell(i18n.getTranslation(I18N_PREFIX + categoryStatus.getCategory()), HorizontalAlignment.CENTER).spanCurrentColumn(3);
         });
     }
 
-    private void addStatusHeaderRow(ExcelHelper helper, List<String> permitCategories) {
+    private void addStatusHeaderRow(ExcelHelper helper) {
         helper.appendRow();
         helper.appendTextCell("RKA");
 
-        permitCategories.forEach(category -> {
+        statuses.get(0).getCategoryStatuses().forEach(category -> {
             helper.appendTextCell("H");
             helper.appendTextCell("K");
             helper.appendTextCell("V");
         });
     }
 
-    private void addStatusRows(ExcelHelper helper, List<String> permitCategories) {
+    private void addStatusRows(ExcelHelper helper) {
         statuses.forEach(rka -> {
             helper.appendRow();
             helper.appendTextCell(i18n.getTranslation(rka.getRka().getNameLocalisation()));
-            permitCategories.forEach(category -> {
-                appendCategoryNullable(helper, rka.getPermitCategoryToStatus().get(category));
+            rka.getCategoryStatuses().forEach(category -> {
+                appendCategoryNullable(helper, category.getStatuses());
             });
         });
     }
 
-    private List<String> getPermitCategories() {
-        return ImmutableList.of(
-                HarvestPermitCategory.MOOSELIKE.name(),
-                HarvestPermitCategory.MOOSELIKE_NEW.name(),
-                HarvestPermitCategory.BIRD.name(),
-                HarvestPermitCategory.LARGE_CARNIVORE_CATEGORIES
-        );
-    }
-
-    private void appendCategoryNullable(final ExcelHelper helper, Map<String, Integer> categoryMap) {
+    private static void appendCategoryNullable(final ExcelHelper helper, Map<String, Integer> categoryMap) {
         if (categoryMap == null) {
             helper.appendEmptyCell(3);
         } else {
@@ -108,7 +94,7 @@ public class HarvestPermitApplicationStatisticsExcelView extends AbstractXlsxVie
         }
     }
 
-    private void appendValueNullable(final ExcelHelper helper, final Integer value) {
+    private static void appendValueNullable(final ExcelHelper helper, final Integer value) {
         if (value == null) {
             helper.appendEmptyCell(1);
         } else {

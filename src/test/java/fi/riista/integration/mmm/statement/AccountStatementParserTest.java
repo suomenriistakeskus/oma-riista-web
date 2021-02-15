@@ -9,13 +9,16 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE;
-import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE_2;
-import static fi.riista.integration.mmm.statement.MMMConstants.MMM_ACCOUNT_NUMBER;
+import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE_DANSKE;
+import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE_OP;
+import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE_OP_2;
+import static fi.riista.integration.mmm.statement.MMMConstants.VALID_ACCOUNT_NUMBERS;
 import static fi.riista.test.TestUtils.ld;
 import static fi.riista.util.fixedformat.FixedFormatHelper.scaleMonetaryAmount;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class AccountStatementParserTest {
 
@@ -24,7 +27,7 @@ public class AccountStatementParserTest {
 
     @Test
     public void testParseLine() {
-        final AccountStatementLine line = doParseLine(LINE_SAMPLE);
+        final AccountStatementLine line = doParseLine(LINE_SAMPLE_OP);
 
         assertCommonsParts(line);
         assertEquals(ld(2018, 1, 8), line.getBookingDate());
@@ -37,7 +40,7 @@ public class AccountStatementParserTest {
 
     @Test
     public void testParseLine2() {
-        final AccountStatementLine line = doParseLine(LINE_SAMPLE_2);
+        final AccountStatementLine line = doParseLine(LINE_SAMPLE_OP_2);
 
         assertCommonsParts(line);
         assertEquals(ld(2018, 1, 8), line.getBookingDate());
@@ -48,9 +51,22 @@ public class AccountStatementParserTest {
         assertEquals(scaleMonetaryAmount(new BigDecimal(290)), line.getAmount());
     }
 
+    @Test
+    public void testParseLine3() {
+        final AccountStatementLine line = doParseLine(LINE_SAMPLE_DANSKE);
+
+        assertCommonsParts(line);
+        assertEquals(ld(2018, 1, 8), line.getBookingDate());
+        assertEquals(ld(2018, 1, 6), line.getTransactionDate());
+        assertEquals("121581A229642905", line.getAccountServiceReference());
+        assertEquals("00000020000157570010", line.getCreditorReference());
+        assertEquals("URUTAUKIJUUE", line.getDebtorNameAbbrv());
+        assertEquals(scaleMonetaryAmount(new BigDecimal(120)), line.getAmount());
+    }
+
     private static void assertCommonsParts(final AccountStatementLine line) {
         assertEquals("3", line.getTransactionType());
-        assertEquals(MMM_ACCOUNT_NUMBER, line.getCreditorAccountNumber());
+        assertTrue(VALID_ACCOUNT_NUMBERS.contains(line.getCreditorAccountNumber()));
         assertEquals(Integer.valueOf(1), line.getCurrencyCode());
         assertEquals("", line.getNameOrigin());
         assertEquals(Integer.valueOf(0), line.getReversalIndicator());
@@ -59,46 +75,49 @@ public class AccountStatementParserTest {
     }
 
     private static AccountStatementLine doParseLine(final String line) {
-        return AccountStatementParser.parseLine(line, Optional.empty());
+        return AccountStatementParser.parseAccountTransferLine(line, Optional.empty());
     }
 
     @Test
-    public void testParseFile() {
+    public void testParseFile_withOneBankAccount() {
         final LocalDate date = ld(2018, 1, 8);
-        final String content = AccountStatementTestData.generateFileContent(date, asList(LINE_SAMPLE, LINE_SAMPLE_2));
+        final String content = AccountStatementTestData.generateFileContent(
+                date, singletonList(asList(LINE_SAMPLE_OP, LINE_SAMPLE_OP_2)));
+
         final AccountStatement result = AccountStatementParser.parseFile(content);
 
         assertEquals(date, result.getStatementDate());
 
-        final List<AccountStatementLine> expectedLines = asList(doParseLine(LINE_SAMPLE), doParseLine(LINE_SAMPLE_2));
+        final List<AccountStatementLine> expectedLines =
+                asList(doParseLine(LINE_SAMPLE_OP), doParseLine(LINE_SAMPLE_OP_2));
 
         assertEquals(expectedLines, result.getLines());
     }
 
     @Test
-    public void testParseFile_whenEndingWithTwoUnparseableLines() {
-        thrown.expect(AccountStatementParseException.class);
-        thrown.expectMessage(AccountStatementParseException.invalidContent(4, "9abc").getMessage());
+    public void testParseFile_withTwoBankAccounts() {
+        final LocalDate date = ld(2018, 1, 8);
+        final String content = AccountStatementTestData.generateFileContent(
+                date, asList(singletonList(LINE_SAMPLE_DANSKE), singletonList(LINE_SAMPLE_OP)));
 
-        final String content = "0180101...\n"
-                + LINE_SAMPLE + "\n"
-                + LINE_SAMPLE_2 + "\n"
-                + "9abc\n"
-                + "9xyz\n";
+        final AccountStatement result = AccountStatementParser.parseFile(content);
 
-        AccountStatementParser.parseFile(content);
+        assertEquals(date, result.getStatementDate());
+
+        final List<AccountStatementLine> expectedLines =
+                asList(doParseLine(LINE_SAMPLE_DANSKE), doParseLine(LINE_SAMPLE_OP));
+
+        assertEquals(expectedLines, result.getLines());
     }
 
     @Test
-    public void testParseFile_whenUnparseableLineInBetween() {
+    public void testParseFile_withUnparseableLine() {
         thrown.expect(AccountStatementParseException.class);
         thrown.expectMessage(AccountStatementParseException.invalidContent(3, "foobar").getMessage());
 
         final String content = "0180101...\n"
-                + LINE_SAMPLE + "\n"
-                + "foobar\n"
-                + LINE_SAMPLE_2 + "\n"
-                + "9...\n";
+                + LINE_SAMPLE_OP + "\n"
+                + "foobar\n";
 
         AccountStatementParser.parseFile(content);
     }

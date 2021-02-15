@@ -34,7 +34,7 @@ public class HuntingClubGroupCrudFeature_MooseDataCardGroupNameTest extends Embe
 
         onSavedAndAuthenticated(createNewModerator(), () -> {
             final HuntingClubGroup transientGroup = model().newHuntingClubGroup(club);
-            final HuntingClubGroupDTO dto = HuntingClubGroupDTO.create(transientGroup, species, permit);
+            final HuntingClubGroupDTO dto = HuntingClubGroupDTO.create(transientGroup, species, permit, false);
 
             // Test that Finnish name reserved for moose data card import is handled case-insensitively.
             dto.setNameFI(capitalizeEveryOtherChar(localisedMooseDataCardGroupName.getFinnish()));
@@ -64,7 +64,7 @@ public class HuntingClubGroupCrudFeature_MooseDataCardGroupNameTest extends Embe
                 HuntingClubGroup.generateNameForMooseDataCardGroup(prefix -> prefix + permit.getPermitNumber());
 
         onSavedAndAuthenticated(createNewModerator(), () -> {
-            final HuntingClubGroupDTO dto = HuntingClubGroupDTO.create(group, species, permit);
+            final HuntingClubGroupDTO dto = HuntingClubGroupDTO.create(group, species, permit, false);
 
             // Test that Finnish name reserved for moose data card import is handled case-insensitively.
             dto.setNameFI(capitalizeEveryOtherChar(localisedMooseDataCardGroupName.getFinnish()));

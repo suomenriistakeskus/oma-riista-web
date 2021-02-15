@@ -1,0 +1,85 @@
+<form name="nominationDecisionCreateForm" role="form" class="form" ng-submit="$ctrl.save()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="jht.nomination.decision.createNominationDecision"></h3>
+    </div>
+
+    <div class="modal-body">
+
+        <div class="row form-group" show-errors>
+            <div class="col-xs-6">
+
+                <label for="decisionTypeId" class="control-label">
+                    <span translate="jht.nomination.decision.decisionType.title"></span>
+                </label>
+
+                <select name="decisionTypeId" id="decisionTypeId"
+                        class="form-control"
+                        ng-model="$ctrl.selectedDecisionType"
+                        ng-options="('jht.nomination.decision.decisionType.' + d | translate) for d in $ctrl.DECISION_TYPES"
+                        required></select>
+            </div>
+
+            <div class="col-xs-6">
+                <div class="form-group" show-errors>
+                    <label for="occupationTypeId" class="control-label">
+                        <span translate="occupation.occupation"></span>
+                    </label>
+
+                    <select name="occupationTypeId" id="occupationTypeId"
+                            class="form-control"
+                            ng-model="$ctrl.selectedOccupationType"
+                            ng-options="('occupation.type.' + o | translate) for o in $ctrl.OCCUPATION_TYPES"
+                            required></select>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <div class="form-group" show-errors>
+                    <label for="rkaSelect" class="control-label"
+                           translate="occupation.nomination.organisationSearch.chooseRka"></label>
+                    <select class="form-control" name="rkaSelect" id="rkaSelect"
+                            ng-model="$ctrl.selectedArea"
+                            required
+                            ng-options="a.name for a in $ctrl.areas track by a.officialCode">
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-xs-6">
+                <div class="form-group" show-errors>
+                    <label for="rhySelect" class="control-label"
+                           translate="occupation.nomination.organisationSearch.chooseRhy"></label>
+                    <select class="form-control" name="rhySelect" id="rhySelect"
+                            ng-model="$ctrl.selectedRhy"
+                            required
+                            ng-options="rhy.name for rhy in $ctrl.selectedArea.subOrganisations track by rhy.officialCode">
+                        <option value="">{{'occupation.nomination.organisationSearch.chooseRhy' | translate}}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="row form-group">
+            <label class="col-xs-5 control-label">
+                <span translate="decision.settings.document.locale"></span>
+                <small class="glyphicon glyphicon-asterisk text-danger"></small>
+            </label>
+
+            <div class="col-xs-7">
+                <document-locale-selection locale="$ctrl.selectedLocale"></document-locale-selection>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()"
+                    translate="occupation.form.button.cancel"></button>
+            <button type="submit" class="btn btn-primary"
+                    ng-disabled="$ctrl.isInvalid(nominationDecisionCreateForm)"
+                    translate="occupation.form.button.save"></button>
+        </div>
+    </div>
+</form>

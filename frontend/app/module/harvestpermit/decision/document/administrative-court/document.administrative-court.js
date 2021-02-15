@@ -6,14 +6,14 @@ angular.module('app.harvestpermit.decision.document.administrativecourt', [])
             url: '/administrative-court',
             templateUrl: 'harvestpermit/decision/document/administrative-court/document.administrative-court.html',
             controllerAs: '$ctrl',
-            controller: function (PermitDecision, PermitDecisionUtils, NotificationService,
-                                  RefreshDecisionStateService,
+            controller: function (PermitDecision, PermitDecisionUtils, PermitDecisionSection,
+                                  NotificationService, RefreshDecisionStateService,
                                   PermitDecisionChangeAdministrativeCourtModal,
                                   decision, reference) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.sectionId = 'administrativeCourt';
+                    $ctrl.sectionId = PermitDecisionSection.ADMINISTRATIVE_COURT;
                     $ctrl.decision = decision;
                     $ctrl.reference = reference;
                     $ctrl.sectionContent = PermitDecisionUtils.getSectionContent(decision, $ctrl.sectionId);
@@ -54,14 +54,14 @@ angular.module('app.harvestpermit.decision.document.administrativecourt', [])
     .constant('PermitDecisionAdminstrativeCourts', [{
         fi: [
             'Postiosoite: Helsingin hallinto-oikeus, Radanrakentajantie 5, 00520 Helsinki',
-            'Käyntiosoite: Helsingin hallinto-oikeus, Tuomioistuimet-talo, Radanrakentajantie 5, Helsinki',
+            'Käyntiosoite: Helsingin hallinto-oikeus, Radanrakentajantie 5, Helsinki',
             'Sähköposti: helsinki.hao@oikeus.fi',
-            'Puhelin: 029 56 42069 Faksi: 029 56 42079'].join('<br>'),
+            'Puhelin: 029 56 42000 Faksi: 029 56 42079'].join('<br>'),
         sv: [
             'Postadress: Helsingfors förvaltningsdomstol, Banbyggarvägen 5, 00520 Helsingfors',
-            'Besöksadress:Helsingfors förvaltningsdomstol, Domstolarnas hus, Banbyggarvägen 5, Helsingfors',
+            'Besöksadress:Helsingfors förvaltningsdomstol, Banbyggarvägen 5, Helsingfors',
             'E-post: helsinki.hao@oikeus.fi',
-            'Telefonnummer: 029 56 42069 Fax: 029 56 42079'].join('<br>')
+            'Telefonnummer: 029 56 42000 Fax: 029 56 42079'].join('<br>')
     }, {
         fi: [
             'Postiosoite: Hämeenlinnan hallinto-oikeus, Raatihuoneenkatu 1, 13100 Hämeenlinna',
@@ -78,21 +78,21 @@ angular.module('app.harvestpermit.decision.document.administrativecourt', [])
             'Postiosoite: Itä-Suomen hallinto-oikeus, PL 1744, 70101 Kuopio',
             'Käyntiosoite: Itä-Suomen hallinto-oikeus, Minna Canthin katu 64, Kuopio',
             'Sähköposti: ita-suomi.hao@oikeus.fi',
-            'Puhelin: 029 56 42500 Faksi: 029 56 42501'].join('<br>'),
+            'Puhelin: 029 56 42502 Faksi: 029 56 42501'].join('<br>'),
         sv: [
             'Postadress: Östra Finlands förvaltningsdomstol, PL 1744, 70101 Kuopio',
             'Besöksadress:Östra Finlands förvaltningsdomstol, Minna Canthin katu 64, Kuopio',
             'E-post: ita-suomi.hao@oikeus.fi',
-            'Telefonnummer: 029 56 42500 Fax: 029 56 42501'].join('<br>')
+            'Telefonnummer: 029 56 42502 Fax: 029 56 42501'].join('<br>')
     }, {
         fi: [
             'Postiosoite: Pohjois-Suomen hallinto-oikeus, PL 189, 90101 Oulu',
-            'Käyntiosoite: Pohjois-Suomen hallinto-oikeus, Isokatu 4, Oulu',
+            'Käyntiosoite: Pohjois-Suomen hallinto-oikeus, Isokatu 4, 3 krs., Oulu',
             'Sähköposti: pohjois-suomi.hao@oikeus.fi',
             'Puhelin: 029 56 42800 Faksi: 029 56 42841'].join('<br>'),
         sv: [
-            'Postadress: Pohjois-Suomen hallinto-oikeus, PL 189, 90101 Oulu',
-            'Besöksadress: Pohjois-Suomen hallinto-oikeus, Isokatu 4, Oulu',
+            'Postadress: Norra Finlands förvaltningsdomstol, PL 189, 90101 Oulu',
+            'Besöksadress: Norra Finlands förvaltningsdomstol, Isokatu 4, 3 vån., Oulu',
             'E-post: pohjois-suomi.hao@oikeus.fi',
             'Telefonnummer: 029 56 42800 Fax: 029 56 42841'].join('<br>')
     }, {
@@ -109,12 +109,12 @@ angular.module('app.harvestpermit.decision.document.administrativecourt', [])
     }, {
         fi: [
             'Postiosoite: Vaasan hallinto-oikeus, PL 204, 65101 Vaasa',
-            'Käyntiosoite: Vaasan hallinto-oikeus, Korsholmanpuistikko 43, Vaasa',
+            'Käyntiosoite: Vaasan hallinto-oikeus, Korsholmanpuistikko 43, 4. krs., Vaasa',
             'Sähköposti: vaasa.hao@oikeus.fi',
             'Puhelin: 029 56 42780 Faksi: 029 56 42760'].join('<br>'),
         sv: [
             'Postadress: Vasa förvaltningsdomstol, PB 204, 65101 Vasa',
-            'Besöksadress: Vasa förvaltningsdomstol, Korsholmsesplanaden 43, Vasa',
+            'Besöksadress: Vasa förvaltningsdomstol, Korsholmsesplanaden 43, 4. vån., Vasa',
             'E-post: vaasa.hao@oikeus.fi',
             'Telefonnummer: 029 56 42780 Fax: 029 56 42760'].join('<br>')
     }])

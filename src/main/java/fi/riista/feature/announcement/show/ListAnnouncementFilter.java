@@ -17,9 +17,9 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.security.UserInfo;
 import fi.riista.util.F;
+import org.joda.time.DateTime;
 
 import javax.annotation.Nonnull;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class ListAnnouncementFilter {
     private List<Occupation> activePersonOccupations;
     private Organisation activePersonRhy;
     private Organisation organisation;
-    private Date createdAfter;
+    private DateTime createdAfter;
 
     public ListAnnouncementFilter withActiveUser(final UserInfo user) {
         this.isAdminOrModerator = Objects.requireNonNull(user).isAdminOrModerator();
@@ -60,7 +60,7 @@ public class ListAnnouncementFilter {
         return this;
     }
 
-    public ListAnnouncementFilter withCreatedAfter(final Date createdAfter) {
+    public ListAnnouncementFilter withCreatedAfter(final DateTime createdAfter) {
         this.createdAfter = requireNonNull(createdAfter, "createdAfter is null");
         return this;
     }
@@ -131,7 +131,7 @@ public class ListAnnouncementFilter {
             return MSG.visibleToAll.isTrue();
         }
 
-        public static BooleanExpression messageCreatedAfter(final Date createdAfter) {
+        public static BooleanExpression messageCreatedAfter(final DateTime createdAfter) {
             return createdAfter != null ? MSG.lifecycleFields.creationTime.goe(createdAfter) : null;
         }
 

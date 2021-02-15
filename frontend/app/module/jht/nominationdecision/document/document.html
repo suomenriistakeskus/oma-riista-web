@@ -1,0 +1,64 @@
+<div class="pull-right row" style="width: 470px">
+    <div class="col-xs-4">
+        <span ng-show="$ctrl.reference" translate="decision.reference.referenceDecision"></span>
+        <strong ng-show="$ctrl.reference" ng-bind="$ctrl.reference.decisionNumber"></strong>
+        <br>
+
+        <a ng-show="$ctrl.decision.status === 'DRAFT' && $ctrl.isHandler()"
+           ng-click="$ctrl.changeReference()"
+           ng-switch="!!$ctrl.reference">
+            <span ng-switch-when="true" translate="decision.reference.changeReference"></span>
+            <span ng-switch-when="false" translate="decision.reference.selectReference"></span>
+        </a>
+    </div>
+
+    <div class="col-xs-8 text-right">
+        <button type="button" class="btn btn-primary"
+                ng-disabled="!$ctrl.canLockDecision()"
+                ng-show="$ctrl.decision.status === 'DRAFT'"
+                ng-click="$ctrl.lockDecision()"
+                translate="decision.buttons.lockDecision"></button>
+
+        <button type="button" class="btn btn-danger"
+                ng-show="$ctrl.canUnlockDecision()"
+                ng-click="$ctrl.unlockDecision()"
+                translate="decision.buttons.unlockDecision"></button>
+
+        <button type="button" class="btn btn-info"
+                ng-show="$ctrl.decision.status === 'DRAFT'"
+                ng-click="$ctrl.previewEnabled = !$ctrl.previewEnabled">
+            <span ng-show="!$ctrl.previewEnabled" translate="decision.buttons.previewMode"></span>
+            <span ng-show="$ctrl.previewEnabled" translate="decision.buttons.editMode"></span>
+        </button>
+    </div>
+</div>
+
+<permit-decision-nav-header decision="$ctrl.decision"></permit-decision-nav-header>
+
+<div class="row" style="margin-top:40px;">
+    <div class="col-xs-3">
+        <nomination-decision-document-nav decision="$ctrl.decision">
+        </nomination-decision-document-nav>
+    </div>
+    <div class="col-xs-9">
+        <div class="text-center"
+             ng-if="$ctrl.previewEnabled">
+            <button type="button" class="btn btn-primary"
+                    ng-click="$ctrl.printDraftPdf()">
+                <span class="fa fa-fw fa-print"></span>
+                <span translate="global.button.downloadPdf"></span>
+            </button>
+        </div>
+
+        <iframe height="700px" width="100%" style="border:0;"
+                ng-if="$ctrl.previewEnabled"
+                ng-src="{{$ctrl.previewUrl()}}"></iframe>
+
+        <div ng-show="!$ctrl.previewEnabled">
+
+            <!--Child state content-->
+            <div ui-view></div>
+
+        </div>
+    </div>
+</div>

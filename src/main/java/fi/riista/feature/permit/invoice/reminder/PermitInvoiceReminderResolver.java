@@ -21,6 +21,7 @@ import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +49,7 @@ public class PermitInvoiceReminderResolver {
      * - only for online payments, because otherwise paymentDate is never available
      * - only when payment is visible to customer (DELIVERED)
      */
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public List<PermitInvoiceReminderDTO> resolve() {
         final Days daysBeforeDueDate = InvoiceType.PERMIT_PROCESSING.getDaysOfEmailReminderBeforeDueDate();

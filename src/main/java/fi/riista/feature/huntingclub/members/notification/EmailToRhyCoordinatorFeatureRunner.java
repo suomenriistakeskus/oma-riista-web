@@ -5,11 +5,11 @@ import fi.riista.integration.common.entity.Integration;
 import fi.riista.integration.common.repository.IntegrationRepository;
 import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,14 +19,15 @@ public class EmailToRhyCoordinatorFeatureRunner {
     @Resource
     private IntegrationRepository integrationRepository;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     @Transactional
     public void process(final HuntingLeaderFinderService feature, final HuntingLeaderEmailSenderService mailSender) {
         final DateTime processingStart = DateTime.now();
-        final Date latestRun = getLastRunTime().toDate();
+        final DateTime latestRun = getLastRunTime();
 
         final int currentHuntingYear = DateUtil.huntingYear();
         final List<Occupation> changedLeaders = feature.findChangedLeaders(
-                latestRun, processingStart.toDate(), currentHuntingYear);
+                latestRun, processingStart, currentHuntingYear);
         mailSender.sendMails(changedLeaders);
         updateLastRunTime(processingStart);
     }

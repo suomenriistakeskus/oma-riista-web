@@ -82,7 +82,7 @@ public class MrJhtExportFeature {
         return root;
     }
 
-    private MR_JHT_OccupationTypeEnum occType(final OccupationType occupationType) {
+    private static MR_JHT_OccupationTypeEnum occType(final OccupationType occupationType) {
         return MR_JHT_OccupationTypeEnum.fromValue(occupationType.name());
     }
 }

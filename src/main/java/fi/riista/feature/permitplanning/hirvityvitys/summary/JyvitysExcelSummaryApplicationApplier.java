@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_APPLICANT;
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_APPLICATION_AMOUNT;
+import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_APPLICATION_NUMBER;
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_AREA_IN_OTHER_RHY;
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_PRIVATE_LAND;
 import static fi.riista.feature.permitplanning.hirvityvitys.summary.JyvitysExcelSummaryStaticField.SUMMARY_SHOOTERS_ONLY_CLUB;
@@ -52,6 +53,7 @@ public class JyvitysExcelSummaryApplicationApplier {
     }
 
     private void applyDto() {
+        getCell(SUMMARY_APPLICATION_NUMBER).setCellValue(applicationDTO.getApplicationNumber());
         getCell(SUMMARY_APPLICANT).setCellValue(applicationDTO.getApplicant());
         final String formula = sumOfVerotusLohkoSheetsColumn(VEROTUSLOHKO_PRIVATE_LAND);
         getCell(SUMMARY_PRIVATE_LAND).setCellFormula(formula);

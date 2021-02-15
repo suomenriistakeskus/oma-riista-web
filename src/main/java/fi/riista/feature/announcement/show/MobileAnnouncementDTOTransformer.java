@@ -12,13 +12,13 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.ListTransformer;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.jpa.CriteriaUtils;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -85,7 +85,7 @@ public class MobileAnnouncementDTOTransformer extends ListTransformer<Announceme
         final MobileAnnouncementSenderDTO senderDto = new MobileAnnouncementSenderDTO(
                 organisationName.asMap(), senderTypeLocalisation.asMap(), senderFullName);
 
-        final Date creationTime = announcement.getLifecycleFields().getCreationTime();
+        final DateTime creationTime = announcement.getLifecycleFields().getCreationTime();
         final LocalDateTime pointOfTime = DateUtil.toLocalDateTimeNullSafe(creationTime);
 
         return new MobileAnnouncementDTO(

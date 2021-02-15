@@ -3,7 +3,7 @@ package fi.riista.feature.storage.metadata;
 import com.google.common.hash.HashCode;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import org.hibernate.annotations.Type;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;

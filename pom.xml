@@ -28,7 +28,12 @@
     <repositories>
         <repository>
             <id>central</id>
-            <url>http://repo1.maven.org/maven2/</url>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+        <repository>
+            <id>omariista-relases</id>
+            <name>Vincit Artifactory-releases</name>
+            <url>https://artifactory.vincit.fi/artifactory/omariista</url>
         </repository>
         <repository>
             <id>jboss-public-repository-group</id>
@@ -45,10 +50,6 @@
             </snapshots>
         </repository>
         <repository>
-            <id>Hibernate Spatial repo</id>
-            <url>http://www.hibernatespatial.org/repository</url>
-        </repository>
-        <repository>
             <id>jcenter</id>
             <name>jcenter</name>
             <url>https://jcenter.bintray.com/</url>
@@ -58,6 +59,13 @@
             <url>http://version99.qos.ch/</url>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>omariista-relases</id>
+            <name>Vincit Artifactory-releases</name>
+            <url>https://artifactory.vincit.fi/artifactory/omariista</url>
+        </pluginRepository>
+    </pluginRepositories>
     <properties>
         <!-- Used to locate the profile specific configuration file. -->
         <build.profile.id>dev</build.profile.id>
@@ -72,10 +80,11 @@
         <jdk.version>1.8</jdk.version>
         <org.aspectj.version>1.8.10</org.aspectj.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
-        <javax.validation.version>1.1.0.Final</javax.validation.version>
+        <javax.validation.version>2.0.1.Final</javax.validation.version>
+        <jaxws.eclipse.version>2.3.3</jaxws.eclipse.version>
         <jaxws.metro.version>2.3.1</jaxws.metro.version>
-        <spring.version>4.3.8.RELEASE</spring.version>
-        <spring.security.version>4.2.1.RELEASE</spring.security.version>
+        <spring.version>5.2.6.RELEASE</spring.version>
+        <spring.security.version>5.3.4.RELEASE</spring.security.version>
         <spring.batch.version>3.0.7.RELEASE</spring.batch.version>
         <spring.retry.version>1.1.4.RELEASE</spring.retry.version>
         <spring.cloud.version>1.2.1.RELEASE</spring.cloud.version>
@@ -92,7 +101,7 @@
         <handlebars.version>4.0.6</handlebars.version>
         <flexmark.version>0.32.18</flexmark.version>
         <jasypt.version>1.9.2</jasypt.version>
-        <onelogin.saml.version>2.4.0</onelogin.saml.version>
+        <onelogin.saml.version>2.5.0</onelogin.saml.version>
         <jsoup.version>1.10.1</jsoup.version>
         <google.phonenumber>8.0.0</google.phonenumber>
         <joda.time.version>2.9.7</joda.time.version>
@@ -100,7 +109,7 @@
         <dom4j.version>1.6.1</dom4j.version>
         <quartz.version>2.2.3</quartz.version>
         <jjwt.version>0.7.0</jjwt.version>
-        <pdfbox.version>2.0.8</pdfbox.version>
+        <pdfbox.version>2.0.22</pdfbox.version>
         <barcode4j.version>2.1</barcode4j.version>
         <fcm.java.version>1.0</fcm.java.version>
         <sentry.version>1.7.5</sentry.version>
@@ -109,40 +118,40 @@
         <!-- Do not upgrade unless Spring Cloud has support -->
         <amazon.sdk.version>1.11.160</amazon.sdk.version>
 
-        <hibernate.version>4.3.11.Final</hibernate.version>
-        <hibernate.spatial.version>4.3</hibernate.spatial.version>
-        <hibernate.validator.version>5.1.3.Final</hibernate.validator.version>
-        <jadira.usertype.version>3.2.0.GA</jadira.usertype.version>
-        <h2.version>1.4.195</h2.version>
-        <h2gis.version>1.3.1</h2gis.version>
-        <hikaricp.version>2.6.3</hikaricp.version>
-        <postgresql.version>42.1.1</postgresql.version>
-        <liquibase.version>3.5.3</liquibase.version>
-        <querydsl.version>4.1.4</querydsl.version>
-        <jts.version>1.14.0</jts.version>
+        <h2.version>1.4.197</h2.version>
+        <h2gis.version>1.5.0</h2gis.version>
+        <hikaricp.version>3.4.1</hikaricp.version>
+        <postgresql.version>42.2.16</postgresql.version>
+        <liquibase.version>3.8.9</liquibase.version>
+        <querydsl.version>4.3.1.1</querydsl.version>
+        <hibernate.version>5.4.20.Final</hibernate.version>
+        <hibernate.validator.version>6.0.17.Final</hibernate.validator.version>
+        <jadira.usertype.version>7.0.0.CR1</jadira.usertype.version>
+        <jts.version>1.16.1</jts.version>
 
         <apache.httpclient.version>4.5.3</apache.httpclient.version>
         <apache.httpcore.version>4.4.6</apache.httpcore.version>
         <apache.poi.version>3.16</apache.poi.version>
         <apache.tika.version>1.17</apache.tika.version>
 
-        <slf4j.version>1.7.22</slf4j.version>
-        <jackson.version>2.8.5</jackson.version>
+        <slf4j.version>1.7.28</slf4j.version>
+        <jackson.version>2.9.10</jackson.version>
+        <jackson.databind.version>2.9.10.5</jackson.databind.version>
         <jackson.geojson.version>1.8</jackson.geojson.version>
         <logback.version>1.2.3</logback.version>
         <logback.syslog.version>1.0.0</logback.syslog.version>
-        <newrelic.agent.version>5.4.0</newrelic.agent.version>
+        <newrelic.agent.version>5.14.0</newrelic.agent.version>
         <feign.version>9.7.0</feign.version>
         <swagger.core.version>1.5.20</swagger.core.version>
 
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13</junit.version>
         <mockito.version>2.4.4</mockito.version>
         <hamcrest.version>1.3</hamcrest.version>
         <findbugs.version>3.0.1</findbugs.version>
         <!-- Do not upgrade. Newer Surefire plugin XML is incompatible with Jenkins -->
         <surefire.version>2.18.1</surefire.version>
 
-        <jetty.plugin.version>9.4.4.v20170414</jetty.plugin.version>
+        <jetty.plugin.version>9.4.20.v20190813</jetty.plugin.version>
         <jetty.http.port>9494</jetty.http.port>
         <jetty.stop.port>9966</jetty.stop.port>
 
@@ -225,6 +234,32 @@
             </properties>
         </profile>
         <profile>
+            <id>owasp-dependency-check</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                        <version>5.3.2</version>
+                        <configuration>
+                            <failBuildOnCVSS>0</failBuildOnCVSS>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>wsdlImport</id>
             <build>
                 <plugins>
@@ -255,7 +290,7 @@
                             </execution>
                         </executions>
                         <dependencies>
-                            <!-- Metro dependencies -->
+                            <!-- Metro JAX-WS dependencies (TODO Replace Glassfish Metro with current Eclipse Metro) -->
                             <dependency>
                                 <groupId>org.glassfish.metro</groupId>
                                 <artifactId>webservices-tools</artifactId>
@@ -426,6 +461,21 @@
                                     </bindingIncludes>
                                     <schemaIncludes>
                                         <include>luke/export-mooselikeharvests-v1.xsd</include>
+                                    </schemaIncludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>luke-export-deerharvests-xsd-compile</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <bindingIncludes>
+                                        <include>luke/export-deerharvests-v1.xjb</include>
+                                    </bindingIncludes>
+                                    <schemaIncludes>
+                                        <include>luke/export-deerharvests-v1.xsd</include>
                                     </schemaIncludes>
                                 </configuration>
                             </execution>
@@ -689,17 +739,13 @@
             <dependencies>
                 <dependency>
                     <groupId>org.orbisgis</groupId>
-                    <artifactId>h2gis-ext</artifactId>
+                    <artifactId>h2gis</artifactId>
                     <version>${h2gis.version}</version>
                     <scope>runtime</scope>
                     <exclusions>
                         <exclusion>
                             <groupId>log4j</groupId>
                             <artifactId>log4j</artifactId>
-                        </exclusion>
-                        <exclusion>
-                            <groupId>org.orbisgis</groupId>
-                            <artifactId>java-network-analyzer</artifactId>
                         </exclusion>
                     </exclusions>
                 </dependency>
@@ -969,10 +1015,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.10</version>
-                <configuration>
-                    <ignoreNonCompile>true</ignoreNonCompile>
-                </configuration>
+                <version>3.1.1</version>
                 <executions>
                     <execution>
                         <id>unpack-newrelic</id>
@@ -984,6 +1027,9 @@
                             <includes>**/newrelic.jar</includes>
                             <includeGroupIds>com.newrelic.agent.java</includeGroupIds>
                             <includeArtifactIds>newrelic-java</includeArtifactIds>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
                             <outputDirectory>${project.build.directory}/riistakeskus/WEB-INF/</outputDirectory>
                         </configuration>
                     </execution>
@@ -1132,6 +1178,11 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>${h2.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
                 <version>99-empty</version>
@@ -1139,7 +1190,7 @@
             <dependency>
                 <groupId>org.springframework.data</groupId>
                 <artifactId>spring-data-releasetrain</artifactId>
-                <version>Ingalls-SR3</version>
+                <version>Neumann-RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -1177,6 +1228,12 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jcl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -1402,7 +1459,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson.databind.version}</version>
         </dependency>
 
         <dependency>
@@ -1421,12 +1478,6 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>${jackson.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.codehaus.woodstox</groupId>
-            <artifactId>woodstox-core-asl</artifactId>
-            <version>4.4.1</version>
         </dependency>
 
         <dependency>
@@ -1540,7 +1591,7 @@
             <version>${joda.time.version}</version>
         </dependency>
 
-        <dependency>
+       <dependency>
             <groupId>org.jadira.usertype</groupId>
             <artifactId>usertype.spi</artifactId>
             <version>${jadira.usertype.version}</version>
@@ -1564,53 +1615,37 @@
             <artifactId>hibernate-core</artifactId>
             <version>${hibernate.version}</version>
             <exclusions>
-                <!-- Provided by Java 7 standard library -->
+                <!-- JAXB runtime is provided by Eclipse Metro JAX-WS -->
                 <exclusion>
-                    <artifactId>xml-apis</artifactId>
-                    <groupId>xml-apis</groupId>
+                    <artifactId>jaxb-runtime</artifactId>
+                    <groupId>org.glassfish.jaxb</groupId>
                 </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-entitymanager</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-spatial</artifactId>
-            <version>${hibernate.spatial.version}</version>
+            <version>${hibernate.version}</version>
             <exclusions>
                 <!-- Exclude old version of PostgreSQL JDBC driver -->
                 <exclusion>
                     <artifactId>postgresql</artifactId>
                     <groupId>postgresql</groupId>
                 </exclusion>
-                <exclusion>
-                    <groupId>com.vividsolutions</groupId>
-                    <artifactId>jts</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
 
         <dependency>
-            <groupId>com.vividsolutions</groupId>
+            <groupId>org.locationtech.jts</groupId>
             <artifactId>jts-core</artifactId>
-            <version>${jts.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vividsolutions</groupId>
-            <artifactId>jts-io</artifactId>
             <version>${jts.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.wdtinc</groupId>
             <artifactId>mapbox-vector-tile</artifactId>
-            <version>1.1.1</version>
+            <version>3.1.0</version>
         </dependency>
 
         <dependency>
@@ -1624,6 +1659,13 @@
             <artifactId>hibernate-jpamodelgen</artifactId>
             <version>${hibernate.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <!-- JAXB runtime is provided by Eclipse Metro JAX-WS -->
+                <exclusion>
+                    <artifactId>jaxb-runtime</artifactId>
+                    <groupId>org.glassfish.jaxb</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Querydsl -->
@@ -1678,7 +1720,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate.validator.version}</version>
         </dependency>
@@ -1687,7 +1729,7 @@
         <dependency>
             <groupId>javax.el</groupId>
             <artifactId>javax.el-api</artifactId>
-            <version>2.2.5</version>
+            <version>3.0.0</version>
             <scope>${scopes.provided}</scope>
         </dependency>
 
@@ -1744,17 +1786,13 @@
         <!-- H2 extension for PostGIS compatibility -->
         <dependency>
             <groupId>org.orbisgis</groupId>
-            <artifactId>h2gis-ext</artifactId>
+            <artifactId>h2gis</artifactId>
             <version>${h2gis.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.orbisgis</groupId>
-                    <artifactId>java-network-analyzer</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -1778,6 +1816,12 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.8.0</version>
         </dependency>
 
         <!-- Guava interfaces use @Nullable -->
@@ -1934,34 +1978,26 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.2.12</version>
+            <version>2.3.1</version>
+        </dependency>
+
+        <!-- Eclipse Metro JAX-WS is required by e.g. VTJ-API -->
+
+        <dependency>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+            <version>${jaxws.eclipse.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.sun.xml.bind</groupId>
-            <artifactId>jaxb-impl</artifactId>
-            <version>2.2.11</version>
-            <exclusions>
-                <exclusion>
-                    <!-- Provided by Java 7 standard library -->
-                    <groupId>javax.xml.bind</groupId>
-                    <artifactId>jsr173_api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <!-- Provides JAX-WS constant for setting up TLS connection to VTJ-API -->
-        <dependency>
-            <groupId>org.glassfish.metro</groupId>
-            <artifactId>webservices-rt</artifactId>
-            <version>${jaxws.metro.version}</version>
-            <exclusions>
-                <exclusion>
-                    <!-- Provided by Java 7 standard library -->
-                    <groupId>org.glassfish.metro</groupId>
-                    <artifactId>webservices-api</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <version>${jaxws.eclipse.version}</version>
+            <!-- 
+                 Basically, scope should be runtime but com.sun.xml.bind.marshaller.NamespacePrefixMapper
+                 is imported directly by fi.riista.util.JaxbUtils class.
+              -->
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -2089,7 +2125,20 @@
             <artifactId>newrelic-java</artifactId>
             <version>${newrelic.agent.version}</version>
             <type>zip</type>
-            <scope>runtime</scope>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.docx4j</groupId>
+            <artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+            <version>8.2.8</version>
+            <exclusions>
+                <!-- JAXB runtime is provided by Eclipse Metro JAX-WS -->
+                <exclusion>
+                    <artifactId>jaxb-runtime</artifactId>
+                    <groupId>org.glassfish.jaxb</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

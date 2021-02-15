@@ -64,8 +64,9 @@ public class HarvestCountService {
         return new HarvestCountByPermitAndClub(result);
     }
 
-    private Map<PermitAndClubId, HarvestCountDTO> getModeratedHarvestCounts(final Set<Long> permitIds,
-                                                                            final int speciesCode) {
+    @Transactional(readOnly = true, noRollbackFor = RuntimeException.class)
+    public Map<PermitAndClubId, HarvestCountDTO> getModeratedHarvestCounts(final Set<Long> permitIds,
+                                                                           final int speciesCode) {
         final QHarvestPermitSpeciesAmount SPECIES_AMOUNT = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
         final QBasicClubHuntingSummary BASIC_SUMMARY = QBasicClubHuntingSummary.basicClubHuntingSummary;
         final QGameSpecies SPECIES = QGameSpecies.gameSpecies;

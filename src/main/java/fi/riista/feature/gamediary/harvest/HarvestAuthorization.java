@@ -38,7 +38,6 @@ public class HarvestAuthorization extends GameDiaryEntryAuthorization<Harvest> {
                 ROLE_MODERATOR,
                 Role.AUTHOR,
                 Role.ACTOR,
-                Role.HARVEST_RHY_COORDINATOR,
                 Role.PERMIT_CONTACT_PERSON,
                 OccupationType.SEURAN_JASEN,
                 OccupationType.SEURAN_YHDYSHENKILO,

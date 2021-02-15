@@ -103,10 +103,9 @@ public class CalendarEventDTOTransformer extends ListTransformer<CalendarEvent, 
     }
 
     @Nonnull
-    private Predicate<CalendarEvent> getCalendarEventToLockedStatisticsMapping(final Collection<CalendarEvent> events, boolean isModeratorOrAdmin) {
-        return event -> {
-            return !isModeratorOrAdmin && event.isLockedAsPastStatistics();
-        };
+    private static Predicate<CalendarEvent> getCalendarEventToLockedStatisticsMapping(final Collection<CalendarEvent> events,
+                                                                                      boolean isModeratorOrAdmin) {
+        return event -> !isModeratorOrAdmin && event.isLockedAsPastStatistics();
     }
 
     private Map<Long, List<AdditionalCalendarEventDTO>> getEventIdToAdditionalCalendarEventDTOs(final List<CalendarEvent> events) {

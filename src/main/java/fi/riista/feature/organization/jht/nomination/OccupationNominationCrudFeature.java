@@ -2,6 +2,9 @@ package fi.riista.feature.organization.jht.nomination;
 
 import com.google.common.base.Preconditions;
 import fi.riista.feature.AbstractCrudFeature;
+import fi.riista.feature.account.user.UserAuthorizationHelper;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
+import fi.riista.feature.organization.RiistakeskuksenAlueRepository;
 import fi.riista.feature.organization.jht.JHTPeriod;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
@@ -19,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,7 +49,13 @@ public class OccupationNominationCrudFeature
     private RiistanhoitoyhdistysRepository riistanhoitoyhdistysRepository;
 
     @Resource
+    private RiistakeskuksenAlueRepository riistakeskuksenAlueRepository;
+
+    @Resource
     private PersonLookupService personLookupService;
+
+    @Resource
+    private UserAuthorizationHelper userAuthorizationHelper;
 
     @Override
     protected JpaRepository<OccupationNomination, Long> getRepository() {
@@ -75,26 +83,39 @@ public class OccupationNominationCrudFeature
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR,ROLE_COORDINATOR')")
     public Page<OccupationNominationDTO> search(final OccupationNominationSearchDTO dto) {
+        // Use explicit authorization instead of annotation for testing
+        userAuthorizationHelper.assertCoordinatorAnywhereOrModerator();
+
         final Sort sortSpec =
-                new JpaSort(Sort.Direction.ASC, JpaSort.path(OccupationNomination_.person).dot(Person_.lastName))
+                JpaSort.of(Sort.Direction.ASC, JpaSort.path(OccupationNomination_.person).dot(Person_.lastName))
                         .and(Sort.Direction.ASC, JpaSort.path(OccupationNomination_.person).dot(Person_.firstName));
-        final PageRequest pageRequest = new PageRequest(dto.getPage(), dto.getPageSize(), sortSpec);
+        final PageRequest pageRequest = PageRequest.of(dto.getPage(), dto.getPageSize(), sortSpec);
         return occupationNominationDTOTransformer.apply(find(dto, pageRequest), pageRequest);
     }
 
     private Page<OccupationNomination> find(final OccupationNominationSearchDTO dto, final Pageable pageRequest) {
+        final RiistakeskuksenAlue rka;
         final Riistanhoitoyhdistys rhy;
         final Person person;
         final boolean isPersonSearch;
         final boolean isRhySearch;
+        final boolean isAreaSearch;
 
         if (dto.getRhyCode() != null) {
+            isAreaSearch = false;
             isRhySearch = true;
+            rka = null;
             rhy = riistanhoitoyhdistysRepository.findByOfficialCode(dto.getRhyCode());
-        } else {
+        } else if (dto.getAreaCode() != null) {
+            isAreaSearch = true;
             isRhySearch = false;
+            rka = riistakeskuksenAlueRepository.findByOfficialCode(dto.getAreaCode());
+            rhy = null;
+        } else {
+            isAreaSearch = false;
+            isRhySearch = false;
+            rka = null;
             rhy = null;
         }
 
@@ -111,7 +132,7 @@ public class OccupationNominationCrudFeature
             person = null;
         }
 
-        if (isPersonSearch && person == null || isRhySearch && rhy == null) {
+        if (isPersonSearch && person == null || isRhySearch && rhy == null || isAreaSearch && rka == null) {
             return new PageImpl<>(Collections.emptyList());
         }
 
@@ -119,7 +140,6 @@ public class OccupationNominationCrudFeature
             if (isRhySearch) {
                 // Check user is coordinator
                 activeUserService.assertHasPermission(rhy, EntityPermission.READ);
-
             } else {
                 throw new IllegalArgumentException("Cannot search non-final nominations without RHY");
             }
@@ -127,7 +147,7 @@ public class OccupationNominationCrudFeature
 
         return occupationNominationRepository.searchPage(
                 pageRequest, dto.getOccupationType(), dto.getNominationStatus(),
-                rhy, person, dto.getBeginDate(), dto.getEndDate());
+                rka, rhy, person, dto.getBeginDate(), dto.getEndDate());
     }
 
     @Transactional
@@ -148,7 +168,7 @@ public class OccupationNominationCrudFeature
                     + occupationNomination.getNominationStatus());
         }
 
-        occupationNominationRepository.delete(occupationNominationId);
+        occupationNominationRepository.deleteById(occupationNominationId);
     }
 
     @Transactional

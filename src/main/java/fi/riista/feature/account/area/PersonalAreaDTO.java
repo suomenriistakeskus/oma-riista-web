@@ -8,7 +8,7 @@ import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.feature.gis.zone.GISZoneWithoutGeometryDTO;
 import fi.riista.util.DtoUtil;
 import fi.riista.validation.DoNotValidate;
-import org.hibernate.validator.constraints.NotBlank;
+import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.Size;

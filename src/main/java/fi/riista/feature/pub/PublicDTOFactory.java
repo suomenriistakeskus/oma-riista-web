@@ -1,11 +1,11 @@
 package fi.riista.feature.pub;
 
+import com.google.common.base.Preconditions;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gis.GISWGS84Point;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.address.AddressDTO;
-import fi.riista.feature.organization.address.NullSafeAddress;
 import fi.riista.feature.organization.calendar.CalendarEventGroupType;
 import fi.riista.feature.organization.calendar.CalendarEventType;
 import fi.riista.feature.organization.calendar.Venue;
@@ -57,35 +57,35 @@ public class PublicDTOFactory {
     public static PublicOccupationDTO createOrganisationWithSubOrganisations(final Occupation occupation,
                                                                              final PublicOccupationTypeDTO occType,
                                                                              final PublicOccupationBoardRepresentationDTO boardRepresentation){
+        Preconditions.checkArgument(occupation.isNameVisibility(), "Name must be publicly visible");
+
         final Person person = occupation.getPerson();
         final String personName = String.format("%s %s", person.getByName(), person.getLastName());
 
         final Organisation org = occupation.getOrganisation();
         final PublicOccupationDTO dto = new PublicOccupationDTO(occType, org.getId(), personName);
 
-        dto.setEmail(person.getEmail());
-        dto.setPhoneNumber(person.getPhoneNumber());
+        if (occupation.isEmailVisibility()) {
+            dto.setEmail(person.getEmail());
+        }
+
+        if (occupation.isPhoneNumberVisibility()) {
+            dto.setPhoneNumber(person.getPhoneNumber());
+        }
+
         dto.setAdditionalInfo(occupation.getAdditionalInfo());
 
         dto.setBoardRepresentation(boardRepresentation);
 
         final OccupationType occupationType = occupation.getOccupationType();
-        final NullSafeAddress address = NullSafeAddress.of(person.getAddress());
         if (occupationType == OccupationType.TOIMINNANOHJAAJA) {
             if (StringUtils.isNotBlank(org.getEmail())) {
                 dto.setEmail(org.getEmail());
             }
         } else if (occupationType == OccupationType.SRVA_YHTEYSHENKILO) {
             dto.setCallOrder(occupation.getCallOrder());
-            dto.setEmail(null);
-            dto.setCity(address.getCity());
-        } else if (occupationType == OccupationType.PETOYHDYSHENKILO) {
-            dto.setCity(address.getCity());
-        } else if (occupationType == OccupationType.JALJESTYSKOIRAN_OHJAAJA_HIRVI
-                || occupationType == OccupationType.JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET
-                || occupationType == OccupationType.JALJESTYSKOIRAN_OHJAAJA_SUURPEDOT) {
-            dto.setCity(address.getCity());
         }
+
         return dto;
     }
 

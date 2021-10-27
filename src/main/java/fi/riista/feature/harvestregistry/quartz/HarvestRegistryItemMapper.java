@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 public class HarvestRegistryItemMapper {
 
     public static final LocalDate END_TIMESTAMP_2019 = new LocalDate(2020, 8, 1);
+    public static final LocalDate END_TIMESTAMP_2020 = new LocalDate(2021, 8, 1);
 
     public static Stream<HarvestRegistryItem> transform(final Harvest harvest,
                                                         final Person actualShooter,
@@ -28,8 +29,10 @@ public class HarvestRegistryItemMapper {
             return HarvestRegistryDerogationMapper.transform(harvest, actualShooter, specimens, rkaCode, rhyCode);
         } else if (harvest.getPointOfTime().toLocalDate().isBefore(END_TIMESTAMP_2019)) {
             return HarvestRegistryHarvest2019Mapper.transform(harvest, actualShooter, specimens, rkaCode, rhyCode);
+        } else if (harvest.getPointOfTime().toLocalDate().isBefore(END_TIMESTAMP_2020)) {
+            return HarvestRegistryHarvest2020Mapper.INSTANCE.transform(harvest, actualShooter, specimens, rkaCode, rhyCode, municipalities);
         } else {
-            return HarvestRegistryHarvest2020Mapper.transform(harvest, actualShooter, specimens, rkaCode, rhyCode, municipalities);
+            return HarvestRegistryHarvest2021Mapper.INSTANCE.transform(harvest, actualShooter, specimens, rkaCode, rhyCode, municipalities);
         }
     }
 

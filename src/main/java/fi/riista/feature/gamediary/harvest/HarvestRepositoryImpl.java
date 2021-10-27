@@ -8,6 +8,7 @@ import com.querydsl.core.types.dsl.DateExpression;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.PathBuilder;
+import com.querydsl.jpa.JPQLQueryFactory;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.sql.JPASQLQuery;
 import com.querydsl.spatial.GeometryExpression;
@@ -17,14 +18,21 @@ import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.SQLQueryFactory;
 import com.querydsl.sql.SQLTemplates;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.QGameSpecies;
+import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.harvestpermit.season.HarvestArea;
+import fi.riista.feature.harvestpermit.season.QHarvestArea;
+import fi.riista.feature.harvestpermit.season.QHarvestQuota;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.permit.application.QHarvestPermitApplication;
+import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.sql.SQGameSpecies;
 import fi.riista.sql.SQGroupHarvestRejection;
 import fi.riista.sql.SQGroupHuntingDay;
@@ -35,10 +43,13 @@ import fi.riista.sql.SQOrganisation;
 import fi.riista.sql.SQPerson;
 import fi.riista.sql.SQRhy;
 import fi.riista.sql.SQZone;
+import fi.riista.util.DateUtil;
 import fi.riista.util.GISUtils;
 import org.geolatte.geom.Geometry;
+import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -46,9 +57,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.querydsl.sql.SQLExpressions.union;
 import static fi.riista.sql.SQGroupHarvestRejection.groupHarvestRejection;
@@ -66,6 +80,9 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
 
     @Resource
     private SQLQueryFactory sqlQueryFactory;
+
+    @Resource
+    private JPQLQueryFactory jpqlQueryFactory;
 
     /**
      * Filter criteria includes:
@@ -368,4 +385,69 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
                 .fetch();
     }
 
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Map<Long, Integer> countByHarvestPermitIdAndSpeciesCode(final Collection<Long> permits, final int speciesCode) {
+        if (permits.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        final QHarvest HARVEST = QHarvest.harvest;
+        final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
+        final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
+
+        return jpqlQueryFactory.selectFrom(HARVEST)
+                .innerJoin(HARVEST.harvestPermit, PERMIT)
+                .innerJoin(HARVEST.species, SPECIES)
+                .where(PERMIT.id.in(permits).and(SPECIES.officialCode.eq(speciesCode)))
+                .transform(GroupBy.groupBy(PERMIT.id).as(GroupBy.sum(HARVEST.amount)));
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Map<HarvestArea.HarvestAreaDetailedType, Integer> countQuotaHarvestsByArea(final int speciesCode, final int huntingYear) {
+        final QHarvest HARVEST = QHarvest.harvest;
+        final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
+        final QHarvestQuota QUOTA = QHarvestQuota.harvestQuota;
+        final QHarvestArea AREA = QHarvestArea.harvestArea;
+
+        final DateTime huntingYearStart = DateUtil.toDateTimeNullSafe(DateUtil.huntingYearBeginDate(huntingYear));
+        final DateTime huntingYearEnd = DateUtil.toDateTimeNullSafe(DateUtil.huntingYearEndDate(huntingYear)).plusDays(1).minusMillis(1);
+
+        return jpqlQueryFactory
+                .select(AREA.nameFinnish, HARVEST.amount.sum())
+                .from(HARVEST)
+                .innerJoin(HARVEST.species, SPECIES)
+                .innerJoin(HARVEST.harvestQuota, QUOTA)
+                .innerJoin(QUOTA.harvestArea, AREA)
+                .where(SPECIES.officialCode.eq(speciesCode)
+                        .and(HARVEST.pointOfTime.between(huntingYearStart, huntingYearEnd)))
+                .groupBy(AREA.nameFinnish)
+                .transform(GroupBy.groupBy(AREA.nameFinnish).as(HARVEST.amount.sum()))
+                .entrySet().stream()
+                .collect(Collectors.toMap(e -> HarvestArea.HarvestAreaDetailedType.getByName(e.getKey()), Map.Entry::getValue));
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Map<HarvestArea.HarvestAreaDetailedType, Integer> countQuotasByArea(final int speciesCode, final int huntingYear) {
+        final QHarvest HARVEST = QHarvest.harvest;
+        final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
+        final QHarvestQuota QUOTA = QHarvestQuota.harvestQuota;
+        final QHarvestArea AREA = QHarvestArea.harvestArea;
+
+        final DateTime huntingYearStart = DateUtil.toDateTimeNullSafe(DateUtil.huntingYearBeginDate(huntingYear));
+        final DateTime huntingYearEnd = DateUtil.toDateTimeNullSafe(DateUtil.huntingYearEndDate(huntingYear)).plusDays(1).minusMillis(1);
+
+        return jpqlQueryFactory.selectDistinct(QUOTA)
+                .from(HARVEST)
+                .innerJoin(HARVEST.species, SPECIES)
+                .innerJoin(HARVEST.harvestQuota, QUOTA)
+                .innerJoin(QUOTA.harvestArea, AREA)
+                .where(SPECIES.officialCode.eq(speciesCode)
+                        .and(HARVEST.pointOfTime.between(huntingYearStart, huntingYearEnd)))
+                .transform(GroupBy.groupBy(AREA.nameFinnish).as(GroupBy.sum(QUOTA.quota)))
+                .entrySet().stream()
+                .collect(Collectors.toMap(e -> HarvestArea.HarvestAreaDetailedType.getByName(e.getKey()), Map.Entry::getValue));
+    }
 }

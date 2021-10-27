@@ -17,7 +17,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -37,30 +36,18 @@ public class TransportedWeapon extends BaseEntity<Long> {
     @Enumerated(EnumType.STRING)
     private TransportedWeaponType type;
 
-    @Column(nullable = false)
-    @Min(1)
-    private int amount;
-
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(columnDefinition = "text")
     private String description;
-
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    @Column(columnDefinition = "text")
-    private String caliber;
 
     public TransportedWeapon() {}
 
     public TransportedWeapon(final WeaponTransportationPermitApplication weaponTransportationPermitApplication,
                              final TransportedWeaponType type,
-                             final Integer amount,
-                             final String description,
-                             final String caliber) {
+                             final String description) {
         this.setWeaponTransportationPermitApplication(weaponTransportationPermitApplication);
         this.setType(type);
-        this.setAmount(amount);
         this.setDescription(description);
-        this.caliber = caliber;
     }
 
     // ACCESSORS
@@ -99,14 +86,6 @@ public class TransportedWeapon extends BaseEntity<Long> {
         this.type = type;
     }
 
-    public int getAmount() {
-        return amount;
-    }
-
-    public void setAmount(final int amount) {
-        this.amount = amount;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -115,11 +94,4 @@ public class TransportedWeapon extends BaseEntity<Long> {
         this.description = description;
     }
 
-    public String getCaliber() {
-        return caliber;
-    }
-
-    public void setCaliber(final String caliber) {
-        this.caliber = caliber;
-    }
 }

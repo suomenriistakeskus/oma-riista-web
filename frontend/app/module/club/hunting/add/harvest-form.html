@@ -151,7 +151,6 @@
         <div class="form-group" show-errors ng-if="isSpecimenFieldVisible('weightEstimated')">
             <label for="weightEstimated" class="control-label">
                 <span translate="gamediary.form.weightEstimated"></span>
-                <small ng-if="isWeightInfoInadequate()" class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
             <div class="form-control-wrapper">
@@ -159,15 +158,13 @@
                        class="form-control"
                        min="1" max="999" step="1"
                        r-decimal-separator-fix
-                       ng-model="entry.specimens[0].weightEstimated"
-                       ng-required="isWeightInfoInadequate()"/>
+                       ng-model="entry.specimens[0].weightEstimated"/>
             </div>
         </div>
 
         <div class="form-group" show-errors ng-if="isSpecimenFieldVisible('weightMeasured')">
             <label for="weightMeasured" class="control-label">
                 <span translate="gamediary.form.weightMeasured"></span>
-                <small ng-if="isWeightInfoInadequate()" class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
             <div class="form-control-wrapper">
@@ -175,24 +172,23 @@
                        class="form-control"
                        min="1" max="999" step="1"
                        r-decimal-separator-fix
-                       ng-model="entry.specimens[0].weightMeasured"
-                       ng-required="isWeightInfoInadequate()"/>
+                       ng-model="entry.specimens[0].weightMeasured"/>
             </div>
         </div>
 
         <div class="form-group" show-errors ng-if="isSpecimenFieldVisible('fitnessClass')">
             <label for="fitnessClass" class="control-label">
                 <span translate="gamediary.form.fitnessClass"></span>
-                <small ng-if="isSpecimenFieldRequired('fitnessClass')"
-                       class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
             <div class="form-control-wrapper">
                 <select name="fitnessClass" id="fitnessClass"
                         class="form-control"
                         ng-model="entry.specimens[0].fitnessClass"
-                        ng-options="('gamediary.fitnessClass.' + a | translate) for a in parameters.fitnessClasses"
-                        ng-required="isSpecimenFieldRequired('fitnessClass')"></select>
+                        ng-options="('gamediary.fitnessClass.' + a | translate) for a in parameters.fitnessClasses">
+                    <option value=""></option>
+                </select>
+
             </div>
         </div>
 
@@ -222,24 +218,21 @@
         <div class="form-group" show-errors ng-if="isSpecimenFieldVisible('antlersType')">
             <label for="antlersType" class="control-label">
                 <span translate="gamediary.form.antlersType"></span>
-                <small ng-if="isSpecimenFieldRequired('antlersType')"
-                        class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
             <div class="form-control-wrapper">
                 <select name="antlersType" id="antlersType"
                         class="form-control"
                         ng-model="entry.specimens[0].antlersType"
-                        ng-options="('gamediary.antlersType.' + a | translate) for a in parameters.antlersTypes"
-                        ng-required="isSpecimenFieldRequired('antlersType')"></select>
+                        ng-options="('gamediary.antlersType.' + a | translate) for a in parameters.antlersTypes">
+                    <option value=""></option>
+                </select>
             </div>
         </div>
 
         <div class="form-group" show-errors ng-if="isSpecimenFieldVisible('antlersWidth')">
             <label for="antlersWidth" class="control-label">
                 <span translate="gamediary.form.antlersWidth"></span>
-                <small ng-if="isSpecimenFieldRequired('antlersWidth')"
-                        class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
             <div class="form-control-wrapper">
@@ -247,16 +240,13 @@
                         class="form-control"
                         min="0" max="200" step="1"
                         r-decimal-separator-fix
-                        ng-model="entry.specimens[0].antlersWidth"
-                        ng-required="isSpecimenFieldRequired('antlersWidth')"/>
+                        ng-model="entry.specimens[0].antlersWidth"/>
             </div>
         </div>
 
         <div class="form-group" show-errors ng-if="isSpecimenFieldVisible('antlerPointsLeft')">
             <label for="antlerPointsLeft" class="control-label">
                 <span translate="gamediary.form.antlerPointsLeft"></span>
-                <small ng-if="isSpecimenFieldRequired('antlerPointsLeft')"
-                        class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
             <div class="form-control-wrapper">
@@ -264,16 +254,13 @@
                         class="form-control"
                         min="0" max="30" step="1"
                         r-decimal-separator-fix
-                        ng-model="entry.specimens[0].antlerPointsLeft"
-                        ng-required="isSpecimenFieldRequired('antlerPointsLeft')"/>
+                        ng-model="entry.specimens[0].antlerPointsLeft"/>
             </div>
         </div>
 
         <div class="form-group" show-errors ng-if="isSpecimenFieldVisible('antlerPointsRight')">
             <label for="antlerPointsRight" class="control-label">
                 <span translate="gamediary.form.antlerPointsRight"></span>
-                <small ng-if="isSpecimenFieldRequired('antlerPointsRight')"
-                        class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
             <div class="form-control-wrapper">
@@ -281,16 +268,13 @@
                         class="form-control"
                         min="0" max="30" step="1"
                         r-decimal-separator-fix
-                        ng-model="entry.specimens[0].antlerPointsRight"
-                        ng-required="isSpecimenFieldRequired('antlerPointsRight')"/>
+                        ng-model="entry.specimens[0].antlerPointsRight"/>
             </div>
         </div>
 
         <div class="form-group" show-errors ng-if="isSpecimenFieldVisible('antlersGirth')">
             <label for="antlersGirth" class="control-label">
                 <span translate="gamediary.form.antlersGirth"></span>
-                <small ng-if="isSpecimenFieldRequired('antlersGirth')"
-                        class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
             <div class="form-control-wrapper">
@@ -298,8 +282,7 @@
                         class="form-control"
                         min="0" max="50" step="1"
                         r-decimal-separator-fix
-                        ng-model="entry.specimens[0].antlersGirth"
-                        ng-required="isSpecimenFieldRequired('antlersGirth')"/>
+                        ng-model="entry.specimens[0].antlersGirth"/>
             </div>
         </div>
 
@@ -366,8 +349,9 @@
                       ng-model="entry.specimens[0].additionalInfo"></textarea>
             </div>
 
-            <div class="form-control-offset-wrapper help-block">
-                <span translate="gamediary.form.additionalInfoHelp"></span>
+            <div class="form-control-offset-wrapper help-block" ng-switch="isWhiteTailedDeer()">
+                <span ng-switch-when="true" translate="gamediary.form.additionalInfoHelpForWTD"></span>
+                <span ng-switch-default translate="gamediary.form.additionalInfoHelp"></span>
             </div>
         </div>
     </fieldset>

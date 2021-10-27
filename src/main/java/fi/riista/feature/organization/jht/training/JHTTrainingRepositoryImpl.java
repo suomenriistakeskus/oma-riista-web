@@ -27,10 +27,13 @@ import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.querydsl.sql.SQLExpressions.max;
 import static fi.riista.util.DateUtil.today;
+import static java.util.stream.Collectors.toMap;
 
 public class JHTTrainingRepositoryImpl extends QuerydslRepositorySupport implements JHTTrainingRepositoryCustom {
     public static final double MAX_FUZZY_DISTANCE = 0.6;
@@ -161,5 +164,29 @@ public class JHTTrainingRepositoryImpl extends QuerydslRepositorySupport impleme
                 .from(OCCUPATION)
                 .where(OCCUPATION.organisation.eq(rhy)
                         .and(matchingValidOccupation));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, LocalDate> findLatestTrainingDatesForOccupation(
+            @Nonnull final List<Long> personIds,
+            @Nonnull final OccupationType occupationType) {
+
+        Objects.requireNonNull(personIds, "personIds is null");
+        Objects.requireNonNull(occupationType, "occupationType is null");
+
+        final QJHTTraining TRAINING = QJHTTraining.jHTTraining;
+
+        return queryFactory
+                .select(TRAINING.person.id, max(TRAINING.trainingDate))
+                .from(TRAINING)
+                .where(TRAINING.occupationType.eq(occupationType)
+                               .and(TRAINING.person.id.in(personIds)))
+                .groupBy(TRAINING.person.id)
+                .fetch()
+                .stream()
+                .collect(toMap(value -> value.get(0, Long.class), // key: person id
+                               value -> value.get(1, LocalDate.class))); // value: training date
+
     }
 }

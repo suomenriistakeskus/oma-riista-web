@@ -10,5 +10,6 @@ angular.module('app.rhy', [
     'app.rhy.gamedamageinspectionevent',
     'app.rhy.annualreport',
     'app.rhy.huntingcontrolevent',
-    'app.rhy.reports'
+    'app.rhy.reports',
+    'app.rhy.harvestregistry'
 ]);

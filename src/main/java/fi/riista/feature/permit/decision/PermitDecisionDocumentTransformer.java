@@ -48,7 +48,6 @@ public class PermitDecisionDocumentTransformer {
         // Fields with generated content
         to.setApplication(transform(from.getApplication()));
         to.setApplicationReasoning(transform(from.getApplicationReasoning()));
-        to.setProcessing(transform(from.getProcessing()));
         to.setDecision(transform(from.getDecision()));
         to.setRestriction(transform(from.getRestriction()));
         to.setAdditionalInfo(transform(from.getAdditionalInfo()));
@@ -65,6 +64,7 @@ public class PermitDecisionDocumentTransformer {
         to.setLegalAdvice(transformLineFeeds(from.getLegalAdvice()));
         to.setNotificationObligation(transformLineFeeds(from.getNotificationObligation()));
         to.setAppeal(transformLineFeeds(from.getAppeal()));
+        to.setProcessing(transformLineFeeds(from.getProcessing()));
     }
 
 }

@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.DateTimeExpression;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.person.ContactInfoShare;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
@@ -28,6 +29,7 @@ import javax.validation.constraints.Size;
 import java.util.Objects;
 
 import static com.querydsl.core.types.dsl.DateTimeExpression.currentDate;
+import static fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRule.VisibilitySetting.NEVER;
 
 @Entity
 @Access(value = AccessType.FIELD)
@@ -80,12 +82,23 @@ public class Occupation extends LifecycleEntity<Long> implements HasBeginAndEndD
     @JoinColumn
     private Person substitute;
 
+    @Column(nullable = false)
+    private boolean nameVisibility;
+
+    @Column(nullable = false)
+    private boolean phoneNumberVisibility;
+
+    @Column(nullable = false)
+    private boolean emailVisibility;
+
     public Occupation() {
     }
 
     public Occupation(Person p, Organisation o, OccupationType t) {
         this.person = p;
         setOrganisationAndOccupationType(o, t);
+
+        setDefaultContactInfoVisibility(o.getOrganisationType(), t);
     }
 
     public Occupation(Person p, Organisation o, OccupationType t, ContactInfoShare share, Integer callOrder) {
@@ -93,12 +106,16 @@ public class Occupation extends LifecycleEntity<Long> implements HasBeginAndEndD
         this.callOrder = callOrder;
         this.contactInfoShare = share;
         setOrganisationAndOccupationType(o, t);
+
+        setDefaultContactInfoVisibility(o.getOrganisationType(), t);
     }
 
     public Occupation(Person p, Organisation o, OccupationType t, ContactInfoShare share) {
         this.person = p;
         this.contactInfoShare = share;
         setOrganisationAndOccupationType(o, t);
+
+        setDefaultContactInfoVisibility(o.getOrganisationType(), t);
     }
 
     public void setOrganisationAndOccupationType(Organisation organisation, OccupationType occupationType) {
@@ -113,6 +130,15 @@ public class Occupation extends LifecycleEntity<Long> implements HasBeginAndEndD
 
     public boolean isValidNow() {
         return DateUtil.overlapsInclusive(getBeginDate(), getEndDate(), DateUtil.today());
+    }
+
+    public void setDefaultContactInfoVisibility(final OrganisationType organisationType, final OccupationType occupationType) {
+        final OccupationContactInfoVisibilityRule rule =
+                OccupationContactInfoVisibilityRuleMapping.get(organisationType, occupationType);
+
+        this.nameVisibility = rule.getNameVisibility() != NEVER;
+        this.phoneNumberVisibility = rule.getPhoneNumberVisibility() != NEVER;
+        this.emailVisibility = rule.getEmailVisibility() != NEVER;
     }
 
     // Accessors -->
@@ -211,6 +237,30 @@ public class Occupation extends LifecycleEntity<Long> implements HasBeginAndEndD
 
     public void setSubstitute(final Person substitute) {
         this.substitute = substitute;
+    }
+
+    public boolean isNameVisibility() {
+        return nameVisibility;
+    }
+
+    public void setNameVisibility(final boolean nameVisibility) {
+        this.nameVisibility = nameVisibility;
+    }
+
+    public boolean isPhoneNumberVisibility() {
+        return phoneNumberVisibility;
+    }
+
+    public void setPhoneNumberVisibility(final boolean phoneNumberVisibility) {
+        this.phoneNumberVisibility = phoneNumberVisibility;
+    }
+
+    public boolean isEmailVisibility() {
+        return emailVisibility;
+    }
+
+    public void setEmailVisibility(final boolean emailVisibility) {
+        this.emailVisibility = emailVisibility;
     }
 
     // Querydsl delegates -->

@@ -20,8 +20,9 @@
             <span translate="harvestpermit.wizard.applicant.contactPerson"></span>
         </div>
 
-        <div class="well" style="min-height: 140px;">
-            <permit-application-wizard-contact-person person="$ctrl.contactPerson"></permit-application-wizard-contact-person>
+        <div class="contact-person-data-section">
+            <permit-application-wizard-contact-person
+                    person="$ctrl.contactPerson"></permit-application-wizard-contact-person>
         </div>
     </div>
     <div class="col-xs-5">
@@ -30,9 +31,10 @@
                     subtype="$ctrl.permitHolder.type"></permit-application-wizard-applicant-type>
         </div>
 
-        <div class="well" style="min-height: 140px;">
+        <div class="applicant-data-section">
             <div ng-if="$ctrl.personalApplication">
-                <permit-application-wizard-contact-person person="$ctrl.contactPerson"></permit-application-wizard-contact-person>
+                <permit-application-wizard-contact-person
+                        person="$ctrl.contactPerson"></permit-application-wizard-contact-person>
             </div>
 
             <div ng-if="!$ctrl.personalApplication">

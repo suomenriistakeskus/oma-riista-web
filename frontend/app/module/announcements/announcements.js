@@ -39,7 +39,7 @@
             bindings: {
                 fromOrganisation: '<'
             },
-            controller: function ($state, ActiveRoleService, AnnouncementFormModal) {
+            controller: function ($state, ActiveRoleService, AnnouncementFormModal, ModeratorPrivileges) {
                 var $ctrl = this;
                 $ctrl.canSend = false;
 
@@ -50,18 +50,27 @@
                     var fromRhy = fromOrganisationType === 'RHY';
                     var fromRk = fromOrganisationType === 'RK';
 
-                    $ctrl.canSend = ActiveRoleService.isClubContact() && fromClub ||
-                        ActiveRoleService.isCoordinator() && fromRhy ||
+                    $ctrl.canSendToRhy = ActiveRoleService.isCoordinator() && fromRhy ||
                         ActiveRoleService.isModerator() && (fromRk || fromRhy);
+
+                    $ctrl.canSendToAll = fromRk && (ActiveRoleService.isAdmin() ||
+                        ActiveRoleService.isPrivilegedModerator(ModeratorPrivileges.bulkMessagePrivilege));
+
+                    $ctrl.canSend = ActiveRoleService.isClubContact() && fromClub ||
+                        $ctrl.canSendToRhy;
+
                 };
 
-                $ctrl.openSendModal = function () {
-                    AnnouncementFormModal.openModal($ctrl.fromOrganisation, {
-                        visibleToAll: false,
-                        visibleToRhyMembers: false
-                    }).then(function () {
-                        $state.reload();
-                    });
+                $ctrl.openSendModal = function (mode) {
+                    var announcement = {
+                        visibleToAll: mode === 'ALL',
+                        visibleToRhyMembers: mode === 'RHY'
+                    };
+
+                    AnnouncementFormModal.openModal($ctrl.fromOrganisation, announcement, mode)
+                        .then(function () {
+                            $state.reload();
+                        });
                 };
             }
         })
@@ -130,7 +139,7 @@
                 refresh: '&'
             },
             controller: function (dialogs, $translate, $filter,
-                                  Announcements, AnnouncementFormModal) {
+                                  Announcements, AnnouncementFormModal, AnnouncementSubscriberMode) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
@@ -157,7 +166,13 @@
                     Announcements.get({
                         id: announcement.id
                     }).$promise.then(function (dto) {
-                        return AnnouncementFormModal.openModal($ctrl.organisation, dto);
+                        var mode = AnnouncementSubscriberMode.CUSTOM;
+                        if (!!dto.visibleToAll) {
+                            mode = AnnouncementSubscriberMode.ALL;
+                        } else if (!!dto.visibleToRhyMembers) {
+                            mode = AnnouncementSubscriberMode.RHY;
+                        }
+                        return AnnouncementFormModal.openModal($ctrl.organisation, dto, mode);
                     }).then(function () {
                         $ctrl.refresh();
                     });
@@ -180,40 +195,204 @@
             }
         })
 
+        .constant('AnnouncementSubscriberMode', {
+            ALL: 'ALL',
+            RHY: 'RHY',
+            CUSTOM: 'CUSTOM'
+        })
+
         .service('AnnouncementFormModal', function ($uibModal, $translate, NotificationService, ActiveRoleService,
-                                                    Announcements, AnnouncementSubscriberType) {
-            this.openModal = function (fromOrganisation, announcement) {
-                return $uibModal.open({
-                    templateUrl: 'announcements/form.html',
-                    controllerAs: '$ctrl',
-                    size: 'lg',
-                    controller: ModalController,
-                    resolve: {
-                        announcement: _.constant(announcement),
-                        fromOrganisation: _.constant(fromOrganisation),
-                        occupationTypeChoices: function () {
-                            return AnnouncementSubscriberType.getOccupationTypeChoices(fromOrganisation.organisationType);
-                        }
-                    }
-                }).result;
+                                                    Announcements, AnnouncementSubscriberType, AnnouncementSubscriberMode) {
+            this.openModal = function (fromOrganisation, announcement, mode) {
+
+                switch (mode) {
+                    case AnnouncementSubscriberMode.ALL:
+                        return $uibModal.open({
+                            templateUrl: 'announcements/form-all.html',
+                            controllerAs: '$ctrl',
+                            size: 'lg',
+                            controller: ModalControllerForSendToAll,
+                            resolve: {
+                                announcement: _.constant(announcement),
+                                fromOrganisation: _.constant(fromOrganisation),
+                                occupationTypeChoices: function () {
+                                    return AnnouncementSubscriberType.getOccupationTypeChoices(fromOrganisation.organisationType);
+                                }
+                            }
+                        }).result;
+                    case AnnouncementSubscriberMode.RHY:
+                        return $uibModal.open({
+                            templateUrl: 'announcements/form-rhy.html',
+                            controllerAs: '$ctrl',
+                            size: 'lg',
+                            controller: ModalControllerForSendToRhy,
+                            resolve: {
+                                announcement: _.constant(announcement),
+                                fromOrganisation: _.constant(fromOrganisation),
+                                occupationTypeChoices: function () {
+                                    return AnnouncementSubscriberType.getOccupationTypeChoices(fromOrganisation.organisationType);
+                                }
+                            }
+                        }).result;
+                    case AnnouncementSubscriberMode.CUSTOM:
+                        return $uibModal.open({
+                            templateUrl: 'announcements/form.html',
+                            controllerAs: '$ctrl',
+                            size: 'lg',
+                            controller: ModalController,
+                            resolve: {
+                                announcement: _.constant(announcement),
+                                fromOrganisation: _.constant(fromOrganisation),
+                                occupationTypeChoices: function () {
+                                    return AnnouncementSubscriberType.getOccupationTypeChoices(fromOrganisation.organisationType);
+                                }
+                            }
+                        }).result;
+
+                }
             };
 
-            function ModalController($uibModalInstance, $q, TranslatedBlockUI, AvailableRoleService, ModeratorPrivileges,
-                                     announcement, fromOrganisation, occupationTypeChoices) {
 
+            function showSendEmailDialog() {
+                var modalInstance = $uibModal.open({
+                    animation: false,
+                    backdrop: false,
+                    size: 'sm',
+                    templateUrl: 'announcements/send-email.html',
+                    controllerAs: '$ctrl',
+                    controller: SendEmailModalController
+                });
+
+                return modalInstance.result.then(_.constant(true), _.constant(false));
+            }
+
+            function SendEmailModalController($uibModalInstance) {
+                var $modalCtrl = this;
+
+                $modalCtrl.yes = function () {
+                    $uibModalInstance.close(true);
+                };
+
+                $modalCtrl.no = function () {
+                    $uibModalInstance.dismiss(false);
+                };
+            }
+
+            function pickOrganisation(org) {
+                return _.pick(org, ['organisationType', 'officialCode']);
+            }
+
+            function ModalControllerForSendToAll($uibModalInstance, TranslatedBlockUI, announcement, fromOrganisation) {
                 var $ctrl = this;
 
                 $ctrl.fromOrganisation = fromOrganisation;
                 $ctrl.announcement = announcement;
-                $ctrl.availableChoices = [];
+
+                $ctrl.canNotSubmit = function (form) {
+                    return form.$invalid;
+                };
+
+                $ctrl.submit = function () {
+                    $ctrl.announcement.fromOrganisation = pickOrganisation($ctrl.fromOrganisation);
+
+                    TranslatedBlockUI.start("global.block.wait");
+                    var promise = announcement.id
+                        ? Announcements.update(announcement).$promise
+                        : Announcements.save(announcement).$promise;
+
+                    promise.then(function () {
+                        $uibModalInstance.close($ctrl.announcement);
+                        NotificationService.showDefaultSuccess();
+                    }, function () {
+                        NotificationService.showDefaultFailure();
+                    })
+                        .finally(TranslatedBlockUI.stop);
+
+                };
+
+                $ctrl.cancel = function () {
+                    $uibModalInstance.dismiss('cancel');
+                };
+            }
+
+            function ModalControllerForSendToRhy($uibModalInstance, $q, TranslatedBlockUI, AvailableRoleService, ModeratorPrivileges,
+                                                 announcement, fromOrganisation) {
+
+                var $ctrl = this;
+
+                $ctrl.$onInit = function () {
+                    $ctrl.fromOrganisation = fromOrganisation;
+                    $ctrl.announcement = announcement;
+                    $ctrl.rhyCode = announcement.rhyMembershipSubscriber
+                        ? announcement.rhyMembershipSubscriber.officialCode
+                        : null;
+                    $ctrl.rkaCode = announcement.rhyMembershipSubscriber
+                        ? null
+                        : '000'; // Preselect area if rhy not selected already
+                    var fromRiistakeskus = $ctrl.fromOrganisation.organisationType === 'RK';
+                    $ctrl.showOrganisationSelection = fromRiistakeskus;
+
+                    // Prohibit rhy selection on update
+                    $ctrl.disableOrganisationSelection = !!announcement.rhyMembershipSubscriber;
+
+                };
+
+                $ctrl.canNotSubmit = function (form) {
+                    return form.$invalid || ($ctrl.showOrganisationSelection && !$ctrl.rhyCode);
+                };
+
+
+                $ctrl.submit = function () {
+
+                    $ctrl.selectedOrganisations = [];
+                    $ctrl.announcement.occupationTypes = [];
+
+
+                    $ctrl.announcement.fromOrganisation = pickOrganisation($ctrl.fromOrganisation);
+
+                    // Update on create, skip on update
+                    if (!$ctrl.announcement.rhyMembershipSubscriber) {
+                        $ctrl.announcement.rhyMembershipSubscriber = $ctrl.showOrganisationSelection
+                            ? {organisationType: 'RHY', officialCode: $ctrl.rhyCode}
+                            : null;
+
+                    }
+
+                    showSendEmailDialog()
+                        .then(function (sendEmail) {
+                            announcement.sendEmail = sendEmail;
+                            TranslatedBlockUI.start("global.block.wait");
+                            return announcement.id
+                                ? Announcements.update(announcement).$promise
+                                : Announcements.save(announcement).$promise;
+                        })
+                        .then(function () {
+                            $uibModalInstance.close($ctrl.announcement);
+                            NotificationService.showDefaultSuccess();
+                        }, function () {
+                            NotificationService.showDefaultFailure();
+                        })
+                        .finally(TranslatedBlockUI.stop);
+                };
+
+
+                $ctrl.cancel = function () {
+                    $uibModalInstance.dismiss('cancel');
+                };
+
+            }
+
+            function ModalController($uibModalInstance, TranslatedBlockUI, AvailableRoleService,
+                                     announcement, fromOrganisation, occupationTypeChoices) {
+
+                var $ctrl = this;
+                $ctrl.fromOrganisation = fromOrganisation;
+                $ctrl.announcement = announcement;
                 $ctrl.selectedOrganisations = announcement.subscriberOrganisations || [];
 
                 var fromRiistakeskus = $ctrl.fromOrganisation.organisationType === 'RK';
 
                 $ctrl.showOrganisationSelect = fromRiistakeskus;
-                $ctrl.showVisibleToAllOption = fromRiistakeskus && (ActiveRoleService.isAdmin() ||
-                    ActiveRoleService.isPrivilegedModerator(ModeratorPrivileges.bulkMessagePrivilege));
-                $ctrl.showVisibleToRhyMembersOption = $ctrl.fromOrganisation.organisationType === 'RHY';
 
                 function updateOccupationTypeChoices() {
                     $ctrl.occupationTypeChoices = _.filter(occupationTypeChoices, function (choice) {
@@ -283,9 +462,7 @@
                 };
 
                 function recipientSelected() {
-                    return $ctrl.announcement.visibleToAll ||
-                        $ctrl.announcement.visibleToRhyMembers ||
-                        (!$ctrl.occupationTypeMissing() && !$ctrl.organisationMissing());
+                    return !$ctrl.occupationTypeMissing() && !$ctrl.organisationMissing();
                 }
 
                 $ctrl.submit = function () {
@@ -293,19 +470,8 @@
                         return;
                     }
 
-                    function pickOrganisation(org) {
-                        return _.pick(org, ['organisationType', 'officialCode']);
-                    }
-
-                    if ($ctrl.announcement.visibleToAll || $ctrl.announcement.visibleToRhyMembers) {
-                        $ctrl.selectedOrganisations = [];
-                        $ctrl.announcement.occupationTypes = [];
-                    }
-
                     $ctrl.announcement.fromOrganisation = pickOrganisation($ctrl.fromOrganisation);
-                    $ctrl.announcement.subscriberOrganisations = $ctrl.showOrganisationSelect
-                        ? _.map($ctrl.selectedOrganisations, pickOrganisation)
-                        : [];
+                    $ctrl.announcement.subscriberOrganisations = _.map($ctrl.selectedOrganisations, pickOrganisation);
 
                     showSendEmailDialog()
                         .then(function (sendEmail) {
@@ -328,35 +494,23 @@
                     $uibModalInstance.dismiss('cancel');
                 };
 
-                function showSendEmailDialog() {
-                    if ($ctrl.announcement.visibleToAll) {
-                        // Email is not supported for sending to all
-                        return $q.when(false);
-                    }
-
-                    var modalInstance = $uibModal.open({
-                        animation: false,
-                        backdrop: false,
-                        size: 'sm',
-                        templateUrl: 'announcements/send-email.html',
-                        controllerAs: '$ctrl',
-                        controller: SendEmailModalController
-                    });
-
-                    return modalInstance.result.then(_.constant(true), _.constant(false));
-                }
             }
 
-            function SendEmailModalController($uibModalInstance) {
-                var $modalCtrl = this;
+        })
 
-                $modalCtrl.yes = function () {
-                    $uibModalInstance.close(true);
-                };
+        .component('announcementSenderInfo', {
+            templateUrl: 'announcements/sender-info.html',
+            controllerAs: '$ctrl',
+            bindings: {
+                fromOrganisation: '<'
+            }
+        })
 
-                $modalCtrl.no = function () {
-                    $uibModalInstance.dismiss(false);
-                };
+        .component('announcementMessageForm', {
+            templateUrl: 'announcements/announcement-message.html',
+            controllerAs: '$ctrl',
+            bindings: {
+                announcement: '<'
             }
         });
 })();

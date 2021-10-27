@@ -4,7 +4,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.security.EntityPermission;
@@ -23,15 +22,13 @@ public class LukeReportUriBuilderFactory extends CacheLoader<LukeReportUriBuilde
     private final TransactionTemplate transactionTemplate;
     private final RequireEntityService requireEntityService;
     private final URI baseUri;
-    private final DeerPilotService deerPilotService;
 
     @Override
     public LukeReportUriBuilder load(final CacheKey key) {
         return transactionTemplate.execute(transactionStatus -> {
             final HarvestPermit permit = requireEntityService.requireHarvestPermit(key.permitId, EntityPermission.READ);
             final HuntingClub club = key.clubId != null ? requireEntityService.requireHuntingClub(key.clubId, EntityPermission.READ) : null;
-            final boolean isInPilot = deerPilotService.isPilotPermit(key.permitId);
-            return new LukeReportUriBuilder(baseUri, permit, club, isInPilot);
+            return new LukeReportUriBuilder(baseUri, permit, club);
         });
     }
 
@@ -71,13 +68,11 @@ public class LukeReportUriBuilderFactory extends CacheLoader<LukeReportUriBuilde
     @Autowired
     public LukeReportUriBuilderFactory(final PlatformTransactionManager transactionManager,
                                        final RequireEntityService requireEntityService,
-                                       final LukeReportEndpoint lukeReportEndpoint,
-                                       final DeerPilotService deerPilotService) {
+                                       final LukeReportEndpoint lukeReportEndpoint) {
         this.transactionTemplate = new TransactionTemplate(transactionManager);
         this.transactionTemplate.setReadOnly(true);
         this.requireEntityService = requireEntityService;
         this.baseUri = lukeReportEndpoint.getBaseUri();
-        this.deerPilotService = deerPilotService;
         this.uriBuilderCache = CacheBuilder.newBuilder()
                 .expireAfterAccess(1, TimeUnit.MINUTES)
                 .build(LukeReportUriBuilderFactory.this);

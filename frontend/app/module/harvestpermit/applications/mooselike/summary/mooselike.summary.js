@@ -12,12 +12,6 @@ angular.module('app.harvestpermit.application.mooselike.summary', ['app.metadata
                     application: function (applicationId, MooselikePermitApplication) {
                         return MooselikePermitApplication.getFullDetails({id: applicationId}).$promise;
                     },
-                    isLate: function (HarvestPermitApplications, application) {
-                        var params = {applicationId: application.id};
-                        return HarvestPermitApplications.findType(params).$promise.then(function (applicationType) {
-                            return !applicationType.active;
-                        });
-                    },
                     permitArea: function (MooselikePermitApplication, applicationId) {
                         return MooselikePermitApplication.getArea({
                             id: applicationId
@@ -35,7 +29,6 @@ angular.module('app.harvestpermit.application.mooselike.summary', ['app.metadata
                     application: function (applicationId, MooselikePermitApplication) {
                         return MooselikePermitApplication.getFullDetails({id: applicationId}).$promise;
                     },
-                    isLate: _.constant(false),
                     permitArea: function (MooselikePermitApplication, applicationId) {
                         return MooselikePermitApplication.getArea({
                             id: applicationId
@@ -48,13 +41,13 @@ angular.module('app.harvestpermit.application.mooselike.summary', ['app.metadata
     .controller('MooselikePermitWizardSummaryController', function ($q, $translate, $filter, ConfirmationDialogService,
                                                                     NotificationService, ActiveRoleService, ReasonAsker,
                                                                     HarvestPermitApplications, DecisionDeliveryAddressModal,
-                                                                    wizard, application, isLate, permitArea) {
+                                                                    Helpers, MooselikeApplicationLate,
+                                                                    wizard, application, permitArea) {
         var $ctrl = this;
         var dateFilter = $filter('date');
 
         $ctrl.$onInit = function () {
             $ctrl.application = application;
-            $ctrl.isLate = isLate;
             $ctrl.permitArea = permitArea;
             $ctrl.showSubmitDate = ActiveRoleService.isModerator();
             $ctrl.submitDate = application.submitDate ? dateFilter(application.submitDate, 'yyyy-MM-dd') : null;
@@ -147,7 +140,8 @@ angular.module('app.harvestpermit.application.mooselike.summary', ['app.metadata
 
         function confirmSend() {
             var modalTitle = $translate.instant('harvestpermit.wizard.summary.sendConfirmation.title');
-            var modalBody = $ctrl.isLate
+            var isLate = MooselikeApplicationLate.isLate($ctrl.application.huntingYear, Helpers.dateTimeToString(new Date()));
+            var modalBody = isLate
                 ? $translate.instant('harvestpermit.wizard.summary.sendConfirmation.bodyLate')
                 : $translate.instant('harvestpermit.wizard.summary.sendConfirmation.body');
 

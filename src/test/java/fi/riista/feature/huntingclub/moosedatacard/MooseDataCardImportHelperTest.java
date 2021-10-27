@@ -20,7 +20,6 @@ import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
 import fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportException;
 import fi.riista.feature.huntingclub.moosedatacard.exception.MooseDataCardImportFailureReasons;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardPage1Validation;
-import fi.riista.feature.organization.lupahallinta.LHOrganisation;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -108,14 +107,11 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
         public final HarvestPermitSpeciesAmount speciesAmount;
         public final HarvestPermitSpeciesAmount speciesAmount2;
         public final int huntingYear;
-        public final Either<LHOrganisation, HuntingClub> lhOrgOrClub;
+        public final HuntingClub club;
         public final Person person;
 
-        public EntityResolveFixture(final EntitySupplier model) {
-            this(model, true);
-        }
 
-        public EntityResolveFixture(final EntitySupplier model, final boolean clubInsteadOfLhOrg) {
+        public EntityResolveFixture(final EntitySupplier model) {
             final Riistanhoitoyhdistys rhy = model.newRiistanhoitoyhdistys();
 
             this.speciesMoose = model.newGameSpeciesMoose();
@@ -129,9 +125,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
             this.speciesAmount = model.newHarvestPermitSpeciesAmount(permit, speciesMoose);
             this.speciesAmount2 = model.newHarvestPermitSpeciesAmount(permit, speciesBear);
 
-            this.lhOrgOrClub = clubInsteadOfLhOrg
-                    ? Either.right(model.newHuntingClub(rhy))
-                    : Either.left(model.newLHOrganisation(rhy));
+            this.club = model.newHuntingClub(rhy);
 
             this.person = model.newPerson();
             this.person.setSsn(ssn());
@@ -146,7 +140,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
         }
 
         public HuntingClub getClub() {
-            return lhOrgOrClub.get();
+            return club;
         }
 
         public MooseDataCardPage1Validation getValidationInput() {
@@ -157,7 +151,7 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
             return new MooseDataCardPage1Validation(
                     useHunterNumberInsteadOfSsn ? Either.left(person.getHunterNumber()) : Either.right(person.getSsn()),
                     permit.getPermitNumber(),
-                    lhOrgOrClub.fold(LHOrganisation::getOfficialCode, HuntingClub::getOfficialCode),
+                    club.getOfficialCode(),
                     geoLocation());
         }
     }
@@ -165,22 +159,17 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
     @Test
     @Transactional
     public void testResolveEntities_withHuntingClub() {
-        testResolveEntities(true);
+        testResolveEntities();
     }
 
-    @Test
-    @Transactional
-    public void testResolveEntities_withLhOrganisation() {
-        testResolveEntities(false);
-    }
 
-    private void testResolveEntities(final boolean createClubInsteadOfLhOrganisation) {
-        final EntityResolveFixture f = new EntityResolveFixture(model(), createClubInsteadOfLhOrganisation);
+    private void testResolveEntities() {
+        final EntityResolveFixture f = new EntityResolveFixture(model());
 
         helper.resolveEntities(f.getValidationInput())
                 .toEither()
                 .peek(result -> {
-                    assertEquals(f.lhOrgOrClub, result.lhOrganisationOrClub);
+                    assertEquals(f.club.getOfficialCode(), result.getClubOfficialCode());
                     assertEquals(f.speciesAmount, result.speciesAmount);
                     assertEquals(f.huntingYear, result.huntingYear);
                     assertEquals(f.person.getId(), Long.valueOf(result.contactPersonId));
@@ -188,20 +177,15 @@ public class MooseDataCardImportHelperTest extends EmbeddedDatabaseTest implemen
                 .orElseRun(err -> assertEmpty(err, "Unexpected validation errors: "));
     }
 
-    @Test
-    @Transactional
-    public void testResolveEntities_whenClubNotExistsForGivenOfficialCode() {
-        testResolveEntities_whenClubOrLhOrganisationNotExistsForGivenOfficialCode(true);
-    }
 
     @Test
     @Transactional
     public void testResolveEntities_whenLhOrganisationNotExistsForGivenOfficialCode() {
-        testResolveEntities_whenClubOrLhOrganisationNotExistsForGivenOfficialCode(false);
+        testResolveEntities_whenClubOrLhOrganisationNotExistsForGivenOfficialCode();
     }
 
-    private void testResolveEntities_whenClubOrLhOrganisationNotExistsForGivenOfficialCode(final boolean createClub) {
-        final EntityResolveFixture f = new EntityResolveFixture(model(), createClub);
+    private void testResolveEntities_whenClubOrLhOrganisationNotExistsForGivenOfficialCode() {
+        final EntityResolveFixture f = new EntityResolveFixture(model());
         final MooseDataCardPage1Validation input = f.getValidationInput().asTuple4()
                 .map3(TO_NON_EXISTENT)
                 .apply(MooseDataCardPage1Validation::new);

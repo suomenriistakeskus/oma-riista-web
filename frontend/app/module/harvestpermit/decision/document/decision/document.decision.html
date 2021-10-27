@@ -38,6 +38,17 @@
                 harvest-permit-category="$ctrl.decision.harvestPermitCategory">
         </permit-decision-species-amounts>
 
+
+        <button type="button" class="permit-decision-type-change-button"
+                ng-if="$ctrl.canChangePermitTypeCode()"
+                ng-show="$ctrl.decision.status === 'DRAFT'"
+                ng-click="$ctrl.changePermitTypeCode()">
+            <span ng-show="$ctrl.alternatePermitTypeCode === 'FORBIDDEN_METHOD'"
+                  translate="decision.buttons.permitTypeCode.forbiddenMethod"></span>
+            <span ng-show="$ctrl.alternatePermitTypeCode === 'ORIGINAL'"
+                  translate="decision.buttons.permitTypeCode.original"></span>
+        </button>
+
         <div ng-if="$ctrl.showDerogationReasons">
             <permit-decision-derogation-reasons decision-id="$ctrl.decision.id"
                                                 can-edit-content="$ctrl.canEditContent()"

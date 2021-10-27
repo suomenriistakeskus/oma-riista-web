@@ -3,12 +3,14 @@ package fi.riista.util;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.math.BigDecimal.ZERO;
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
@@ -73,6 +75,13 @@ public final class NumberUtils {
 
     public static long squareMetersToHectares(final double squareMeters) {
         return Math.round(squareMeters / 10_000);
+    }
+
+    public static BigDecimal squareMetersToHectares(final double squareMeters, final int precision) {
+        checkArgument(precision > 0);
+
+        return BigDecimal.valueOf(squareMeters / 10_000)
+                .setScale(precision, RoundingMode.HALF_UP);
     }
 
     public static double percentRatio(final double a, final double b) {

@@ -1,5 +1,8 @@
 package fi.riista.integration.habides.export.derogations;
 
+import com.google.common.collect.ImmutableSet;
+import com.querydsl.core.group.GroupBy;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPQLQueryFactory;
@@ -15,10 +18,12 @@ import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.nestremoval.QHarvestPermitNestRemovalUsage;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.harvestpermit.usage.QPermitUsage;
 import fi.riista.feature.organization.QRiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.bird.QBirdPermitApplication;
+import fi.riista.feature.permit.application.gamemanagement.QGameManagementPermitApplication;
 import fi.riista.feature.permit.application.mammal.QMammalPermitApplication;
 import fi.riista.feature.permit.application.nestremoval.QNestRemovalPermitApplication;
 import fi.riista.feature.permit.decision.PermitDecision;
@@ -103,17 +108,21 @@ public class HabidesExportFeature {
         final Set<Long> rkaIds = decisions.stream().map(item -> item.getRhy().getParentOrganisation().getId()).collect(toSet());
         final Map<Long, Integer> harvestAmounts = queryHarvestAmounts(permits, speciesCode);
         final Map<Long, HabidesNestRemovalAmount> nestEggConstructionAmounts = queryNestEggConstructionAmount(permits, speciesCode);
+        final Map<Long, HabidesPermitUsage> permitUsages = queryPermitUsages(permits, speciesCode);
         final Map<Long, List<PermitDecisionDerogationReason>> reasons = queryReasons(decisions);
         final Map<Long, Map<Integer, List<PermitDecisionForbiddenMethod>>> methods = queryMethods(decisions);
         final Map<Long, String> locations = isBirdPermitSpecies ? queryBirdPermitLocations(decisions) : queryMammalPermitLocations(decisions);
         final Map<Long, String> nestLocations = queryNestRemovalPermitLocations(decisions);
+        locations.putAll(nestLocations);
+        final Map<Long, String> gameManagementLocations = queryGameManagementPermitLocations(decisions);
+        locations.putAll(gameManagementLocations);
         final Map<String, String> nutsAreas = queryRhyNutsAreas();
         final Map<Long, String> authorities = queryAuthorities(rkaIds);
 
         return JaxbUtils.marshalToString(
                 HabidesXmlGenerator.generateXml(
-                        species, amounts, harvestAmounts, nestEggConstructionAmounts,
-                        reasons, methods, locations, nestLocations, nutsAreas, authorities),
+                        species, amounts, harvestAmounts, nestEggConstructionAmounts, permitUsages,
+                        reasons, methods, locations, nutsAreas, authorities),
                 jaxbMarshaller);
     }
 
@@ -129,6 +138,11 @@ public class HabidesExportFeature {
         final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
         final QPermitDecision DECISION = QPermitDecision.permitDecision;
         final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
+
+        final ImmutableSet<String> permitTypes = new ImmutableSet.Builder<String>()
+                .addAll(PermitTypeCode.DEROGATION_PERMIT_CODES)
+                .add(PermitTypeCode.GAME_MANAGEMENT)
+                .build();
 
         final boolean isHabitatsAnnexIVSpecies = GameSpecies.isHabitatsAnnexIVSpecies(speciesCode);
         final boolean isBirdPermitSpecies = GameSpecies.isBirdPermitSpecies(speciesCode);
@@ -157,7 +171,7 @@ public class HabidesExportFeature {
                         AMOUNT.beginDate.between(startDate, endDate),
                         SPECIES.officialCode.eq(speciesCode),
                         DECISION.status.in(statuses),
-                        PERMIT.permitTypeCode.in(PermitTypeCode.DEROGATION_PERMIT_CODES),
+                        PERMIT.permitTypeCode.in(permitTypes),
                         nestRemovalForBirdsAndAnnexIVSpecies,
                         approvedPermitsOnly)
                 .fetch();
@@ -233,6 +247,27 @@ public class HabidesExportFeature {
                         t -> new HabidesNestRemovalAmount(t.get(USAGE.nestAmount), t.get(USAGE.eggAmount), t.get(USAGE.constructionAmount))));
     }
 
+    final Map<Long, HabidesPermitUsage> queryPermitUsages(final Collection<HarvestPermit> permits, final int speciesCode) {
+        if (permits.isEmpty()) {
+            return emptyMap();
+        }
+
+        final QPermitUsage USAGE = QPermitUsage.permitUsage;
+        final QHarvestPermitSpeciesAmount SPECIES_AMOUNT = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
+        final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
+        final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
+
+        return queryFactory.select(PERMIT.id, USAGE.specimenAmount, USAGE.eggAmount)
+                .from(USAGE)
+                .join(USAGE.harvestPermitSpeciesAmount, SPECIES_AMOUNT)
+                .join(SPECIES_AMOUNT.harvestPermit, PERMIT)
+                .join(SPECIES_AMOUNT.gameSpecies, SPECIES)
+                .where(PERMIT.in(permits),
+                        SPECIES.officialCode.eq(speciesCode))
+                .transform(GroupBy.groupBy(PERMIT.id)
+                        .as(Projections.constructor(HabidesPermitUsage.class, USAGE.specimenAmount, USAGE.eggAmount)));
+    }
+
     private Map<Long, String> queryBirdPermitLocations(final Collection<PermitDecision> decisions) {
         if (decisions.isEmpty()) {
             return emptyMap();
@@ -259,6 +294,20 @@ public class HabidesExportFeature {
         return queryFactory.from(NEST_REMOVAL_APP)
                 .where(appId.in(applicationIds))
                 .transform(groupBy(appId).as(NEST_REMOVAL_APP.areaDescription));
+    }
+
+    private Map<Long, String> queryGameManagementPermitLocations(final Collection<PermitDecision> decisions) {
+        if (decisions.isEmpty()) {
+            return emptyMap();
+        }
+
+        final QGameManagementPermitApplication GAME_MANAGEMENT_APP = QGameManagementPermitApplication.gameManagementPermitApplication;
+        final Set<Long> applicationIds = decisions.stream().map(PermitDecision::getApplication).collect(idSet());
+        final NumberPath<Long> appId = GAME_MANAGEMENT_APP.harvestPermitApplication.id;
+
+        return queryFactory.from(GAME_MANAGEMENT_APP)
+                .where(appId.in(applicationIds))
+                .transform(groupBy(appId).as(GAME_MANAGEMENT_APP.areaDescription));
     }
 
     private Map<Long, String> queryMammalPermitLocations(final Collection<PermitDecision> decisions) {

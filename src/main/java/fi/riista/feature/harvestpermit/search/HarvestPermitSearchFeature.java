@@ -10,6 +10,7 @@ import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.common.decision.GrantStatus;
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitContactPerson;
@@ -32,6 +33,22 @@ import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys_;
 import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.PermitTypeCode;
+import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
+import fi.riista.feature.permit.application.HasParentApplication_;
+import fi.riista.feature.permit.application.bird.BirdPermitApplicationRepository;
+import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplicationRepository;
+import fi.riista.feature.permit.application.deportation.DeportationPermitApplicationRepository;
+import fi.riista.feature.permit.application.dogevent.DogEventApplicationRepository;
+import fi.riista.feature.permit.application.gamemanagement.GameManagementPermitApplicationRepository;
+import fi.riista.feature.permit.application.importing.ImportingPermitApplicationRepository;
+import fi.riista.feature.permit.application.lawsectionten.LawSectionTenPermitApplicationRepository;
+import fi.riista.feature.permit.application.mammal.MammalPermitApplicationRepository;
+import fi.riista.feature.permit.application.nestremoval.NestRemovalPermitApplicationRepository;
+import fi.riista.feature.permit.application.research.ResearchPermitApplicationRepository;
+import fi.riista.feature.permit.application.weapontransportation.WeaponTransportationPermitApplicationRepository;
+import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.decision.PermitDecisionRepository;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
@@ -48,6 +65,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -62,6 +80,7 @@ import static fi.riista.feature.harvestpermit.search.HarvestPermitDecisionOrigin
 import static fi.riista.util.jpa.JpaSpecs.and;
 import static fi.riista.util.jpa.JpaSpecs.inCollection;
 import static fi.riista.util.jpa.JpaSpecs.or;
+import static java.util.Collections.emptyMap;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
@@ -101,6 +120,50 @@ public class HarvestPermitSearchFeature {
     @Resource
     private MessageSource messageSource;
 
+    @Resource
+    private BirdPermitApplicationRepository birdPermitApplicationRepository;
+
+    @Resource
+    private CarnivorePermitApplicationRepository carnivorePermitApplicationRepository;
+
+    @Resource
+    private DeportationPermitApplicationRepository deportationPermitApplicationRepository;
+
+    @Resource
+    private DogEventApplicationRepository dogEventApplicationRepository;
+
+    @Resource
+    private GameManagementPermitApplicationRepository gameManagementPermitApplicationRepository;
+
+    @Resource
+    private ImportingPermitApplicationRepository importingPermitApplicationRepository;
+
+    @Resource
+    private LawSectionTenPermitApplicationRepository lawSectionTenPermitApplicationRepository;
+
+    @Resource
+    private MammalPermitApplicationRepository mammalPermitApplicationRepository;
+
+    @Resource
+    private NestRemovalPermitApplicationRepository nestRemovalPermitApplicationRepository;
+
+    @Resource
+    private ResearchPermitApplicationRepository researchPermitApplicationRepository;
+
+    @Resource
+    private WeaponTransportationPermitApplicationRepository weaponTransportationPermitApplicationRepository;
+
+    @Resource
+    private PermitDecisionRepository permitDecisionRepository;
+
+    @Resource
+    private HarvestPermitApplicationRepository harvestPermitApplicationRepository;
+
+    @Transactional(readOnly = true)
+    public List<HarvestPermitTypeDTO> listAllOmaRiistaPermitTypes() {
+        return fetchTypes(OMA_RIISTA, false).collect(toList());
+    }
+
     @Transactional(readOnly = true)
     public List<HarvestPermitTypeDTO> listPermitTypes() {
         // it is ok to anyone call this
@@ -108,16 +171,21 @@ public class HarvestPermitSearchFeature {
         // Fetch permits separately from LH and OR in order to
         // have items for both origins with same permit type code
         return Stream.concat(
-                fetchTypes(LUPAHALLINTA),
-                fetchTypes(OMA_RIISTA))
+                fetchTypes(LUPAHALLINTA, true),
+                fetchTypes(OMA_RIISTA, true))
                 .collect(toList());
     }
 
-    private Stream<HarvestPermitTypeDTO> fetchTypes(final HarvestPermitDecisionOrigin origin) {
-        final BooleanExpression permitOriginExpression =
+    private Stream<HarvestPermitTypeDTO> fetchTypes(final HarvestPermitDecisionOrigin origin,
+                                                    final boolean filterMooselikePermits) {
+        final BooleanExpression permitExpression =
                 origin == LUPAHALLINTA
                         ? PERMIT.permitDecision.id.isNull()
                         : PERMIT.permitDecision.id.isNotNull();
+
+        if (filterMooselikePermits) {
+            permitExpression.and(PERMIT.isMooselikeOrAmendmentPermit().not());
+        }
 
         // Do not return permit types 100, 190
         final Map<String, Group> res = jpqlQueryFactory
@@ -125,7 +193,7 @@ public class HarvestPermitSearchFeature {
                 .from(PERMIT)
                 .leftJoin(PERMIT.speciesAmounts, AMOUNT)
                 .leftJoin(AMOUNT.gameSpecies, SPECIES)
-                .where(PERMIT.isMooselikeOrAmendmentPermit().not(), permitOriginExpression)
+                .where(permitExpression)
                 .distinct()
                 // Group by concatenating code + origin to get types from LH and OR
                 .transform(GroupBy.groupBy(PERMIT.permitTypeCode)
@@ -210,7 +278,10 @@ public class HarvestPermitSearchFeature {
                     .findAll(inCollection(HarvestPermitSpeciesAmount_.harvestPermit, permitBatch))
                     .stream()
                     .collect(groupingBy(s -> s.getHarvestPermit().getId()));
-            resultList.addAll(HarvestPermitSearchExportDTO.create(permitBatch, contactPersonsByPermitId, personsById, speciesAmountsByPermitId, rkaNameByRhyId));
+
+            final Map<Long, GeoLocation> locationsByPermitId = findLocationsByPermitId(permitBatch);
+
+            resultList.addAll(HarvestPermitSearchExportDTO.create(permitBatch, contactPersonsByPermitId, personsById, speciesAmountsByPermitId, rkaNameByRhyId, locationsByPermitId));
 
         });
 
@@ -319,5 +390,48 @@ public class HarvestPermitSearchFeature {
 
     private static JpaSort sort(final Sort.Direction asc) {
         return JpaSort.of(asc, HarvestPermit_.permitNumber);
+    }
+
+    private Map<Long, GeoLocation> findLocationsByPermitId(final List<HarvestPermit> permits) {
+        if (permits.isEmpty()) {
+            return emptyMap();
+        }
+
+        // prefetch to avoid N+1
+        final List<PermitDecision> decisions = permitDecisionRepository
+                .findByHarvestPermitIn(permits);
+        if (decisions.isEmpty()) {
+            return emptyMap();
+        }
+
+        final List<HarvestPermitApplication> applications = harvestPermitApplicationRepository
+                .findByPermitDecisionIn(decisions);
+
+        final Map<Long, GeoLocation> locationByPermitId = new HashMap<>();
+
+        final Map<Long, GeoLocation> locationsByApplicationId = Stream.of(
+                birdPermitApplicationRepository,
+                carnivorePermitApplicationRepository,
+                deportationPermitApplicationRepository,
+                dogEventApplicationRepository,
+                gameManagementPermitApplicationRepository,
+                importingPermitApplicationRepository,
+                lawSectionTenPermitApplicationRepository,
+                mammalPermitApplicationRepository,
+                nestRemovalPermitApplicationRepository,
+                researchPermitApplicationRepository,
+                weaponTransportationPermitApplicationRepository)
+                .flatMap(r -> r.findAll(inCollection(HasParentApplication_.harvestPermitApplication, applications)).stream())
+                .collect(toMap(a -> a.getHarvestPermitApplication().getId(), a -> a.getGeoLocation()));
+
+        permits.forEach(permit -> {
+            final PermitDecision decision = permit.getPermitDecision();
+            if (decision != null) {
+                final Long applicationId = decision.getApplication().getId();
+                locationByPermitId.put(permit.getId(), locationsByApplicationId.get(applicationId));
+            }
+        });
+
+        return locationByPermitId;
     }
 }

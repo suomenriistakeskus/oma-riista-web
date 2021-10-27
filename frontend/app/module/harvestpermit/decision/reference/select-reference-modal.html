@@ -9,7 +9,7 @@
         <div class="row">
             <div class="col-md-3">
                 <div class="form-group">
-                    <label translate="harvestpermit.application.selectedYear"></label>
+                    <label for="yearSelect" translate="harvestpermit.application.selectedYear"></label>
                     <select name="yearSelect" id="yearSelect"
                             class="form-control"
                             ng-model="$ctrl.filters.huntingYear"
@@ -24,24 +24,45 @@
                             class="form-control"
                             ng-model="$ctrl.filters.harvestPermitCategory"
                             ng-disabled="$ctrl.filters.applicationNumber"
+                            ng-change="$ctrl.onPermitCategoryChange()"
                             ng-options="s.category as (s.translationKey | translate) for s in $ctrl.permitCategoryList">
+                        <option value=""></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="decisionLocale" translate="decision.settings.document.locale"></label>
+
+                    <select name="decisionLocale" id="decisionLocale"
+                            class="form-control"
+                            ng-model="$ctrl.filters.decisionLocale"
+                            ng-disabled="$ctrl.filters.applicationNumber"
+                            ng-options="lang as ('global.languageName.' + lang | translate) for lang in $ctrl.languages">
                         <option value=""></option>
                     </select>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="form-group">
-                    <label translate="harvestpermit.admin.application.selectOrganisation"></label>
-                    <organisation-selection
-                            ng-if="!$ctrl.filters.applicationNumber"
-                            show-rk="true"
-                            show-rka="true"
-                            area-code="$ctrl.filters.rkaOfficialCode"
-                            rhy-code="$ctrl.filters.rhyOfficialCode"></organisation-selection>
+                    <label for="applicationNumber"
+                           translate="harvestpermit.admin.application.applicationNumber"></label>
+                    <input name="applicationNumber" id="applicationNumber"
+                           type="number"
+                           min="10000"
+                           class="form-control"
+                           ng-model="$ctrl.filters.applicationNumber">
+                </div>
+                <div class="form-group">
+                    <label for="gameSpecies" translate="harvestpermit.application.selectedSpecies"></label>
+                    <select name="gameSpecies" id="gameSpecies"
+                            class="form-control"
+                            ng-model="$ctrl.filters.gameSpeciesCode"
+                            ng-disabled="$ctrl.filters.applicationNumber"
+                            ng-options="s.code as (s.name | rI18nNameFilter:'translated') for s in $ctrl.availableSpecies | orderBy:'name.translated' track by s.code">
+                        <option value="" translate="harvestpermit.application.showAllSpecies"></option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="decisionStatus" translate="decision.grantStatus.title"></label>
-
                     <select name="decisionStatus" id="decisionStatus"
                             class="form-control"
                             ng-model="$ctrl.filters.grantStatus"
@@ -53,7 +74,7 @@
             </div>
             <div class="col-md-3">
                 <div class="form-group">
-                    <label translate="harvestpermit.admin.application.status"></label>
+                    <label for="statusText" translate="harvestpermit.admin.application.status"></label>
                     <select name="statusText" id="statusText"
                             class="form-control"
                             ng-model="$ctrl.filters.statusText"
@@ -63,7 +84,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label translate="harvestpermit.admin.application.handler"></label>
+                    <label for="handler" translate="harvestpermit.admin.application.handler"></label>
                     <select name="handler" id="handler"
                             class="form-control"
                             ng-model="$ctrl.filters.handlerId"
@@ -72,26 +93,30 @@
                         <option value=""></option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="derogationReason" translate="harvestpermit.admin.application.derogationReason"></label>
+                    <select name="derogationReason" id="derogationReason"
+                            class="form-control"
+                            ng-model="$ctrl.filters.derogationReason"
+                            ng-disabled="$ctrl.filters.applicationNumber"
+                            ng-options="r as ('harvestpermit.derogation.reason.' + r | translate) for r in $ctrl.derogationReasonList">
+                        <option value="" translate="global.showAll"></option>
+                    </select>
+                </div>
             </div>
             <div class="col-md-3">
                 <div class="form-group">
-                    <label translate="harvestpermit.admin.application.applicationNumber"></label>
-                    <input name="applicationNumber" id="applicationNumber"
-                           type="number"
-                           min="10000"
-                           class="form-control"
-                           ng-model="$ctrl.filters.applicationNumber">
+                    <label for="organisationSelection"
+                           translate="harvestpermit.admin.application.selectOrganisation"></label>
+                    <organisation-selection
+                            id="organisationSelection"
+                            ng-if="!$ctrl.filters.applicationNumber"
+                            show-rk="true"
+                            show-rka="true"
+                            area-code="$ctrl.filters.rkaOfficialCode"
+                            rhy-code="$ctrl.filters.rhyOfficialCode"></organisation-selection>
                 </div>
-                <div class="form-group">
-                    <label translate="harvestpermit.application.selectedSpecies"></label>
-                    <select name="gameSpecies" id="gameSpecies"
-                            class="form-control"
-                            ng-model="$ctrl.filters.gameSpeciesCode"
-                            ng-disabled="$ctrl.filters.applicationNumber"
-                            ng-options="s.code as (s.name | rI18nNameFilter:'translated') for s in $ctrl.availableSpecies | orderBy:'name.translated' track by s.code">
-                        <option value="" translate="harvestpermit.application.showAllSpecies"></option>
-                    </select>
-                </div>
+
             </div>
         </div>
 

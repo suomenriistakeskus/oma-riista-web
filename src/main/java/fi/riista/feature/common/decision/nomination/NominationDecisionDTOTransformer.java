@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkState;
+import static fi.riista.util.DateUtil.toLocalDateTimeNullSafe;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -70,6 +71,8 @@ public class NominationDecisionDTOTransformer extends ListTransformer<Nomination
             dto.setDecisionType(decision.getDecisionType());
             dto.setDecisionNumber(decision.getDecisionNumber());
             dto.setRhy(rhy);
+            dto.setProposalDate(decision.getProposalDate());
+            dto.setPublishDate(toLocalDateTimeNullSafe(decision.getPublishDate()));
 
             ofNullable(decisionHandler)
                     .map(ModeratorDTO::new)

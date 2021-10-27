@@ -2,11 +2,13 @@ package fi.riista.api.pub;
 
 import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionDownloadFeature;
 import fi.riista.feature.pub.permit.PublicCarnivorePermitFeature;
+import fi.riista.util.MediaTypeExtras;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Locale;
 
 import static java.util.Optional.ofNullable;
@@ -50,6 +53,13 @@ public class PublicCarnivorePermitApiResource {
                             final Locale locale) {
         ofNullable(downloadFeature.downloadPublicCarnivoreDecisionNoAuthentication(response, decisionNumber, locale))
                 .ifPresent(downloadFeature::decisionDownloaded); // Async insert for download counters
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/decision/{decisionNumber}/attachments", produces = MediaTypeExtras.APPLICATION_ZIP_VALUE)
+    public ResponseEntity<byte[]> getDecisionAttachments(@PathVariable final String decisionNumber, final HttpServletResponse response,
+                                                         final Locale locale) throws IOException {
+        return downloadFeature.downloadPublicCarnivoreDecisionAttachmentsNoAuthentication(response, decisionNumber, locale);
     }
 
 }

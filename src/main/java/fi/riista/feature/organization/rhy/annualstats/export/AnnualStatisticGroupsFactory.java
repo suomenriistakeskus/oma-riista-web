@@ -10,6 +10,12 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_TRAINING_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE_2018;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_HUNTER_TRAINING;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_JHT_TRAINING;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_OTHER_HUNTER_TRAINING;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_TRAINING_SUMMARY;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_YOUTH_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY_2018;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.YOUTH_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTING_CONTROL;
@@ -158,6 +164,13 @@ public class AnnualStatisticGroupsFactory {
                 HUNTER_TRAINING,
                 YOUTH_TRAINING,
                 OTHER_HUNTER_TRAINING,
+
+                NON_SUBSIDIZABLE_TRAINING_SUMMARY,
+                NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING,
+                NON_SUBSIDIZABLE_JHT_TRAINING,
+                NON_SUBSIDIZABLE_HUNTER_TRAINING,
+                NON_SUBSIDIZABLE_YOUTH_TRAINING,
+                NON_SUBSIDIZABLE_OTHER_HUNTER_TRAINING,
 
                 OTHER_HUNTING_RELATED,
                 COMMUNICATION,

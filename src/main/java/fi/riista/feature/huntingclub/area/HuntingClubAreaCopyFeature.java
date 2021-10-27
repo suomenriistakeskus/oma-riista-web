@@ -76,6 +76,7 @@ public class HuntingClubAreaCopyFeature {
                 .ifPresent(area::setZone);
 
         huntingClubAreaRepository.saveAndFlush(area);
+        huntingClubAreaRepository.calculateZoneChanges(area.getId());
 
         if (dto.isCopyGroups()) {
             copyClubGroupService.copyGroupsHavingArea(originalArea, area);

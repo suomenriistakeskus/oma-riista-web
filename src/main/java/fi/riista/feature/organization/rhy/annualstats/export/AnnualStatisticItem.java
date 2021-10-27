@@ -7,16 +7,19 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Function;
 
-import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countAllTrainingEvents;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countAllTrainingEvents2017;
-import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countAllTrainingParticipants;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countAllTrainingParticipants2017;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countHunterTrainingEvents2017;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countLargeCarnivores2017;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countNonSubsidizableTrainingEvents;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countNonSubsidizableTrainingParticipants;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countStudentTrainingEvents2017;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableOtherTrainingEvents;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableStudentAndYouthTrainingEvents;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableTrainingEvents;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableTrainingParticipants;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countWildBoars2017;
+import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
 
 public enum AnnualStatisticItem implements LocalisedEnum {
@@ -166,15 +169,67 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     // TRAINING SUMMARY
 
     ALL_TRAINING_EVENTS(asNumber(i -> {
-        return countAllTrainingEvents(
+        return nullableIntSum(
+                countSubsidizableTrainingEvents(
+                        i.getHunterExamTraining(),
+                        i.getJhtTraining(),
+                        i.getHunterTraining(),
+                        i.getYouthTraining(),
+                        i.getOtherHunterTraining()),
+                countNonSubsidizableTrainingEvents(
+                        i.getHunterExamTraining(),
+                        i.getJhtTraining(),
+                        i.getHunterTraining(),
+                        i.getYouthTraining(),
+                        i.getOtherHunterTraining()));
+    })),
+
+    ALL_TRAINING_PARTICIPANTS(asNumber(i -> {
+        return nullableIntSum(
+                countSubsidizableTrainingParticipants(
+                        i.getHunterExamTraining(),
+                        i.getJhtTraining(),
+                        i.getHunterTraining(),
+                        i.getYouthTraining(),
+                        i.getOtherHunterTraining()),
+                countNonSubsidizableTrainingParticipants(
+                        i.getHunterExamTraining(),
+                        i.getJhtTraining(),
+                        i.getHunterTraining(),
+                        i.getYouthTraining(),
+                        i.getOtherHunterTraining()
+                ));
+    })),
+
+    SUBSIDIZABLE_TRAINING_EVENTS(asNumber(i -> {
+        return countSubsidizableTrainingEvents(
                 i.getHunterExamTraining(),
                 i.getJhtTraining(),
                 i.getHunterTraining(),
                 i.getYouthTraining(),
                 i.getOtherHunterTraining());
     })),
-    ALL_TRAINING_PARTICIPANTS(asNumber(i -> {
-        return countAllTrainingParticipants(
+
+    SUBSIDIZABLE_TRAINING_PARTICIPANTS(asNumber(i -> {
+        return countSubsidizableTrainingParticipants(
+                i.getHunterExamTraining(),
+                i.getJhtTraining(),
+                i.getHunterTraining(),
+                i.getYouthTraining(),
+                i.getOtherHunterTraining());
+    })),
+
+    NON_SUBSIDIZABLE_TRAINING_EVENTS(asNumber(i -> {
+        return countNonSubsidizableTrainingEvents(
+                i.getHunterExamTraining(),
+                i.getJhtTraining(),
+                i.getHunterTraining(),
+                i.getYouthTraining(),
+                i.getOtherHunterTraining());
+    })),
+
+    NON_SUBSIDIZABLE_TRAINING_PARTICIPANTS(asNumber(i -> {
+        return countNonSubsidizableTrainingParticipants(
                 i.getHunterExamTraining(),
                 i.getJhtTraining(),
                 i.getHunterTraining(),
@@ -206,7 +261,9 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     // HUNTER EXAM TRAINING EVENTS
 
     HUNTER_EXAM_TRAINING_EVENTS(asNumber(i -> i.getHunterExamTraining().getHunterExamTrainingEvents())),
+    NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING_EVENTS(asNumber(i -> i.getHunterExamTraining().getNonSubsidizableHunterExamTrainingEvents())),
     HUNTER_EXAM_TRAINING_PARTICIPANTS(asNumber(i -> i.getHunterExamTraining().getHunterExamTrainingParticipants())),
+    NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING_PARTICIPANTS(asNumber(i -> i.getHunterExamTraining().getNonSubsidizableHunterExamTrainingParticipants())),
 
     // JHT TRAINING EVENTS
 
@@ -218,6 +275,15 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     GAME_DAMAGE_TRAINING_PARTICIPANTS(asNumber(i -> i.getJhtTraining().getGameDamageTrainingParticipants())),
     HUNTING_CONTROL_TRAINING_EVENTS(asNumber(i -> i.getJhtTraining().getHuntingControlTrainingEvents())),
     HUNTING_CONTROL_TRAINING_PARTICIPANTS(asNumber(i -> i.getJhtTraining().getHuntingControlTrainingParticipants())),
+
+    NON_SUBSIDIZABLE_SHOOTING_TEST_TRAINING_EVENTS(asNumber(i -> i.getJhtTraining().getNonSubsidizableShootingTestTrainingEvents())),
+    NON_SUBSIDIZABLE_SHOOTING_TEST_TRAINING_PARTICIPANTS(asNumber(i -> i.getJhtTraining().getNonSubsidizableShootingTestTrainingParticipants())),
+    NON_SUBSIDIZABLE_HUNTER_EXAM_OFFICIAL_TRAINING_EVENTS(asNumber(i -> i.getJhtTraining().getNonSubsidizableHunterExamOfficialTrainingEvents())),
+    NON_SUBSIDIZABLE_HUNTER_EXAM_OFFICIAL_TRAINING_PARTICIPANTS(asNumber(i -> i.getJhtTraining().getNonSubsidizableHunterExamOfficialTrainingParticipants())),
+    NON_SUBSIDIZABLE_GAME_DAMAGE_TRAINING_EVENTS(asNumber(i -> i.getJhtTraining().getNonSubsidizableGameDamageTrainingEvents())),
+    NON_SUBSIDIZABLE_GAME_DAMAGE_TRAINING_PARTICIPANTS(asNumber(i -> i.getJhtTraining().getNonSubsidizableGameDamageTrainingParticipants())),
+    NON_SUBSIDIZABLE_HUNTING_CONTROL_TRAINING_EVENTS(asNumber(i -> i.getJhtTraining().getNonSubsidizableHuntingControlTrainingEvents())),
+    NON_SUBSIDIZABLE_HUNTING_CONTROL_TRAINING_PARTICIPANTS(asNumber(i -> i.getJhtTraining().getNonSubsidizableHuntingControlTrainingParticipants())),
 
     // HUNTER TRAINING EVENTS
 
@@ -236,6 +302,21 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     ACCIDENT_PREVENTION_TRAINING_EVENTS(asNumber(i -> i.getHunterTraining().getAccidentPreventionTrainingEvents())),
     ACCIDENT_PREVENTION_TRAINING_PARTICIPANTS(asNumber(i -> i.getHunterTraining().getAccidentPreventionTrainingParticipants())),
 
+    NON_SUBSIDIZABLE_MOOSELIKE_HUNTING_LEADER_TRAINING_EVENTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableMooselikeHuntingLeaderTrainingEvents())),
+    NON_SUBSIDIZABLE_MOOSELIKE_HUNTING_LEADER_TRAINING_PARTICIPANTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableMooselikeHuntingLeaderTrainingParticipants())),
+    NON_SUBSIDIZABLE_CARNIVORE_HUNTING_LEADER_TRAINING_EVENTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableCarnivoreHuntingLeaderTrainingEvents())),
+    NON_SUBSIDIZABLE_CARNIVORE_HUNTING_LEADER_TRAINING_PARTICIPANTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableCarnivoreHuntingLeaderTrainingParticipants())),
+    NON_SUBSIDIZABLE_MOOSELIKE_HUNTING_TRAINING_EVENTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableMooselikeHuntingTrainingEvents())),
+    NON_SUBSIDIZABLE_MOOSELIKE_HUNTING_TRAINING_PARTICIPANTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableMooselikeHuntingTrainingParticipants())),
+    NON_SUBSIDIZABLE_CARNIVORE_HUNTING_TRAINING_EVENTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableCarnivoreHuntingTrainingEvents())),
+    NON_SUBSIDIZABLE_CARNIVORE_HUNTING_TRAINING_PARTICIPANTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableCarnivoreHuntingTrainingParticipants())),
+    NON_SUBSIDIZABLE_SRVA_TRAINING_EVENTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableSrvaTrainingEvents())),
+    NON_SUBSIDIZABLE_SRVA_TRAINING_PARTICIPANTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableSrvaTrainingParticipants())),
+    NON_SUBSIDIZABLE_CARNIVORE_CONTACT_PERSON_TRAINING_EVENTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableCarnivoreContactPersonTrainingEvents())),
+    NON_SUBSIDIZABLE_CARNIVORE_CONTACT_PERSON_TRAINING_PARTICIPANTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableCarnivoreContactPersonTrainingParticipants())),
+    NON_SUBSIDIZABLE_ACCIDENT_PREVENTION_TRAINING_EVENTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableAccidentPreventionTrainingEvents())),
+    NON_SUBSIDIZABLE_ACCIDENT_PREVENTION_TRAINING_PARTICIPANTS(asNumber(i -> i.getHunterTraining().getNonSubsidizableAccidentPreventionTrainingParticipants())),
+
     // YOUTH TRAINING EVENTS
 
     SCHOOL_TRAINING_EVENTS(asNumber(i -> i.getYouthTraining().getSchoolTrainingEvents())),
@@ -244,6 +325,13 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     COLLEGE_TRAINING_PARTICIPANTS(asNumber(i -> i.getYouthTraining().getCollegeTrainingParticipants())),
     OTHER_YOUTH_TARGETED_TRAINING_EVENTS(asNumber(i -> i.getYouthTraining().getOtherYouthTargetedTrainingEvents())),
     OTHER_YOUTH_TARGETED_TRAINING_PARTICIPANTS(asNumber(i -> i.getYouthTraining().getOtherYouthTargetedTrainingParticipants())),
+
+    NON_SUBSIDIZABLE_SCHOOL_TRAINING_EVENTS(asNumber(i -> i.getYouthTraining().getNonSubsidizableSchoolTrainingEvents())),
+    NON_SUBSIDIZABLE_SCHOOL_TRAINING_PARTICIPANTS(asNumber(i -> i.getYouthTraining().getNonSubsidizableSchoolTrainingParticipants())),
+    NON_SUBSIDIZABLE_COLLEGE_TRAINING_EVENTS(asNumber(i -> i.getYouthTraining().getNonSubsidizableCollegeTrainingEvents())),
+    NON_SUBSIDIZABLE_COLLEGE_TRAINING_PARTICIPANTS(asNumber(i -> i.getYouthTraining().getNonSubsidizableCollegeTrainingParticipants())),
+    NON_SUBSIDIZABLE_OTHER_YOUTH_TARGETED_TRAINING_EVENTS(asNumber(i -> i.getYouthTraining().getNonSubsidizableOtherYouthTargetedTrainingEvents())),
+    NON_SUBSIDIZABLE_OTHER_YOUTH_TARGETED_TRAINING_PARTICIPANTS(asNumber(i -> i.getYouthTraining().getNonSubsidizableOtherYouthTargetedTrainingParticipants())),
 
     // OTHER HUNTER TRAINING EVENTS
 
@@ -260,6 +348,19 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     SHOOTING_TRAINING_EVENTS(asNumber(i -> i.getOtherHunterTraining().getShootingTrainingEvents())),
     SHOOTING_TRAINING_PARTICIPANTS(asNumber(i -> i.getOtherHunterTraining().getShootingTrainingParticipants())),
 
+    NON_SUBSIDIZABLE_SMALL_CARNIVORE_HUNTING_TRAINING_EVENTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableSmallCarnivoreHuntingTrainingEvents())),
+    NON_SUBSIDIZABLE_SMALL_CARNIVORE_HUNTING_TRAINING_PARTICIPANTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableSmallCarnivoreHuntingTrainingParticipants())),
+    NON_SUBSIDIZABLE_GAME_COUNTING_TRAINING_EVENTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableGameCountingTrainingEvents())),
+    NON_SUBSIDIZABLE_GAME_COUNTING_TRAINING_PARTICIPANTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableGameCountingTrainingParticipants())),
+    NON_SUBSIDIZABLE_GAME_POPULATION_MANAGEMENT_TRAINING_EVENTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableGamePopulationManagementTrainingEvents())),
+    NON_SUBSIDIZABLE_GAME_POPULATION_MANAGEMENT_TRAINING_PARTICIPANTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableGamePopulationManagementTrainingParticipants())),
+    NON_SUBSIDIZABLE_GAME_ENVIRONMENTAL_CARE_TRAINING_EVENTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableGameEnvironmentalCareTrainingEvents())),
+    NON_SUBSIDIZABLE_GAME_ENVIRONMENTAL_CARE_TRAINING_PARTICIPANTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableGameEnvironmentalCareTrainingParticipants())),
+    NON_SUBSIDIZABLE_OTHER_GAMEKEEPING_TRAINING_EVENTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableOtherGamekeepingTrainingEvents())),
+    NON_SUBSIDIZABLE_OTHER_GAMEKEEPING_TRAINING_PARTICIPANTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableOtherGamekeepingTrainingParticipants())),
+    NON_SUBSIDIZABLE_SHOOTING_TRAINING_EVENTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableShootingTrainingEvents())),
+    NON_SUBSIDIZABLE_SHOOTING_TRAINING_PARTICIPANTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableShootingTrainingParticipants())),
+
     // Overridden by SHOOTING_TRAINING_EVENTS
     OTHER_SHOOTING_TRAINING_EVENTS_2017(asNumber(i -> i.getOtherHunterTraining().getShootingTrainingEvents())),
     // Overridden by SHOOTING_TRAINING_PARTICIPANTS
@@ -267,6 +368,9 @@ public enum AnnualStatisticItem implements LocalisedEnum {
 
     TRACKER_TRAINING_EVENTS(asNumber(i -> i.getOtherHunterTraining().getTrackerTrainingEvents())),
     TRACKER_TRAINING_PARTICIPANTS(asNumber(i -> i.getOtherHunterTraining().getTrackerTrainingParticipants())),
+
+    NON_SUBSIDIZABLE_TRACKER_TRAINING_EVENTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableTrackerTrainingEvents())),
+    NON_SUBSIDIZABLE_TRACKER_TRAINING_PARTICIPANTS(asNumber(i -> i.getOtherHunterTraining().getNonSubsidizableTrackerTrainingParticipants())),
 
     // PUBLIC EVENTS
 

@@ -92,7 +92,8 @@
                     <div class="text-capitalize">{{$ctrl.translateSpecies(event.gameSpeciesCode) | truncateCharacters:50}}</div>
                 </td>
                 <td>
-                    <div ng-bind="event.inspectorName | truncateCharacters:50"></div>
+                    <div ng-if="event.inspectorName" ng-bind="event.inspectorName | truncateCharacters:50"></div>
+                    <div ng-if="event.inspector" ng-bind="$ctrl.getInspectorName(event.inspector) | truncateCharacters:50"></div>
                 </td>
                 <td>
                     <div translate="rhy.gameDamageInspectionEvent.latitude" translate-values="event.geoLocation"></div>

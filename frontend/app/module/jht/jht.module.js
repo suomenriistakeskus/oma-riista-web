@@ -23,5 +23,7 @@ angular.module('app.jht', [
     'app.jht.nominationdecision.document.delivery',
     'app.jht.nominationdecision.document.attachments',
     'app.jht.nominationdecision.document.text',
-    'app.jht.natura'
+    'app.jht.natura',
+    'app.jht.otherwisedeceased',
+    'app.jht.largecarnivorereport'
 ]);

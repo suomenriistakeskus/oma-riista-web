@@ -4,7 +4,7 @@ angular.module('app.jht.nominationdecision', [])
     .config(function ($stateProvider) {
         $stateProvider
             .state('jht.nominationdecisions', {
-                url: '/nominationdecision',
+                url: '/nominationdecision?tab',
                 reloadOnSearch: false,
                 templateUrl: 'jht/nominationdecision/nominationdecisions.html',
                 resolve: {
@@ -13,11 +13,12 @@ angular.module('app.jht.nominationdecision', [])
                     }
                 },
                 controllerAs: '$ctrl',
-                controller: function (handlers, $state, CreateNominationDecisionModal, NominationDecision) {
+                controller: function ($location, $state, CreateNominationDecisionModal, NominationDecision, handlers) {
                     var $ctrl = this;
 
                     $ctrl.$onInit = function () {
                         $ctrl.handlers = handlers;
+                        $ctrl.showTab('filter');
                     };
 
                     $ctrl.createDecision = function () {
@@ -28,6 +29,11 @@ angular.module('app.jht.nominationdecision', [])
                         }, function (error) {
                             // Do nothing
                         });
+                    };
+
+                    $ctrl.showTab = function (tab) {
+                        $ctrl.tab = tab;
+                        $location.search({tab: tab});
                     };
                 }
             })
@@ -101,7 +107,8 @@ angular.module('app.jht.nominationdecision', [])
     })
 
     .factory('NominationDecisionSearch', function ($http, $resource) {
-        return $resource('api/v1/nominationdecision/search', {}, {
+        var apiPrefix = 'api/v1/nominationdecision/search';
+        return $resource(apiPrefix, {}, {
             search: {
                 method: 'POST'
             },
@@ -111,8 +118,13 @@ angular.module('app.jht.nominationdecision', [])
             listHandlers: {
                 method: 'GET',
                 isArray: true,
-                url: 'api/v1/nominationdecision/search/handlers'
-            }
+                url: apiPrefix + '/handlers'
+            },
+            getStatistics: {
+                method: 'GET',
+                isArray: true,
+                url: apiPrefix + '/statistics/:year',
+                params: {year: '@year'}}
         });
     })
 
@@ -239,8 +251,8 @@ angular.module('app.jht.nominationdecision', [])
             handlers: '<',
             tab: '<'
         },
-        controller: function (NominationDecision, NominationDecisionSearch, ModeratorNominationDecisionSearchFilters,
-                              TranslatedBlockUI) {
+        controller: function (FetchAndSaveBlob, NominationDecision, NominationDecisionSearch,
+                              ModeratorNominationDecisionSearchFilters, TranslatedBlockUI) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
@@ -267,6 +279,12 @@ angular.module('app.jht.nominationdecision', [])
 
             $ctrl.loadPage = function (page) {
                 doSearch(page);
+            };
+
+            $ctrl.exportResultsToExcel = function () {
+                var searchParams = createSearchParams($ctrl.filters);
+                FetchAndSaveBlob.post(
+                    '/api/v1/nominationdecision/search/excel', searchParams);
             };
 
             function doSearch(page) {
@@ -387,6 +405,26 @@ angular.module('app.jht.nominationdecision', [])
 
             $ctrl.openDecision = function (decision) {
                 $state.go('jht.nominationdecision.overview', {decisionId: decision.id});
+            };
+        }
+    })
+    .component('moderatorNominationDecisionStatusTable', {
+        templateUrl:'jht/nominationdecision/status-table.html',
+        controller: function (NominationDecisionSearch) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.year = new Date().getFullYear();
+                $ctrl.yearOptions = _.range(2020, $ctrl.year + 1);
+                $ctrl.data = [];
+                $ctrl.loadStatistics($ctrl.year);
+            };
+
+            $ctrl.loadStatistics = function () {
+                NominationDecisionSearch.getStatistics({year: $ctrl.year}).$promise.then(function (response) {
+                    $ctrl.data = response;
+                });
+
             };
         }
     });

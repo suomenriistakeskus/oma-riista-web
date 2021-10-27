@@ -98,7 +98,7 @@ public class HuntingClubGroupCrudFeature_UpdatePermitTest extends EmbeddedDataba
 
             onSavedAndAuthenticated(createUser(person), () -> {
                 final DateTime originalPermitUpdateTime = group.getHarvestPermitModificationTime();
-                huntingClubGroupCrudFeature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), newPermit, false));
+                huntingClubGroupCrudFeature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), newPermit));
 
                 runInTransaction(() -> {
                     final HuntingClubGroup updatedGroup = huntingClubGroupRepository.getOne(group.getId());

@@ -34,7 +34,7 @@ function git {
 
     [[ "$PARAMS" = "$GET_TAG_HASHES" ]] && echo -e "1111\n2222"
     [[ "$PARAMS" = "$GET_LATEST_TAG_NAME" ]] && echo -e "TAG-1"
-    [[ "$PARAMS" = "$GET_SUMMARIES_FROM_PROD_VERSION" ]] && echo -e "OR-1 Foo\nOR-2: Bar\nOR-2: Oops\nSomething else\n OR-3 Baz"
+    [[ "$PARAMS" = "$GET_SUMMARIES_FROM_PROD_VERSION" ]] && echo -e "OR-1 Foo\nOR-2: Bar\nOR-2: Oops\nSomething \"else\"\n OR-3 Baz"
 }
 
 # Stop exporting

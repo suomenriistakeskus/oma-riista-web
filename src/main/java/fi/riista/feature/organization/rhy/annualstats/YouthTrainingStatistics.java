@@ -27,7 +27,7 @@ public class YouthTrainingStatistics
         AnnualStatisticsManuallyEditableFields<YouthTrainingStatistics>,
         Serializable {
     public static final YouthTrainingStatistics reduce(@Nullable final YouthTrainingStatistics a,
-                                                        @Nullable final YouthTrainingStatistics b) {
+                                                       @Nullable final YouthTrainingStatistics b) {
 
         final YouthTrainingStatistics result = new YouthTrainingStatistics();
         result.setSchoolTrainingEvents(nullableIntSum(a, b, s -> s.getSchoolTrainingEvents()));
@@ -36,6 +36,13 @@ public class YouthTrainingStatistics
         result.setCollegeTrainingParticipants(nullableIntSum(a, b, s -> s.getCollegeTrainingParticipants()));
         result.setOtherYouthTargetedTrainingEvents(nullableIntSum(a, b, s -> s.getOtherYouthTargetedTrainingEvents()));
         result.setOtherYouthTargetedTrainingParticipants(nullableIntSum(a, b, s -> s.getOtherYouthTargetedTrainingParticipants()));
+
+        result.setNonSubsidizableSchoolTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableSchoolTrainingEvents()));
+        result.setNonSubsidizableSchoolTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableSchoolTrainingParticipants()));
+        result.setNonSubsidizableCollegeTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableCollegeTrainingEvents()));
+        result.setNonSubsidizableCollegeTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableCollegeTrainingParticipants()));
+        result.setNonSubsidizableOtherYouthTargetedTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableOtherYouthTargetedTrainingEvents()));
+        result.setNonSubsidizableOtherYouthTargetedTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableOtherYouthTargetedTrainingParticipants()));
 
         return result;
     }
@@ -46,7 +53,7 @@ public class YouthTrainingStatistics
     }
 
     public static <T> YouthTrainingStatistics reduce(@Nonnull final Iterable<? extends T> items,
-                                                      @Nonnull final Function<? super T, YouthTrainingStatistics> extractor) {
+                                                     @Nonnull final Function<? super T, YouthTrainingStatistics> extractor) {
         requireNonNull(extractor, "extractor is null");
         return reduce(F.stream(items).map(extractor));
     }
@@ -56,6 +63,10 @@ public class YouthTrainingStatistics
     @Column(name = "school_training_events")
     private Integer schoolTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_school_training_events")
+    private Integer nonSubsidizableSchoolTrainingEvents;
+
     @Column(name = "school_training_events_overridden", nullable = false)
     private boolean schoolTrainingEventsOverridden;
 
@@ -63,6 +74,10 @@ public class YouthTrainingStatistics
     @Min(0)
     @Column(name = "school_training_participants")
     private Integer schoolTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_school_training_participants")
+    private Integer nonSubsidizableSchoolTrainingParticipants;
 
     @Column(name = "school_training_participants_overridden", nullable = false)
     private boolean schoolTrainingParticipantsOverridden;
@@ -72,6 +87,10 @@ public class YouthTrainingStatistics
     @Column(name = "college_training_events")
     private Integer collegeTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_college_training_events")
+    private Integer nonSubsidizableCollegeTrainingEvents;
+
     @Column(name = "college_training_events_overridden", nullable = false)
     private boolean collegeTrainingEventsOverridden;
 
@@ -79,6 +98,10 @@ public class YouthTrainingStatistics
     @Min(0)
     @Column(name = "college_training_participants")
     private Integer collegeTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_college_training_participants")
+    private Integer nonSubsidizableCollegeTrainingParticipants;
 
     @Column(name = "college_training_participants_overridden", nullable = false)
     private boolean collegeTrainingParticipantsOverridden;
@@ -88,6 +111,10 @@ public class YouthTrainingStatistics
     @Column(name = "other_youth_targeted_training_events")
     private Integer otherYouthTargetedTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_other_youth_targeted_training_events")
+    private Integer nonSubsidizableOtherYouthTargetedTrainingEvents;
+
     @Column(name = "other_youth_targeted_training_events_overridden", nullable = false)
     private boolean otherYouthTargetedTrainingEventsOverridden;
 
@@ -95,6 +122,10 @@ public class YouthTrainingStatistics
     @Min(0)
     @Column(name = "other_youth_targeted_training_participants")
     private Integer otherYouthTargetedTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_other_youth_targeted_training_participants")
+    private Integer nonSubsidizableOtherYouthTargetedTrainingParticipants;
 
     @Column(name = "other_youth_targeted_training_participants_overridden", nullable = false)
     private boolean otherYouthTargetedTrainingParticipantsOverridden;
@@ -111,21 +142,27 @@ public class YouthTrainingStatistics
         requireNonNull(that);
 
         this.schoolTrainingEvents = that.schoolTrainingEvents;
+        this.nonSubsidizableSchoolTrainingEvents = that.nonSubsidizableSchoolTrainingEvents;
         this.schoolTrainingEventsOverridden = that.schoolTrainingEventsOverridden;
 
         this.schoolTrainingParticipants = that.schoolTrainingParticipants;
+        this.nonSubsidizableSchoolTrainingParticipants = that.nonSubsidizableSchoolTrainingParticipants;
         this.schoolTrainingParticipantsOverridden = that.schoolTrainingParticipantsOverridden;
 
         this.collegeTrainingEvents = that.collegeTrainingEvents;
+        this.nonSubsidizableCollegeTrainingEvents = that.nonSubsidizableCollegeTrainingEvents;
         this.collegeTrainingEventsOverridden = that.collegeTrainingEventsOverridden;
 
         this.collegeTrainingParticipants = that.collegeTrainingParticipants;
+        this.nonSubsidizableCollegeTrainingParticipants = that.nonSubsidizableCollegeTrainingParticipants;
         this.collegeTrainingParticipantsOverridden = that.collegeTrainingParticipantsOverridden;
 
         this.otherYouthTargetedTrainingEvents = that.otherYouthTargetedTrainingEvents;
+        this.nonSubsidizableOtherYouthTargetedTrainingEvents = that.nonSubsidizableOtherYouthTargetedTrainingEvents;
         this.otherYouthTargetedTrainingEventsOverridden = that.otherYouthTargetedTrainingEventsOverridden;
 
         this.otherYouthTargetedTrainingParticipants = that.otherYouthTargetedTrainingParticipants;
+        this.nonSubsidizableOtherYouthTargetedTrainingParticipants = that.nonSubsidizableOtherYouthTargetedTrainingParticipants;
         this.otherYouthTargetedTrainingParticipantsOverridden = that.otherYouthTargetedTrainingParticipantsOverridden;
     }
 
@@ -160,45 +197,62 @@ public class YouthTrainingStatistics
     public boolean isEqualTo(@Nonnull final YouthTrainingStatistics that) {
         return Objects.equals(schoolTrainingEvents, that.schoolTrainingEvents) &&
                 Objects.equals(schoolTrainingParticipants, that.schoolTrainingParticipants) &&
+                Objects.equals(nonSubsidizableSchoolTrainingEvents, that.nonSubsidizableSchoolTrainingEvents) &&
+                Objects.equals(nonSubsidizableSchoolTrainingParticipants, that.nonSubsidizableSchoolTrainingParticipants) &&
 
                 Objects.equals(collegeTrainingEvents, that.collegeTrainingEvents) &&
                 Objects.equals(collegeTrainingParticipants, that.collegeTrainingParticipants) &&
+                Objects.equals(nonSubsidizableCollegeTrainingEvents, that.nonSubsidizableCollegeTrainingEvents) &&
+                Objects.equals(nonSubsidizableCollegeTrainingParticipants, that.nonSubsidizableCollegeTrainingParticipants) &&
 
                 Objects.equals(otherYouthTargetedTrainingEvents, that.otherYouthTargetedTrainingEvents) &&
-                Objects.equals(otherYouthTargetedTrainingParticipants, that.otherYouthTargetedTrainingParticipants);
+                Objects.equals(otherYouthTargetedTrainingParticipants, that.otherYouthTargetedTrainingParticipants) &&
+                Objects.equals(nonSubsidizableOtherYouthTargetedTrainingEvents, that.nonSubsidizableOtherYouthTargetedTrainingEvents) &&
+                Objects.equals(nonSubsidizableOtherYouthTargetedTrainingParticipants, that.nonSubsidizableOtherYouthTargetedTrainingParticipants);
     }
 
     @Override
     public void assignFrom(@Nonnull final YouthTrainingStatistics that) {
-        if (!Objects.equals(this.schoolTrainingEvents, that.schoolTrainingEvents)) {
+        if (!Objects.equals(this.schoolTrainingEvents, that.schoolTrainingEvents)||
+                !Objects.equals(this.nonSubsidizableSchoolTrainingEvents, that.nonSubsidizableSchoolTrainingEvents)) {
             this.schoolTrainingEventsOverridden = true;
         }
         this.schoolTrainingEvents = that.schoolTrainingEvents;
+        this.nonSubsidizableSchoolTrainingEvents = that.nonSubsidizableSchoolTrainingEvents;
 
-        if (!Objects.equals(this.schoolTrainingParticipants, that.schoolTrainingParticipants)) {
+        if (!Objects.equals(this.schoolTrainingParticipants, that.schoolTrainingParticipants)||
+                !Objects.equals(this.nonSubsidizableSchoolTrainingParticipants, that.nonSubsidizableSchoolTrainingParticipants)) {
             this.schoolTrainingParticipantsOverridden = true;
         }
         this.schoolTrainingParticipants = that.schoolTrainingParticipants;
+        this.nonSubsidizableSchoolTrainingParticipants = that.nonSubsidizableSchoolTrainingParticipants;
 
-        if (!Objects.equals(this.collegeTrainingEvents, that.collegeTrainingEvents)) {
+        if (!Objects.equals(this.collegeTrainingEvents, that.collegeTrainingEvents)||
+                !Objects.equals(this.nonSubsidizableCollegeTrainingEvents, that.nonSubsidizableCollegeTrainingEvents)) {
             this.collegeTrainingEventsOverridden = true;
         }
         this.collegeTrainingEvents = that.collegeTrainingEvents;
+        this.nonSubsidizableCollegeTrainingEvents = that.nonSubsidizableCollegeTrainingEvents;
 
-        if (!Objects.equals(this.collegeTrainingParticipants, that.collegeTrainingParticipants)) {
+        if (!Objects.equals(this.collegeTrainingParticipants, that.collegeTrainingParticipants)||
+                !Objects.equals(this.nonSubsidizableCollegeTrainingParticipants, that.nonSubsidizableCollegeTrainingParticipants)) {
             this.collegeTrainingParticipantsOverridden = true;
         }
-        this.collegeTrainingParticipants = that.collegeTrainingParticipants;
+        this.nonSubsidizableCollegeTrainingParticipants = that.nonSubsidizableCollegeTrainingParticipants;
 
-        if (!Objects.equals(this.otherYouthTargetedTrainingEvents, that.otherYouthTargetedTrainingEvents)) {
+        if (!Objects.equals(this.otherYouthTargetedTrainingEvents, that.otherYouthTargetedTrainingEvents)||
+                !Objects.equals(this.nonSubsidizableOtherYouthTargetedTrainingEvents, that.nonSubsidizableOtherYouthTargetedTrainingEvents)) {
             this.otherYouthTargetedTrainingEventsOverridden = true;
         }
         this.otherYouthTargetedTrainingEvents = that.otherYouthTargetedTrainingEvents;
+        this.nonSubsidizableOtherYouthTargetedTrainingEvents = that.nonSubsidizableOtherYouthTargetedTrainingEvents;
 
-        if (!Objects.equals(this.otherYouthTargetedTrainingParticipants, that.otherYouthTargetedTrainingParticipants)) {
+        if (!Objects.equals(this.otherYouthTargetedTrainingParticipants, that.otherYouthTargetedTrainingParticipants)||
+                !Objects.equals(this.nonSubsidizableOtherYouthTargetedTrainingParticipants, that.nonSubsidizableOtherYouthTargetedTrainingParticipants)) {
             this.otherYouthTargetedTrainingParticipantsOverridden = true;
         }
         this.otherYouthTargetedTrainingParticipants = that.otherYouthTargetedTrainingParticipants;
+        this.nonSubsidizableOtherYouthTargetedTrainingParticipants = that.nonSubsidizableOtherYouthTargetedTrainingParticipants;
     }
 
     @Nullable
@@ -207,13 +261,28 @@ public class YouthTrainingStatistics
     }
 
     @Nullable
+    Integer countNonSubsidizableStudentTrainingEvents() {
+        return nullableIntSum(nonSubsidizableSchoolTrainingEvents, nonSubsidizableCollegeTrainingEvents);
+    }
+
+    @Nullable
     Integer countStudentAndYouthTrainingEvents() {
         return nullableIntSum(schoolTrainingEvents, collegeTrainingEvents, otherYouthTargetedTrainingEvents);
     }
 
     @Nullable
+    Integer countNonSubsidizableStudentAndYouthTrainingEvents() {
+        return nullableIntSum(nonSubsidizableSchoolTrainingEvents, nonSubsidizableCollegeTrainingEvents, nonSubsidizableOtherYouthTargetedTrainingEvents);
+    }
+
+    @Nullable
     Integer countStudentAndYouthTrainingParticipants() {
         return nullableIntSum(schoolTrainingParticipants, collegeTrainingParticipants, otherYouthTargetedTrainingParticipants);
+    }
+
+    @Nullable
+    Integer countNonSubsidizableStudentAndYouthTrainingParticipants() {
+        return nullableIntSum(nonSubsidizableSchoolTrainingParticipants, nonSubsidizableCollegeTrainingParticipants, nonSubsidizableOtherYouthTargetedTrainingParticipants);
     }
 
     public Integer getSchoolTrainingEvents() {
@@ -224,12 +293,28 @@ public class YouthTrainingStatistics
         this.schoolTrainingEvents = schoolTrainingEvents;
     }
 
+    public Integer getNonSubsidizableSchoolTrainingEvents() {
+        return nonSubsidizableSchoolTrainingEvents;
+    }
+
+    public void setNonSubsidizableSchoolTrainingEvents(final Integer nonSubsidizableSchoolTrainingEvents) {
+        this.nonSubsidizableSchoolTrainingEvents = nonSubsidizableSchoolTrainingEvents;
+    }
+
     public Integer getSchoolTrainingParticipants() {
         return schoolTrainingParticipants;
     }
 
     public void setSchoolTrainingParticipants(final Integer schoolTrainingParticipants) {
         this.schoolTrainingParticipants = schoolTrainingParticipants;
+    }
+
+    public Integer getNonSubsidizableSchoolTrainingParticipants() {
+        return nonSubsidizableSchoolTrainingParticipants;
+    }
+
+    public void setNonSubsidizableSchoolTrainingParticipants(final Integer nonSubsidizableSchoolTrainingParticipants) {
+        this.nonSubsidizableSchoolTrainingParticipants = nonSubsidizableSchoolTrainingParticipants;
     }
 
     public Integer getCollegeTrainingEvents() {
@@ -240,12 +325,28 @@ public class YouthTrainingStatistics
         this.collegeTrainingEvents = collegeTrainingEvents;
     }
 
+    public Integer getNonSubsidizableCollegeTrainingEvents() {
+        return nonSubsidizableCollegeTrainingEvents;
+    }
+
+    public void setNonSubsidizableCollegeTrainingEvents(final Integer nonSubsidizableCollegeTrainingEvents) {
+        this.nonSubsidizableCollegeTrainingEvents = nonSubsidizableCollegeTrainingEvents;
+    }
+
     public Integer getCollegeTrainingParticipants() {
         return collegeTrainingParticipants;
     }
 
     public void setCollegeTrainingParticipants(final Integer collegeTrainingParticipants) {
         this.collegeTrainingParticipants = collegeTrainingParticipants;
+    }
+
+    public Integer getNonSubsidizableCollegeTrainingParticipants() {
+        return nonSubsidizableCollegeTrainingParticipants;
+    }
+
+    public void setNonSubsidizableCollegeTrainingParticipants(final Integer nonSubsidizableCollegeTrainingParticipants) {
+        this.nonSubsidizableCollegeTrainingParticipants = nonSubsidizableCollegeTrainingParticipants;
     }
 
     public Integer getOtherYouthTargetedTrainingEvents() {
@@ -256,12 +357,28 @@ public class YouthTrainingStatistics
         this.otherYouthTargetedTrainingEvents = otherYouthTargetedTrainingEvents;
     }
 
+    public Integer getNonSubsidizableOtherYouthTargetedTrainingEvents() {
+        return nonSubsidizableOtherYouthTargetedTrainingEvents;
+    }
+
+    public void setNonSubsidizableOtherYouthTargetedTrainingEvents(final Integer nonSubsidizableOtherYouthTargetedTrainingEvents) {
+        this.nonSubsidizableOtherYouthTargetedTrainingEvents = nonSubsidizableOtherYouthTargetedTrainingEvents;
+    }
+
     public Integer getOtherYouthTargetedTrainingParticipants() {
         return otherYouthTargetedTrainingParticipants;
     }
 
     public void setOtherYouthTargetedTrainingParticipants(final Integer otherYouthTargetedTrainingParticipants) {
         this.otherYouthTargetedTrainingParticipants = otherYouthTargetedTrainingParticipants;
+    }
+
+    public Integer getNonSubsidizableOtherYouthTargetedTrainingParticipants() {
+        return nonSubsidizableOtherYouthTargetedTrainingParticipants;
+    }
+
+    public void setNonSubsidizableOtherYouthTargetedTrainingParticipants(final Integer nonSubsidizableOtherYouthTargetedTrainingParticipants) {
+        this.nonSubsidizableOtherYouthTargetedTrainingParticipants = nonSubsidizableOtherYouthTargetedTrainingParticipants;
     }
 
     public boolean isSchoolTrainingEventsOverridden() {

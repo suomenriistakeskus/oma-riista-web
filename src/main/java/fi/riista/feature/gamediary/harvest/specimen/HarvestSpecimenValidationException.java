@@ -15,16 +15,13 @@ public class HarvestSpecimenValidationException extends RuntimeException {
     private final Set<HarvestSpecimenFieldName> missingFields;
     private final Set<HarvestSpecimenFieldName> illegalFields;
     private final Map<HarvestSpecimenFieldName, String> illegalValues;
-    private final boolean missingMooseWeight;
 
     public HarvestSpecimenValidationException(final int speciesCode,
                                               final Set<HarvestSpecimenFieldName> missingFields,
                                               final Set<HarvestSpecimenFieldName> illegalFields,
-                                              final Map<HarvestSpecimenFieldName, String> illegalValues,
-                                              final boolean missingMooseWeight) {
+                                              final Map<HarvestSpecimenFieldName, String> illegalValues) {
         super(Streams
-                .concat(missingMooseWeight ? Stream.of("missing both estimated and measured weight") : Stream.empty(),
-                        illegalFields.stream().map(a -> "illegal " + a),
+                .concat(illegalFields.stream().map(a -> "illegal " + a),
                         illegalValues.entrySet().stream().map(a -> "invalid " + a.getKey().name() + ": " + a.getValue()),
                         missingFields.stream().map(a -> "missing " + a))
                 .collect(joining(", ", format("Game species code %d: ", speciesCode), "")));
@@ -32,7 +29,6 @@ public class HarvestSpecimenValidationException extends RuntimeException {
         this.illegalFields = requireNonNull(illegalFields);
         this.missingFields = requireNonNull(missingFields);
         this.illegalValues = requireNonNull(illegalValues);
-        this.missingMooseWeight = missingMooseWeight;
     }
 
     public Set<HarvestSpecimenFieldName> getMissingFields() {
@@ -45,9 +41,5 @@ public class HarvestSpecimenValidationException extends RuntimeException {
 
     public Map<HarvestSpecimenFieldName, String> getIllegalValues() {
         return illegalValues;
-    }
-
-    public boolean isMissingMooseWeight() {
-        return missingMooseWeight;
     }
 }

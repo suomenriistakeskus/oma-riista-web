@@ -23,8 +23,7 @@ import static java.util.Optional.ofNullable;
 public interface HarvestDTOBuilderFactory extends ValueGeneratorMixin {
 
     default HarvestSpecVersion getDefaultSpecVersion() {
-        // TODO Switch to `CURRENTLY_SUPPORTED` when deer pilot 2020 is over.
-        return HarvestSpecVersion._7;
+        return HarvestSpecVersion.CURRENTLY_SUPPORTED;
     }
 
     default Builder create(@Nonnull final GameSpecies species) {

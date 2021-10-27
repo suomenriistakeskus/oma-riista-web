@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_EUROPEAN_BEAVER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_PARTRIDGE;
-import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RINGED_SEAL;
 
 public class LawSectionTenPermitApplicationSpeciesPeriodValidatorTest {
 
@@ -23,11 +22,6 @@ public class LawSectionTenPermitApplicationSpeciesPeriodValidatorTest {
                 new LocalDate(2020, 8, 20),
                 new LocalDate(2021, 4, 16));
 
-        MockTimeProvider.mockTime(new LocalDate(2020, 8, 1).toDate().getTime());
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_RINGED_SEAL,
-                new LocalDate(2020, 8, 1),
-                new LocalDate(2021, 7, 31));
-
         MockTimeProvider.mockTime(new LocalDate(2020, 9, 1).toDate().getTime());
         LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_PARTRIDGE,
                 new LocalDate(2020, 9, 1),
@@ -42,10 +36,6 @@ public class LawSectionTenPermitApplicationSpeciesPeriodValidatorTest {
         LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_EUROPEAN_BEAVER,
                 new LocalDate(2021, 8, 20),
                 new LocalDate(2022, 4, 16));
-
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_RINGED_SEAL,
-                new LocalDate(2021, 8, 1),
-                new LocalDate(2022, 7, 31));
 
         LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_PARTRIDGE,
                 new LocalDate(2021, 9, 1),
@@ -110,76 +100,6 @@ public class LawSectionTenPermitApplicationSpeciesPeriodValidatorTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void test_ringedSealInvalidPeriodBeforeCurrentSeason() {
-        final LocalDate mockedTime = new LocalDate(2020, 12, 31);
-        MockTimeProvider.mockTime(mockedTime.toDate().getTime());
-
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_RINGED_SEAL,
-                new LocalDate(2020, 4, 1),
-                new LocalDate(2020, 4, 15));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_ringedSealInvalidPeriodAfterCurrentSeasonAndBeforeNextSeason() {
-        final LocalDate mockedTime = new LocalDate(2020, 12, 31);
-        MockTimeProvider.mockTime(mockedTime.toDate().getTime());
-
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_RINGED_SEAL,
-                new LocalDate(2021, 1, 1),
-                new LocalDate(2021, 2, 1));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_ringedSealInvalidPeriodAfterNextSeason() {
-        final LocalDate mockedTime = new LocalDate(2020, 12, 31);
-        MockTimeProvider.mockTime(mockedTime.toDate().getTime());
-
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_RINGED_SEAL,
-                new LocalDate(2022, 1, 1),
-                new LocalDate(2022, 2, 1));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_ringedSealInvalidPeriodInSeasonAfterNextSeason() {
-        final LocalDate mockedTime = new LocalDate(2020, 4,1);
-        MockTimeProvider.mockTime(mockedTime.toDate().getTime());
-
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_RINGED_SEAL,
-                new LocalDate(2021, 8, 1),
-                new LocalDate(2021, 8, 31));
-    }
-
-    @Test
-    public void test_ringedSealPeriodCurrentSeasonBeforeToday() {
-        final LocalDate mockedTime = new LocalDate(2020, 4,20);
-        MockTimeProvider.mockTime(mockedTime.toDate().getTime());
-
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_RINGED_SEAL,
-                new LocalDate(2020, 4, 16),
-                new LocalDate(2020, 4, 25));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_ringedSealInvalidPeriodEndDateInBetweenRange() {
-        final LocalDate mockedTime = new LocalDate(2020, 12, 31);
-        MockTimeProvider.mockTime(mockedTime.toDate().getTime());
-
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_RINGED_SEAL,
-                new LocalDate(2020, 8, 1),
-                new LocalDate(2021, 1, 1));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_ringedSealInvalidPeriodBeginDateInBetweenRange() {
-        final LocalDate mockedTime = new LocalDate(2020, 12, 31);
-        MockTimeProvider.mockTime(mockedTime.toDate().getTime());
-
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_RINGED_SEAL,
-                new LocalDate(2021, 1, 1),
-                new LocalDate(2021, 7, 31));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void test_partridgeInvalidPeriodBeforeCurrentSeason() {
         final LocalDate mockedTime = new LocalDate(2020, 12, 31);
         MockTimeProvider.mockTime(mockedTime.toDate().getTime());
@@ -214,7 +134,7 @@ public class LawSectionTenPermitApplicationSpeciesPeriodValidatorTest {
         final LocalDate mockedTime = new LocalDate(2020, 6,1);
         MockTimeProvider.mockTime(mockedTime.toDate().getTime());
 
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_EUROPEAN_BEAVER,
+        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_PARTRIDGE,
                 new LocalDate(2021, 9, 1),
                 new LocalDate(2021, 12, 31));
     }
@@ -224,7 +144,7 @@ public class LawSectionTenPermitApplicationSpeciesPeriodValidatorTest {
         final LocalDate mockedTime = new LocalDate(2020, 9,20);
         MockTimeProvider.mockTime(mockedTime.toDate().getTime());
 
-        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_RINGED_SEAL,
+        LawSectionTenPermitApplicationSpeciesPeriodValidator.validatePeriod(OFFICIAL_CODE_PARTRIDGE,
                 new LocalDate(2020, 9, 1),
                 new LocalDate(2020, 9, 25));
     }

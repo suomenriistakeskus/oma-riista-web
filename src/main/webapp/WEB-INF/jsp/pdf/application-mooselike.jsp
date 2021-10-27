@@ -29,8 +29,6 @@
                 <span><c:out value="${model.contactPerson.address.postalCode}"/></span>
                 <span><c:out value="${model.contactPerson.address.city}"/>,</span>
                 <span><c:out value="${model.contactPerson.address.country}"/></span>
-                <br>
-                <span><c:out value="${model.contactPerson.phoneNumber}"/></span>
             </p>
         </div>
         <div class="col-2">
@@ -543,31 +541,6 @@
 
             <c:if test="${model.deliveryByMail == false}">
                 <p><fmt:message key="pdf.application.delivery.email"/></p>
-            </c:if>
-
-            <hr/>
-
-            <c:if test="${model.email1 != null || model.email2 != null}">
-                <p><fmt:message key="pdf.application.delivery.extra"/>:</p>
-
-                <table class="data-table">
-                    <tbody>
-                    <c:if test="${model.email1 != null}">
-                        <tr>
-                            <td>
-                                <c:out value="${model.email1}"/>
-                            </td>
-                        </tr>
-                    </c:if>
-                    <c:if test="${model.email2 != null}">
-                        <tr>
-                            <td>
-                                <c:out value="${model.email2}"/>
-                            </td>
-                        </tr>
-                    </c:if>
-                    </tbody>
-                </table>
             </c:if>
         </div>
     </div>

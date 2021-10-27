@@ -8,4 +8,5 @@ angular.module('app.reporting', [
     'app.reporting.moosepermitstatistics',
     'app.reporting.paymentcontrol',
     'app.reporting.habides',
+    'app.reporting.jhtarchive',
 ]);

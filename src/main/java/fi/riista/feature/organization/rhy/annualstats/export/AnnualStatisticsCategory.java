@@ -8,5 +8,7 @@ public enum AnnualStatisticsCategory implements LocalisedEnum {
     PUBLIC_ADMINISTRATION_TASKS,
     SRVA,
     TRAININGS,
+    SUBSIDIZABLE_TRAININGS,
+    NON_SUBSIDIZABLE_TRAININGS,
     MISC
 }

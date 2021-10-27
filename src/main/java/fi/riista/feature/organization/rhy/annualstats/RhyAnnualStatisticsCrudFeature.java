@@ -65,7 +65,7 @@ public class RhyAnnualStatisticsCrudFeature
                     dto.setGameDamage(new GameDamageStatistics());
                     dto.setOtherPublicAdmin(new OtherPublicAdminStatistics());
                     dto.setSrva(new SrvaEventStatistics());
-                    dto.setHunterExamTraining(new HunterExamTrainingStatisticsDTO());
+                    dto.setHunterExamTraining(HunterExamTrainingStatisticsDTO.create(new HunterExamTrainingStatistics()));
                     dto.setJhtTraining(new JHTTrainingStatistics());
                     dto.setHunterTraining(new HunterTrainingStatistics());
                     dto.setYouthTraining(new YouthTrainingStatistics());
@@ -140,8 +140,8 @@ public class RhyAnnualStatisticsCrudFeature
     }
 
     @Transactional
-    public RhyAnnualStatisticsDTO updateHuntingControl(final long id, @Nonnull final HuntingControlStatistics input) {
-        return update(id, input, annualStatsService::updateHuntingControl);
+    public RhyAnnualStatisticsDTO moderatorUpdateHuntingControl(final long id, @Nonnull final HuntingControlStatistics input) {
+        return update(requireEntity(id, MODERATOR_UPDATE), input, annualStatsService::moderatorUpdateHuntingControl);
     }
 
     @Transactional

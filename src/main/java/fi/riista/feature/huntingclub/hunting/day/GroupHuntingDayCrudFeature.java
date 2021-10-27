@@ -9,6 +9,8 @@ import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationRepository;
+import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingFinishedException;
 import fi.riista.feature.huntingclub.hunting.rejection.AcceptClubDiaryObservationDTO;
@@ -119,6 +121,8 @@ public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupH
         entity.setCreatedBySystem(Optional.ofNullable(dto.getCreatedBySystem()).orElse(false));
         final int huntingYear = entity.getGroup().getHuntingYear();
         Preconditions.checkArgument(isDateWithingHuntingYear(huntingYear, entity.getStartDate(), entity.getEndDate()));
+
+        Preconditions.checkArgument(isDateWithingHarvestPermitDateRange(entity.getGroup(), entity.getStartDate(), entity.getEndDate()));
     }
 
     private static boolean isDateWithingHuntingYear(final int huntingYear,
@@ -130,6 +134,46 @@ public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupH
         return startDate != null && endDate != null &&
                 DateUtil.overlapsInclusive(begin, end, startDate) &&
                 DateUtil.overlapsInclusive(begin, end, endDate);
+    }
+
+    /**
+     * Checks if given date range (start and end date) is within harvest permit time range
+     *
+     * @param group     target group object
+     * @param startDate date range start date
+     * @param endDate   date range end date
+     * @return True if date range (start and end date) is found inside any harvest permit time ranges else false.
+     * False if permit, startDate or endDate is null.
+     */
+    private static boolean isDateWithingHarvestPermitDateRange(final HuntingClubGroup group,
+                                                               final LocalDate startDate,
+                                                               final LocalDate endDate) {
+
+        HarvestPermit permit = group.getHarvestPermit();
+        if (permit == null || startDate == null || endDate == null) return false;
+
+        return permit.getSpeciesAmounts().stream()
+                .filter(speciesAmount -> group.getSpecies().equals(speciesAmount.getGameSpecies()))
+                .map(speciesAmount -> speciesAmountContainsInterval(speciesAmount, startDate, endDate))
+                .findFirst().orElse(false);
+    }
+
+    private static boolean speciesAmountContainsInterval(final HarvestPermitSpeciesAmount speciesAmount, final LocalDate beginDate,
+                                                         final LocalDate endDate) {
+        final LocalDate permitBegin = speciesAmount.getBeginDate();
+        final LocalDate permitEnd = speciesAmount.getEndDate();
+        if (DateUtil.overlapsInclusive(permitBegin, permitEnd, beginDate) &&
+                DateUtil.overlapsInclusive(permitBegin, permitEnd, endDate)) {
+            return true;
+        }
+
+        if (speciesAmount.hasBeginAndEndDate2()) {
+            final LocalDate permitBegin2 = speciesAmount.getBeginDate2();
+            final LocalDate permitEnd2 = speciesAmount.getEndDate2();
+            return DateUtil.overlapsInclusive(permitBegin2, permitEnd2, beginDate) &&
+                    DateUtil.overlapsInclusive(permitBegin2, permitEnd2, endDate);
+        }
+        return false;
     }
 
     @Override
@@ -153,7 +197,7 @@ public class GroupHuntingDayCrudFeature extends AbstractCrudFeature<Long, GroupH
         final HuntingClubGroup group =
                 requireEntityService.requireHuntingGroup(huntingClubGroupId, EntityPermission.READ);
 
-        return service.findByClubGroup(group);
+        return dtoTransformer.transform(service.findByClubGroup(group));
     }
 
     @Transactional

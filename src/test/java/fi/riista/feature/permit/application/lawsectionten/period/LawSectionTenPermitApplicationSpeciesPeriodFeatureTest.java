@@ -19,7 +19,6 @@ import org.springframework.security.access.AccessDeniedException;
 import javax.annotation.Resource;
 
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_EUROPEAN_BEAVER;
-import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RINGED_SEAL;
 import static fi.riista.util.DateUtil.currentYear;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -258,67 +257,6 @@ public class LawSectionTenPermitApplicationSpeciesPeriodFeatureTest extends Embe
             beaverDTO.setGameSpeciesCode(OFFICIAL_CODE_EUROPEAN_BEAVER);
 
             feature.saveSpeciesPeriods(application.getId(), beaverDTO);
-        });
-    }
-
-    @Test
-    public void test_ringedSeal_fullSeason() {
-        final GameSpecies ringedSeal = model().newGameSpecies(OFFICIAL_CODE_RINGED_SEAL);
-        model().newHarvestPermitApplicationSpeciesAmount(application, ringedSeal);
-        final LocalDate mockedTime = new LocalDate(2020, 8, 1);
-        MockTimeProvider.mockTime(mockedTime.toDate().getTime());
-
-        onSavedAndAuthenticated(user, () -> {
-            final int currentYear = currentYear();
-            final LawSectionTenPermitApplicationSpeciesPeriodDTO ringedSealDTO = new LawSectionTenPermitApplicationSpeciesPeriodDTO();
-            final LocalDate beginDate = new LocalDate(currentYear, 8, 1);
-            final LocalDate endDate = new LocalDate(currentYear + 1, 7, 31);
-            ringedSealDTO.setBeginDate(beginDate);
-            ringedSealDTO.setEndDate(endDate);
-            ringedSealDTO.setGameSpeciesCode(OFFICIAL_CODE_RINGED_SEAL);
-
-            feature.saveSpeciesPeriods(application.getId(), ringedSealDTO);
-        });
-    }
-
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_ringedSeal_beginDateInBetweenCurrentSeason() {
-        final GameSpecies ringedSeal = model().newGameSpecies(OFFICIAL_CODE_RINGED_SEAL);
-        model().newHarvestPermitApplicationSpeciesAmount(application, ringedSeal);
-        final LocalDate mockedTime = new LocalDate(2020, 8, 10);
-        MockTimeProvider.mockTime(mockedTime.toDate().getTime());
-
-        onSavedAndAuthenticated(user, () -> {
-            final int currentYear = currentYear();
-            final LawSectionTenPermitApplicationSpeciesPeriodDTO ringedSealDTO = new LawSectionTenPermitApplicationSpeciesPeriodDTO();
-            final LocalDate beginDate = new LocalDate(currentYear + 1, 1, 1);
-            final LocalDate endDate = new LocalDate(currentYear + 1, 7, 31);
-            ringedSealDTO.setBeginDate(beginDate);
-            ringedSealDTO.setEndDate(endDate);
-            ringedSealDTO.setGameSpeciesCode(OFFICIAL_CODE_RINGED_SEAL);
-
-            feature.saveSpeciesPeriods(application.getId(), ringedSealDTO);
-        });
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void test_ringedSeal_endDateInBetweenCurrentSeason() {
-        final GameSpecies ringedSeal = model().newGameSpecies(OFFICIAL_CODE_RINGED_SEAL);
-        model().newHarvestPermitApplicationSpeciesAmount(application, ringedSeal);
-        final LocalDate mockedTime = new LocalDate(2020, 8, 10);
-        MockTimeProvider.mockTime(mockedTime.toDate().getTime());
-
-        onSavedAndAuthenticated(user, () -> {
-            final int currentYear = currentYear();
-            final LawSectionTenPermitApplicationSpeciesPeriodDTO ringedSealDTO = new LawSectionTenPermitApplicationSpeciesPeriodDTO();
-            final LocalDate beginDate = new LocalDate(currentYear, 18, 1);
-            final LocalDate endDate = new LocalDate(currentYear + 1, 1, 1);
-            ringedSealDTO.setBeginDate(beginDate);
-            ringedSealDTO.setEndDate(endDate);
-            ringedSealDTO.setGameSpeciesCode(OFFICIAL_CODE_RINGED_SEAL);
-
-            feature.saveSpeciesPeriods(application.getId(), ringedSealDTO);
         });
     }
 }

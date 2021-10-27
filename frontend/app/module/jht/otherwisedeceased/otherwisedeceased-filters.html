@@ -1,0 +1,104 @@
+<ng-form>
+
+    <!-- year -->
+
+    <div class="form-group">
+        <label for="yearFilter" translate="jht.otherwiseDeceased.filters.year"></label>
+        <select class="form-control"
+                name="yearFilter" id="yearFilter"
+                ng-model="$ctrl.filter.year"
+                ng-change="$ctrl.changeYear()"
+                ie10-optgroup-fix>
+            <option ng-repeat="y in $ctrl.availableYears" value="{{y}}">{{y}}</option>
+        </select>
+    </div>
+
+    <!-- begin date -->
+
+    <div class="form-group">
+        <label for="beginDateFilter" translate="jht.otherwiseDeceased.filters.beginDate"></label>
+        <div class="input-group r-dropdown-align-left" id="beginDateFilter" ng-controller="DatePickerController">
+            <input type="text" class="form-control"
+                   name="beginDateFilter" id="beginDateFilterInput"
+                   uib-datepicker-popup is-open="isDatePickerOpen"
+                   datepicker-options="$ctrl.beginDateOptions"
+                   ng-model="$ctrl.filter.beginDate"
+                   ng-change="$ctrl.onFilterChange()">
+
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-default" tabindex="-1" ng-click="toggleDatePopup($event)">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+    <!-- end date -->
+
+    <div class="form-group">
+        <label for="endDateFilter" translate="jht.otherwiseDeceased.filters.endDate"></label>
+        <div class="input-group r-dropdown-align-left" id="endDateFilter" ng-controller="DatePickerController">
+            <input type="text" class="form-control"
+                   name="endDateFilter" id="endDateFilterInput"
+                   uib-datepicker-popup is-open="isDatePickerOpen"
+                   datepicker-options="$ctrl.endDateOptions"
+                   ng-model="$ctrl.filter.endDate"
+                   ng-change="$ctrl.onFilterChange()">
+
+            <span class="input-group-btn">
+                <button type="button" class="btn btn-default" tabindex="-1" ng-click="toggleDatePopup($event)">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                </button>
+            </span>
+        </div>
+    </div>
+
+    <hr class="invisible">
+
+    <!-- organisation -->
+    <div class="form-group">
+        <label for="organisationFilter" translate="jht.otherwiseDeceased.filters.organisation"></label>
+        <organisation-selection id="organisationFilter"
+                show-rk="true"
+                show-rka="true"
+                area-code="$ctrl.filter.rka"
+                rhy-code="$ctrl.filter.rhy"
+                show-inactive-rhys="true">
+        </organisation-selection>
+    </div>
+
+    <hr class="invisible">
+
+    <!-- cause -->
+
+    <div class="form-group">
+        <label for="causeFilter" translate="jht.otherwiseDeceased.filters.cause"></label>
+        <select class="form-control"
+                name="causeFilter" id="causeFilter"
+                ng-model="$ctrl.filter.cause"
+                ng-change="$ctrl.onFilterChange()"
+                ie10-optgroup-fix>
+            <option value="" translate="jht.otherwiseDeceased.filters.optionAll"></option>
+            <option ng-repeat="o in $ctrl.causeFilters"
+                    value="{{o}}"
+                    translate="jht.otherwiseDeceased.causes.{{o}}">
+            </option>
+        </select>
+    </div>
+
+    <hr class="invisible">
+
+    <!-- show rejected -->
+
+    <div class="form-group">
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" id="showRejected"
+                       ng-model="$ctrl.filter.showRejected"
+                       ng-change="$ctrl.onFilterChange()">
+                <span translate="jht.otherwiseDeceased.filters.showRejected"/>
+            </label>
+        </div>
+    </div>
+
+</ng-form>

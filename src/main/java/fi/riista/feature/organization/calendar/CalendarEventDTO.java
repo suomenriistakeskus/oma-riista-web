@@ -50,6 +50,8 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
 
         dto.setExcludedFromStatistics(event.getExcludedFromStatistics());
 
+        dto.setNonSubsidizable(event.isNonSubsidizable());
+
         dto.setParticipants(event.getParticipants());
 
         dto.setLockedAsPastStatistics(lockedAsPastStatistics);
@@ -92,6 +94,8 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
     private boolean publicVisibility;
 
     private boolean excludedFromStatistics;
+
+    private boolean nonSubsidizable;
 
     @Min(0)
     private Integer participants;
@@ -220,6 +224,14 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
 
     public void setExcludedFromStatistics(final boolean excludedFromStatistics) {
         this.excludedFromStatistics = excludedFromStatistics;
+    }
+
+    public boolean isNonSubsidizable() {
+        return nonSubsidizable;
+    }
+
+    public void setNonSubsidizable(final boolean nonSubsidizable) {
+        this.nonSubsidizable = nonSubsidizable;
     }
 
     public Integer getParticipants() {

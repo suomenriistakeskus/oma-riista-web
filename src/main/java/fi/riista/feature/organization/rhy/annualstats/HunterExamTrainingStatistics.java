@@ -34,7 +34,9 @@ public class HunterExamTrainingStatistics
 
         final HunterExamTrainingStatistics result = new HunterExamTrainingStatistics();
         result.hunterExamTrainingEvents = nullableIntSum(a, b, s -> s.getHunterExamTrainingEvents());
+        result.nonSubsidizableHunterExamTrainingEvents = nullableIntSum(a, b, s -> s.getNonSubsidizableHunterExamTrainingEvents());
         result.hunterExamTrainingParticipants = nullableIntSum(a, b, s -> s.getHunterExamTrainingParticipants());
+        result.nonSubsidizableHunterExamTrainingParticipants = nullableIntSum(a, b, s -> s.getNonSubsidizableHunterExamTrainingParticipants());
         result.lastModified = nullsafeMax(a, b, s -> s.getLastModified());
         return result;
     }
@@ -55,6 +57,13 @@ public class HunterExamTrainingStatistics
     @Column(name = "hunter_exam_training_events")
     private Integer hunterExamTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_hunter_exam_training_events")
+    private Integer nonSubsidizableHunterExamTrainingEvents;
+
+    @Column(name = "non_subsidizable_hunter_exam_training_events_overridden", nullable = false)
+    private boolean nonSubsidizableHunterExamTrainingEventsOverridden;
+
     // Updated when moderator overrides automatically computed value.
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "hunter_exam_training_events_last_overridden")
@@ -64,6 +73,10 @@ public class HunterExamTrainingStatistics
     @Min(0)
     @Column(name = "hunter_exam_training_participants")
     private Integer hunterExamTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_hunter_exam_training_participants")
+    private Integer nonSubsidizableHunterExamTrainingParticipants;
 
     // Updated when any of the manually updateable fields is changed.
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
@@ -80,8 +93,11 @@ public class HunterExamTrainingStatistics
     public HunterExamTrainingStatistics makeCopy() {
         final HunterExamTrainingStatistics copy = new HunterExamTrainingStatistics();
         copy.hunterExamTrainingEvents = this.hunterExamTrainingEvents;
+        copy.nonSubsidizableHunterExamTrainingEvents = this.nonSubsidizableHunterExamTrainingEvents;
+        copy.nonSubsidizableHunterExamTrainingEventsOverridden = this.nonSubsidizableHunterExamTrainingEventsOverridden;
         copy.hunterExamTrainingEventsLastOverridden = this.hunterExamTrainingEventsLastOverridden;
         copy.hunterExamTrainingParticipants = this.hunterExamTrainingParticipants;
+        copy.nonSubsidizableHunterExamTrainingParticipants = this.nonSubsidizableHunterExamTrainingParticipants;
         copy.lastModified = this.lastModified;
         copy.hunterExamTrainingParticipantsOverridden = this.hunterExamTrainingParticipantsOverridden;
         return copy;
@@ -95,16 +111,25 @@ public class HunterExamTrainingStatistics
     @Override
     public boolean isEqualTo(@Nonnull final HunterExamTrainingStatistics that) {
         // Includes only fields manually updateable by coordinator.
-        return Objects.equals(hunterExamTrainingParticipants, that.hunterExamTrainingParticipants);
+        return Objects.equals(this.nonSubsidizableHunterExamTrainingEvents, that.nonSubsidizableHunterExamTrainingEvents) &&
+                Objects.equals(hunterExamTrainingParticipants, that.hunterExamTrainingParticipants) &&
+                Objects.equals(nonSubsidizableHunterExamTrainingParticipants, that.nonSubsidizableHunterExamTrainingParticipants);
     }
 
     @Override
     public void assignFrom(@Nonnull final HunterExamTrainingStatistics that) {
         // Includes only fields manually updateable by coordinator.
-        if (!Objects.equals(this.hunterExamTrainingParticipants, that.hunterExamTrainingParticipants)) {
+        if (!Objects.equals(this.nonSubsidizableHunterExamTrainingEvents, that.nonSubsidizableHunterExamTrainingEvents)) {
+            this.nonSubsidizableHunterExamTrainingEventsOverridden = true;
+        }
+        this.nonSubsidizableHunterExamTrainingEvents = that.nonSubsidizableHunterExamTrainingEvents;
+
+        if (!Objects.equals(this.hunterExamTrainingParticipants, that.hunterExamTrainingParticipants) ||
+                !Objects.equals(this.nonSubsidizableHunterExamTrainingParticipants, that.nonSubsidizableHunterExamTrainingParticipants)) {
             this.hunterExamTrainingParticipantsOverridden = true;
         }
         this.hunterExamTrainingParticipants = that.hunterExamTrainingParticipants;
+        this.nonSubsidizableHunterExamTrainingParticipants = that.nonSubsidizableHunterExamTrainingParticipants;
     }
 
     @Override
@@ -139,6 +164,22 @@ public class HunterExamTrainingStatistics
         this.hunterExamTrainingEvents = hunterExamTrainingEvents;
     }
 
+    public Integer getNonSubsidizableHunterExamTrainingEvents() {
+        return nonSubsidizableHunterExamTrainingEvents;
+    }
+
+    public void setNonSubsidizableHunterExamTrainingEvents(final Integer nonSubsidizableHunterExamTrainingEvents) {
+        this.nonSubsidizableHunterExamTrainingEvents = nonSubsidizableHunterExamTrainingEvents;
+    }
+
+    public boolean isNonSubsidizableHunterExamTrainingEventsOverridden() {
+        return nonSubsidizableHunterExamTrainingEventsOverridden;
+    }
+
+    public void setNonSubsidizableHunterExamTrainingEventsOverridden(final boolean nonSubsidizableHunterExamTrainingEventsOverridden) {
+        this.nonSubsidizableHunterExamTrainingEventsOverridden = nonSubsidizableHunterExamTrainingEventsOverridden;
+    }
+
     public DateTime getHunterExamTrainingEventsLastOverridden() {
         return hunterExamTrainingEventsLastOverridden;
     }
@@ -149,6 +190,14 @@ public class HunterExamTrainingStatistics
 
     public void setHunterExamTrainingParticipants(final Integer hunterExamTrainingParticipants) {
         this.hunterExamTrainingParticipants = hunterExamTrainingParticipants;
+    }
+
+    public Integer getNonSubsidizableHunterExamTrainingParticipants() {
+        return nonSubsidizableHunterExamTrainingParticipants;
+    }
+
+    public void setNonSubsidizableHunterExamTrainingParticipants(final Integer nonSubsidizableHunterExamTrainingParticipants) {
+        this.nonSubsidizableHunterExamTrainingParticipants = nonSubsidizableHunterExamTrainingParticipants;
     }
 
     @Override

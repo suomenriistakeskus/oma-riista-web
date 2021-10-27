@@ -49,9 +49,8 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Theories.class)
 public class HarvestDTOTransformerTest extends EmbeddedDatabaseTest {
 
-    // TODO Remove specVersion 7 when deer pilot 2020 is over.
     @DataPoints("harvestSpecVersions")
-    public static final HarvestSpecVersion[] HARVEST_SPEC_VERSIONS = {HarvestSpecVersion._7, HarvestSpecVersion._8};
+    public static final HarvestSpecVersion[] HARVEST_SPEC_VERSIONS = {HarvestSpecVersion._8};
 
     @Resource
     private HarvestDTOTransformer transformer;

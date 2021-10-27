@@ -23,8 +23,6 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,9 +35,6 @@ import java.util.Optional;
 import static fi.riista.feature.gamediary.GameDiarySpecs.observationsByHuntingYear;
 import static fi.riista.feature.gamediary.GameDiarySpecs.observer;
 import static fi.riista.feature.gamediary.GameDiarySpecs.temporalSort;
-import static fi.riista.feature.gamediary.observation.ObservationCategory.DEER_HUNTING;
-import static fi.riista.feature.gamediary.observation.ObservationCategory.MOOSE_HUNTING;
-import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_PENKKA;
@@ -51,8 +46,6 @@ import static org.springframework.data.jpa.domain.Specification.where;
 
 @Service
 public class MobileObservationFeature {
-
-    private static final Logger LOG = LoggerFactory.getLogger(MobileObservationFeature.class);
 
     @Resource
     private ObservationFieldsMetadataService observationFieldsMetadataService;
@@ -80,6 +73,9 @@ public class MobileObservationFeature {
 
     @Resource
     private MobileObservationDTOTransformer observationDtoTransformer;
+
+    @Resource
+    private MobileObservationService mobileObservationService;
 
     @Transactional(readOnly = true)
     public ObservationMetadataDTO getMobileObservationFieldMetadata(@Nonnull final ObservationSpecVersion specVersion) {
@@ -130,8 +126,8 @@ public class MobileObservationFeature {
             throw new MessageExposableValidationException("mobileClientRefId is missing");
         }
 
-        fixObservationCategoryIfNeeded(dto);
-        clearAmountWithinDeerHunting(dto);
+        mobileObservationService.fixObservationCategoryIfNeeded(dto);
+        mobileObservationService.clearAmountWithinDeerHunting(dto);
 
         final boolean carnivoreAuthorityInAnyRhy = modifierInfo.isCarnivoreAuthorityInAnyRhyAtObservationDate();
 
@@ -154,7 +150,7 @@ public class MobileObservationFeature {
             validator = observationFieldsMetadataService
                     .getObservationFieldValidator(observation.getObservationContext(), carnivoreAuthorityInAnyRhy);
 
-            fixMooseCalfAmountIfNeeded(observation, specVersion, validator);
+            mobileObservationService.fixMooseCalfAmountIfNeeded(observation, specVersion, validator);
         }
 
         observationRepository.saveAndFlush(observation);
@@ -179,8 +175,8 @@ public class MobileObservationFeature {
         final Observation observation = requireEntityService.requireObservation(dto.getId(), EntityPermission.UPDATE);
         DtoUtil.assertNoVersionConflict(observation, dto);
 
-        fixObservationCategoryIfNeeded(dto);
-        clearAmountWithinDeerHunting(dto);
+        mobileObservationService.fixObservationCategoryIfNeeded(dto);
+        mobileObservationService.clearAmountWithinDeerHunting(dto);
 
         final ObservationSpecVersion specVersion = dto.getObservationSpecVersion();
 
@@ -208,7 +204,7 @@ public class MobileObservationFeature {
                 validator = observationFieldsMetadataService
                         .getObservationFieldValidator(observation.getObservationContext(), carnivoreAuthorityInAnyRhy);
 
-                fixMooseCalfAmountIfNeeded(observation, specVersion, validator);
+                mobileObservationService.fixMooseCalfAmountIfNeeded(observation, specVersion, validator);
             }
 
             final Optional<List<?>> specimensOpt = Optional.ofNullable(specimens);
@@ -256,37 +252,6 @@ public class MobileObservationFeature {
                     groupHuntingDayService.unlinkDiaryEntryFromHuntingDay(observation, huntingDay.getGroup());
                 }
             }
-        }
-    }
-
-    private static void fixObservationCategoryIfNeeded(final MobileObservationDTO dto) {
-        if (!dto.getObservationSpecVersion().supportsCategory()) {
-            dto.setObservationCategory(Boolean.TRUE.equals(dto.getWithinMooseHunting()) ? MOOSE_HUNTING : NORMAL);
-            dto.setWithinMooseHunting(null);
-        }
-    }
-
-    // Done on behalf of mobile app. Would not be needed if there was not a bug in at least Android app.
-    private static void clearAmountWithinDeerHunting(final MobileObservationDTO dto) {
-        // only clear amounts if observation is made within deer hunting. It is possible to observe
-        // large carnivore within moose hunting and for those amount field needs to be present
-        if (dto.getObservationCategory() == DEER_HUNTING && dto.getAmount() != null) {
-            dto.setAmount(null);
-
-            // Log illegal amount in order to get traces how often does this bug occur.
-            LOG.debug("Amount not null while observation category is {}.", dto.getObservationCategory());
-        }
-    }
-
-    private static void fixMooseCalfAmountIfNeeded(final Observation observation,
-                                                   final ObservationSpecVersion dtoSpecVersion,
-                                                   final ObservationFieldValidator validator) {
-
-        if (!dtoSpecVersion.supportsMooselikeCalfAmount()
-                && validator.getContextSensitiveFields().getMooselikeCalfAmount().nonNullValueRequired()
-                && observation.getMooselikeCalfAmount() == null) {
-
-            observation.setMooselikeCalfAmount(0);
         }
     }
 

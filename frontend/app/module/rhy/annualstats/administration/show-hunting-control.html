@@ -36,7 +36,7 @@
             </table>
         </div>
 
-        <div ng-if="$ctrl.editable" class="text-right">
+        <div ng-if="$ctrl.editable && $ctrl.isModerator" class="text-right">
             <button class="btn btn-primary"
                     ng-click="$ctrl.openEditDialog()"
                     translate="global.button.edit"></button>

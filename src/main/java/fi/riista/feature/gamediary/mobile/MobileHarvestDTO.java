@@ -80,13 +80,13 @@ public class MobileHarvestDTO extends HarvestDTOBase {
 
     // Builder -->
 
-    public static Builder<?> builder(@Nonnull final HarvestSpecVersion specVersion) {
+    public static Builder<?, ?> builder(@Nonnull final HarvestSpecVersion specVersion) {
         return new ConcreteBuilder(specVersion);
     }
 
     // Allows sub-classing for tests and adding new fluent interface style methods.
-    public static abstract class Builder<SELF extends Builder<SELF>>
-            extends HarvestDTOBase.Builder<MobileHarvestDTO, SELF> {
+    public static abstract class Builder<DTO extends MobileHarvestDTO, SELF extends Builder<DTO, SELF>>
+            extends HarvestDTOBase.Builder<DTO, SELF> {
 
         protected Builder(@Nonnull final HarvestSpecVersion specVersion) {
             super();
@@ -117,14 +117,9 @@ public class MobileHarvestDTO extends HarvestDTOBase {
                     .withHarvestReportDone(harvest.isHarvestReportDone())
                     .withAmount(harvest.getAmount());
         }
-
-        @Override
-        protected MobileHarvestDTO createDTO() {
-            return new MobileHarvestDTO();
-        }
     }
 
-    private static final class ConcreteBuilder extends Builder<ConcreteBuilder> {
+    private static final class ConcreteBuilder extends Builder<MobileHarvestDTO, ConcreteBuilder> {
 
         public ConcreteBuilder(@Nonnull final HarvestSpecVersion specVersion) {
             super(specVersion);
@@ -134,5 +129,11 @@ public class MobileHarvestDTO extends HarvestDTOBase {
         protected ConcreteBuilder self() {
             return this;
         }
+
+        @Override
+        protected MobileHarvestDTO createDTO() {
+            return new MobileHarvestDTO();
+        }
+
     }
 }

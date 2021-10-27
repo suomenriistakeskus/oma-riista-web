@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import fi.riista.feature.account.area.PersonalArea;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
+import fi.riista.feature.moderatorarea.ModeratorArea;
 import fi.riista.util.DateUtil;
 import fi.riista.util.NumberUtils;
 import org.apache.commons.io.output.CloseShieldOutputStream;
@@ -60,6 +61,19 @@ public class OmaRiistaAreaZipBuilder {
         final String ownerName = personalArea.getPerson().getFullName();
         final String areaName = personalArea.getName();
         final LocalDateTime saveDateTime = DateUtil.toLocalDateTimeNullSafe(personalArea.getModificationTime());
+        final long areaSize = NumberUtils.squareMetersToHectares(zone.getComputedAreaSize());
+
+        return withOwnerName(ownerName)
+                .withAreaName(areaName)
+                .withSaveDateTime(saveDateTime)
+                .withAreaSize(areaSize);
+    }
+
+    public OmaRiistaAreaZipBuilder withMetadata(final ModeratorArea moderatorArea,
+                                                final GISZone zone) {
+        final String ownerName = moderatorArea.getModerator().getFullName();
+        final String areaName = moderatorArea.getName();
+        final LocalDateTime saveDateTime = DateUtil.toLocalDateTimeNullSafe(moderatorArea.getModificationTime());
         final long areaSize = NumberUtils.squareMetersToHectares(zone.getComputedAreaSize());
 
         return withOwnerName(ownerName)

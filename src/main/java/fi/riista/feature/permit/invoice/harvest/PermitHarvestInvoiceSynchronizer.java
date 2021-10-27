@@ -37,6 +37,7 @@ import static fi.riista.feature.permit.invoice.CreditorReferenceCalculator.compu
 import static fi.riista.feature.permit.invoice.InvoiceState.CREATED;
 import static fi.riista.feature.permit.invoice.InvoiceState.DELIVERED;
 import static fi.riista.feature.permit.invoice.InvoiceState.VOID;
+import static fi.riista.feature.permit.invoice.harvest.PermitHarvestInvoiceAccounts.PRIMARY_HARVEST_FEE_ACCOUNT;
 import static fi.riista.util.DateUtil.today;
 import static fi.riista.util.NumberUtils.bigDecimalIsPositive;
 import static java.lang.String.format;
@@ -110,7 +111,7 @@ public class PermitHarvestInvoiceSynchronizer {
         invoice.setInvoiceNumber(invoiceNumberService.getNextInvoiceNumber());
         invoice.updateInvoiceAndDueDate(today());
         invoice.setAmount(paymentAmount);
-        invoice.setIbanAndBic(FinnishBankAccount.MOOSELIKE_HARVEST_FEE_OP_POHJOLA);
+        invoice.setIbanAndBic(PRIMARY_HARVEST_FEE_ACCOUNT);
         invoice.setCreditorReference(creditorReference);
         invoice.setRecipientName(deliveryAddress.getRecipient());
         invoice.setRecipientAddress(addressRepository.save(deliveryAddress.toAddress()));

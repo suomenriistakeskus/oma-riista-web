@@ -93,6 +93,7 @@ public class BirdHarvestReportPdfBuilder {
                     break;
 
                 case PermitTypeCode.FOWL_AND_UNPROTECTED_BIRD:
+                case PermitTypeCode.FORBIDDEN_METHODS:
                     writer.writeParagraph(i18n(
                             "ILMOITUS POIKKEUSLUVALLA TAPAHTUNEEN PYYNNIN TULOKSESTA",
                             "ANMÄLAN OM RESULTAT FÖR FÅNGST SOM SKETT MED STÖD AV DISPENS"));

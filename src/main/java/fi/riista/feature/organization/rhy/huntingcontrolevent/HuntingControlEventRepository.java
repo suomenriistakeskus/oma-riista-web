@@ -6,7 +6,8 @@ import org.joda.time.LocalDate;
 
 import java.util.List;
 
-public interface HuntingControlEventRepository extends BaseRepository<HuntingControlEvent, Long> {
+public interface HuntingControlEventRepository extends BaseRepository<HuntingControlEvent, Long>, HuntingControlEventRepositoryCustom {
     List<HuntingControlEvent> findByRhyIdAndDateBetweenOrderByDateDesc(final Long orgId, final LocalDate startDate, final LocalDate endDate);
     List<HuntingControlEvent> findByRhyAndDateBetweenOrderByDateDesc(final Organisation org, final LocalDate startDate, final LocalDate endDate);
+    List<HuntingControlEvent> findByRhyAndDateBetweenOrderByDateAsc(final Organisation org, final LocalDate startDate, final LocalDate endDate);
 }

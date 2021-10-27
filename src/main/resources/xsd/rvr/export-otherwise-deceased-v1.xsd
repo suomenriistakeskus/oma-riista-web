@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema xmlns="http://riista.fi/integration/common/export/2018/10"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://riista.fi/integration/common/export/2018/10"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+    <xs:element name="deceasedAnimals">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="deceasedAnimal" type="DeceasedAnimal" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="DeceasedAnimal">
+        <xs:sequence>
+            <xs:element name="deceasedAnimalId" type="xs:long">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        Unique identifier of this deceased animal.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="gameSpeciesCode" type="xs:int">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">
+                        Official code of game species.
+
+                        E.g.:
+                        - bear: 47348
+                        - lynx: 46615
+                        - wolf: 46549
+                        - wolverine: 47212
+                        - otter: 47169
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="age" type="gameAgeEnum">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Age of deceased animal.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="gender" type="gameGenderEnum">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Gender of deceased animal.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="pointOfTime" type="xs:dateTime">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Time when animal has died or the deceased animal has been found.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="geoLocation" type="geoLocation">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Location where deceased animal has been found.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="cause" type="deathCauseEnum">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Cause of death of the deceased animal.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="causeOther" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Details when field cause has value 'OTHER'. Optional field.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="description" type="xs:string" minOccurs="0">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">More details. Free text.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="geoLocation">
+        <xs:annotation>
+            <xs:documentation xml:lang="en">
+                Location in ETRS-TM35FIN coordinate system.
+                Only estimated location, if noExactLocation is true.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="noExactLocation" type="xs:boolean"/>
+            <xs:element name="latitude" type="xs:int"/>
+            <xs:element name="longitude" type="xs:int"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="deathCauseEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="HIGHWAY_ACCIDENT">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Liikenneonnettomuus</xs:documentation>
+                    <xs:documentation xml:lang="en">Highway accident</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="RAILWAY_ACCIDENT">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Onnettomuus rautatiellä</xs:documentation>
+                    <xs:documentation xml:lang="en">Railway accident</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="SICKNESS_OR_STARVATION">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Sairaus / nääntyminen</xs:documentation>
+                    <xs:documentation xml:lang="en">Sickness or starvation</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="KILLED_BY_POLICES_ORDER">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Poliisin määräyksellä lopetettu</xs:documentation>
+                    <xs:documentation xml:lang="en">Killed by police's order</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="NECESSITY">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Pakkotila</xs:documentation>
+                    <xs:documentation xml:lang="en">Necessity</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="ILLEGAL_KILLING">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Laiton tappaminen (metsästysrikos, lainvoimainen tuomio)</xs:documentation>
+                    <xs:documentation xml:lang="en">Illegal killing (hunting crime, available conviction)</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="OTHER">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Muu syy. Tarkempi kuvaus kentässä causeOther (ei pakollinen tieto).</xs:documentation>
+                    <xs:documentation xml:lang="en">Other cause. Optional details in field otherCause.</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameAgeEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ADULT">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Aikuinen</xs:documentation>
+                    <xs:documentation xml:lang="en">Adult</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="YOUNG">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Alle 1 vuotias</xs:documentation>
+                    <xs:documentation xml:lang="en">Under 1 year old</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="UNKNOWN">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Ikää ei tiedetä</xs:documentation>
+                    <xs:documentation xml:lang="en">Age unknown</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="gameGenderEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="FEMALE">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Naaras</xs:documentation>
+                    <xs:documentation xml:lang="en">Female</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="MALE">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Uros</xs:documentation>
+                    <xs:documentation xml:lang="en">Male</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="UNKNOWN">
+                <xs:annotation>
+                    <xs:documentation xml:lang="fi">Sukupuolta ei tiedetä</xs:documentation>
+                    <xs:documentation xml:lang="en">Gender unknown</xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

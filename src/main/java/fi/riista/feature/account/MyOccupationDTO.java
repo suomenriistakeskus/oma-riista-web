@@ -29,6 +29,10 @@ public class MyOccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndE
 
         dto.setOrganisation(new OrganisationDTO(occupation.getOrganisation()));
 
+        dto.setNameVisibility(occupation.isNameVisibility());
+        dto.setPhoneNumberVisibility(occupation.isPhoneNumberVisibility());
+        dto.setEmailVisibility(occupation.isEmailVisibility());
+
         return dto;
     }
 
@@ -45,6 +49,10 @@ public class MyOccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndE
 
     @Valid
     private OrganisationDTO organisation;
+
+    private boolean nameVisibility;
+    private boolean phoneNumberVisibility;
+    private boolean emailVisibility;
 
     @Override
     public Long getId() {
@@ -114,5 +122,29 @@ public class MyOccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndE
 
     public void setOrganisation(OrganisationDTO organisation) {
         this.organisation = organisation;
+    }
+
+    public boolean isNameVisibility() {
+        return nameVisibility;
+    }
+
+    public void setNameVisibility(final boolean nameVisibility) {
+        this.nameVisibility = nameVisibility;
+    }
+
+    public boolean isPhoneNumberVisibility() {
+        return phoneNumberVisibility;
+    }
+
+    public void setPhoneNumberVisibility(final boolean phoneNumberVisibility) {
+        this.phoneNumberVisibility = phoneNumberVisibility;
+    }
+
+    public boolean isEmailVisibility() {
+        return emailVisibility;
+    }
+
+    public void setEmailVisibility(final boolean emailVisibility) {
+        this.emailVisibility = emailVisibility;
     }
 }

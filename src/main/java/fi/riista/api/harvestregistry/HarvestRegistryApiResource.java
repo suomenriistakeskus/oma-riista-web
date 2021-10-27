@@ -1,5 +1,7 @@
 package fi.riista.api.harvestregistry;
 
+import fi.riista.feature.harvestregistry.HarvestRegistryAuditService;
+import fi.riista.feature.harvestregistry.HarvestRegistryCoordinatorRequestDTO;
 import fi.riista.feature.harvestregistry.HarvestRegistryFeature;
 import fi.riista.feature.harvestregistry.HarvestRegistryItemDTO;
 import fi.riista.feature.harvestregistry.HarvestRegistryRequestDTO;
@@ -28,6 +30,9 @@ public class HarvestRegistryApiResource {
     @Resource
     private HarvestRegistryExcelFeature harvestRegistryExcelFeature;
 
+    @Resource
+    private HarvestRegistryAuditService harvestRegistryAuditService;
+
     @PostMapping(value = "/me")
     public Slice<HarvestRegistryItemDTO> listMinePaged(final @RequestBody @Valid HarvestRegistryRequestDTO dto,
                                                        final Locale locale) {
@@ -36,20 +41,31 @@ public class HarvestRegistryApiResource {
 
     @PostMapping(value = "/{personId:\\d+}")
     public Slice<HarvestRegistryItemDTO> listForPersonPaged(final @PathVariable long personId,
-                                                            final @RequestBody @Valid HarvestRegistryRequestDTO dto,
-                                                            final Locale locale) {
-        return harvestRegistryFeature.listForPerson(personId, dto, locale);
+                                                            final @RequestBody @Valid HarvestRegistryRequestDTO dto) {
+        return harvestRegistryFeature.listForPerson(personId, dto);
     }
 
     @PostMapping(value = "/excel")
-    public ModelAndView exportExcel(final @Valid @RequestBody HarvestRegistryRequestDTO dto,
+    public ModelAndView exportExcel(final @RequestBody @Valid HarvestRegistryRequestDTO dto,
                                     final Locale locale) {
         return new ModelAndView(harvestRegistryExcelFeature.export(dto, locale));
     }
 
     @PostMapping
-    public Slice<HarvestRegistryItemDTO> listPaged(final @RequestBody @Valid HarvestRegistryRequestDTO dto,
-                                                   final Locale locale) {
-        return harvestRegistryFeature.listPaged(dto, locale);
+    public Slice<HarvestRegistryItemDTO> listPaged(final @RequestBody @Valid HarvestRegistryRequestDTO dto) {
+        return harvestRegistryFeature.listPaged(dto);
+    }
+
+    @PostMapping(value = "/rhy")
+    public Slice<HarvestRegistryItemDTO> listForCoordinator(final @RequestBody @Valid HarvestRegistryCoordinatorRequestDTO dto) {
+        harvestRegistryAuditService.addSearch(dto);
+        return harvestRegistryFeature.listForCoordinator(dto);
+    }
+
+    @PostMapping(value = "/rhy/excel")
+    public ModelAndView exportRhyExcel(final @RequestBody @Valid HarvestRegistryCoordinatorRequestDTO dto,
+                                       final Locale locale) {
+        harvestRegistryAuditService.addSearch(dto);
+        return new ModelAndView(harvestRegistryExcelFeature.exportRhy(dto, locale));
     }
 }

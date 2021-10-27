@@ -141,11 +141,8 @@ public class RegisterAccountFeatureTest extends EmbeddedDatabaseTest {
 
 
     private EmailVerificationResponseDTO assertCanStartRegistration(final String email) {
-        final RegisterAccountDTO sendEmailDto = new RegisterAccountDTO();
-        sendEmailDto.setEmail(email);
-        sendEmailDto.setLang("fi");
 
-        final String emailToken = registerAccountFeature.sendEmail(sendEmailDto, request);
+        final String emailToken = registerAccountFeature.sendEmail(email, "fi", request);
 
         final EmailVerificationDTO emailDto = new EmailVerificationDTO();
         emailDto.setToken(emailToken);

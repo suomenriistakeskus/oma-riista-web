@@ -4,6 +4,7 @@ import fi.riista.feature.common.repository.BaseRepository;
 import fi.riista.feature.gamediary.GameSpecies;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,4 +38,6 @@ public interface HarvestPermitApplicationSpeciesAmountRepository
 
         return Optional.of(speciesAmounts.get(0));
     }
+
+    List<HarvestPermitApplicationSpeciesAmount> findByHarvestPermitApplicationIn(Collection<HarvestPermitApplication> applications);
 }

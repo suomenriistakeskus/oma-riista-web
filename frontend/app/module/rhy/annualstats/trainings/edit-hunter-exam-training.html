@@ -1,4 +1,5 @@
-<form name="hunterExamTrainingForm" role="form" class="form form-horizontal r-annual-statistics-hunter-exam-training-form"
+<form name="hunterExamTrainingForm" role="form"
+      class="form form-horizontal r-annual-statistics-hunter-exam-training-form"
       autocomplete="off"
       r-force-show-errors-check-validity>
 
@@ -8,47 +9,118 @@
     </div>
 
     <div class="modal-body">
-        <div ng-if="$ctrl.isModerator" class="form-group" show-errors>
-            <label for="moderatorOverriddenHunterExamTrainingEvents" class="control-label">
-                <span translate="rhy.annualStats.trainings.hunterExam.form.moderatorOverriddenHunterExamTrainingEvents"></span>
-                <span class="glyphicon glyphicon-asterisk text-danger" ng-if="$ctrl.hunterExamTrainingEventsOverridden"></span>
-            </label>
-
-            <div class="form-control-wrapper input-group">
-                <input type="number" name="moderatorOverriddenHunterExamTrainingEvents" id="moderatorOverriddenHunterExamTrainingEvents"
-                       min="0" max="999" step="1"
-                       class="form-control no-spinner"
-                       ng-model="$ctrl.data.moderatorOverriddenHunterExamTrainingEvents"
-                       ng-required="$ctrl.hunterExamTrainingEventsOverridden"/>
-
-                <div class="input-group-addon">
-                    <span translate="global.pcs"></span>
-                </div>
-            </div>
-
-            <div class="form-control-offset-wrapper" ng-show="hunterExamTrainingForm.moderatorOverriddenHunterExamTrainingEvents.$invalid">
-                <p class="help-block" translate="global.messages.invalid"></p>
+        <div class="row rhy-training-filter-selection">
+            <div class="col-xs-offset-2 col-xs-8 ">
+                <uib-tabset type="pills" active="$ctrl.selectedTab" justified=false>
+                    <uib-tab index="0" select="$ctrl.selectTab(0)">
+                        <uib-tab-heading>
+                            <span translate="rhy.annualStats.trainings.filterMode.SUBSIDIZED"></span>
+                        </uib-tab-heading>
+                    </uib-tab>
+                    <uib-tab index="1" select="$ctrl.selectTab(1)">
+                        <uib-tab-heading>
+                            <span translate="rhy.annualStats.trainings.filterMode.OTHER"></span>
+                        </uib-tab-heading>
+                    </uib-tab>
+                </uib-tabset>
             </div>
         </div>
 
-        <div class="form-group" show-errors>
-            <label for="hunterExamParticipants" class="control-label">
-                <span translate="rhy.annualStats.trainings.hunterExam.form.hunterExamParticipants"></span>
-            </label>
+        <div ng-if="$ctrl.selectedTab === 0">
+            <div ng-if="$ctrl.isModerator" class="form-group" show-errors>
+                <label for="moderatorOverriddenHunterExamTrainingEvents" class="control-label">
+                    <span translate="rhy.annualStats.trainings.hunterExam.form.moderatorOverriddenHunterExamTrainingEvents"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"
+                          ng-if="$ctrl.hunterExamTrainingEventsOverridden"></span>
+                </label>
 
-            <div class="form-control-wrapper input-group">
-                <input type="number" name="hunterExamParticipants" id="hunterExamParticipants"
-                       min="0" max="99999" ng-step="1"
-                       class="form-control no-spinner"
-                       ng-model="$ctrl.data.hunterExamTrainingParticipants"/>
+                <div class="form-control-wrapper input-group">
+                    <input type="number" name="moderatorOverriddenHunterExamTrainingEvents"
+                           id="moderatorOverriddenHunterExamTrainingEvents"
+                           min="0" max="999" step="1"
+                           class="form-control no-spinner"
+                           ng-model="$ctrl.data.moderatorOverriddenHunterExamTrainingEvents"
+                           ng-required="$ctrl.hunterExamTrainingEventsOverridden"/>
 
-                <div class="input-group-addon">
-                    <span translate="global.personUnit"></span>
+                    <div class="input-group-addon">
+                        <span translate="global.pcs"></span>
+                    </div>
+                </div>
+
+                <div class="form-control-offset-wrapper"
+                     ng-show="hunterExamTrainingForm.moderatorOverriddenHunterExamTrainingEvents.$invalid">
+                    <p class="help-block" translate="global.messages.invalid"></p>
                 </div>
             </div>
 
-            <div class="form-control-offset-wrapper" ng-show="hunterExamTrainingForm.hunterExamParticipants.$invalid">
-                <p class="help-block" translate="global.messages.invalid"></p>
+            <div class="form-group" show-errors>
+                <label for="hunterExamParticipants" class="control-label">
+                    <span translate="rhy.annualStats.trainings.hunterExam.form.hunterExamParticipants"></span>
+                </label>
+
+                <div class="form-control-wrapper input-group">
+                    <input type="number" name="hunterExamParticipants" id="hunterExamParticipants"
+                           min="0" max="99999" ng-step="1"
+                           class="form-control no-spinner"
+                           ng-model="$ctrl.data.hunterExamTrainingParticipants"/>
+
+                    <div class="input-group-addon">
+                        <span translate="global.personUnit"></span>
+                    </div>
+                </div>
+
+                <div class="form-control-offset-wrapper"
+                     ng-show="hunterExamTrainingForm.hunterExamParticipants.$invalid">
+                    <p class="help-block" translate="global.messages.invalid"></p>
+                </div>
+            </div>
+        </div>
+
+        <div ng-if="$ctrl.selectedTab === 1">
+            <div class="form-group" show-errors>
+                <label for="nonSubsidizableHunterExamTrainingEvents" class="control-label">
+                    <span translate="rhy.annualStats.trainings.hunterExam.form.hunterExamEvents"></span>
+                </label>
+
+                <div class="form-control-wrapper input-group">
+                    <input type="number" name="nonSubsidizableHunterExamTrainingEvents"
+                           id="nonSubsidizableHunterExamTrainingEvents"
+                           min="0" max="999" ng-step="1"
+                           class="form-control no-spinner"
+                           ng-model="$ctrl.data.nonSubsidizableHunterExamTrainingEvents"/>
+
+                    <div class="input-group-addon">
+                        <span translate="global.pcs"></span>
+                    </div>
+                </div>
+
+                <div class="form-control-offset-wrapper"
+                     ng-show="hunterExamTrainingForm.nonSubsidizableHunterExamTrainingEvents.$invalid">
+                    <p class="help-block" translate="global.messages.invalid"></p>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="nonSubsidizableHunterExamTrainingParticipants" class="control-label">
+                    <span translate="rhy.annualStats.trainings.hunterExam.form.hunterExamParticipants"></span>
+                </label>
+
+                <div class="form-control-wrapper input-group">
+                    <input type="number" name="nonSubsidizableHunterExamTrainingParticipants"
+                           id="nonSubsidizableHunterExamTrainingParticipants"
+                           min="0" max="99999" ng-step="1"
+                           class="form-control no-spinner"
+                           ng-model="$ctrl.data.nonSubsidizableHunterExamTrainingParticipants"/>
+
+                    <div class="input-group-addon">
+                        <span translate="global.personUnit"></span>
+                    </div>
+                </div>
+
+                <div class="form-control-offset-wrapper"
+                     ng-show="hunterExamTrainingForm.nonSubsidizableHunterExamTrainingParticipants.$invalid">
+                    <p class="help-block" translate="global.messages.invalid"></p>
+                </div>
             </div>
         </div>
     </div>

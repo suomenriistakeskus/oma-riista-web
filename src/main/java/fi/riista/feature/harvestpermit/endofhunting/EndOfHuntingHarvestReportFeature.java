@@ -1,7 +1,6 @@
 package fi.riista.feature.harvestpermit.endofhunting;
 
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.harvest.Harvest;
@@ -36,9 +35,6 @@ public class EndOfHuntingHarvestReportFeature {
     private HarvestReportModeratorService harvestReportModeratorService;
 
     @Resource
-    private DeerPilotService deerPilotService;
-
-    @Resource
     private HarvestDTOTransformer harvestDTOTransformer;
 
     @Resource
@@ -58,9 +54,7 @@ public class EndOfHuntingHarvestReportFeature {
         final SystemUser activeUser = activeUserService.requireActiveUser();
         final List<Harvest> acceptedHarvests = harvestPermit.getAcceptedHarvestForEndOfHuntingReport();
 
-        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED
-                // TODO Remove this when deer pilot 2020 is over.
-                .revertIfNotOnDeerPilot(deerPilotService.isPilotPermit(harvestPermit.getId()));
+        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED;
 
         final List<HarvestDTO> harvestDTOs = harvestDTOTransformer.apply(acceptedHarvests, specVersion);
 

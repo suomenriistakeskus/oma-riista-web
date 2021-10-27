@@ -17,6 +17,7 @@ import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.application.DeliveryAddress;
 import fi.riista.util.DateUtil;
+import fi.riista.util.LocalisedEnum;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
@@ -36,7 +37,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.Transient;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.HashSet;
@@ -82,7 +82,7 @@ public class NominationDecision extends LifecycleEntity<Long> implements Decisio
         return NominationDecisionName.getDecisionName(decisionType).getTranslation(locale);
     }
 
-    public enum NominationDecisionType {
+    public enum NominationDecisionType implements LocalisedEnum {
         // Nimittäminen
         NOMINATION,
 

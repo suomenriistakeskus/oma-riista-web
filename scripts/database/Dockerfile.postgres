@@ -10,8 +10,11 @@
 # $ ./init-development-db.sh localhost 5432
 #
 
-FROM postgres:10.9
+FROM postgres:12.3
 
-RUN apt-get update && apt-get install -y postgresql-10-postgis-2.5
+# No password
+ENV POSTGRES_HOST_AUTH_METHOD=trust
+
+RUN apt-get update && apt-get install -y postgresql-12-postgis-2.5
 
 EXPOSE 5432

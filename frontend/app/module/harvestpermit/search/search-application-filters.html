@@ -104,6 +104,19 @@
 
     <div uib-collapse="$ctrl.collapseAdditionalFilters">
         <div class="form-group">
+            <label for="decisionLocale" translate="decision.settings.document.locale"></label>
+
+            <select name="decisionLocale" id="decisionLocale"
+                    class="form-control"
+                    ng-model="$ctrl.filters.decisionLocale"
+                    ng-disabled="$ctrl.filters.applicationNumber"
+                    ng-options="lang as ('global.languageName.' + lang | translate) for lang in $ctrl.languages"
+                    ng-change="$ctrl.onFilterChange()">
+                <option value=""></option>
+            </select>
+        </div>
+
+        <div class="form-group">
             <label for="gameSpecies" translate="harvestpermit.application.selectedSpecies"></label>
 
             <select name="gameSpecies" id="gameSpecies"

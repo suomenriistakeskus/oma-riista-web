@@ -18,7 +18,7 @@ public class ContentDispositionUtil {
     }
 
     public static String decodeAttachmentFileName(final String contentDisposition) {
-        return contentDisposition.split("filename=")[1].replace("\"", "");
+        return contentDisposition.split("filename=")[1].replaceAll("[\\[\\]\"]", "");
     }
 
     public static void addHeader(final HttpServletResponse response, final String filename) {

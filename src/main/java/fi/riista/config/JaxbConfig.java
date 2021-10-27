@@ -158,6 +158,16 @@ public class JaxbConfig {
         return activateLoggingValidation(marshaller);
     }
 
+    @Bean(name = "otherwiseDeceasedExportJaxbMarshaller")
+    public Jaxb2Marshaller otherwiseDeceasedExportJaxbMarshaller() {
+        final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
+
+        marshaller.setMarshallerProperties(JaxbUtils.getDefaultMarshallerProperties(true));
+        marshaller.setContextPath("fi.riista.integration.common.export.otherwisedeceased");
+        marshaller.setSchema(new ClassPathResource("/xsd/rvr/export-otherwise-deceased-v1.xsd"));
+
+        return activateLoggingValidation(marshaller);
+    }
 
     private static Jaxb2Marshaller activateLoggingValidation(final Jaxb2Marshaller marshaller) {
         // activate

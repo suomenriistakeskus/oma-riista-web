@@ -56,7 +56,7 @@ public class HuntingClubGroupCrudFeature_MooseDataCardTest extends EmbeddedDatab
 
             onSavedAndAuthenticated(createUser(person), () -> {
                 final HuntingClubGroup transientGroup = model().newHuntingClubGroup(club);
-                feature.create(HuntingClubGroupDTO.create(transientGroup, groupGameSpecies, groupHarvestPermit, false));
+                feature.create(HuntingClubGroupDTO.create(transientGroup, groupGameSpecies, groupHarvestPermit));
             });
         });
     }
@@ -85,7 +85,7 @@ public class HuntingClubGroupCrudFeature_MooseDataCardTest extends EmbeddedDatab
             model().newOccupation(club, person, OccupationType.SEURAN_YHDYSHENKILO);
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                feature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), group.getHarvestPermit(), false));
+                feature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), group.getHarvestPermit()));
             });
         }));
     }
@@ -98,7 +98,7 @@ public class HuntingClubGroupCrudFeature_MooseDataCardTest extends EmbeddedDatab
             model().newHuntingClubGroupMember(person, group, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
 
             onSavedAndAuthenticated(createUser(person), () -> {
-                feature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), group.getHarvestPermit(), false));
+                feature.update(HuntingClubGroupDTO.create(group, group.getSpecies(), group.getHarvestPermit()));
             });
         }));
     }

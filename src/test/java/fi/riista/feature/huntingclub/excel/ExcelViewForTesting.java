@@ -30,12 +30,11 @@ import java.util.Map;
 
 public class ExcelViewForTesting extends ClubHuntingDataExcelView {
 
-    public ExcelViewForTesting(final EnumLocaliser localiser, boolean includeDeerPilotFields) {
+    public ExcelViewForTesting(final EnumLocaliser localiser) {
         super(localiser,
               mooselikeSpeciesIndex(),
               LocalisedString.of("Seura", "Klubben"),
-              excelData(),
-              includeDeerPilotFields);
+              excelData());
     }
 
     public void build(final Workbook workbook) {
@@ -91,8 +90,12 @@ public class ExcelViewForTesting extends ClubHuntingDataExcelView {
         observation.setMooselikeMaleAmount(1);
         observations.add(observation);
 
+        final LocalisedString rhyName = LocalisedString.of("Rhy1", "Rhy1");
+
+        final String permitNumber = "123456";
+
         final List<ClubHuntingDataExcelDTO> data = new ArrayList<>();
-        data.add(new ClubHuntingDataExcelDTO(groupName, days, harvests, observations));
+        data.add(new ClubHuntingDataExcelDTO(groupName, days, harvests, observations, rhyName, permitNumber));
         return data;
     }
 

@@ -107,7 +107,7 @@ angular.module('app.harvestpermit.application.deportation.species', ['app.metada
         }
 
         function getSpeciesList() {
-            return _.chain(Species.getAllPermitSpecies())
+            return _.chain(Species.getPermitSpeciesWithoutAlienSpecies())
                 .map(function (species) {
                     return TranslatedSpecies.translateSpecies(species);
                 })

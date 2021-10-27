@@ -1,0 +1,36 @@
+.r-otherwise-deceased {
+
+  th {
+    border: none;
+  }
+
+  .header-row {
+    background-color: #e3e3e3;
+    padding-top: 8px;
+    padding-bottom: 16px;
+
+  }
+
+  .mandatory-field:after {
+    font-family: FontAwesome;
+    content: "\f069";
+    color: @r-red;
+    font-size: small;
+    white-space: nowrap;
+    margin-left: 6px;
+  }
+
+  .details {
+    tr:nth-child(even) > td {
+      padding-bottom: 1em;
+      padding-right: 10px;
+    }
+    tr > td {
+      vertical-align: top;
+    }
+  }
+
+  .buttons {
+    padding-top: 1em;
+  }
+}

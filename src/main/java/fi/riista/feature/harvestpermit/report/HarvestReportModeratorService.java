@@ -1,6 +1,5 @@
 package fi.riista.feature.harvestpermit.report;
 
-import fi.riista.feature.account.pilot.DeerPilotRepository;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.HarvestChangeHistory;
 import fi.riista.feature.gamediary.HarvestChangeHistoryRepository;
@@ -32,9 +31,6 @@ public class HarvestReportModeratorService {
     @Resource
     private HarvestChangeHistoryRepository harvestChangeHistoryRepository;
 
-    @Resource
-    private DeerPilotRepository deerPilotRepository;
-
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void changeHarvestReportState(final HarvestReportStateChangeDTO dto,
                                          final SystemUser activeUser,
@@ -49,7 +45,7 @@ public class HarvestReportModeratorService {
         final HarvestPermit permit = harvest.getHarvestPermit();
         assertPermitHarvestReportNotApproved(permit);
 
-        validate(harvest, resolveHarvestSpecVersion(isDeerPilotEnabled(harvest)));
+        validate(harvest, HarvestSpecVersion.CURRENTLY_SUPPORTED);
 
         final HarvestReportState reportState = dto.getTo();
         harvest.setHarvestReportState(reportState);
@@ -67,7 +63,7 @@ public class HarvestReportModeratorService {
     public void approvePermitHarvestReportsInBulk(final SystemUser activeUser, final HarvestPermit permit) {
         assertPermitHarvestReportNotApproved(permit);
 
-        final HarvestSpecVersion specVersion = resolveHarvestSpecVersion(isDeerPilotEnabled(permit));
+        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED;
 
         permit.getHarvests().stream()
                 .filter(HasHarvestReportState::isHarvestReportSentForApproval)
@@ -76,21 +72,6 @@ public class HarvestReportModeratorService {
                     harvest.setHarvestReportState(HarvestReportState.APPROVED);
                     createHarvestChangeEvent(harvest, activeUser, HarvestReportState.APPROVED, null);
                 });
-    }
-
-    // TODO Remove this when deer pilot 2020 is over.
-    private HarvestSpecVersion resolveHarvestSpecVersion(final boolean isDeerPilotEnabled) {
-        return HarvestSpecVersion.CURRENTLY_SUPPORTED.revertIfNotOnDeerPilot(isDeerPilotEnabled);
-    }
-
-    // TODO Remove this when deer pilot 2020 is over.
-    private boolean isDeerPilotEnabled(final Harvest harvest) {
-        return deerPilotRepository.isPersonInPilotGroup(harvest.getAuthor());
-    }
-
-    // TODO Remove this when deer pilot 2020 is over.
-    private boolean isDeerPilotEnabled(final HarvestPermit permit) {
-        return deerPilotRepository.findByHarvestPermitId(permit.getId()).isPresent();
     }
 
     private static void assertPermitHarvestReportNotApproved(final HarvestPermit permit) {
@@ -104,16 +85,15 @@ public class HarvestReportModeratorService {
         final int huntingYear = DateUtil.huntingYearContaining(harvest.getPointOfTimeAsLocalDate());
         final HarvestReportingType reportingType = harvest.resolveReportingType();
 
-        // Use false as deer pilot user since bulk save will not fill the voluntary fields
         final RequiredHarvestFields.Report requirements =
-                RequiredHarvestFields.getFormFields(huntingYear, gameSpeciesCode, reportingType, false, false);
+                RequiredHarvestFields.getFormFields(huntingYear, gameSpeciesCode, reportingType, false);
         new HarvestFieldValidator(requirements, harvest).validateAll().throwOnErrors();
 
         final RequiredHarvestFields.Specimen specimenFieldRequirements = RequiredHarvestFields.getSpecimenFields(
                 huntingYear, gameSpeciesCode, harvest.getHuntingMethod(), reportingType, false, specVersion);
 
         for (final HarvestSpecimen harvestSpecimen : harvest.getSortedSpecimens()) {
-            new HarvestSpecimenValidator(specimenFieldRequirements, harvestSpecimen, gameSpeciesCode, false, false)
+            new HarvestSpecimenValidator(specimenFieldRequirements, harvestSpecimen, gameSpeciesCode, false)
                     .validateAll()
                     .throwOnErrors();
         }

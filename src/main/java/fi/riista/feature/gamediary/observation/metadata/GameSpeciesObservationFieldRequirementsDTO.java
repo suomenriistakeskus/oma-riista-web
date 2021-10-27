@@ -5,7 +5,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import fi.riista.feature.common.entity.Required;
-import fi.riista.feature.common.entity.RequiredWithinDeerPilot;
 import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationType;
@@ -148,7 +147,7 @@ public class GameSpeciesObservationFieldRequirementsDTO {
 
     private final int gameSpeciesCode;
 
-    private final Map<String, RequiredWithinDeerPilot> baseFields;
+    private final Map<String, Required> baseFields;
     private final Map<String, Required> specimenFields = Collections.emptyMap(); // currently empty
 
     private final List<ContextSensitiveFieldSetDTO> contextSensitiveFieldSets;
@@ -175,16 +174,16 @@ public class GameSpeciesObservationFieldRequirementsDTO {
         this.gameSpeciesCode = Objects.requireNonNull(baseFields.getSpecies(), "species is null").getOfficialCode();
 
         final Required withinMooseHuntingReq = baseFields.getWithinMooseHunting();
-        final RequiredWithinDeerPilot withinDeerHuntingReq = baseFields.getWithinDeerHunting();
-        final ImmutableMap.Builder<String, RequiredWithinDeerPilot> baseFieldBuilder = ImmutableMap.builder();
+        final Required withinDeerHuntingReq = baseFields.getWithinDeerHunting();
+        final ImmutableMap.Builder<String, Required> baseFieldBuilder = ImmutableMap.builder();
 
         if (!omitNullValueRequirements || withinMooseHuntingReq != Required.NO) {
             baseFieldBuilder.put(
                     ObservationFieldRequirements.FIELD_WITHIN_MOOSE_HUNTING,
-                    RequiredWithinDeerPilot.from(withinMooseHuntingReq));
+                    withinMooseHuntingReq);
         }
 
-        if (!omitNullValueRequirements || withinDeerHuntingReq != RequiredWithinDeerPilot.NO) {
+        if (!omitNullValueRequirements || withinDeerHuntingReq != Required.NO) {
             baseFieldBuilder.put(ObservationFieldRequirements.FIELD_WITHIN_DEER_HUNTING, withinDeerHuntingReq);
         }
 
@@ -218,7 +217,7 @@ public class GameSpeciesObservationFieldRequirementsDTO {
         return gameSpeciesCode;
     }
 
-    public Map<String, RequiredWithinDeerPilot> getBaseFields() {
+    public Map<String, Required> getBaseFields() {
         return baseFields;
     }
 

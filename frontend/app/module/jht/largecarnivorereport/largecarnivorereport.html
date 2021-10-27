@@ -1,0 +1,21 @@
+<div class="row">
+    <div class="col-xs-4 col-md-3">
+        <label for="yearSelection" class="control-label" style="margin-right: 10px">
+            <span translate="global.huntingYear"></span>
+        </label>
+
+        <select name="yearSelection" id="yearSelection"
+                class="form-control"
+                style="display: inline-block; width: auto"
+                ng-model="$ctrl.huntingYear"
+                ng-options="year for year in $ctrl.availableYears">
+        </select>
+    </div>
+    <div class="col-xs-3 col-md-3">
+        <button class="btn btn-primary"
+                id="btm"
+                translate="jht.largeCarnivoreReport.button"
+                ng-click="$ctrl.exportExcel()">
+        </button>
+    </div>
+</div>

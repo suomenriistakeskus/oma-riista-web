@@ -4,6 +4,7 @@ import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HasParentApplication;
 import fi.riista.feature.permit.application.derogation.area.DerogationPermitApplicationAreaInfo;
 import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -30,16 +31,11 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(AccessType.FIELD)
-public class ResearchPermitApplication extends LifecycleEntity<Long> implements DerogationPermitApplicationAreaInfo {
+public class ResearchPermitApplication extends HasParentApplication implements DerogationPermitApplicationAreaInfo {
 
     public static final String ID_COLUMN_NAME = "research_permit_application_id";
 
     private Long id;
-
-    @NotNull
-    @JoinColumn(unique = true, nullable = false)
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    private HarvestPermitApplication harvestPermitApplication;
 
     @Column
     @Min(0)
@@ -65,7 +61,7 @@ public class ResearchPermitApplication extends LifecycleEntity<Long> implements 
         requireNonNull(application);
         checkArgument(application.getHarvestPermitCategory() == HarvestPermitCategory.RESEARCH,
                 "Application category must be research");
-        this.harvestPermitApplication = application;
+        setHarvestPermitApplication(application);
     }
 
     public ResearchPermitApplication() {}
@@ -84,10 +80,6 @@ public class ResearchPermitApplication extends LifecycleEntity<Long> implements 
     @Override
     public void setId(final Long id) {
         this.id = id;
-    }
-
-    public HarvestPermitApplication getHarvestPermitApplication() {
-        return harvestPermitApplication;
     }
 
     @Override

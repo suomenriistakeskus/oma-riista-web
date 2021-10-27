@@ -148,19 +148,31 @@ angular.module('app.moosepermit.reports', [])
                 '3': {name: 'Vuosittaiset havainnot metsästystavoittain'},
                 '4': {name: 'Kuukausittaiset havainnot metsästystavoittain'},
                 '5': {name: 'Kauden havainnot metsästystavan mukaan'}
+            },
+            'WTD_HARVEST_ANTLER_FIGURE': {
+                'hist_1': {name: 'Sarvipiikkien lukumäärä'},
+                'hist_2': {name: 'Sarvien kärkiväli'},
+                'hist_3': {name: 'Sarventyven ympärysmitta'},
+                'hist_4': {name: 'Sarven pituus'},
+                'hist_5': {name: 'Sarvien sisäleveys'}
+            },
+            'WTD_HARVEST_WEIGHT_FIGURE': {
+                'hist_6': {name: 'Ruhopaino, aikuiset pukit'},
+                'hist_7': {name: 'Ruhopaino, aikuiset naaraat'},
+                'hist_8': {name: 'Ruhopaino, vasat'}
             }
-
         }
     })
     .service('LukeUrlService', function ($httpParamSerializer) {
-        this.get = function (permitId, clubId, lukeOrg, lukePresentation, file) {
+        this.get = function (permitId, clubId, lukeOrg, lukePresentation, file, activeOccupationId) {
             var url = '/api/v1/moosepermit/' + permitId + '/luke-reports';
 
             return url + '?' + $httpParamSerializer({
                 clubId: clubId,
                 org: lukeOrg,
                 presentation: lukePresentation,
-                fileName: file
+                fileName: file,
+                activeOccupationId: activeOccupationId
             });
         };
     })
@@ -197,7 +209,7 @@ angular.module('app.moosepermit.reports', [])
                 }
             });
     })
-    .controller('MoosePermitSingleLukeReportController', function ($scope, LukeUrlService,
+    .controller('MoosePermitSingleLukeReportController', function ($scope, LukeUrlService, ActiveRoleService,
                                                                    permitId, clubId, orgName, presentationName, file) {
         var $ctrl = this;
         $ctrl.isPresentationTable = function () {
@@ -206,10 +218,10 @@ angular.module('app.moosepermit.reports', [])
                 presentationName === 'WTD_PRE2020_TABLE_FULL';
         };
 
-        $ctrl.url = LukeUrlService.get(permitId, clubId, orgName, presentationName, file);
+        $ctrl.url = LukeUrlService.get(permitId, clubId, orgName, presentationName, file, ActiveRoleService.getActiveOccupationId());
     })
     .controller('MoosePermitReportsFilterController', function ($state, $stateParams, $q, $filter, $translate, $httpParamSerializer,
-                                                                $timeout,
+                                                                $timeout, ActiveRoleService,
                                                                 LukeTocMapping,
                                                                 MoosePermitListSelectedHuntingYearService,
                                                                 MoosePermitSelection, LukeUrlService,
@@ -306,11 +318,6 @@ angular.module('app.moosepermit.reports', [])
             return $ctrl.org.name !== 'CLUB' || lukeReportParams.clubReportsExist;
         };
 
-        $ctrl.addForPilotOnlySeparator = function (presentation) {
-            return presentation.name === 'WTD_HARVEST_FIGURE' || presentation.name === 'WTD_HARVEST_MAP' ||
-                presentation.name === 'WTD_HARVEST_TABLE_FULL';
-        };
-
         $ctrl.isPresentationTable = function () {
             return $ctrl.presentation.name === 'MOOSE_TABLE_COMPARISON' || $ctrl.presentation.name === 'MOOSE_TABLE_FULL' ||
                 $ctrl.presentation.name === 'WTD_OBSERVATION_TABLE_FULL' || $ctrl.presentation.name === 'WTD_HARVEST_TABLE_FULL' ||
@@ -318,7 +325,8 @@ angular.module('app.moosepermit.reports', [])
         };
 
         $ctrl.url = function (file) {
-            return LukeUrlService.get($ctrl.selectedPermit.permitId, clubId, $ctrl.org.name, $ctrl.presentation.name, file);
+            return LukeUrlService.get($ctrl.selectedPermit.permitId, clubId, $ctrl.org.name, $ctrl.presentation.name,
+                file, ActiveRoleService.getActiveOccupationId());
         };
 
         $ctrl.newTabUrl = function (file) {

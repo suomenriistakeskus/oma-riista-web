@@ -61,8 +61,7 @@ public class HuntingClubGroupDTO extends BaseEntityDTO<Long> {
 
     public static HuntingClubGroupDTO create(@Nonnull final HuntingClubGroup group,
                                              @Nullable final GameSpecies gameSpecies,
-                                             @Nullable final HarvestPermit harvestPermit,
-                                             final boolean deerPilotGroup) {
+                                             @Nullable final HarvestPermit harvestPermit) {
 
         Objects.requireNonNull(group, "group is null");
 
@@ -86,7 +85,7 @@ public class HuntingClubGroupDTO extends BaseEntityDTO<Long> {
         if (harvestPermit != null) {
             dto.setPermit(PermitDTO.create(harvestPermit));
         }
-        dto.setDeerPilotGroup(deerPilotGroup);
+
         return dto;
     }
 
@@ -124,7 +123,6 @@ public class HuntingClubGroupDTO extends BaseEntityDTO<Long> {
     private boolean huntingFinished;
     private boolean fromMooseDataCard;
     private Long memberCount;
-    private Boolean deerPilotGroup;
 
     public HuntingClubGroupDTO() {
     }
@@ -267,13 +265,5 @@ public class HuntingClubGroupDTO extends BaseEntityDTO<Long> {
 
     public void setMemberCount(final Long memberCount) {
         this.memberCount = memberCount;
-    }
-
-    public Boolean getDeerPilotGroup() {
-        return deerPilotGroup;
-    }
-
-    public void setDeerPilotGroup(final Boolean deerPilotGroup) {
-        this.deerPilotGroup = deerPilotGroup;
     }
 }

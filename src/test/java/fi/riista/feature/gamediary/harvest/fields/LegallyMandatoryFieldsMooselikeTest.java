@@ -1,6 +1,7 @@
 package fi.riista.feature.gamediary.harvest.fields;
 
 import com.google.common.collect.ImmutableSet;
+import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.FromDataPoints;
 import org.junit.experimental.theories.Theories;
@@ -14,8 +15,10 @@ import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_FALLOW_DEER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WILD_FOREST_REINDEER;
+import static fi.riista.feature.gamediary.GameSpecies.isWhiteTailedDeer;
 import static fi.riista.util.DateUtil.huntingYear;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(Theories.class)
@@ -28,11 +31,11 @@ public class LegallyMandatoryFieldsMooselikeTest {
     public static final ImmutableSet<Integer> GAME_SPECIES_CODES = MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING;
 
     @Theory
-    public void testPermitHarvest_formFields(@FromDataPoints("speciesCodes") final int speciesCode,
-                                             final boolean isDeerPilotEnabled) {
+    public void testPermitHarvest_formFields(@FromDataPoints("speciesCodes") final int speciesCode) {
+        assumeFalse(isWhiteTailedDeer(speciesCode));
 
         final RequiredHarvestFields.Report formFields =
-                LegallyMandatoryFieldsMooselike.getFormFields(speciesCode, isDeerPilotEnabled);
+                LegallyMandatoryFieldsMooselike.getFormFields(speciesCode);
 
         assertEquals(RequiredHarvestField.NO, formFields.getHarvestArea());
         assertEquals(RequiredHarvestField.NO, formFields.getFeedingPlace());
@@ -42,9 +45,24 @@ public class LegallyMandatoryFieldsMooselikeTest {
         assertEquals(RequiredHarvestField.NO, formFields.getHuntingAreaSize());
         assertEquals(RequiredHarvestField.NO, formFields.getHuntingParty());
         assertEquals(RequiredHarvestField.NO, formFields.getReportedWithPhoneCall());
-        assertEquals(
-                isDeerPilotEnabled ? RequiredHarvestField.VOLUNTARY : RequiredHarvestField.NO,
-                formFields.getDeerHuntingType());
+        assertEquals(RequiredHarvestField.NO, formFields.getDeerHuntingType());
+    }
+
+    @Test
+    public void testPermitHarvest_formFields_whitTailedDeer() {
+
+        final RequiredHarvestFields.Report formFields =
+                LegallyMandatoryFieldsMooselike.getFormFields(OFFICIAL_CODE_WHITE_TAILED_DEER);
+
+        assertEquals(RequiredHarvestField.NO, formFields.getHarvestArea());
+        assertEquals(RequiredHarvestField.NO, formFields.getFeedingPlace());
+        assertEquals(RequiredHarvestField.NO, formFields.getHuntingMethod());
+        assertEquals(RequiredHarvestField.NO, formFields.getLukeStatus());
+        assertEquals(RequiredHarvestField.NO, formFields.getHuntingAreaType());
+        assertEquals(RequiredHarvestField.NO, formFields.getHuntingAreaSize());
+        assertEquals(RequiredHarvestField.NO, formFields.getHuntingParty());
+        assertEquals(RequiredHarvestField.NO, formFields.getReportedWithPhoneCall());
+        assertEquals(RequiredHarvestField.VOLUNTARY, formFields.getDeerHuntingType());
     }
 
     @Theory

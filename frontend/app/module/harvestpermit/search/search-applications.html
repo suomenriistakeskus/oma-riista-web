@@ -24,7 +24,7 @@
                     available-species="$ctrl.availableSpecies"
                     handlers="$ctrl.handlers"
                     reset="$ctrl.reset()"
-                    search="$ctrl.loadPage(0)">
+                    search="$ctrl.loadPage($ctrl.filters.pageNumber)">
             </moderator-application-search-filters>
         </div>
 
@@ -32,11 +32,10 @@
 
     <div ng-class="{'col-xs-9': $ctrl.tab !== 'postalQueue', 'col-xs-12': $ctrl.tab === 'postalQueue'}">
         <div ng-if="$ctrl.tab === 'filter'">
-            <button type="button" class="btn btn-primary" ng-click="$ctrl.exportResultsToExcel()">
+            <button type="button" class="decision-view-primary-button" ng-click="$ctrl.exportResultsToExcel()">
                 <span class="glyphicon glyphicon-search"></span> &nbsp;
                 <span translate="global.button.exportToExcel"></span>
             </button>
-            <hr class="invisible"/>
         </div>
 
         <slice-pager slice="$ctrl.results" load-page="$ctrl.loadPage(page)"></slice-pager>

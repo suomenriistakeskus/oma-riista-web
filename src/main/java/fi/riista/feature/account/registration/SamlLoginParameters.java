@@ -1,5 +1,6 @@
 package fi.riista.feature.account.registration;
 
+import com.google.common.collect.ImmutableList;
 import com.onelogin.saml2.settings.Saml2Settings;
 import com.onelogin.saml2.settings.SettingsBuilder;
 import com.onelogin.saml2.util.Constants;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.StringUtils;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -23,8 +25,11 @@ public class SamlLoginParameters {
     @Value("${saml.sp.x509cert}")
     private String spCert;
 
-    @Value("${saml.sp.privatekey}")
-    private String spPrivateKey;
+    @Value("${saml.sp.privatekey.1}")
+    private String spPrivateKeyPrimary;
+
+    @Value("${saml.sp.privatekey.2}")
+    private String spPrivateKeySecondary;
 
     @Value("${saml.sp.single_logout_service.url}")
     private String spSlsUrl;
@@ -53,7 +58,22 @@ public class SamlLoginParameters {
     @Value("${saml.security.requested_authncontext}")
     private String requestedAuthContext;
 
-    public Saml2Settings buildSettings() {
+    public List<Saml2Settings> buildSettings() {
+        final Map<String, Object> primaryProperties = buildCommonProperties();
+        primaryProperties.put(SettingsBuilder.SP_PRIVATEKEY_PROPERTY_KEY, spPrivateKeyPrimary);
+        final Saml2Settings primarySettings = new SettingsBuilder().fromValues(primaryProperties).build();
+
+        if (StringUtils.hasText(spPrivateKeySecondary)) {
+            final Map<String, Object> secondaryProperties = buildCommonProperties();
+            secondaryProperties.put(SettingsBuilder.SP_PRIVATEKEY_PROPERTY_KEY, spPrivateKeySecondary);
+            final Saml2Settings secondarySettings = new SettingsBuilder().fromValues(secondaryProperties).build();
+            return ImmutableList.of(primarySettings, secondarySettings);
+        }
+
+        return ImmutableList.of(primarySettings);
+    }
+
+    private Map<String, Object> buildCommonProperties() {
         final Map<String, Object> properties = new LinkedHashMap<>();
         properties.put(SettingsBuilder.DEBUG_PROPERTY_KEY, samlDebug);
         properties.put(SettingsBuilder.STRICT_PROPERTY_KEY, true);
@@ -73,7 +93,6 @@ public class SamlLoginParameters {
 
         properties.put(SettingsBuilder.SP_ENTITYID_PROPERTY_KEY, spEntityId);
         properties.put(SettingsBuilder.SP_X509CERT_PROPERTY_KEY, spCert);
-        properties.put(SettingsBuilder.SP_PRIVATEKEY_PROPERTY_KEY, spPrivateKey);
         properties.put(SettingsBuilder.SP_NAMEIDFORMAT_PROPERTY_KEY, Constants.NAMEID_TRANSIENT);
 
         properties.put(SettingsBuilder.SP_ASSERTION_CONSUMER_SERVICE_URL_PROPERTY_KEY, spAcsUrl);
@@ -103,8 +122,7 @@ public class SamlLoginParameters {
         properties.put(SettingsBuilder.IDP_SINGLE_SIGN_ON_SERVICE_BINDING_PROPERTY_KEY, Constants.BINDING_HTTP_REDIRECT);
         properties.put(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_URL_PROPERTY_KEY, idpSlsUrl);
         properties.put(SettingsBuilder.IDP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY, Constants.BINDING_HTTP_REDIRECT);
-
-        return new SettingsBuilder().fromValues(properties).build();
+        return properties;
     }
 
 }

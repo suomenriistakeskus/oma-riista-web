@@ -1,6 +1,6 @@
 <div>
     <div class="row">
-        <div class="form-group col-xs-12 col-sm-8">
+        <div class="form-group col-xs-12 col-sm-3">
             <label for="yearSelection" class="control-label">
                 <span translate="global.year"></span>
             </label>
@@ -14,8 +14,42 @@
                 <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
             </select>
         </div>
-        <div class="col-xs-12 col-sm-4">
-            <button type="button" ng-click="$ctrl.addEvent()" class="btn btn-primary r-huntingcontrolevent-add-button">
+        <div ng-switch="::$ctrl.isModerator">
+            <div ng-switch-when="true" class="col-xs-12 col-sm-6">
+                <div class="btn-group r-huntingcontrolevent-button" role="group" uib-dropdown dropdown-append-to-body>
+
+                    <button type="button" class="btn btn-default" uib-dropdown-toggle>
+                        <span translate="global.button.exportToExcel"></span>
+                        &nbsp;
+                        <span class="caret"></span>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+                        <li>
+                            <a ng-click="$ctrl.exportToExcel()">
+                                <span class="glyphicon glyphicon-th"></span>
+                                &nbsp;
+                                <span translate="rhy.huntingControlEvent.excel.rhy"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a ng-click="$ctrl.exportAllToExcel()">
+                                <span class="glyphicon glyphicon-th"></span>
+                                &nbsp;
+                                <span translate="rhy.huntingControlEvent.excel.all"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div ng-switch-when="false" class="col-xs-12 col-sm-6">
+                <button type="button" ng-click="$ctrl.exportToExcel()" class="btn btn-primary r-huntingcontrolevent-button">
+                    <span translate="global.button.exportToExcel"></span>
+                </button>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-3">
+            <button type="button" ng-click="$ctrl.addEvent()" class="btn btn-primary r-huntingcontrolevent-button">
                 <span class="glyphicon glyphicon-plus"></span> &nbsp;
                 <span translate="rhy.huntingControlEvent.add"></span>
             </button>

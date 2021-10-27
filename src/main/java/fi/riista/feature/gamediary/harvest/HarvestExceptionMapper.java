@@ -239,13 +239,6 @@ public class HarvestExceptionMapper {
             errorList.add(HarvestValidationFailureDTO.message(illegalFieldValue(field.getKey(), field.getValue())));
         }
 
-        if (e.isMissingMooseWeight()) {
-            errorList.add(HarvestValidationFailureDTO.message(LocalisedString.of(
-                    "Arvioitu tai mitattu paino on annettava",
-                    "Arvioitu tai mitattu paino on annettava",
-                    "Arvioitu tai mitattu paino on annettava")));
-        }
-
         return new HarvestValidationFailureDTO(errorList);
     }
 

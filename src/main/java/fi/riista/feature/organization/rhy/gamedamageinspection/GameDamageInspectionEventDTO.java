@@ -6,9 +6,11 @@ import fi.riista.config.jackson.LocalTimeToStringSerializer;
 import fi.riista.config.jackson.StringToLocalTimeDeserializer;
 import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysDTO;
 import fi.riista.util.DtoUtil;
+import fi.riista.util.F;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.hibernate.validator.constraints.SafeHtml.WhiteListType;
 import org.joda.time.LocalDate;
@@ -17,7 +19,6 @@ import org.joda.time.LocalTime;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +36,6 @@ public class GameDamageInspectionEventDTO extends BaseEntityDTO<Long> {
     @NotNull
     private int gameSpeciesCode;
 
-    @NotNull
     @SafeHtml(whitelistType = WhiteListType.NONE)
     @Size(max = 255)
     private String inspectorName;
@@ -59,17 +59,20 @@ public class GameDamageInspectionEventDTO extends BaseEntityDTO<Long> {
     @SafeHtml(whitelistType = WhiteListType.NONE)
     private String description;
 
-    @NotNull
     private BigDecimal hourlyExpensesUnit;
 
-    @NotNull
     private BigDecimal dailyAllowance;
 
     private Boolean lockedAsPastStatistics;
 
-    @NotNull
     @Valid
     private List<GameDamageInspectionKmExpenseDTO> gameDamageInspectionKmExpenses;
+
+    @NotNull
+    private Boolean expensesIncluded;
+
+    @Valid
+    private PersonContactInfoDTO inspector;
 
     public GameDamageInspectionEventDTO() {}
 
@@ -79,6 +82,7 @@ public class GameDamageInspectionEventDTO extends BaseEntityDTO<Long> {
         dto.setHourlyExpensesUnit(BigDecimal.ZERO);
         dto.setDailyAllowance(BigDecimal.ZERO);
         dto.setGameDamageInspectionKmExpenses(Collections.emptyList());
+        dto.setExpensesIncluded(true);
 
         return dto;
     }
@@ -105,6 +109,10 @@ public class GameDamageInspectionEventDTO extends BaseEntityDTO<Long> {
         dto.setLockedAsPastStatistics(event.isLockedAsPastStatistics());
 
         dto.setGameDamageInspectionKmExpenses(expenses);
+
+        dto.setExpensesIncluded(event.getExpensesIncluded());
+
+        dto.setInspector(F.mapNullable(event.getInspector(), PersonContactInfoDTO::create));
 
         return dto;
     }
@@ -225,5 +233,21 @@ public class GameDamageInspectionEventDTO extends BaseEntityDTO<Long> {
 
     public void setGameDamageInspectionKmExpenses(final List<GameDamageInspectionKmExpenseDTO> gameDamageInspectionKmExpenses) {
         this.gameDamageInspectionKmExpenses = gameDamageInspectionKmExpenses;
+    }
+
+    public Boolean isExpensesIncluded() {
+        return expensesIncluded;
+    }
+
+    public void setExpensesIncluded(final Boolean expensesIncluded) {
+        this.expensesIncluded = expensesIncluded;
+    }
+
+    public PersonContactInfoDTO getInspector() {
+        return inspector;
+    }
+
+    public void setInspector(final PersonContactInfoDTO inspector) {
+        this.inspector = inspector;
     }
 }

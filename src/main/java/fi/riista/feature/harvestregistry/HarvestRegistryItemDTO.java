@@ -18,6 +18,12 @@ import static java.util.Objects.requireNonNull;
 
 public class HarvestRegistryItemDTO implements HasID<Long> {
 
+    public enum Fields {
+        COMMON,
+        COMMON_WITH_SHOOTER,
+        FULL
+    }
+
     private final long id;
 
     private final String shooterName;
@@ -54,17 +60,16 @@ public class HarvestRegistryItemDTO implements HasID<Long> {
     private final HarvestRegistryShooterAddressDTO shooterAddress;
 
     public static HarvestRegistryItemDTO from(@Nonnull final HarvestRegistryItem entity,
-                                              @Nonnull final Supplier<GameSpecies> speciesSupplier) {
+                                              @Nonnull final Supplier<GameSpecies> speciesSupplier,
+                                              @Nonnull final HarvestRegistryItemDTO.Fields includedFields) {
         requireNonNull(entity);
         requireNonNull(speciesSupplier);
+        requireNonNull(includedFields);
 
         final GameSpecies gameSpecies = speciesSupplier.get();
 
-        return Builder.builder()
+        final Builder builder = Builder.builder()
                 .withId(entity.getId())
-                .withShooterName(entity.getShooterName())
-                .withShooterAddress(HarvestRegistryShooterAddressDTO.createFrom(entity))
-                .withShooterHunterNumber(entity.getShooterHunterNumber())
                 .withDate(entity.getPointOfTime().toLocalDate())
                 .withTime(entity.isTimeOfDayValid()
                         ? entity.getPointOfTime().toLocalTime()
@@ -76,11 +81,24 @@ public class HarvestRegistryItemDTO implements HasID<Long> {
                 .withAge(entity.getAge())
                 .withWeight(entity.getWeight())
                 .withGeoLocation(entity.getGeoLocation())
-                .withHarvestArea(entity.getHarvestAreaLocalisation())
-                .withMunicipality(entity.getMunicipalityLocalisation())
-                .withRka(entity.getRkaLocalisation())
-                .withRhy(entity.getRhyLocalisation())
-                .build();
+                .withMunicipality(entity.getMunicipalityLocalisation());
+
+        if (includedFields == Fields.FULL || includedFields == Fields.COMMON_WITH_SHOOTER) {
+            builder
+                    .withShooterName(entity.getShooterName())
+                    .withShooterHunterNumber(entity.getShooterHunterNumber());
+        }
+
+        if (includedFields == Fields.FULL) {
+            builder
+
+                    .withShooterAddress(HarvestRegistryShooterAddressDTO.createFrom(entity))
+                    .withHarvestArea(entity.getHarvestAreaLocalisation())
+                    .withRka(entity.getRkaLocalisation())
+                    .withRhy(entity.getRhyLocalisation());
+        }
+
+        return builder.build();
     }
 
 

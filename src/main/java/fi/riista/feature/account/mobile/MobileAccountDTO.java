@@ -27,7 +27,6 @@ public class MobileAccountDTO {
                                           @Nonnull final SortedSet<Integer> observationYears,
                                           @Nonnull final List<MobileOccupationDTO> occupations,
                                           final boolean shootingTestsEnabled,
-                                          final boolean deerPilotUser,
                                           @Nullable final String qrCode,
                                           @Nonnull final List<AccountShootingTestDTO> shootingTests) {
 
@@ -81,7 +80,7 @@ public class MobileAccountDTO {
 
         dto.setEnableSrva(person.isSrvaEnabled());
         dto.setEnableShootingTests(shootingTestsEnabled);
-        dto.setDeerPilotUser(deerPilotUser);
+        dto.setDeerPilotUser(true); // TODO: Figure out a way to get rid of this field
 
         return dto;
     }

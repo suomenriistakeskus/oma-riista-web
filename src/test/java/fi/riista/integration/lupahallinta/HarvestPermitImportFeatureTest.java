@@ -9,7 +9,6 @@ import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
-import fi.riista.feature.organization.lupahallinta.LHOrganisation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.PermitTypeCode;
@@ -368,42 +367,6 @@ public class HarvestPermitImportFeatureTest extends EmbeddedDatabaseTest {
             assertEquals(1, ie.getAllErrors().size());
             assertEquals(1, ie.getAllErrors().get(0).getErrors().size());
             assertEquals("Osakas yritetään poistaa mutta osakas on lupaan liitettyjä ryhmiä, osakas:" + partner.getOfficialCode(),
-                    ie.getAllErrors().get(0).getErrors().get(0));
-        }
-    }
-
-    @Test
-    public void testMoosePermitLhOrgHasNoRhy() throws IOException {
-        final Person person = model().newPerson();
-        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
-        final GameSpecies species = model().newGameSpecies();
-
-        final LHOrganisation lhOrg = model().newLHOrganisation(rhy);
-        lhOrg.setRhyOfficialCode(null);
-
-        final HuntingClub partner = model().newHuntingClub(rhy);
-
-        final GISHirvitalousalue hta = model().newGISHirvitalousalue();
-
-        SystemUser admin = createNewAdmin();
-        Reader reader = createReaderForOneRowData(
-                person.getSsn(), lhOrg.getOfficialCode(), partner.getOfficialCode(), PERMIT_NUMBER,
-                PermitTypeCode.MOOSELIKE, GAME_SPECIES_NAME,
-                species.getOfficialCode(), "1.0", "1.04.2014 - 28.5.2014", "15.7.2014 - 31.7.2014",
-                rhy.getOfficialCode(), RESTRICTION_TYPE, "1.0",
-                "", CREDITOR_REFERENCE, PRINTING_URL, hta.getNumber(), rhy.getOfficialCode(), PERMIT_AREA_SIZE);
-
-        persistInNewTransaction();
-
-        authenticate(admin);
-
-        try {
-            harvestPermitImportFeature.doImport(reader, "aTest", DateTime.now());
-            fail("Should throw exception");
-        } catch (HarvestPermitImportException ie) {
-            assertEquals(1, ie.getAllErrors().size());
-            assertEquals(1, ie.getAllErrors().get(0).getErrors().size());
-            assertEquals("Lupahallinnassa ei seuralle ole merkitty RHY:tä. Seura:" + lhOrg.getOfficialCode(),
                     ie.getAllErrors().get(0).getErrors().get(0));
         }
     }

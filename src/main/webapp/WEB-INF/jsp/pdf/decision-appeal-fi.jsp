@@ -85,7 +85,9 @@
     <p>
         Valitus on toimitettava valitusajassa toimivaltaiselle hallintotuomioistuimelle. Valituksen voi toimittaa
         hallinto-oikeudelle henkilökohtaisesti, lähetin tai asiamiehen välityksellä. Valituksen voi toimittaa myös
-        postitse, sähköpostitse tai telekopiona hallinto-oikeuden kirjaamoon, tai sähköisen asiointipalvelun kautta.
+        postitse, sähköpostitse tai telekopiona hallinto-oikeuden kirjaamoon, tai sähköisen asiointipalvelun kautta
+        <a href="https://asiointi2.oikeus.fi/hallintotuomioistuimet" target="_blank">
+            (https://asiointi2.oikeus.fi/hallintotuomioistuimet)</a>.
         Valitusasiakirjojen on oltava perillä hallinto-oikeudessa valitusajan viimeisenä päivänä klo 16.15 mennessä.
         Postittaminen tai muu toimittaminen tapahtuu lähettäjän vastuulla. Jos valitusajan viimeinen päivä on pyhäpäivä,
         lauantai, itsenäisyyspäivä, vapunpäivä, jouluaatto tai juhannusaatto, valitusaika jatkuu kuitenkin vielä

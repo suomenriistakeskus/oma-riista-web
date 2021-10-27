@@ -2,7 +2,6 @@ package fi.riista.feature.gamediary.observation.metadata;
 
 import com.google.common.collect.Ordering;
 import fi.riista.config.Constants;
-import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesRepository;
@@ -40,9 +39,6 @@ public class ObservationFieldsMetadataService {
     @Resource
     private ObservationContextSensitiveFieldsRepository ctxSensitiveFieldsRepo;
 
-    @Resource
-    private DeerPilotService deerPilotUserService;
-
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public ObservationFieldValidator getObservationFieldValidator(
             @Nonnull final ObservationContext context,
@@ -60,9 +56,7 @@ public class ObservationFieldsMetadataService {
                 .orElseThrow(() -> new ObservationContextSensitiveFieldsNotFoundException(
                         "Cannot resolve context sensitive fields for observation context: " + context.toString()));
 
-        final boolean isUserInDeerPilot = deerPilotUserService.isPilotUser();
-
-        return new ObservationFieldValidator(baseFields, fields, isUserActiveCarnivoreContactPerson, isUserInDeerPilot);
+        return new ObservationFieldValidator(baseFields, fields, isUserActiveCarnivoreContactPerson);
     }
 
     @Transactional(readOnly = true)

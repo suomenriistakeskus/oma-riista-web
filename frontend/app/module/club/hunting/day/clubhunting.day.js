@@ -2,6 +2,18 @@
 
 angular.module('app.clubhunting.day', [])
 
+    .constant('ClubHuntingDayHuntingMethods', {
+            PASSILINJA_KOIRA_OHJAAJINEEN_METSASSA: 'PASSILINJA_KOIRA_OHJAAJINEEN_METSASSA',
+            HIIPIMINEN_PYSAYTTAVALLE_KOIRALLE: 'HIIPIMINEN_PYSAYTTAVALLE_KOIRALLE',
+            PASSILINJA_JA_TIIVIS_AJOKETJU: 'PASSILINJA_JA_TIIVIS_AJOKETJU',
+            PASSILINJA_JA_MIESAJO_JALJITYKSENA: 'PASSILINJA_JA_MIESAJO_JALJITYKSENA',
+            JALJITYS_ELI_NAAKIMINEN_ILMAN_PASSEJA: 'JALJITYS_ELI_NAAKIMINEN_ILMAN_PASSEJA',
+            VAIJYNTA_KULKUPAIKOILLA: 'VAIJYNTA_KULKUPAIKOILLA',
+            VAIJYNTA_RAVINTOKOHTEILLA: 'VAIJYNTA_RAVINTOKOHTEILLA',
+            HOUKUTTELU: 'HOUKUTTELU',
+            MUU: 'MUU'
+        }
+    )
     .factory('ClubGroupHuntingDay', function ($resource) {
         return $resource('api/v1/club/group/huntingday/:id', {'id': '@id'}, {
             'get': {method: 'GET'},
@@ -94,15 +106,14 @@ angular.module('app.clubhunting.day', [])
     })
 
     .controller('GroupHuntingDayFormController', function ($scope, $filter, Helpers,
+                                                           ClubHuntingDayHuntingMethods,
                                                            ClubHuntingDayService,
                                                            ClubHuntingPersistentState,
                                                            HuntingYearService,
                                                            HarvestPermitSpeciesAmountService,
                                                            huntingDay, existingHuntingDates, permitSpeciesAmount) {
         $scope.huntingDay = huntingDay;
-        $scope.huntingMethods = _.range(1, 9).map(function (i) {
-            return 'OPTION_' + i;
-        });
+        $scope.huntingMethods =_.values(ClubHuntingDayHuntingMethods);
 
         var selectedHuntingYear = ClubHuntingPersistentState.getSelectedHuntingYear();
         var currentHuntingYear = HuntingYearService.getCurrent();
@@ -144,7 +155,7 @@ angular.module('app.clubhunting.day', [])
 
         $scope.isPermitValidOnDate = function () {
             return !$scope.viewState.startDate || HarvestPermitSpeciesAmountService.isValidDateForSpeciesAmount(
-                    permitSpeciesAmount, $scope.viewState.startDate);
+                permitSpeciesAmount, $scope.viewState.startDate);
         };
 
         $scope.onStartDateChanged = function (startDay) {

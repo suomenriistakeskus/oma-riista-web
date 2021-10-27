@@ -133,7 +133,7 @@ angular.module('app.diary.sidebar', [])
 
     .controller('DiaryEntrySidebarController', function ($scope, $state, ActiveRoleService,
                                                          DiaryEntryRemoveModal, DiaryEntryService,
-                                                         computedFields, entry) {
+                                                         FetchAndSaveBlob, computedFields, entry) {
         $scope.entry = entry;
         $scope.computedFields = computedFields;
         $scope.moderator = ActiveRoleService.isModerator();
@@ -152,6 +152,10 @@ angular.module('app.diary.sidebar', [])
 
         $scope.cancel = function () {
             $scope.$dismiss('cancel');
+        };
+
+        $scope.exportReport = function () {
+            FetchAndSaveBlob.post('/api/v1/srva/' + $scope.entry.id + '/report/pdf');
         };
 
     });

@@ -64,7 +64,7 @@ angular.module('app.harvestpermit.decision.application', [])
                                       PermitDecision, NotificationService, FetchAndSaveBlob,
                                       PermitDecisionActionListModal, PermitDecisionActionReadonlyListModal,
                                       HarvestPermitAmendmentApplications, PermitDecisionAppealSettingsModal,
-                                      HarvestPermitWizardSelectorService,
+                                      HarvestPermitWizardSelectorService, MooselikeApplicationLate,
                                       decisionId, applicationId, category,
                                       applicationSummary, decision, permitArea, mooselikeAmendment) {
                     var $ctrl = this;
@@ -79,12 +79,7 @@ angular.module('app.harvestpermit.decision.application', [])
 
                     $ctrl.isLateApplication = function () {
                         if (category === 'MOOSELIKE' && $ctrl.applicationSummary.submitDate) {
-                            var submitDate = moment($ctrl.applicationSummary.submitDate, 'YYYY-MM-DD');
-
-                            if (submitDate.isValid()) {
-                                var month = submitDate.month() + 1; // zero indexed
-                                return month > 4; // Submitted after 30.4
-                            }
+                            return MooselikeApplicationLate.isLate($ctrl.applicationSummary.huntingYear, $ctrl.applicationSummary.submitDate);
                         }
                         return false;
                     };

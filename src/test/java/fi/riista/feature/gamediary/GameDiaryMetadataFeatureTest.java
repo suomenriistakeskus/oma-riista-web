@@ -45,7 +45,7 @@ public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest implement
         onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
             final RequiredHarvestFieldsRequestDTO request =
-                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), seasonBegin, geoLocation, false, null);
+                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), seasonBegin, geoLocation, false);
 
             final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
@@ -93,7 +93,7 @@ public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest implement
 
             final RequiredHarvestFieldsRequestDTO request =
                     new RequiredHarvestFieldsRequestDTO(
-                            species.getOfficialCode(), seasonBegin, geoLocation, false, null);
+                            species.getOfficialCode(), seasonBegin, geoLocation, false);
 
             final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
@@ -147,7 +147,7 @@ public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest implement
 
             final RequiredHarvestFieldsRequestDTO request =
                     new RequiredHarvestFieldsRequestDTO(
-                            species.getOfficialCode(), seasonBegin, geoLocation, false, null);
+                            species.getOfficialCode(), seasonBegin, geoLocation, false);
 
             final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
@@ -180,7 +180,7 @@ public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest implement
         onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
             final RequiredHarvestFieldsRequestDTO request =
-                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, true, null);
+                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, true);
 
             final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
@@ -213,7 +213,7 @@ public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest implement
         onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
             final RequiredHarvestFieldsRequestDTO request =
-                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, false, null);
+                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, false);
 
             final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
@@ -239,7 +239,7 @@ public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest implement
         onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
             final RequiredHarvestFieldsRequestDTO request =
-                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, false, null);
+                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, false);
 
             final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
@@ -270,7 +270,7 @@ public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest implement
         onSavedAndAuthenticated(createUserWithPerson(), () -> {
 
             final RequiredHarvestFieldsRequestDTO request =
-                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, false, null);
+                    new RequiredHarvestFieldsRequestDTO(species.getOfficialCode(), today(), geoLocation, false);
 
             final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
@@ -288,33 +288,17 @@ public class GameDiaryMetadataFeatureTest extends EmbeddedDatabaseTest implement
 
     @Test
     public void testGetRequiredHarvestFields_withPermit_withPersonId() {
-        testGetRequiredHarvestFields_withPermit_withPersonId(false);
-    }
-
-    @Test
-    public void testGetRequiredHarvestFields_withPermit_withPersonId_withinDeerPilot() {
-        testGetRequiredHarvestFields_withPermit_withPersonId(true);
-    }
-
-    private void testGetRequiredHarvestFields_withPermit_withPersonId(final boolean withinDeerPilot) {
         withDeerHuntingGroupFixture(fixt -> {
-            if (withinDeerPilot) {
-                model().newDeerPilot(fixt.permit);
-            }
-
-            final Person author = fixt.groupMember;
 
             onSavedAndAuthenticated(createNewModerator(), () -> {
 
                 final RequiredHarvestFieldsRequestDTO request =
                         new RequiredHarvestFieldsRequestDTO(
-                                fixt.species.getOfficialCode(), today(), fixt.zoneCentroid, true, author.getId());
+                                fixt.species.getOfficialCode(), today(), fixt.zoneCentroid, true);
 
                 final RequiredHarvestFieldsResponseDTO response = getRequiredFields(request);
 
-                assertEquals(withinDeerPilot
-                                ? RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE
-                                : RequiredHarvestSpecimenField.NO,
+                assertEquals(RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE,
                         response.getFields().getSpecimen().getAntlersLost());
             });
         });

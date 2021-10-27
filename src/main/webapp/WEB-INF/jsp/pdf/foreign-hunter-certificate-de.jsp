@@ -113,7 +113,6 @@
     <div style="font-size:10pt; line-height: 12pt">
         <div style="float:left;">
             Versicherer<br/>
-            Versicherungsnummer<br/>
             Versicherungsnehmer<br/>
             Laufzeit<br/>
             Versicherte Personen<br/>
@@ -122,7 +121,6 @@
 
         <div style="padding-left:136pt">
             LocalTapiola General Mutual Insurance Company, Finnland<br/>
-            312-0042105-H<br/>
             Suomen riistakeskus (Finlands viltcentral), Finnish Wildlife Agency<br/>
             1. August <joda:format value="${model.huntingCardStart}" pattern="yyyy" />
             bis 31. Juli <joda:format value="${model.huntingCardEnd}" pattern="yyyy" /><br/>
@@ -133,52 +131,58 @@
 
     <div style="padding-left:136pt; padding-top:40pt;font-size: 10pt">
         <div style="float:left;">
+            Versicherungsnummer<br/>
             Versicherungsart<br/>
             Haftungshöchstbetrag<br/>
             Hauptausschlüsse<br/>
         </div>
 
         <div style="padding-left:110pt;">
+            312-0042105-H<br/>
             Haftpflichtversicherung für Jäger<br/>
-            1.200.000 EUR bei Personenschäden<br/>
+            EUR 1,200,000 bei Personenschäden<br/>
             Sachschäden
         </div>
     </div>
 
     <div style="padding-left:136pt; padding-top:20pt;font-size: 10pt">
         <div style="float:left;">
+            Versicherungsnummer<br/>
             Versicherungsart<br/>
             Haftungshöchstbetrag
         </div>
 
         <div style="padding-left:110pt;">
+            353-4344930-S<br/>
             Unfallversicherung für Jäger<br/>
-            10.000 EUR bei Personenschäden<br/>
-            50.000 EUR bei dauernder Erwerbsunfähigkeit<br/>
-            30.000 EUR im Todesfall
+            EUR 10,000 bei Personenschäden<br/>
+            EUR 50,000 bei dauernder Erwerbsunfähigkeit<br/>
+            EUR 30,000 im Todesfall
         </div>
     </div>
 
     <div style="padding-left:136pt; padding-top:20pt;font-size: 10pt">
         <div style="float:left;">
+            Versicherungsnummer<br/>
             Versicherungsart<br/>
             Haftungshöchstbetrag
         </div>
 
         <div style="padding-left:110pt">
+            353-4344930-S<br/>
             Unfallversicherung für Offizielle<br/>
-            10.000 EUR bei Personenschäden<br/>
-            50.000 EUR bei dauernder Erwerbsunfähigkeit<br/>
-            30.000 EUR im Todesfall
+            EUR 10,000 bei Personenschäden<br/>
+            EUR 50,000 bei dauernder Erwerbsunfähigkeit<br/>
+            EUR 30,000 im Todesfall
         </div>
     </div>
 
     <p style="padding-left: 136pt;padding-top:40pt;font-size: 10pt;line-height: 10pt">
         LOCALTAPIOLA GENERAL MUTUAL INSURANCE COMPANY<br/>
-        Versicherungsgesellschaft für Betriebs- und Sachversicherungen
+        Groβkunden Service
     </p>
 
-    <p style="padding-left: 136pt;font-style: italic;font-size: 10pt;line-height: 10pt">
+    <p style="padding-left: 136pt;font-style: italic;font-size: 10pt;line-height: 10pt;margin-top: 20px">
         Dieser Versicherungsschein dient lediglich zur Information und überträgt keine
         Rechte auf den Versicherungsscheininhaber. Es handelt sich hierbei um einen
         Auszug aus dem Original des Versicherungsvertrags zwischen dem Versicherungsnehmer

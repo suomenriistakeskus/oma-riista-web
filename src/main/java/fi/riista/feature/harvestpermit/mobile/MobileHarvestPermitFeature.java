@@ -5,7 +5,6 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQueryFactory;
-import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.QHarvest;
@@ -40,22 +39,15 @@ public class MobileHarvestPermitFeature {
     private ActiveUserService activeUserService;
 
     @Resource
-    private DeerPilotService deerPilotService;
-
-    @Resource
     private JPQLQueryFactory queryFactory;
 
     @Transactional(readOnly = true)
     public MobileHarvestPermitExistsDTO findPermitNumber(final String permitNumber,
                                                          @Nonnull final HarvestSpecVersion specVersion) {
 
-        // TODO Remove this when deer pilot 2020 is over.
-        final HarvestSpecVersion revisedSpecVersion =
-                specVersion.revertIfNotOnDeerPilot(deerPilotService.isPilotUser());
-
         return Optional.ofNullable(harvestPermitRepository.findByPermitNumber(permitNumber))
                 .filter(permit -> PermitTypeCode.canLinkHarvests(permit.getPermitTypeCode()))
-                .map(permit -> MobileHarvestPermitExistsDTO.create(permit, revisedSpecVersion))
+                .map(permit -> MobileHarvestPermitExistsDTO.create(permit, specVersion))
                 .orElseThrow(() -> new HarvestPermitNotFoundException(permitNumber));
     }
 
@@ -63,11 +55,7 @@ public class MobileHarvestPermitFeature {
     public List<MobileHarvestPermitExistsDTO> preloadPermits(@Nonnull final HarvestSpecVersion specVersion) {
         final Person person = activeUserService.requireActivePerson();
 
-        // TODO Remove this when deer pilot 2020 is over.
-        final HarvestSpecVersion revisedSpecVersion =
-                specVersion.revertIfNotOnDeerPilot(deerPilotService.isPilotUser(person));
-
-        return MobileHarvestPermitExistsDTO.create(findPermits(person), revisedSpecVersion);
+        return MobileHarvestPermitExistsDTO.create(findPermits(person), specVersion);
     }
 
     private List<HarvestPermit> findPermits(final Person person) {

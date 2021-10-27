@@ -38,8 +38,8 @@ public class RegisterAccountFeature {
     private EmailTokenService emailTokenService;
 
     @Transactional
-    public String sendEmail(final RegisterAccountDTO dto, final HttpServletRequest request) {
-        return registerAccountEmailService.sendEmail(dto, request);
+    public String sendEmail(final String email, final String lang, final HttpServletRequest request) {
+        return registerAccountEmailService.sendEmail(email, lang, request);
     }
 
     @Transactional

@@ -38,7 +38,7 @@
         <repository>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
-            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
             <layout>default</layout>
             <releases>
                 <enabled>true</enabled>
@@ -56,7 +56,7 @@
         </repository>
         <repository>
             <id>version99</id>
-            <url>http://version99.qos.ch/</url>
+            <url>https://version99.qos.ch/</url>
         </repository>
     </repositories>
     <pluginRepositories>
@@ -83,35 +83,36 @@
         <javax.validation.version>2.0.1.Final</javax.validation.version>
         <jaxws.eclipse.version>2.3.3</jaxws.eclipse.version>
         <jaxws.metro.version>2.3.1</jaxws.metro.version>
-        <spring.version>5.2.6.RELEASE</spring.version>
-        <spring.security.version>5.3.4.RELEASE</spring.security.version>
-        <spring.batch.version>3.0.7.RELEASE</spring.batch.version>
+        <spring.batch.version>3.0.10.RELEASE</spring.batch.version>
+        <spring.version>5.3.7</spring.version>
+        <spring.security.version>5.4.7</spring.security.version>
         <spring.retry.version>1.1.4.RELEASE</spring.retry.version>
-        <spring.cloud.version>1.2.1.RELEASE</spring.cloud.version>
+        <spring.cloud.version>1.2.4.RELEASE</spring.cloud.version>
         <spring.session.version>1.3.0.RELEASE</spring.session.version>
         <spring.cache.control.version>1.1.1-RELEASE</spring.cache.control.version>
-        <guava.version>24.0-jre</guava.version>
+        <guava.version>30.1-jre</guava.version>
         <commons.lang.version>2.6</commons.lang.version>
-        <commons.collections.version>3.2.1</commons.collections.version>
+        <commons.collections.version>3.2.2</commons.collections.version>
         <commons.fileupload.version>1.3.3</commons.fileupload.version>
-        <commons.io.version>2.5</commons.io.version>
+        <commons.io.version>2.7</commons.io.version>
         <commons.codec.version>1.10</commons.codec.version>
         <commons.validator.version>1.4.1</commons.validator.version>
         <sshj.version>0.26.0</sshj.version>
-        <handlebars.version>4.0.6</handlebars.version>
+        <handlebars.version>4.2.0</handlebars.version>
         <flexmark.version>0.32.18</flexmark.version>
         <jasypt.version>1.9.2</jasypt.version>
-        <onelogin.saml.version>2.5.0</onelogin.saml.version>
-        <jsoup.version>1.10.1</jsoup.version>
+        <onelogin.saml.version>2.8.0</onelogin.saml.version>
+        <jsoup.version>1.14.2</jsoup.version>
         <google.phonenumber>8.0.0</google.phonenumber>
         <joda.time.version>2.9.7</joda.time.version>
         <joda.jsp.version>1.1.1</joda.jsp.version>
         <dom4j.version>1.6.1</dom4j.version>
-        <quartz.version>2.2.3</quartz.version>
+        <quartz.version>2.3.2</quartz.version>
         <jjwt.version>0.7.0</jjwt.version>
-        <pdfbox.version>2.0.22</pdfbox.version>
+        <pdfbox.version>2.0.24</pdfbox.version>
         <barcode4j.version>2.1</barcode4j.version>
         <fcm.java.version>1.0</fcm.java.version>
+        <fcm.admin.version>8.0.0</fcm.admin.version>
         <sentry.version>1.7.5</sentry.version>
         <vavr.version>0.10.0</vavr.version>
         <fixedformat4j.version>1.2.2</fixedformat4j.version>
@@ -122,21 +123,21 @@
         <h2gis.version>1.5.0</h2gis.version>
         <hikaricp.version>3.4.1</hikaricp.version>
         <postgresql.version>42.2.16</postgresql.version>
-        <liquibase.version>3.8.9</liquibase.version>
+        <liquibase.version>3.10.3</liquibase.version>
         <querydsl.version>4.3.1.1</querydsl.version>
-        <hibernate.version>5.4.20.Final</hibernate.version>
-        <hibernate.validator.version>6.0.17.Final</hibernate.validator.version>
+        <hibernate.version>5.4.30.Final</hibernate.version>
+        <hibernate.spatial.version>5.4.25.Final</hibernate.spatial.version>
+        <hibernate.validator.version>6.0.20.Final</hibernate.validator.version>
         <jadira.usertype.version>7.0.0.CR1</jadira.usertype.version>
         <jts.version>1.16.1</jts.version>
 
-        <apache.httpclient.version>4.5.3</apache.httpclient.version>
-        <apache.httpcore.version>4.4.6</apache.httpcore.version>
-        <apache.poi.version>3.16</apache.poi.version>
-        <apache.tika.version>1.17</apache.tika.version>
+        <apache.httpclient.version>4.5.13</apache.httpclient.version>
+        <apache.httpcore.version>4.4.13</apache.httpcore.version>
+        <apache.poi.version>4.1.2</apache.poi.version>
+        <apache.tika.version>1.27</apache.tika.version>
 
         <slf4j.version>1.7.28</slf4j.version>
-        <jackson.version>2.9.10</jackson.version>
-        <jackson.databind.version>2.9.10.5</jackson.databind.version>
+        <jackson.version>2.12.2</jackson.version>
         <jackson.geojson.version>1.8</jackson.geojson.version>
         <logback.version>1.2.3</logback.version>
         <logback.syslog.version>1.0.0</logback.syslog.version>
@@ -243,9 +244,14 @@
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <version>5.3.2</version>
+                        <version>6.3.2</version>
                         <configuration>
                             <failBuildOnCVSS>0</failBuildOnCVSS>
+                            <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+                            <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+                            <nodeAuditSkipDevDependencies>true</nodeAuditSkipDevDependencies>
+                            <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                            <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                         </configuration>
                         <executions>
                             <execution>
@@ -258,6 +264,12 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>skipTests</id>
+            <properties>
+                <maven.test.skip>true</maven.test.skip>
+            </properties>
         </profile>
         <profile>
             <id>wsdlImport</id>
@@ -341,14 +353,14 @@
                                 <plugin>
                                     <groupId>org.jvnet.jaxb2_commons</groupId>
                                     <artifactId>jaxb2-basics</artifactId>
-                                    <version>1.11.1</version>
+                                    <version>0.12.0</version>
                                 </plugin>
                                 <plugin>
                                     <groupId>org.jvnet.jaxb2_commons</groupId>
                                     <artifactId>jaxb2-basics-annotate</artifactId>
                                     <version>1.0.3</version>
                                 </plugin>
-                               <plugin>
+                                <plugin>
                                     <groupId>net.java.dev.jaxb2-commons</groupId>
                                     <artifactId>jaxb-fluent-api</artifactId>
                                     <version>2.1.8</version>
@@ -681,6 +693,32 @@
                                     </args>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>otherwise-deceased-export-xsd-compile</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <packageLevelAnnotations>true</packageLevelAnnotations>
+                                    <bindingIncludes>
+                                        <include>rvr/export-otherwise-deceased-v1.xjb</include>
+                                    </bindingIncludes>
+                                    <schemaIncludes>
+                                        <include>rvr/export-otherwise-deceased-v1.xsd</include>
+                                    </schemaIncludes>
+                                    <args>
+                                        <!-- Enabled JAXB RI customisations -->
+                                        <arg>-extension</arg>
+                                        <arg>-Xnamespace-prefix</arg>
+                                        <arg>-Xfluent-api</arg>
+                                        <arg>-XtoString</arg>
+                                        <arg>-Xequals</arg>
+                                        <arg>-XhashCode</arg>
+                                        <arg>-Xannotate</arg>
+                                    </args>
+                                </configuration>
+                            </execution>
                         </executions>
                         <dependencies>
                             <dependency>
@@ -867,18 +905,29 @@
                             <useMissingFile>true</useMissingFile>
                             <useRepositoryMissingFiles>false</useRepositoryMissingFiles>
                             <licenseMerges>
-                                <licenseMerge>Common Development and Distribution License (CDDL) v1.0|Common Development and Distribution License</licenseMerge>
-                                <licenseMerge>Common Development and Distribution License (CDDL) v1.0|CDDL</licenseMerge>
+                                <licenseMerge>Common Development and Distribution License (CDDL) v1.0|Common Development
+                                    and Distribution License
+                                </licenseMerge>
+                                <licenseMerge>Common Development and Distribution License (CDDL) v1.0|CDDL
+                                </licenseMerge>
                                 <licenseMerge>Apache Software License, Version 2.0|Apache 2</licenseMerge>
                                 <licenseMerge>Apache Software License, Version 2.0|Apache License</licenseMerge>
                                 <licenseMerge>Apache Software License, Version 2.0|Apache v2</licenseMerge>
                                 <licenseMerge>Apache Software License, Version 2.0|Apache License 2.0</licenseMerge>
-                                <licenseMerge>Apache Software License, Version 2.0|Apache License Version 2.0</licenseMerge>
-                                <licenseMerge>Apache Software License, Version 2.0|Apache License, Version 2.0</licenseMerge>
-                                <licenseMerge>Apache Software License, Version 2.0|The Apache Software License, Version 2.0</licenseMerge>
+                                <licenseMerge>Apache Software License, Version 2.0|Apache License Version 2.0
+                                </licenseMerge>
+                                <licenseMerge>Apache Software License, Version 2.0|Apache License, Version 2.0
+                                </licenseMerge>
+                                <licenseMerge>Apache Software License, Version 2.0|The Apache Software License, Version
+                                    2.0
+                                </licenseMerge>
                                 <licenseMerge>GNU Lesser General Public License, Version 2.1|LGPL 2.1</licenseMerge>
-                                <licenseMerge>GNU Lesser General Public License, Version 2.1|GNU Lesser General Public License, version 2.1</licenseMerge>
-                                <licenseMerge>GNU General Public License, Version 2 with the Classpath Exception|GPLv2+CE</licenseMerge>
+                                <licenseMerge>GNU Lesser General Public License, Version 2.1|GNU Lesser General Public
+                                    License, version 2.1
+                                </licenseMerge>
+                                <licenseMerge>GNU General Public License, Version 2 with the Classpath
+                                    Exception|GPLv2+CE
+                                </licenseMerge>
                             </licenseMerges>
                         </configuration>
                     </execution>
@@ -897,7 +946,8 @@
                         <configuration>
                             <rules>
                                 <requireMavenVersion>
-                                    <message>You are running an older version of Maven. Maven > 3.1 is required</message>
+                                    <message>You are running an older version of Maven. Maven > 3.1 is required
+                                    </message>
                                     <version>[3.1.0,)</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
@@ -1047,7 +1097,9 @@
                     <webApp>
                         <war>${project.basedir}/target/ROOT.war</war>
                         <contextPath>/</contextPath>
-                        <webInfIncludeJarPattern>.*(spring-web|spring-session|spring-security-web|spring-security-taglibs|joda-time-jsptags).*\.jar$</webInfIncludeJarPattern>
+                        <webInfIncludeJarPattern>
+                            .*(spring-web|spring-session|spring-security-web|spring-security-taglibs|joda-time-jsptags).*\.jar$
+                        </webInfIncludeJarPattern>
                         <resourceBases>
                             <resourceBase>${project.basedir}/target/classes</resourceBase>
                             <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
@@ -1105,7 +1157,9 @@
                 <configuration>
                     <!-- Sets the VM argument line used when unit tests are run. -->
                     <!-- Java 8 needs timezone set up in argLine -->
-                    <argLine>${surefireArgLine} -Xms384m -Xmx512m -noverify -Duser.timezone=Europe/Helsinki -Djava.awt.headless=true</argLine>
+                    <argLine>${surefireArgLine} -Xms384m -Xmx512m -noverify -Duser.timezone=Europe/Helsinki
+                        -Djava.awt.headless=true
+                    </argLine>
                     <!-- Skips unit tests if the value of skip.unit.tests property is true -->
                     <skipTests>${skip.unit.tests}</skipTests>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
@@ -1350,8 +1404,22 @@
             <groupId>org.springframework.batch</groupId>
             <artifactId>spring-batch-core</artifactId>
             <version>${spring.batch.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.thoughtworks.xstream</groupId>
+                    <artifactId>xstream</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
+        <!-- Use explicit version to work around CVE-2020-26217, CVE-2020-26259, CVE-2020-26258,
+        CVE-2021-21349, CVE-2021-21348, CVE-2021-21347, CVE-2021-21346, CVE-2021-21345, CVE-2021-21344,
+        CVE-2021-21343, CVE-2021-21342, CVE-2021-21341, CVE-2021-21351, CVE-2021-21350, CVE-2021-29505-->
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.18</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.batch</groupId>
             <artifactId>spring-batch-infrastructure</artifactId>
@@ -1459,7 +1527,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.databind.version}</version>
+            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
@@ -1569,7 +1637,7 @@
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.56</version>
+            <version>1.68</version>
         </dependency>
 
         <!-- Apache POI for Excel reports -->
@@ -1582,8 +1650,20 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
             <version>${apache.poi.version}</version>
+            <exclusions>
+                <!-- CVE-2021-35517 from commons-compress-1.19 -->
+                <exclusion>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-compress</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.21</version>
+        </dependency>
         <!-- Joda -->
         <dependency>
             <groupId>joda-time</groupId>
@@ -1591,7 +1671,7 @@
             <version>${joda.time.version}</version>
         </dependency>
 
-       <dependency>
+        <dependency>
             <groupId>org.jadira.usertype</groupId>
             <artifactId>usertype.spi</artifactId>
             <version>${jadira.usertype.version}</version>
@@ -1626,7 +1706,7 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-spatial</artifactId>
-            <version>${hibernate.version}</version>
+            <version>${hibernate.spatial.version}</version>
             <exclusions>
                 <!-- Exclude old version of PostgreSQL JDBC driver -->
                 <exclusion>
@@ -1772,7 +1852,14 @@
         <dependency>
             <groupId>org.jvnet.jaxb2_commons</groupId>
             <artifactId>jaxb2-basics</artifactId>
-            <version>0.11.0</version>
+            <version>0.12.0</version>
+        </dependency>
+
+        <!-- Transitive dependency of jaxb2-basics, use newer version to avoid CVE-2019-10086 -->
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.4</version>
         </dependency>
 
         <!-- H2 test database -->
@@ -1871,35 +1958,9 @@
 
         <!-- Firebase Cloud Messaging Client for mobile push notifications -->
         <dependency>
-            <groupId>de.bytefish.fcmjava</groupId>
-            <artifactId>fcmjava-core</artifactId>
-            <version>${fcm.java.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>de.bytefish.fcmjava</groupId>
-            <artifactId>fcmjava-client</artifactId>
-            <version>${fcm.java.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>${fcm.admin.version}</version>
         </dependency>
 
         <!-- ToStringBuilder, EqualsBuilder, etc.. -->
@@ -1935,9 +1996,9 @@
         </dependency>
 
         <dependency>
-          <groupId>com.hierynomus</groupId>
-          <artifactId>sshj</artifactId>
-          <version>${sshj.version}</version>
+            <groupId>com.hierynomus</groupId>
+            <artifactId>sshj</artifactId>
+            <version>${sshj.version}</version>
         </dependency>
 
         <!-- URL Rewrite filter for frontend asset versioning -->
@@ -1969,9 +2030,14 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>jstl</artifactId>
-            <version>1.2</version>
+            <groupId>jakarta.servlet.jsp.jstl</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+            <version>1.2.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+            <version>1.2.6</version>
         </dependency>
 
         <!-- JDK 1.7 is said to have a buggy version of JAXB, go figure... -->

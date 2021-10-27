@@ -287,7 +287,7 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                     case 'NEST_REMOVAL':
                         return GameSpeciesCodes.EUROPEAN_BEAVER;
                     case 'LAW_SECTION_TEN':
-                        return GameSpeciesCodes.RINGED_SEAL;
+                        return 'section10';
                     case 'WEAPON_TRANSPORTATION':
                         return 'weapon_transportation';
                     case 'DISABILITY':
@@ -320,7 +320,6 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                     case 'LARGE_CARNIVORE_WOLF':
                     case 'MAMMAL':
                     case 'NEST_REMOVAL':
-                    case 'LAW_SECTION_TEN':
                         return 'elainlajikuvat';
                     case 'DOG_UNLEASH':
                     case 'DOG_DISTURBANCE':
@@ -330,6 +329,7 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                     case 'RESEARCH':
                     case 'IMPORTING':
                     case 'GAME_MANAGEMENT':
+                    case 'LAW_SECTION_TEN':
                         return 'permitselectionimages';
                     default:
                         console.log('Illegal type ' + category);
@@ -337,6 +337,24 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                 }
             }
 
+        }
+    })
+    .component('applicationTypeLargeCarnivoreLynx', {
+        templateUrl: 'harvestpermit/applications/wizard/application-type-lynx.html',
+        bindings: {
+            type: '<',
+            onSelectType: '&'
+        },
+        controllerAs: '$ctrl',
+        controller: function (ActiveRoleService, isProductionEnvironment) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                var isModerator = ActiveRoleService.isModerator();
+                $ctrl.isActive = function () {
+                    return isModerator || $ctrl.type.active || !isProductionEnvironment;
+                };
+            };
         }
     })
     .controller('HarvestPermitWizardTypeController', function ($state, $window, HarvestPermitApplications,

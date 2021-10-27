@@ -39,7 +39,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 @Repository
@@ -54,6 +56,8 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
     private static final StringPath organisationOfficialCodePath = Expressions.stringPath("official_code");
     private static final StringPath parentOrganisationOfficialCodePath = Expressions.stringPath("parent_official_code");
 
+    private static final QCalendarEvent CALENDAR_EVENT = QCalendarEvent.calendarEvent;
+
     @Resource
     private JPAQueryFactory jpaQueryFactory;
 
@@ -66,38 +70,41 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
                                                         final LocalDate beginDate,
                                                         final LocalDate endDate) {
 
-        final QCalendarEvent CALENDAR_EVENT = QCalendarEvent.calendarEvent;
-
-        final EnumPath<CalendarEventType> keyCol = CALENDAR_EVENT.calendarEventType;
-        final NumberExpression<Long> valueCol = CALENDAR_EVENT.count();
-
-        return jpaQueryFactory.select(keyCol, valueCol)
-                .from(CALENDAR_EVENT)
-                .where(CALENDAR_EVENT.organisation.eq(organisation))
-                .where(CALENDAR_EVENT.date.between(beginDate.toDate(), endDate.toDate()))
-                .where(CALENDAR_EVENT.excludedFromStatistics.eq(false))
-                .groupBy(keyCol)
-                .transform(GroupBy.groupBy(keyCol).as(valueCol));
+        return doCountEventTypes(organisation, beginDate, endDate, Optional.empty());
     }
 
     @Transactional(readOnly = true)
     @Override
-    public Map<CalendarEventType, Integer> countEventParticipants(Organisation organisation,
-                                                               LocalDate beginDate,
-                                                               LocalDate endDate) {
-        final QCalendarEvent CALENDAR_EVENT = QCalendarEvent.calendarEvent;
+    public Map<CalendarEventType, Long> countSubsidisedEventTypes(final Organisation organisation,
+                                                                  final LocalDate beginDate,
+                                                                  final LocalDate endDate) {
+        return doCountEventTypes(organisation, beginDate, endDate, Optional.of(CALENDAR_EVENT.nonSubsidizable.isFalse()));
+    }
 
-        final EnumPath<CalendarEventType> keyCol = CALENDAR_EVENT.calendarEventType;
-        final NumberExpression<Integer> valueCol = CALENDAR_EVENT.participants.sum();
+    @Transactional(readOnly = true)
+    @Override
+    public Map<CalendarEventType, Long> countNonSubsidisedEventTypes(final Organisation organisation,
+                                                                     final LocalDate beginDate,
+                                                                     final LocalDate endDate) {
+        return doCountEventTypes(organisation, beginDate, endDate, Optional.of(CALENDAR_EVENT.nonSubsidizable.isTrue()));
+    }
 
-        return jpaQueryFactory.select(keyCol, valueCol)
-                .from(CALENDAR_EVENT)
-                .where(CALENDAR_EVENT.organisation.eq(organisation))
-                .where(CALENDAR_EVENT.date.between(beginDate.toDate(), endDate.toDate()))
-                .where(CALENDAR_EVENT.excludedFromStatistics.eq(false))
-                .where(CALENDAR_EVENT.participants.isNotNull())
-                .groupBy(keyCol)
-                .transform(GroupBy.groupBy(keyCol).as(valueCol));
+    @Transactional(readOnly = true)
+    @Override
+    public Map<CalendarEventType, Integer> countSubsidisedEventParticipants(final Organisation organisation,
+                                                                  final LocalDate beginDate,
+                                                                  final LocalDate endDate) {
+
+        return doCountCalendarEventParticipants(organisation, beginDate, endDate, false);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public Map<CalendarEventType, Integer> countNonSubsidisedEventParticipants(final Organisation organisation,
+                                                                  final LocalDate beginDate,
+                                                                  final LocalDate endDate) {
+
+        return doCountCalendarEventParticipants(organisation, beginDate, endDate, true);
     }
 
     @Transactional(readOnly = true)
@@ -164,9 +171,9 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
         final List<String> rkaOfficialCodes = params.getRhyIds().isEmpty() ?
                 Collections.emptyList() :
                 jpaQueryFactory.select(ORGANISATION.parentOrganisation.officialCode)
-                .from(ORGANISATION)
-                .where(ORGANISATION.officialCode.in(params.getRhyIds()))
-                .fetch();
+                        .from(ORGANISATION)
+                        .where(ORGANISATION.officialCode.in(params.getRhyIds()))
+                        .fetch();
 
         final BooleanExpression organisationPredicate = params.getRhyIds().isEmpty() ?
                 null :
@@ -233,7 +240,45 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
                             endTime,
                             organisationId,
                             venueId);
-        }).collect(toList());
+                }).collect(toList());
+    }
+
+    private Map<CalendarEventType, Long> doCountEventTypes(final Organisation organisation,
+                                                           final LocalDate beginDate,
+                                                           final LocalDate endDate,
+                                                           final Optional<BooleanExpression> extraPredicate) {
+        final EnumPath<CalendarEventType> keyCol = CALENDAR_EVENT.calendarEventType;
+        final NumberExpression<Long> valueCol = CALENDAR_EVENT.count();
+
+        final BooleanBuilder builder = new BooleanBuilder(CALENDAR_EVENT.organisation.eq(organisation))
+                .and(CALENDAR_EVENT.date.between(beginDate.toDate(), endDate.toDate()))
+                .and(CALENDAR_EVENT.excludedFromStatistics.eq(false));
+
+        extraPredicate.ifPresent(builder::and);
+
+        return jpaQueryFactory.select(keyCol, valueCol)
+                .from(CALENDAR_EVENT)
+                .where(builder.getValue())
+                .groupBy(keyCol)
+                .transform(GroupBy.groupBy(keyCol).as(valueCol));
+    }
+
+    private Map<CalendarEventType, Integer> doCountCalendarEventParticipants(final Organisation organisation,
+                                                                             final LocalDate beginDate,
+                                                                             final LocalDate endDate,
+                                                                             final boolean nonSubsidizable) {
+        final EnumPath<CalendarEventType> keyCol = CALENDAR_EVENT.calendarEventType;
+        final NumberExpression<Integer> valueCol = CALENDAR_EVENT.participants.sum();
+
+        return jpaQueryFactory.select(keyCol, valueCol)
+                .from(CALENDAR_EVENT)
+                .where(CALENDAR_EVENT.organisation.eq(organisation))
+                .where(CALENDAR_EVENT.date.between(beginDate.toDate(), endDate.toDate()))
+                .where(CALENDAR_EVENT.excludedFromStatistics.eq(false))
+                .where(CALENDAR_EVENT.participants.isNotNull())
+                .where(CALENDAR_EVENT.nonSubsidizable.eq(nonSubsidizable))
+                .groupBy(keyCol)
+                .transform(GroupBy.groupBy(keyCol).as(valueCol));
     }
 
     private static BooleanExpression betweenPredicate(final CalendarEventSearchParamsDTO parameters) {
@@ -284,12 +329,12 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
     private static BooleanExpression onlyPublicOrganisationsPredicate(boolean onlyPubliclyVisible) {
         return onlyPubliclyVisible
                 ? organisationTypePath.in(
-                        OrganisationType.RHY.name(),
-                        OrganisationType.RKA.name(),
-                        OrganisationType.VRN.name(),
-                        OrganisationType.RK.name(),
-                        OrganisationType.ARN.name())
-            : null;
+                OrganisationType.RHY.name(),
+                OrganisationType.RKA.name(),
+                OrganisationType.VRN.name(),
+                OrganisationType.RK.name(),
+                OrganisationType.ARN.name())
+                : null;
     }
 
     private static BooleanExpression typePredicate(final ImmutableSet<CalendarEventType> calendarEventTypes) {

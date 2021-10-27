@@ -15,20 +15,15 @@ public class RequiredHarvestFieldsRequestDTO {
     private final GeoLocation location;
     private final boolean withPermit;
 
-    // TODO `personId` may be removed when deer pilot 2020 is over.
-    private final Long personId;
-
     public RequiredHarvestFieldsRequestDTO(final int gameSpeciesCode,
                                            @Nonnull final LocalDate harvestDate,
                                            @Nonnull final GeoLocation location,
-                                           final boolean withPermit,
-                                           @Nullable final Long personId) {
+                                           final boolean withPermit) {
 
         this.gameSpeciesCode = gameSpeciesCode;
         this.harvestDate = requireNonNull(harvestDate);
         this.location = requireNonNull(location);
         this.withPermit = withPermit;
-        this.personId = personId;
     }
 
     public int getGameSpeciesCode() {
@@ -47,9 +42,5 @@ public class RequiredHarvestFieldsRequestDTO {
 
     public boolean isWithPermit() {
         return withPermit;
-    }
-
-    public Long getPersonId() {
-        return personId;
     }
 }

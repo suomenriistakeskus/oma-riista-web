@@ -92,7 +92,7 @@ angular.module('app.harvestpermit.application.gamemanagement.species', ['app.met
         }
 
         function getSpeciesList() {
-            return _.chain(Species.getAllPermitSpecies())
+            return _.chain(Species.getPermitSpeciesWithoutAlienSpecies())
                 .map(TranslatedSpecies.translateSpecies)
                 .sortBy('name')
                 .value();

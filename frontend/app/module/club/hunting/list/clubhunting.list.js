@@ -227,7 +227,7 @@ angular.module('app.clubhunting.list', [])
             $ctrl.getGroupType = function () {
                 if ($ctrl.isMooseGroupSelected()){
                     return 'MOOSE_GROUP';
-                } else if (ClubHuntingViewData.isWhiteTailedDeerPilotGroup()) {
+                } else if (ClubHuntingViewData.isWhiteTailedDeerGroupSelected()) {
                     return 'WHITE_TAILED_DEER_GROUP';
                 } else {
                     return 'DEER_GROUP';

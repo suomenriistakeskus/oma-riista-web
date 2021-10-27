@@ -21,7 +21,7 @@ import fi.riista.feature.permit.decision.action.PermitDecisionAction;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachment;
 import fi.riista.feature.permit.decision.authority.PermitDecisionAuthority;
 import fi.riista.feature.permit.decision.delivery.PermitDecisionDelivery;
-import fi.riista.util.LocalisedString;
+import fi.riista.util.LocalisedEnum;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
@@ -56,6 +56,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmount.getDefaultPaymentAmount;
 import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
@@ -80,8 +81,7 @@ public class PermitDecision extends LifecycleEntity<Long> implements DecisionBas
         final DecisionType decisionType = DecisionType.HARVEST_PERMIT;
         final String permitTypeCode = PermitTypeCode.getPermitTypeCode(
                 application.getHarvestPermitCategory(), application.getValidityYears());
-        final BigDecimal paymentAmount = PermitDecisionPaymentAmount.getDefaultPaymentAmount(
-                decisionType, application.getHarvestPermitCategory());
+        final BigDecimal paymentAmount = getDefaultPaymentAmount(decisionType, permitTypeCode);
         final GISHirvitalousalue hta = Optional.ofNullable(application.getArea())
                 .flatMap(HarvestPermitArea::findLargestHta)
                 .orElse(null);
@@ -134,7 +134,7 @@ public class PermitDecision extends LifecycleEntity<Long> implements DecisionBas
         decision.setHuntingClub(ref.getHuntingClub());
     }
 
-    public enum DecisionType {
+    public enum DecisionType implements LocalisedEnum {
         // Pyyntilupa
         HARVEST_PERMIT,
 
@@ -345,11 +345,11 @@ public class PermitDecision extends LifecycleEntity<Long> implements DecisionBas
     @Nonnull
     @Transient
     public String getDecisionName() {
-        requireNonNull(application);
+        requireNonNull(permitTypeCode);
         requireNonNull(decisionType);
         requireNonNull(locale);
 
-        return PermitDecisionName.getDecisionName(decisionType, application.getHarvestPermitCategory()).getTranslation(locale);
+        return PermitDecisionName.getDecisionName(decisionType, permitTypeCode).getTranslation(locale);
     }
 
     @Transient

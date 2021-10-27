@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 
 import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKOE;
 import static fi.riista.feature.organization.calendar.CalendarEventType.METSASTAJATUTKINTO;
+import static fi.riista.feature.organization.calendar.CalendarEventType.METSASTYKSENVALVOJA_KOULUTUS;
 import static fi.riista.feature.organization.calendar.CalendarEventType.VUOSIKOKOUS;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.UNQUALIFIED;
 import static fi.riista.feature.shootingtest.ShootingTestType.MOOSE;
@@ -91,6 +92,22 @@ public class AnnualStatisticsResolverTest extends EmbeddedDatabaseTest {
             assertEquals(3, getResolver(rhy, eventDate.getYear()).getEventTypeCount(AMPUMAKOE));
             assertEquals(2, getResolver(rhy, eventDate.getYear()).getEventTypeCount(METSASTAJATUTKINTO));
             assertEquals(1, getResolver(rhy, eventDate.getYear()).getEventTypeCount(VUOSIKOKOUS));
+        });
+    }
+
+    @Test
+    public void testGetEventTypeCount_training() {
+        withRhy(rhy -> {
+            LocalDate eventDate = DateUtil.today().minusYears(1);
+
+            model().newCalendarEvent(rhy, METSASTYKSENVALVOJA_KOULUTUS, eventDate);
+            model().newCalendarEvent(rhy, METSASTYKSENVALVOJA_KOULUTUS, eventDate).setNonSubsidizable(true);
+            model().newCalendarEvent(rhy, METSASTYKSENVALVOJA_KOULUTUS, eventDate).setNonSubsidizable(false);
+
+            persistInNewTransaction();
+
+            assertEquals(2, getResolver(rhy, eventDate.getYear()).getEventTypeCount(METSASTYKSENVALVOJA_KOULUTUS));
+            assertEquals(1, getResolver(rhy, eventDate.getYear()).getNonSubsidizableEventTypeCount(METSASTYKSENVALVOJA_KOULUTUS));
         });
     }
 

@@ -133,8 +133,6 @@ public class AccountDTO extends BaseEntityDTO<Long> {
     private boolean enableSrva;
     private boolean enableShootingTests;
 
-    private boolean deerPilotUser;
-
     @Override
     public Long getId() {
         return id;
@@ -489,13 +487,5 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     public void setPrivileges(final Set<SystemUserPrivilege> privileges) {
         this.privileges = privileges;
-    }
-
-    public boolean isDeerPilotUser() {
-        return deerPilotUser;
-    }
-
-    public void setDeerPilotUser(final boolean deerPilotUser) {
-        this.deerPilotUser = deerPilotUser;
     }
 }

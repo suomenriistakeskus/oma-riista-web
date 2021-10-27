@@ -22,9 +22,6 @@ public class LupahallintaImportConfig {
     @Value("${lh.permit.import.url}")
     private URI permitUrl;
 
-    @Value("${lh.club.import.url}")
-    private URI clubUrl;
-
     public String getPermitTypes() {
         return permitTypes;
     }
@@ -41,7 +38,4 @@ public class LupahallintaImportConfig {
         return permitUrl;
     }
 
-    public URI getClubUri() {
-        return clubUrl;
-    }
 }

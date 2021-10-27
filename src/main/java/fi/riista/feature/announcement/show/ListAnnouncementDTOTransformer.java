@@ -43,19 +43,24 @@ public class ListAnnouncementDTOTransformer extends ListTransformer<Announcement
         final Function<Announcement, Organisation> fromOrganisationMapping = getFromOrganisationMapping(list);
         final Function<Announcement, SystemUser> fromUserMapping = getFromUserMapping(list);
         final Map<Announcement, List<AnnouncementSubscriber>> subscriberMapping = getSubscribersGroupedByAnnouncement(list);
+        final Function<Announcement, Organisation> rhySubscriberMapping = getRhySubscriberMapping(list);
 
         return list.stream().map(announcement -> {
             final Organisation fromOrganisation = fromOrganisationMapping.apply(announcement);
             final SystemUser fromUser = fromUserMapping.apply(announcement);
             final List<AnnouncementSubscriber> subscribers = subscriberMapping.get(announcement);
-
-            return ListAnnouncementDTO.create(announcement, subscribers, fromOrganisation, fromUser);
+            final Organisation rhyMemberSubscriber = rhySubscriberMapping.apply(announcement);
+            return ListAnnouncementDTO.create(announcement, subscribers, fromOrganisation, rhyMemberSubscriber, fromUser);
 
         }).collect(Collectors.toList());
     }
 
     private Function<Announcement, Organisation> getFromOrganisationMapping(final Iterable<Announcement> announcements) {
         return CriteriaUtils.singleQueryFunction(announcements, Announcement::getFromOrganisation, organisationRepository, false);
+    }
+
+    private Function<Announcement, Organisation> getRhySubscriberMapping(final Iterable<Announcement> announcements) {
+        return CriteriaUtils.singleQueryFunction(announcements, Announcement::getRhyMembershipSubscriber, organisationRepository, false);
     }
 
     private Function<Announcement, SystemUser> getFromUserMapping(final Iterable<Announcement> announcements) {

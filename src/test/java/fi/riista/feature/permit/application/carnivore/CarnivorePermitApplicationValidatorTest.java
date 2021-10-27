@@ -64,7 +64,8 @@ public class CarnivorePermitApplicationValidatorTest implements DefaultEntitySup
                 HarvestPermitCategory.LARGE_CARNIVORE_BEAR, bear,
                 HarvestPermitCategory.LARGE_CARNIVORE_LYNX, lynx,
                 HarvestPermitCategory.LARGE_CARNIVORE_LYNX_PORONHOITO, lynx,
-                HarvestPermitCategory.LARGE_CARNIVORE_WOLF, wolf);
+                HarvestPermitCategory.LARGE_CARNIVORE_WOLF, wolf,
+                HarvestPermitCategory.LARGE_CARNIVORE_WOLF_PORONHOITO, wolf);
     }
 
     @Override

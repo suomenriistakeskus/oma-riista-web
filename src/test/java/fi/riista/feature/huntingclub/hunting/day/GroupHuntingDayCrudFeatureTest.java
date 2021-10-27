@@ -1,10 +1,13 @@
 package fi.riista.feature.huntingclub.hunting.day;
 
 import fi.riista.feature.account.user.UserAuthorizationHelper;
+import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingFinishedException;
 import fi.riista.test.EmbeddedDatabaseTest;
+import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,6 +18,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static fi.riista.test.TestUtils.ld;
+import static fi.riista.util.DateUtil.huntingYear;
 import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -59,9 +64,8 @@ public class GroupHuntingDayCrudFeatureTest extends EmbeddedDatabaseTest impleme
 
     @Test(expected = NumberOfHoundsMissingException.class)
     public void testCreateHuntingDay_withHounds_thenNumberOfHoundsMustBeGiven() {
-        withMooseHuntingGroupFixture(f -> onSavedAndAuthenticated(createUser(f.groupLeader), () -> {
-            crudFeature.create(createHuntingDayDTO(f.group, true).withNumberOfHounds(null));
-        }));
+        withMooseHuntingGroupFixture(f -> onSavedAndAuthenticated(createUser(f.groupLeader), () ->
+                crudFeature.create(createHuntingDayDTO(f.group, true).withNumberOfHounds(null))));
     }
 
     @Test
@@ -74,9 +78,128 @@ public class GroupHuntingDayCrudFeatureTest extends EmbeddedDatabaseTest impleme
         }));
     }
 
-    private final Consumer<HuntingClubGroup> FEATURE_CREATE = group -> {
-        crudFeature.create(createHuntingDayDTO(group, false));
-    };
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateHuntingDay_outsideHuntingPeriod_thenRaiseIllegalArgumentException() {
+        final int huntingYear = huntingYear();
+
+        final HarvestPermitSpeciesAmount speciesAmount =
+                model().newHarvestPermitSpeciesAmount(
+                        model().newMooselikePermit(model().newRiistanhoitoyhdistys()),
+                        model().newGameSpeciesMoose());
+        speciesAmount.setBeginDate(ld(huntingYear, 9, 1));
+        speciesAmount.setEndDate(ld(huntingYear, 12, 31));
+
+        LocalDate startDate = speciesAmount.getEndDate().plusDays(2);
+
+        withHuntingGroupFixture(speciesAmount, f ->
+                onSavedAndAuthenticated(createUser(f.groupLeader), () ->
+                        crudFeature.create(createHuntingDayDTO(f.group, false)
+                                .withNumberOfHounds(2)
+                                .withStartAndEndDate(startDate, startDate))));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateHuntingDay_endDateIsOutsideHuntingPeriod_thenRaiseIllegalArgumentException() {
+        final int huntingYear = huntingYear();
+
+        final HarvestPermitSpeciesAmount speciesAmount =
+                model().newHarvestPermitSpeciesAmount(
+                        model().newMooselikePermit(model().newRiistanhoitoyhdistys()),
+                        model().newGameSpeciesMoose());
+        speciesAmount.setBeginDate(ld(huntingYear, 9, 1));
+        speciesAmount.setEndDate(ld(huntingYear, 12, 31));
+
+        LocalDate startDate = speciesAmount.getEndDate();
+        LocalDate endDate = speciesAmount.getEndDate().plusDays(1);
+
+        withHuntingGroupFixture(speciesAmount, f ->
+                onSavedAndAuthenticated(createUser(f.groupLeader), () ->
+                        crudFeature.create(createHuntingDayDTO(f.group, false)
+                                .withNumberOfHounds(2)
+                                .withStartAndEndDate(startDate, endDate))));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateHuntingDay_outsideBothHuntingPeriods_thenRaiseIllegalArgumentException() {
+        final int huntingYear = huntingYear();
+
+        final HarvestPermitSpeciesAmount speciesAmount =
+                model().newHarvestPermitSpeciesAmount(
+                        model().newMooselikePermit(model().newRiistanhoitoyhdistys()),
+                        model().newGameSpeciesMoose());
+        speciesAmount.setBeginDate(ld(huntingYear, 9, 1));
+        speciesAmount.setEndDate(ld(huntingYear, 12, 31));
+
+        speciesAmount.setBeginDate2(speciesAmount.getEndDate().plusDays(30));
+        speciesAmount.setEndDate2(speciesAmount.getEndDate().plusDays(60));
+
+        LocalDate startDate = speciesAmount.getEndDate().plusDays(2);
+
+        withHuntingGroupFixture(speciesAmount, f ->
+                onSavedAndAuthenticated(createUser(f.groupLeader), () ->
+                        crudFeature.create(createHuntingDayDTO(f.group, false)
+                                .withNumberOfHounds(2)
+                                .withStartAndEndDate(startDate, startDate))));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateHuntingDay_foundInSecondHuntingPeriodButWrongSpecies_thenRaiseIllegalArgumentException() {
+        final int huntingYear = huntingYear();
+
+        HarvestPermit permit = model().newMooselikePermit(model().newRiistanhoitoyhdistys());
+
+        final HarvestPermitSpeciesAmount speciesAmount =
+                model().newHarvestPermitSpeciesAmount(
+                        permit,
+                        model().newGameSpeciesWhiteTailedDeer());
+        speciesAmount.setBeginDate(ld(huntingYear, 9, 1));
+        speciesAmount.setEndDate(ld(huntingYear, 12, 31));
+
+        speciesAmount.setBeginDate2(speciesAmount.getEndDate().plusDays(30));
+        speciesAmount.setEndDate2(speciesAmount.getEndDate().plusDays(60));
+
+        LocalDate startDate = speciesAmount.getEndDate().plusDays(40);
+
+        final HarvestPermitSpeciesAmount speciesAmount2 =
+                model().newHarvestPermitSpeciesAmount(
+                        permit,
+                        model().newGameSpeciesMoose());
+
+        speciesAmount2.setBeginDate(speciesAmount.getBeginDate());
+        speciesAmount2.setEndDate(speciesAmount.getEndDate());
+
+        withHuntingGroupFixture(speciesAmount2, f ->
+                    onSavedAndAuthenticated(createUser(f.groupLeader), () ->
+                            crudFeature.create(createHuntingDayDTO(f.group, false)
+                                    .withNumberOfHounds(2)
+                                    .withStartAndEndDate(startDate, startDate))));
+    }
+
+    @Test
+    public void testCreateHuntingDay_foundInSecondHuntingPeriod_thenSaveSuccess() {
+        final int huntingYear = huntingYear();
+
+        final HarvestPermitSpeciesAmount speciesAmount =
+                model().newHarvestPermitSpeciesAmount(
+                        model().newMooselikePermit(model().newRiistanhoitoyhdistys()),
+                        model().newGameSpeciesMoose());
+        speciesAmount.setBeginDate(ld(huntingYear, 9, 1));
+        speciesAmount.setEndDate(ld(huntingYear, 12, 31));
+
+        speciesAmount.setBeginDate2(speciesAmount.getEndDate().plusDays(30));
+        speciesAmount.setEndDate2(speciesAmount.getEndDate().plusDays(60));
+
+        LocalDate startDate = speciesAmount.getEndDate().plusDays(40);
+
+        withHuntingGroupFixture(speciesAmount, f ->
+                onSavedAndAuthenticated(createUser(f.groupLeader), () ->
+                        crudFeature.create(createHuntingDayDTO(f.group, false)
+                                .withNumberOfHounds(2)
+                                .withStartAndEndDate(startDate, startDate))));
+    }
+
+    private final Consumer<HuntingClubGroup> FEATURE_CREATE = group ->
+            crudFeature.create(createHuntingDayDTO(group, false));
 
     private final Consumer<HuntingClubGroup> FEATURE_UPDATE = group -> {
         final List<GroupHuntingDay> list = huntingDayRepo.findByGroup(group);
@@ -85,29 +208,25 @@ public class GroupHuntingDayCrudFeatureTest extends EmbeddedDatabaseTest impleme
         crudFeature.update(dto);
     };
 
-    private final Consumer<HuntingClubGroup> FEATURE_DELETE = group -> {
-        crudFeature.delete(huntingDayRepo.findByGroup(group).get(0).getId());
-    };
+    private final Consumer<HuntingClubGroup> FEATURE_DELETE = group ->
+            crudFeature.delete(huntingDayRepo.findByGroup(group).get(0).getId());
 
     @Test
     public void testCreatePermissions() {
-        Stream.of(PermissionTestScheme.values()).forEach(groupScheme -> {
-            testEditPermissions("Create hunting day", groupScheme, FEATURE_CREATE);
-        });
+        Stream.of(PermissionTestScheme.values()).forEach(groupScheme ->
+                testEditPermissions("Create hunting day", groupScheme, FEATURE_CREATE));
     }
 
     @Test
     public void testUpdatePermissions() {
-        Stream.of(PermissionTestScheme.values()).forEach(groupScheme -> {
-            testEditPermissions("Update hunting day", groupScheme, FEATURE_UPDATE);
-        });
+        Stream.of(PermissionTestScheme.values()).forEach(groupScheme ->
+                testEditPermissions("Update hunting day", groupScheme, FEATURE_UPDATE));
     }
 
     @Test
     public void testDeletePermissions() {
-        Stream.of(PermissionTestScheme.values()).forEach(groupScheme -> {
-            testEditPermissions("Delete hunting day", groupScheme, FEATURE_DELETE);
-        });
+        Stream.of(PermissionTestScheme.values()).forEach(groupScheme ->
+                testEditPermissions("Delete hunting day", groupScheme, FEATURE_DELETE));
     }
 
     private static GroupHuntingDayDTO createHuntingDayDTO(final HuntingClubGroup group, final boolean withHounds) {
@@ -166,15 +285,14 @@ public class GroupHuntingDayCrudFeatureTest extends EmbeddedDatabaseTest impleme
                                     testName, user.getUsername()));
                         }
 
-                        Optional.ofNullable(user.getPerson()).ifPresent(p -> {
-                            runInTransaction(() -> {
-                                if (!userAuthHelper.isClubContact(f.club, p) && !userAuthHelper.isGroupLeader(f.group, p)) {
-                                    fail(String.format(
-                                            "%s by %s should have failed because user is not club contact nor group leader.",
-                                            testName, user.getUsername()));
-                                }
-                            });
-                        });
+                        Optional.ofNullable(user.getPerson()).ifPresent(p ->
+                                runInTransaction(() -> {
+                                    if (!userAuthHelper.isClubContact(f.club, p) && !userAuthHelper.isGroupLeader(f.group, p)) {
+                                        fail(String.format(
+                                                "%s by %s should have failed because user is not club contact nor group leader.",
+                                                testName, user.getUsername()));
+                                    }
+                                }));
                     } catch (final AccessDeniedException e) {
                         if (!groupScheme.huntingFinished) {
                             if (user.isModeratorOrAdmin()) {
@@ -182,15 +300,14 @@ public class GroupHuntingDayCrudFeatureTest extends EmbeddedDatabaseTest impleme
                                         "%s should have succeeded for %s when hunting is not finished.",
                                         testName, user.getUsername()));
                             } else if (!groupScheme.fromMooseDataCard) {
-                                Optional.ofNullable(user.getPerson()).ifPresent(p -> {
-                                    runInTransaction(() -> {
-                                        if (userAuthHelper.isClubContact(f.club, p) || userAuthHelper.isGroupLeader(f.group, p)) {
-                                            fail(String.format(
-                                                    "%s by %s should have succeeded for user who is club contact or group leader when group not created from moose data card.",
-                                                    testName, user.getUsername()));
-                                        }
-                                    });
-                                });
+                                Optional.ofNullable(user.getPerson()).ifPresent(p ->
+                                        runInTransaction(() -> {
+                                            if (userAuthHelper.isClubContact(f.club, p) || userAuthHelper.isGroupLeader(f.group, p)) {
+                                                fail(String.format(
+                                                        "%s by %s should have succeeded for user who is club contact or group leader when group not created from moose data card.",
+                                                        testName, user.getUsername()));
+                                            }
+                                        }));
                             }
                         }
                     } catch (final ClubHuntingFinishedException e) {

@@ -40,6 +40,16 @@ public class JHTTrainingStatistics
         result.setGameDamageTrainingParticipants(nullableIntSum(a, b, s -> s.getGameDamageTrainingParticipants()));
         result.setHuntingControlTrainingEvents(nullableIntSum(a, b, s -> s.getHuntingControlTrainingEvents()));
         result.setHuntingControlTrainingParticipants(nullableIntSum(a, b, s -> s.getHuntingControlTrainingParticipants()));
+
+        result.setNonSubsidizableShootingTestTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableShootingTestTrainingEvents()));
+        result.setNonSubsidizableShootingTestTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableShootingTestTrainingParticipants()));
+        result.setNonSubsidizableHunterExamOfficialTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableHunterExamOfficialTrainingEvents()));
+        result.setNonSubsidizableHunterExamOfficialTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableHunterExamOfficialTrainingParticipants()));
+        result.setNonSubsidizableGameDamageTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableGameDamageTrainingEvents()));
+        result.setNonSubsidizableGameDamageTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableGameDamageTrainingParticipants()));
+        result.setNonSubsidizableHuntingControlTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableHuntingControlTrainingEvents()));
+        result.setNonSubsidizableHuntingControlTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableHuntingControlTrainingParticipants()));
+
         result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
         return result;
     }
@@ -60,6 +70,10 @@ public class JHTTrainingStatistics
     @Column(name = "jht_shooting_test_training_events")
     private Integer shootingTestTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_jht_shooting_test_training_events")
+    private Integer nonSubsidizableShootingTestTrainingEvents;
+
     @Column(name = "jht_shooting_test_training_events_overridden", nullable = false)
     private boolean shootingTestTrainingEventsOverridden;
 
@@ -67,6 +81,10 @@ public class JHTTrainingStatistics
     @Min(0)
     @Column(name = "jht_shooting_test_training_participants")
     private Integer shootingTestTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_jht_shooting_test_training_participants")
+    private Integer nonSubsidizableShootingTestTrainingParticipants;
 
     @Column(name = "jht_shooting_test_training_participants_overridden", nullable = false)
     private boolean shootingTestTrainingParticipantsOverridden;
@@ -76,6 +94,10 @@ public class JHTTrainingStatistics
     @Column(name = "jht_hunter_exam_training_events")
     private Integer hunterExamOfficialTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_jht_hunter_exam_training_events")
+    private Integer nonSubsidizableHunterExamOfficialTrainingEvents;
+
     @Column(name = "jht_hunter_exam_training_events_overridden", nullable = false)
     private boolean hunterExamOfficialTrainingEventsOverridden;
 
@@ -83,6 +105,10 @@ public class JHTTrainingStatistics
     @Min(0)
     @Column(name = "jht_hunter_exam_training_participants")
     private Integer hunterExamOfficialTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_jht_hunter_exam_training_participants")
+    private Integer nonSubsidizableHunterExamOfficialTrainingParticipants;
 
     @Column(name = "jht_hunter_exam_training_participants_overridden", nullable = false)
     private boolean hunterExamOfficialTrainingParticipantsOverridden;
@@ -92,6 +118,10 @@ public class JHTTrainingStatistics
     @Column(name = "jht_game_damage_training_events")
     private Integer gameDamageTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_jht_game_damage_training_events")
+    private Integer nonSubsidizableGameDamageTrainingEvents;
+
     @Column(name = "jht_game_damage_training_events_overridden", nullable = false)
     private boolean gameDamageTrainingEventsOverridden;
 
@@ -99,6 +129,10 @@ public class JHTTrainingStatistics
     @Min(0)
     @Column(name = "jht_game_damage_training_participants")
     private Integer gameDamageTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_jht_game_damage_training_participants")
+    private Integer nonSubsidizableGameDamageTrainingParticipants;
 
     @Column(name = "jht_game_damage_training_participants_overridden", nullable = false)
     private boolean gameDamageTrainingParticipantsOverridden;
@@ -108,6 +142,10 @@ public class JHTTrainingStatistics
     @Column(name = "jht_hunting_control_training_events")
     private Integer huntingControlTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_jht_hunting_control_training_events")
+    private Integer nonSubsidizableHuntingControlTrainingEvents;
+
     @Column(name = "jht_hunting_control_training_events_overridden", nullable = false)
     private boolean huntingControlTrainingEventsOverridden;
 
@@ -115,6 +153,10 @@ public class JHTTrainingStatistics
     @Min(0)
     @Column(name = "jht_hunting_control_training_participants")
     private Integer huntingControlTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_jht_hunting_control_training_participants")
+    private Integer nonSubsidizableHuntingControlTrainingParticipants;
 
     @Column(name = "jht_hunting_control_training_participants_overridden", nullable = false)
     private boolean huntingControlTrainingParticipantsOverridden;
@@ -131,27 +173,35 @@ public class JHTTrainingStatistics
         requireNonNull(that);
 
         this.shootingTestTrainingEvents = that.shootingTestTrainingEvents;
+        this.nonSubsidizableShootingTestTrainingEvents = that.nonSubsidizableShootingTestTrainingEvents;
         this.shootingTestTrainingEventsOverridden = that.shootingTestTrainingEventsOverridden;
 
         this.shootingTestTrainingParticipants = that.shootingTestTrainingParticipants;
+        this.nonSubsidizableShootingTestTrainingParticipants = that.nonSubsidizableShootingTestTrainingParticipants;
         this.shootingTestTrainingParticipantsOverridden = that.shootingTestTrainingParticipantsOverridden;
 
         this.hunterExamOfficialTrainingEvents = that.hunterExamOfficialTrainingEvents;
+        this.nonSubsidizableHunterExamOfficialTrainingEvents = that.nonSubsidizableHunterExamOfficialTrainingEvents;
         this.hunterExamOfficialTrainingEventsOverridden = that.hunterExamOfficialTrainingEventsOverridden;
 
         this.hunterExamOfficialTrainingParticipants = that.hunterExamOfficialTrainingParticipants;
+        this.nonSubsidizableHunterExamOfficialTrainingParticipants = that.nonSubsidizableHunterExamOfficialTrainingParticipants;
         this.hunterExamOfficialTrainingParticipantsOverridden = that.hunterExamOfficialTrainingParticipantsOverridden;
 
         this.gameDamageTrainingEvents = that.gameDamageTrainingEvents;
+        this.nonSubsidizableGameDamageTrainingEvents = that.nonSubsidizableGameDamageTrainingEvents;
         this.gameDamageTrainingEventsOverridden = that.gameDamageTrainingEventsOverridden;
 
         this.gameDamageTrainingParticipants = that.gameDamageTrainingParticipants;
+        this.nonSubsidizableGameDamageTrainingParticipants = that.nonSubsidizableGameDamageTrainingParticipants;
         this.gameDamageTrainingParticipantsOverridden = that.gameDamageTrainingParticipantsOverridden;
 
         this.huntingControlTrainingEvents = that.huntingControlTrainingEvents;
+        this.nonSubsidizableHuntingControlTrainingEvents = that.nonSubsidizableHuntingControlTrainingEvents;
         this.huntingControlTrainingEventsOverridden = that.huntingControlTrainingEventsOverridden;
 
         this.huntingControlTrainingParticipants = that.huntingControlTrainingParticipants;
+        this.nonSubsidizableHuntingControlTrainingParticipants = that.nonSubsidizableHuntingControlTrainingParticipants;
         this.huntingControlTrainingParticipantsOverridden = that.huntingControlTrainingParticipantsOverridden;
 
         this.lastModified = that.lastModified;
@@ -168,60 +218,84 @@ public class JHTTrainingStatistics
 
         return Objects.equals(shootingTestTrainingEvents, that.shootingTestTrainingEvents) &&
                 Objects.equals(shootingTestTrainingParticipants, that.shootingTestTrainingParticipants) &&
+                Objects.equals(nonSubsidizableShootingTestTrainingEvents, that.nonSubsidizableShootingTestTrainingEvents) &&
+                Objects.equals(nonSubsidizableShootingTestTrainingParticipants, that.nonSubsidizableShootingTestTrainingParticipants) &&
 
                 Objects.equals(hunterExamOfficialTrainingEvents, that.hunterExamOfficialTrainingEvents) &&
                 Objects.equals(hunterExamOfficialTrainingParticipants, that.hunterExamOfficialTrainingParticipants) &&
+                Objects.equals(nonSubsidizableHunterExamOfficialTrainingEvents, that.nonSubsidizableHunterExamOfficialTrainingEvents) &&
+                Objects.equals(nonSubsidizableHunterExamOfficialTrainingParticipants, that.nonSubsidizableHunterExamOfficialTrainingParticipants) &&
 
                 Objects.equals(gameDamageTrainingEvents, that.gameDamageTrainingEvents) &&
                 Objects.equals(gameDamageTrainingParticipants, that.gameDamageTrainingParticipants) &&
+                Objects.equals(nonSubsidizableGameDamageTrainingEvents, that.nonSubsidizableGameDamageTrainingEvents) &&
+                Objects.equals(gameDamageTrainingParticipants, that.gameDamageTrainingParticipants) &&
 
                 Objects.equals(huntingControlTrainingEvents, that.huntingControlTrainingEvents) &&
-                Objects.equals(huntingControlTrainingParticipants, that.huntingControlTrainingParticipants);
+                Objects.equals(huntingControlTrainingParticipants, that.huntingControlTrainingParticipants) &&
+                Objects.equals(nonSubsidizableHuntingControlTrainingEvents, that.nonSubsidizableHuntingControlTrainingEvents) &&
+                Objects.equals(nonSubsidizableHuntingControlTrainingParticipants, that.nonSubsidizableHuntingControlTrainingParticipants);
     }
 
     @Override
     public void assignFrom(@Nonnull final JHTTrainingStatistics that) {
         // Includes manually updateable fields only.
 
-        if (!Objects.equals(this.shootingTestTrainingEvents, that.shootingTestTrainingEvents)) {
+        if (!Objects.equals(this.shootingTestTrainingEvents, that.shootingTestTrainingEvents) ||
+                !Objects.equals(this.nonSubsidizableShootingTestTrainingEvents, that.nonSubsidizableShootingTestTrainingEvents)) {
             this.shootingTestTrainingEventsOverridden = true;
         }
         this.shootingTestTrainingEvents = that.shootingTestTrainingEvents;
+        this.nonSubsidizableShootingTestTrainingEvents = that.nonSubsidizableShootingTestTrainingEvents;
 
-        if (!Objects.equals(this.shootingTestTrainingParticipants, that.shootingTestTrainingParticipants)) {
+        if (!Objects.equals(this.shootingTestTrainingParticipants, that.shootingTestTrainingParticipants) ||
+                !Objects.equals(this.nonSubsidizableShootingTestTrainingParticipants, that.nonSubsidizableShootingTestTrainingParticipants)) {
             this.shootingTestTrainingParticipantsOverridden = true;
         }
         this.shootingTestTrainingParticipants = that.shootingTestTrainingParticipants;
+        this.nonSubsidizableShootingTestTrainingParticipants = that.nonSubsidizableShootingTestTrainingParticipants;
 
-        if (!Objects.equals(this.hunterExamOfficialTrainingEvents, that.hunterExamOfficialTrainingEvents)) {
+        if (!Objects.equals(this.hunterExamOfficialTrainingEvents, that.hunterExamOfficialTrainingEvents)||
+                !Objects.equals(this.nonSubsidizableHunterExamOfficialTrainingEvents, that.nonSubsidizableHunterExamOfficialTrainingEvents)) {
             this.hunterExamOfficialTrainingEventsOverridden = true;
         }
         this.hunterExamOfficialTrainingEvents = that.hunterExamOfficialTrainingEvents;
+        this.nonSubsidizableHunterExamOfficialTrainingEvents = that.nonSubsidizableHunterExamOfficialTrainingEvents;
 
-        if (!Objects.equals(this.hunterExamOfficialTrainingParticipants, that.hunterExamOfficialTrainingParticipants)) {
+        if (!Objects.equals(this.hunterExamOfficialTrainingParticipants, that.hunterExamOfficialTrainingParticipants) ||
+                !Objects.equals(this.nonSubsidizableHunterExamOfficialTrainingParticipants, that.nonSubsidizableHunterExamOfficialTrainingParticipants)) {
             this.hunterExamOfficialTrainingParticipantsOverridden = true;
         }
         this.hunterExamOfficialTrainingParticipants = that.hunterExamOfficialTrainingParticipants;
+        this.nonSubsidizableHunterExamOfficialTrainingParticipants = that.nonSubsidizableHunterExamOfficialTrainingParticipants;
 
-        if (!Objects.equals(this.gameDamageTrainingEvents, that.gameDamageTrainingEvents)) {
+        if (!Objects.equals(this.gameDamageTrainingEvents, that.gameDamageTrainingEvents) ||
+                !Objects.equals(this.nonSubsidizableGameDamageTrainingEvents, that.nonSubsidizableGameDamageTrainingEvents)) {
             this.gameDamageTrainingEventsOverridden = true;
         }
         this.gameDamageTrainingEvents = that.gameDamageTrainingEvents;
+        this.nonSubsidizableGameDamageTrainingEvents = that.nonSubsidizableGameDamageTrainingEvents;
 
-        if (!Objects.equals(this.gameDamageTrainingParticipants, that.gameDamageTrainingParticipants)) {
+        if (!Objects.equals(this.gameDamageTrainingParticipants, that.gameDamageTrainingParticipants) ||
+                !Objects.equals(this.nonSubsidizableGameDamageTrainingParticipants, that.nonSubsidizableGameDamageTrainingParticipants)) {
             this.gameDamageTrainingParticipantsOverridden = true;
         }
         this.gameDamageTrainingParticipants = that.gameDamageTrainingParticipants;
+        this.nonSubsidizableGameDamageTrainingParticipants = that.nonSubsidizableGameDamageTrainingParticipants;
 
-        if (!Objects.equals(this.huntingControlTrainingEvents, that.huntingControlTrainingEvents)) {
+        if (!Objects.equals(this.huntingControlTrainingEvents, that.huntingControlTrainingEvents) ||
+                !Objects.equals(this.nonSubsidizableHuntingControlTrainingEvents, that.nonSubsidizableHuntingControlTrainingEvents)) {
             this.huntingControlTrainingEventsOverridden = true;
         }
         this.huntingControlTrainingEvents = that.huntingControlTrainingEvents;
+        this.nonSubsidizableHuntingControlTrainingEvents = that.nonSubsidizableHuntingControlTrainingEvents;
 
-        if (!Objects.equals(this.huntingControlTrainingParticipants, that.huntingControlTrainingParticipants)) {
+        if (!Objects.equals(this.huntingControlTrainingParticipants, that.huntingControlTrainingParticipants) ||
+                !Objects.equals(this.nonSubsidizableHuntingControlTrainingParticipants, that.nonSubsidizableHuntingControlTrainingParticipants)) {
             this.huntingControlTrainingParticipantsOverridden = true;
         }
         this.huntingControlTrainingParticipants = that.huntingControlTrainingParticipants;
+        this.nonSubsidizableHuntingControlTrainingParticipants = that.nonSubsidizableHuntingControlTrainingParticipants;
     }
 
     @Override
@@ -246,13 +320,28 @@ public class JHTTrainingStatistics
     }
 
     @Nullable
+    Integer countJhtNonSubsidizableTrainingEvents() {
+        return nullableIntSum(
+                nonSubsidizableShootingTestTrainingEvents, nonSubsidizableHunterExamOfficialTrainingEvents,
+                nonSubsidizableGameDamageTrainingEvents, nonSubsidizableHuntingControlTrainingEvents);
+    }
+
+    @Nullable
     Integer countJhtTrainingParticipants() {
         return nullableIntSum(
                 shootingTestTrainingParticipants, hunterExamOfficialTrainingParticipants,
                 gameDamageTrainingParticipants, huntingControlTrainingParticipants);
     }
 
+    @Nullable
+    Integer countNonSubsidizableJhtTrainingParticipants() {
+        return nullableIntSum(
+                nonSubsidizableShootingTestTrainingParticipants, nonSubsidizableHunterExamOfficialTrainingParticipants,
+                nonSubsidizableGameDamageTrainingParticipants, nonSubsidizableHuntingControlTrainingParticipants);
+    }
+
     // Accessors -->
+
 
     public Integer getShootingTestTrainingEvents() {
         return shootingTestTrainingEvents;
@@ -260,6 +349,14 @@ public class JHTTrainingStatistics
 
     public void setShootingTestTrainingEvents(final Integer shootingTestTrainingEvents) {
         this.shootingTestTrainingEvents = shootingTestTrainingEvents;
+    }
+
+    public Integer getNonSubsidizableShootingTestTrainingEvents() {
+        return nonSubsidizableShootingTestTrainingEvents;
+    }
+
+    public void setNonSubsidizableShootingTestTrainingEvents(final Integer nonSubsidizableShootingTestTrainingEvents) {
+        this.nonSubsidizableShootingTestTrainingEvents = nonSubsidizableShootingTestTrainingEvents;
     }
 
     public Integer getShootingTestTrainingParticipants() {
@@ -270,12 +367,28 @@ public class JHTTrainingStatistics
         this.shootingTestTrainingParticipants = shootingTestTrainingParticipants;
     }
 
+    public Integer getNonSubsidizableShootingTestTrainingParticipants() {
+        return nonSubsidizableShootingTestTrainingParticipants;
+    }
+
+    public void setNonSubsidizableShootingTestTrainingParticipants(final Integer nonSubsidizableShootingTestTrainingParticipants) {
+        this.nonSubsidizableShootingTestTrainingParticipants = nonSubsidizableShootingTestTrainingParticipants;
+    }
+
     public Integer getHunterExamOfficialTrainingEvents() {
         return hunterExamOfficialTrainingEvents;
     }
 
     public void setHunterExamOfficialTrainingEvents(final Integer hunterExamOfficialTrainingEvents) {
         this.hunterExamOfficialTrainingEvents = hunterExamOfficialTrainingEvents;
+    }
+
+    public Integer getNonSubsidizableHunterExamOfficialTrainingEvents() {
+        return nonSubsidizableHunterExamOfficialTrainingEvents;
+    }
+
+    public void setNonSubsidizableHunterExamOfficialTrainingEvents(final Integer nonSubsidizableHunterExamOfficialTrainingEvents) {
+        this.nonSubsidizableHunterExamOfficialTrainingEvents = nonSubsidizableHunterExamOfficialTrainingEvents;
     }
 
     public Integer getHunterExamOfficialTrainingParticipants() {
@@ -286,12 +399,28 @@ public class JHTTrainingStatistics
         this.hunterExamOfficialTrainingParticipants = hunterExamOfficialTrainingParticipants;
     }
 
+    public Integer getNonSubsidizableHunterExamOfficialTrainingParticipants() {
+        return nonSubsidizableHunterExamOfficialTrainingParticipants;
+    }
+
+    public void setNonSubsidizableHunterExamOfficialTrainingParticipants(final Integer nonSubsidizableHunterExamOfficialTrainingParticipants) {
+        this.nonSubsidizableHunterExamOfficialTrainingParticipants = nonSubsidizableHunterExamOfficialTrainingParticipants;
+    }
+
     public Integer getGameDamageTrainingEvents() {
         return gameDamageTrainingEvents;
     }
 
     public void setGameDamageTrainingEvents(final Integer gameDamageTrainingEvents) {
         this.gameDamageTrainingEvents = gameDamageTrainingEvents;
+    }
+
+    public Integer getNonSubsidizableGameDamageTrainingEvents() {
+        return nonSubsidizableGameDamageTrainingEvents;
+    }
+
+    public void setNonSubsidizableGameDamageTrainingEvents(final Integer nonSubsidizableGameDamageTrainingEvents) {
+        this.nonSubsidizableGameDamageTrainingEvents = nonSubsidizableGameDamageTrainingEvents;
     }
 
     public Integer getGameDamageTrainingParticipants() {
@@ -302,6 +431,14 @@ public class JHTTrainingStatistics
         this.gameDamageTrainingParticipants = numberOfGameDamageTrainingParticipants;
     }
 
+    public Integer getNonSubsidizableGameDamageTrainingParticipants() {
+        return nonSubsidizableGameDamageTrainingParticipants;
+    }
+
+    public void setNonSubsidizableGameDamageTrainingParticipants(final Integer nonSubsidizableGameDamageTrainingParticipants) {
+        this.nonSubsidizableGameDamageTrainingParticipants = nonSubsidizableGameDamageTrainingParticipants;
+    }
+
     public Integer getHuntingControlTrainingEvents() {
         return huntingControlTrainingEvents;
     }
@@ -310,12 +447,28 @@ public class JHTTrainingStatistics
         this.huntingControlTrainingEvents = huntingControlTrainingEvents;
     }
 
+    public Integer getNonSubsidizableHuntingControlTrainingEvents() {
+        return nonSubsidizableHuntingControlTrainingEvents;
+    }
+
+    public void setNonSubsidizableHuntingControlTrainingEvents(final Integer nonSubsidizableHuntingControlTrainingEvents) {
+        this.nonSubsidizableHuntingControlTrainingEvents = nonSubsidizableHuntingControlTrainingEvents;
+    }
+
     public Integer getHuntingControlTrainingParticipants() {
         return huntingControlTrainingParticipants;
     }
 
     public void setHuntingControlTrainingParticipants(final Integer huntingControlTrainingParticipants) {
         this.huntingControlTrainingParticipants = huntingControlTrainingParticipants;
+    }
+
+    public Integer getNonSubsidizableHuntingControlTrainingParticipants() {
+        return nonSubsidizableHuntingControlTrainingParticipants;
+    }
+
+    public void setNonSubsidizableHuntingControlTrainingParticipants(final Integer nonSubsidizableHuntingControlTrainingParticipants) {
+        this.nonSubsidizableHuntingControlTrainingParticipants = nonSubsidizableHuntingControlTrainingParticipants;
     }
 
     @Override

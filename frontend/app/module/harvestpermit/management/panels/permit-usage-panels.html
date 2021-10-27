@@ -33,3 +33,45 @@
         </div>
     </div>
 </div>
+
+<div class="col-md-4 col-sm-6" ng-if="$ctrl.showEndOfPermitPeriodPanel">
+    <div class="panel panel-permit-management">
+        <div class="panel-heading">
+            <p class="panel-title">
+                <span class="fa fa-2x fa-file-text"></span>
+                <span translate="harvestpermit.management.endOfHunting.endOfPermitPeriodTitle"></span>
+            </p>
+        </div>
+
+        <div class="panel-body" ng-switch="!!$ctrl.permit.harvestReportState">
+            <div ng-switch-when="true">
+                <p translate="harvestpermit.endOfPermitPeriodInfo"></p>
+            </div>
+
+            <div ng-switch-when="false">
+                <span translate="harvestpermit.management.endOfHunting.endOfPermitPeriodInstructions"></span>
+            </div>
+        </div>
+
+        <div class="panel-buttons">
+                    <span class="r-harvestreport-state-text pull-left"
+                          ng-if="$ctrl.permit.harvestReportState"
+                          harvest-report-state-to-class="$ctrl.permit.harvestReportState"
+                          translate="harvestreport.state.{{$ctrl.permit.harvestReportState}}"></span>
+
+            <button type="button" class="btn btn-primary"
+                    ng-if="$ctrl.permit.canEndHunting"
+                    ng-click="$ctrl.showEndOfPermitPeriodReport()">
+                <span translate="harvestpermit.management.endOfHunting.createEndOfPermitPeriodButton"></span>
+            </button>
+
+            <button type="button" class="btn btn-default"
+                    ng-if="$ctrl.permit.harvestReportState"
+                    ng-click="$ctrl.showEndOfPermitPeriodReport()">
+                <span class="glyphicon glyphicon-edit"></span>
+                &nbsp;
+                <span translate="global.button.open"></span>
+            </button>
+        </div>
+    </div>
+</div>

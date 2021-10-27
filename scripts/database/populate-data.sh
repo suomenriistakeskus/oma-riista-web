@@ -55,4 +55,4 @@ echo ">>> Loading sample data"
 
 echo ">>> Dropping temporary tables"
 PSQL="psql -v ON_ERROR_STOP=1 -d ${DATABASE_NAME}"
-${PSQL} -AtX -c "select 'DROP TABLE IF EXISTS ' || tablename || '; ' from pg_tables where schemaname = 'public' and tablename like 'import_%'" | ${PSQL} -1
+${PSQL} -AtX -c "select 'DROP TABLE IF EXISTS ' || tablename || '; ' from pg_tables where schemaname = 'public' and tablename like 'import\\_%'" | ${PSQL} -1

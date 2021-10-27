@@ -11,6 +11,7 @@ import org.iban4j.Iban;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.function.Predicate;
 
 @FunctionalInterface
@@ -56,6 +57,10 @@ public interface ValueGeneratorMixin {
 
     default Boolean someOtherThan(@Nullable final Boolean value) {
         return !Boolean.TRUE.equals(value);
+    }
+
+    default <T> T some(@Nonnull final List<T> objectList) {
+        return objectList.get(nextNonNegativeIntBelow(objectList.size()));
     }
 
     default <E extends Enum<E>> E some(@Nonnull final Class<E> enumClass) {

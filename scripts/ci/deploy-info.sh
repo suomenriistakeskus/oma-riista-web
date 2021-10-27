@@ -61,16 +61,14 @@ echo -e "$COMMITS\n\n--------\n"
 # Figure out related JIRA issues
 ISSUES=$(
     echo "$COMMITS" | 
-    awk '{print $1}' |          # 1st words of commits
-    grep -e 'OR-[0-9]\+:\?' |   # select only JIRA IDs (OR-nnn or OR-nnn:)
-    sed 's/://g' |              # remove ending colons (:)
-    sort |                      # remove duplicate IDs
+    grep -o -e '\(OR-[0-9]\+\)' | # select only JIRA IDs (OR-nnn or OR-nnn:)
+    sort |                        # remove duplicate IDs
     uniq
 )
 
 LATEST_GIT_TAG=$(git describe --long --tags --first-parent)
 
-MESSAGE="*New release of $CI_PROJECT_NAME available*\n\nContent of *$LATEST_GIT_TAG*:"
+MESSAGE="*Deployment of $CI_PROJECT_NAME to PRODUCTION started*\n\nContent of *$LATEST_GIT_TAG*:"
 
 #
 # Fetch issue summary and issue link from JIRA

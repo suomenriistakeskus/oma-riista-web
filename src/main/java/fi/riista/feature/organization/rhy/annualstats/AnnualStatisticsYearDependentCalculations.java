@@ -56,7 +56,7 @@ public final class AnnualStatisticsYearDependentCalculations {
     }
 
     @Nullable
-    public static Integer countAllTrainingEvents(final RhyAnnualStatistics stats) {
+    public static Integer countSubsidizableTrainingEvents(final RhyAnnualStatistics stats) {
         if (stats.getYear() < 2018) {
             return countAllTrainingEvents2017(
                     stats.getOrCreateHunterExamTraining(),
@@ -67,7 +67,7 @@ public final class AnnualStatisticsYearDependentCalculations {
                     stats.getOrCreatePublicEvents());
         }
 
-        return countAllTrainingEvents(
+        return countSubsidizableTrainingEvents(
                 stats.getOrCreateHunterExamTraining(),
                 stats.getOrCreateJhtTraining(),
                 stats.getOrCreateHunterTraining(),
@@ -76,11 +76,11 @@ public final class AnnualStatisticsYearDependentCalculations {
     }
 
     @Nullable
-    public static Integer countAllTrainingEvents(final HunterExamTrainingStatistics hunterExamTraining,
-                                                 final JHTTrainingStatistics jhtTraining,
-                                                 final HunterTrainingStatistics hunterTraining,
-                                                 final YouthTrainingStatistics youthTraining,
-                                                 final OtherHunterTrainingStatistics otherHunterTraining) {
+    public static Integer countSubsidizableTrainingEvents(final HunterExamTrainingStatistics hunterExamTraining,
+                                                          final JHTTrainingStatistics jhtTraining,
+                                                          final HunterTrainingStatistics hunterTraining,
+                                                          final YouthTrainingStatistics youthTraining,
+                                                          final OtherHunterTrainingStatistics otherHunterTraining) {
 
         return nullableIntSum(
                 hunterExamTraining.getHunterExamTrainingEvents(),
@@ -89,6 +89,34 @@ public final class AnnualStatisticsYearDependentCalculations {
                 youthTraining.countStudentAndYouthTrainingEvents(),
                 otherHunterTraining.countOtherHunterTrainingEvents());
     }
+
+    @Nullable
+    public static Integer countAllNonSubsidizableTrainingEvents(final RhyAnnualStatistics stats) {
+
+        return countNonSubsidizableTrainingEvents(
+                stats.getOrCreateHunterExamTraining(),
+                stats.getOrCreateJhtTraining(),
+                stats.getOrCreateHunterTraining(),
+                stats.getOrCreateYouthTraining(),
+                stats.getOrCreateOtherHunterTraining());
+    }
+
+    @Nullable
+    public static Integer countNonSubsidizableTrainingEvents(final HunterExamTrainingStatistics hunterExamTraining,
+                                                 final JHTTrainingStatistics jhtTraining,
+                                                 final HunterTrainingStatistics hunterTraining,
+                                                 final YouthTrainingStatistics youthTraining,
+                                                 final OtherHunterTrainingStatistics otherHunterTraining) {
+
+        return nullableIntSum(
+                hunterExamTraining.getNonSubsidizableHunterExamTrainingEvents(),
+                jhtTraining.countJhtNonSubsidizableTrainingEvents(),
+                hunterTraining.countNonSubsidizableHunterTrainingEvents(),
+                youthTraining.countNonSubsidizableStudentAndYouthTrainingEvents(),
+                otherHunterTraining.countNonSubsidizableOtherHunterTrainingEvents());
+    }
+
+
 
     @Nullable
     public static Integer countAllTrainingEvents2017(final HunterExamTrainingStatistics hunterExamTraining,
@@ -108,7 +136,7 @@ public final class AnnualStatisticsYearDependentCalculations {
     }
 
     @Nullable
-    public static Integer countAllTrainingParticipants(final RhyAnnualStatistics stats) {
+    public static Integer countSubsidizableTrainingParticipants(final RhyAnnualStatistics stats) {
         if (stats.getYear() < 2018) {
             return countAllTrainingParticipants2017(
                     stats.getOrCreateHunterExamTraining(),
@@ -119,7 +147,7 @@ public final class AnnualStatisticsYearDependentCalculations {
                     stats.getOrCreatePublicEvents());
         }
 
-        return countAllTrainingParticipants(
+        return countSubsidizableTrainingParticipants(
                 stats.getOrCreateHunterExamTraining(),
                 stats.getOrCreateJhtTraining(),
                 stats.getOrCreateHunterTraining(),
@@ -128,11 +156,11 @@ public final class AnnualStatisticsYearDependentCalculations {
     }
 
     @Nullable
-    public static Integer countAllTrainingParticipants(final HunterExamTrainingStatistics hunterExamTraining,
-                                                       final JHTTrainingStatistics jhtTraining,
-                                                       final HunterTrainingStatistics hunterTraining,
-                                                       final YouthTrainingStatistics youthTraining,
-                                                       final OtherHunterTrainingStatistics otherHunterTraining) {
+    public static Integer countSubsidizableTrainingParticipants(final HunterExamTrainingStatistics hunterExamTraining,
+                                                                final JHTTrainingStatistics jhtTraining,
+                                                                final HunterTrainingStatistics hunterTraining,
+                                                                final YouthTrainingStatistics youthTraining,
+                                                                final OtherHunterTrainingStatistics otherHunterTraining) {
 
         return nullableIntSum(
                 hunterExamTraining.getHunterExamTrainingParticipants(),
@@ -140,6 +168,32 @@ public final class AnnualStatisticsYearDependentCalculations {
                 hunterTraining.countHunterTrainingParticipants(),
                 youthTraining.countStudentAndYouthTrainingParticipants(),
                 otherHunterTraining.countOtherHunterTrainingParticipants());
+    }
+
+    @Nullable
+    public static Integer countNonSubsidizableAllTrainingParticipants(final RhyAnnualStatistics stats) {
+
+        return countNonSubsidizableTrainingParticipants(
+                stats.getOrCreateHunterExamTraining(),
+                stats.getOrCreateJhtTraining(),
+                stats.getOrCreateHunterTraining(),
+                stats.getOrCreateYouthTraining(),
+                stats.getOrCreateOtherHunterTraining());
+    }
+
+    @Nullable
+    public static Integer countNonSubsidizableTrainingParticipants(final HunterExamTrainingStatistics hunterExamTraining,
+                                                                    final JHTTrainingStatistics jhtTraining,
+                                                                    final HunterTrainingStatistics hunterTraining,
+                                                                    final YouthTrainingStatistics youthTraining,
+                                                                    final OtherHunterTrainingStatistics otherHunterTraining) {
+
+        return nullableIntSum(
+                hunterExamTraining.getNonSubsidizableHunterExamTrainingParticipants(),
+                jhtTraining.countNonSubsidizableJhtTrainingParticipants(),
+                hunterTraining.countNonSubsidizableHunterTrainingParticipants(),
+                youthTraining.countNonSubsidizableStudentAndYouthTrainingParticipants(),
+                otherHunterTraining.countNonSubsidizableOtherHunterTrainingParticipants());
     }
 
     @Nullable

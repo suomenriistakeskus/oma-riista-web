@@ -22,15 +22,16 @@
         .service('OccupationNominationService', OccupationNominationService)
         .controller('OccupationNominationListController', OccupationNominationListController)
         .controller('AddTrainingDialogController', AddTrainingDialogController)
+        .controller('AddMultiTrainingDialogController', AddMultiTrainingDialogController)
         .controller('OccupationNominationDialogController', OccupationNominationDialogController)
         .factory('JHTTrainings', function ($resource) {
             return $resource('api/v1/jht-training/:id', {id: "@id", action: "@action"}, {
                 search: {method: 'POST', url: 'api/v1/jht-training/search'},
                 mine: {method: 'GET', url: 'api/v1/jht-training/mine', isArray: true},
                 forPerson: {
-                    method: 'GET', 
-                    url: 'api/v1/jht-training/person/:personId', 
-                    isArray: true, 
+                    method: 'GET',
+                    url: 'api/v1/jht-training/person/:personId',
+                    isArray: true,
                     params: {
                         personId: '@personId'
                     }
@@ -174,6 +175,24 @@
                 });
             });
         };
+
+        this.showAddMultiTrainingDialog = function (params) {
+            return $uibModal.open({
+                templateUrl: 'occupation/nomination/training-dialog-multi.html',
+                resolve: {
+                    params: params
+                },
+                controller: 'AddMultiTrainingDialogController',
+                controllerAs: '$ctrl',
+                bindToController: true
+            }).result.then(function (addTrainingData) {
+                return $http({
+                    url: 'api/v1/jht-training/multi',
+                    method: 'POST',
+                    data: addTrainingData
+                });
+            });
+        };
     }
 
     function OccupationNominationListController($q, dialogs, $translate,
@@ -200,9 +219,9 @@
 
         function reloadCounts() {
             var occupationType = $ctrl.searchParams.occupationType;
-            var rhyCode = $ctrl.isModerator ? $ctrl.searchParams.rhyCode
-                : activeRhy ? activeRhy.officialCode
-                : null;
+            var rhyCode = $ctrl.isModerator
+                ? $ctrl.searchParams.rhyCode
+                : activeRhy ? activeRhy.officialCode : null;
 
             if (occupationType && rhyCode) {
                 OccupationNominationService.getCounts(rhyCode, occupationType).then(function (result) {
@@ -387,7 +406,7 @@
             }).then(
                 NotificationService.showDefaultSuccess,
                 function (result) {
-                    if (result !== 'ignore')  {
+                    if (result !== 'ignore') {
                         NotificationService.showDefaultFailure();
                     }
                 }
@@ -435,6 +454,14 @@
 
         $ctrl.addTraining = function () {
             var modalPromise = OccupationNominationService.showAddTrainingDialog({
+                occupationType: $ctrl.searchParams.occupationType
+            });
+
+            return NotificationService.handleModalPromise(modalPromise);
+        };
+
+        $ctrl.addMultiTraining = function () {
+            var modalPromise = OccupationNominationService.showAddMultiTrainingDialog({
                 occupationType: $ctrl.searchParams.occupationType
             });
 
@@ -572,6 +599,95 @@
                 TranslatedBlockUI.start("global.block.wait");
                 return searchMethod(search).then(ok, nok).finally(TranslatedBlockUI.stop);
             }, 500);
+        }
+    }
+
+    function AddMultiTrainingDialogController($uibModalInstance, OccupationFindPerson, TranslatedBlockUI, params) {
+        var $ctrl = this;
+
+        $ctrl.$onInit = function () {
+            $ctrl.occupationType = params.occupationType;
+            $ctrl.trainingDate = params.trainingDate;
+            $ctrl.trainingType = 'LAHI';
+            $ctrl.trainingLocation = params.trainingLocation;
+            $ctrl.hunterNumberList = null;
+            $ctrl.checkedNumberList = [];
+            $ctrl.invalidNumberCount = 0;
+
+            $ctrl.datePickerOptions = {
+                maxDate: new Date()
+            };
+
+        };
+
+        $ctrl.checkNumbers = function () {
+            var list = [];
+
+            angular.forEach($ctrl.hunterNumberList.split(/[\s,;]+/), function (value) {
+                if (value) {
+                    list.push(value.trim());
+                }
+            });
+
+            TranslatedBlockUI.start("global.block.wait");
+
+            OccupationFindPerson.findByHunterNumbers(list).then(function (checked) {
+
+                var counter = 0;
+                var list = _.chain(checked.data)
+                    .map(function (val) {
+                        counter = counter + 1;
+                        val.key = counter;
+                        return val;
+                    })
+                    .value();
+                $ctrl.checkedNumberList = list;
+                countInvalidNumbers();
+
+            }).finally(TranslatedBlockUI.stop);
+        };
+
+        $ctrl.submitDisabled = function (form) {
+            return form.$invalid
+                || $ctrl.invalidNumberCount > 0
+                || $ctrl.checkedNumberList.length === 0;
+        };
+
+        $ctrl.submit = function () {
+            var hunterNumbers = _.chain($ctrl.checkedNumberList)
+                .map('hunterNumber')
+                .value();
+
+            $uibModalInstance.close({
+                occupationType: $ctrl.occupationType,
+                trainingType: $ctrl.trainingType,
+                trainingLocation: $ctrl.trainingLocation,
+                trainingDate: $ctrl.trainingDate,
+                hunterNumbers: hunterNumbers
+            });
+        };
+
+        $ctrl.cancel = function () {
+            $uibModalInstance.dismiss('cancel');
+        };
+
+        $ctrl.remove = function (key) {
+            _.remove($ctrl.checkedNumberList, function (val) {
+                return val.key === key;
+            });
+            countInvalidNumbers();
+        };
+
+        $ctrl.clearNumbers = function () {
+            $ctrl.checkedNumberList = [];
+        };
+
+        function countInvalidNumbers() {
+            $ctrl.invalidNumberCount = _.chain($ctrl.checkedNumberList)
+                .filter(function (value) {
+                    return !value.id;
+                })
+                .value().length;
         }
     }
 })();

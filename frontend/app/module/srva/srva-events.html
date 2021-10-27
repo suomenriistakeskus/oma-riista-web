@@ -58,9 +58,21 @@
         <h5 translate="srva.form.event"></h5>
         <div class="checkbox" ng-repeat="event in $ctrl.searchParams.eventNames">
             <label>
-                <input type="checkbox" ng-model="event.isChecked">
+                <input type="checkbox"
+                       ng-model="event.isChecked"
+                       ng-change="$ctrl.onEventChanged(event)">
                 <span translate="srva.event.{{event.name}}"></span>
             </label>
+            <div class="srva-search-filter-checkbox"
+                 ng-if="event.name === 'ACCIDENT'"
+                 ng-repeat="eventType in $ctrl.searchParams.eventTypes">
+                <label>
+                    <input type="checkbox"
+                           ng-model="eventType.isChecked"
+                           ng-change="$ctrl.onEventTypeChanged(event)">
+                    <span translate="srva.type.{{eventType.name}}"></span>
+                </label>
+            </div>
         </div>
     </div>
 
@@ -187,6 +199,12 @@
                                 ng-click="$ctrl.edit(entry)">
                             <span translate="global.button.edit"></span>
                         </button>
+
+                        <button type="button"
+                                class="btn btn-default"
+                                style="float: right"
+                                ng-click="$ctrl.exportReport(entry)"
+                                translate="global.button.downloadPdf"></button>
                     </div>
 
                     <h5 translate="srva.form.type"></h5>

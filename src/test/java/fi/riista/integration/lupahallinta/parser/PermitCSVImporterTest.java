@@ -9,7 +9,7 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.huntingclub.register.RegisterHuntingClubService;
+import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonLookupService;
@@ -77,10 +77,10 @@ public class PermitCSVImporterTest {
     private GameSpeciesRepository gameSpeciesRepository;
 
     @Mock
-    private HarvestPermitRepository harvestPermitRepository;
+    private HuntingClubRepository clubRepository;
 
     @Mock
-    private RegisterHuntingClubService registerHuntingClubService;
+    private HarvestPermitRepository harvestPermitRepository;
 
     @Mock
     private GISHirvitalousalueRepository hirvitalousalueRepository;
@@ -275,15 +275,15 @@ public class PermitCSVImporterTest {
         HarvestPermit permit = assertErrorCountReturnPermit(res, 0);
 
         assertNotNull(permit);
-        verifyNoMoreInteractions(registerHuntingClubService);
+        verifyNoMoreInteractions(clubRepository);
     }
 
     @Test
     public void testPermitHolderAndPartnerAreResolved() {
         mockDefaults("111111-109A");
 
-        when(registerHuntingClubService.findExistingOrCreate(eq("555"))).thenReturn(createClub(1, "555"));
-        when(registerHuntingClubService.findExistingOrCreate(eq("666"))).thenReturn(createClub(2, "666"));
+        when(clubRepository.findByOfficialCode(eq("555"))).thenReturn(createClub(1, "555"));
+        when(clubRepository.findByOfficialCode(eq("666"))).thenReturn(createClub(2, "666"));
 
         Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "555, 666", "2014-1-050-00128-6",
@@ -322,7 +322,7 @@ public class PermitCSVImporterTest {
     public void testMoosePermitPartnersAreRequired() {
         mockDefaults("111111-109A");
 
-        when(registerHuntingClubService.findExistingOrCreate(eq("555"))).thenReturn(createClub(1, "555"));
+        when(clubRepository.findByOfficialCode(eq("555"))).thenReturn(createClub(1, "555"));
 
         Tuple3<HarvestPermit, List<String>, PermitCSVLine> res = csvImporter.process(new String[]{
                 "111111-109A", "555", "", "2014-1-050-00128-6",
@@ -585,9 +585,9 @@ public class PermitCSVImporterTest {
         existingPermit.setId(256L);
 
         HuntingClub club = createClub(1, "555");
-        when(registerHuntingClubService.findExistingOrCreate(eq("555"))).thenReturn(club);
+        when(clubRepository.findByOfficialCode(eq("555"))).thenReturn(club);
         HuntingClub club1 = createClub(2, "666");
-        when(registerHuntingClubService.findExistingOrCreate(eq("666"))).thenReturn(club1);
+        when(clubRepository.findByOfficialCode(eq("666"))).thenReturn(club1);
 
         existingPermit.setHuntingClub(club);
         existingPermit.setPermitHolder(PermitHolder.createHolderForClub(club));

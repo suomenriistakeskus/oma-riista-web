@@ -92,11 +92,6 @@ public class PermitDecisionWeaponTransportationApplicationSummaryGenerator {
                 sb.append(" - ").append(vehicle.getDescription());
             }
 
-            final String registerNumber = vehicle.getRegisterNumber();
-            if (StringUtils.hasText(registerNumber)) {
-                sb.append(" ").append(vehicle.getRegisterNumber());
-            }
-
             sb.append("\n");
         });
         sb.append("\n");
@@ -108,16 +103,6 @@ public class PermitDecisionWeaponTransportationApplicationSummaryGenerator {
 
             if (type == TransportedWeaponType.MUU) {
                 sb.append(" - ").append(transportedWeapon.getDescription());
-            }
-
-            sb.append(": ")
-                    .append(transportedWeapon.getAmount())
-                    .append(" ")
-                    .append(i18nKey("pdf.application.pcs"));
-
-            final String caliber = transportedWeapon.getCaliber();
-            if (StringUtils.hasText(caliber)) {
-                sb.append(", ").append(i18n("Kaliiberi: ", "Kaliber: ")).append(caliber);
             }
 
             sb.append("\n");
@@ -168,12 +153,6 @@ public class PermitDecisionWeaponTransportationApplicationSummaryGenerator {
             if (type == WeaponTransportationVehicleType.MUU) {
                 sb.append(" - ").append(vehicle.getDescription());
             }
-            sb.append("|");
-
-            final String registerNumber = vehicle.getRegisterNumber();
-            if (StringUtils.hasText(registerNumber)) {
-                sb.append(registerNumber);
-            }
             sb.append("\n");
 
         });
@@ -183,20 +162,13 @@ public class PermitDecisionWeaponTransportationApplicationSummaryGenerator {
                 .append(i18n("Asetiedot:", "Vapeninformation:"))
                 .append("\n\n");
         sb.append("---|---|---:\n");
-        justification.getTransportedWeapons().forEach(transportedWeapon ->  {
+        justification.getTransportedWeapons().forEach(transportedWeapon -> {
             final TransportedWeaponType type = transportedWeapon.getType();
             sb.append(localiser.getTranslation(type));
 
             if (type == TransportedWeaponType.MUU) {
                 sb.append(" - ").append(transportedWeapon.getDescription());
             }
-            sb.append("|");
-
-            final String caliber = transportedWeapon.getCaliber();
-            if (StringUtils.hasText(caliber)) {
-                sb.append(i18n("Kaliiberi: ", "Kaliber: ")).append(caliber);
-            }
-            sb.append("|").append(transportedWeapon.getAmount()).append(" ").append(i18nKey("pdf.application.pcs"));
             sb.append("\n");
         });
         sb.append("\n\n");
@@ -216,10 +188,9 @@ public class PermitDecisionWeaponTransportationApplicationSummaryGenerator {
                 .append(i18n("Hakemusalue:", "Ansökningsområde:"))
                 .append("\n\n");
 
-        sb.append("---|---:\n");
-        cell2(sb, i18nKey("carnivore.application.area.size"), "" + areaDTO.getAreaSize() + " ha");
         final String areaDescription = areaDTO.getAreaDescription();
         if (isNotBlank(areaDescription)) {
+            sb.append("---|---:\n");
             cell2(sb, i18nKey("carnivore.application.area.areaDescription"), areaDescription);
         }
         sb.append("\n\n");

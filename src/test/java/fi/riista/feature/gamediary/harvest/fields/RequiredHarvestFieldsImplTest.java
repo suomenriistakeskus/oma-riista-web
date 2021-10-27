@@ -94,12 +94,18 @@ public class RequiredHarvestFieldsImplTest {
         assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getAge());
         assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getGender());
 
-        final RequiredHarvestSpecimenField expectedWeight = huntingYear >= 2016 || GameSpecies.isRoeDeer(speciesCode)
-                ? RequiredHarvestSpecimenField.NO
-                : RequiredHarvestSpecimenField.VOLUNTARY;
-
-        assertEquals(expectedWeight, specimenFields.getWeight());
-
+        if (GameSpecies.isRoeDeer(speciesCode)) {
+            if (huntingYear >= 2020 && isClientSupportFor2020Fields) {
+                assertEquals(RequiredHarvestSpecimenField.NO, specimenFields.getWeight());
+            } else {
+                assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeight());
+            }
+        } else if (huntingYear >= 2016) {
+            assertEquals(RequiredHarvestSpecimenField.NO, specimenFields.getWeight());
+        } else {
+            assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeight());
+        }
+        
         // Additional testing is done in HarvestSpecimenValidatorTest
     }
 
@@ -122,11 +128,10 @@ public class RequiredHarvestFieldsImplTest {
 
     @Theory
     public void testBasicDiaryEntry_formFields(@FromDataPoints("huntingYears") final int huntingYear,
-                                               @FromDataPoints("speciesCodes") final int speciesCode,
-                                               final boolean isDeerPilotEnabled) {
+                                               @FromDataPoints("speciesCodes") final int speciesCode) {
 
         final RequiredHarvestFields.Report formFields =
-                RequiredHarvestFieldsImpl.getFormFields(huntingYear, speciesCode, BASIC, isDeerPilotEnabled);
+                RequiredHarvestFieldsImpl.getFormFields(huntingYear, speciesCode, BASIC);
 
         assertEquals(RequiredHarvestField.NO, formFields.getPermitNumber());
         assertEquals(RequiredHarvestField.NO, formFields.getFeedingPlace());
@@ -139,7 +144,7 @@ public class RequiredHarvestFieldsImplTest {
         assertEquals(RequiredHarvestField.NO, formFields.getReportedWithPhoneCall());
 
         final RequiredHarvestField expectedDeerHuntingType =
-                isDeerPilotEnabled && huntingYear >= 2020 && GameSpecies.isWhiteTailedDeer(speciesCode)
+                huntingYear >= 2020 && GameSpecies.isWhiteTailedDeer(speciesCode)
                         ? RequiredHarvestField.VOLUNTARY
                         : RequiredHarvestField.NO;
 
@@ -203,11 +208,11 @@ public class RequiredHarvestFieldsImplTest {
         assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeightEstimated());
         assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeightMeasured());
 
-        assertEquals(RequiredHarvestSpecimenField.YES, specimenFields.getFitnessClass());
+        assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getFitnessClass());
         assertEquals(RequiredHarvestSpecimenField.YES, specimenFields.getNotEdible());
         assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getAdditionalInfo());
 
-        assertEquals(RequiredHarvestSpecimenField.YES_IF_YOUNG, specimenFields.getAlone());
+        assertEquals(RequiredHarvestSpecimenField.VOLUNTARY_IF_YOUNG, specimenFields.getAlone());
 
         assertEquals(RequiredHarvestSpecimenField.NO, specimenFields.getAntlersLength());
         assertEquals(RequiredHarvestSpecimenField.NO, specimenFields.getAntlersInnerWidth());
@@ -215,15 +220,15 @@ public class RequiredHarvestFieldsImplTest {
 
         if (isClientSupportFor2020Fields && huntingYear >= 2020) {
             assertEquals(RequiredHarvestSpecimenField.YES_IF_ADULT_MALE, specimenFields.getAntlersLost());
-            assertEquals(RequiredHarvestSpecimenField.YES_IF_ANTLERS_PRESENT, specimenFields.getAntlersType());
-            assertEquals(RequiredHarvestSpecimenField.YES_IF_ANTLERS_PRESENT, specimenFields.getAntlersWidth());
-            assertEquals(RequiredHarvestSpecimenField.YES_IF_ANTLERS_PRESENT, specimenFields.getAntlerPoints());
-            assertEquals(RequiredHarvestSpecimenField.YES_IF_ANTLERS_PRESENT, specimenFields.getAntlersGirth());
+            assertEquals(RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT, specimenFields.getAntlersType());
+            assertEquals(RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT, specimenFields.getAntlersWidth());
+            assertEquals(RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT, specimenFields.getAntlerPoints());
+            assertEquals(RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT, specimenFields.getAntlersGirth());
         } else {
             assertEquals(RequiredHarvestSpecimenField.NO, specimenFields.getAntlersLost());
-            assertEquals(RequiredHarvestSpecimenField.YES_IF_ADULT_MALE, specimenFields.getAntlersType());
-            assertEquals(RequiredHarvestSpecimenField.YES_IF_ADULT_MALE, specimenFields.getAntlersWidth());
-            assertEquals(RequiredHarvestSpecimenField.YES_IF_ADULT_MALE, specimenFields.getAntlerPoints());
+            assertEquals(RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE, specimenFields.getAntlersType());
+            assertEquals(RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE, specimenFields.getAntlersWidth());
+            assertEquals(RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE, specimenFields.getAntlerPoints());
             assertEquals(RequiredHarvestSpecimenField.NO, specimenFields.getAntlersGirth());
         }
     }
@@ -504,11 +509,10 @@ public class RequiredHarvestFieldsImplTest {
 
     @Theory
     public void testPermitHarvest_formFields(@FromDataPoints("huntingYears") final int huntingYear,
-                                             @FromDataPoints("speciesCodes") final int speciesCode,
-                                             final boolean isDeerPilotEnabled) {
+                                             @FromDataPoints("speciesCodes") final int speciesCode) {
 
         final RequiredHarvestFields.Report formFields =
-                RequiredHarvestFieldsImpl.getFormFields(huntingYear, speciesCode, PERMIT, isDeerPilotEnabled);
+                RequiredHarvestFieldsImpl.getFormFields(huntingYear, speciesCode, PERMIT);
 
         final RequiredHarvestField expectedFeedingPlace =
                 GameSpecies.isWildBoar(speciesCode) ? RequiredHarvestField.VOLUNTARY : RequiredHarvestField.NO;
@@ -545,11 +549,10 @@ public class RequiredHarvestFieldsImplTest {
     }
 
     @Theory
-    public void testBear_season_formFields(@FromDataPoints("huntingYears") final int huntingYear,
-                                           final boolean isDeerPilotEnabled) {
+    public void testBear_season_formFields(@FromDataPoints("huntingYears") final int huntingYear) {
 
         final RequiredHarvestFields.Report formFields =
-                RequiredHarvestFieldsImpl.getFormFields(huntingYear, OFFICIAL_CODE_BEAR, SEASON, isDeerPilotEnabled);
+                RequiredHarvestFieldsImpl.getFormFields(huntingYear, OFFICIAL_CODE_BEAR, SEASON);
 
         assertEquals(RequiredHarvestField.NO, formFields.getFeedingPlace());
         assertEquals(RequiredHarvestField.YES, formFields.getHarvestArea());
@@ -590,11 +593,10 @@ public class RequiredHarvestFieldsImplTest {
     }
 
     @Theory
-    public void testGreySealSeason_season_formFields(@FromDataPoints("huntingYears") final int huntingYear,
-                                                     final boolean isDeerPilotEnabled) {
+    public void testGreySealSeason_season_formFields(@FromDataPoints("huntingYears") final int huntingYear) {
 
         final RequiredHarvestFields.Report formFields = RequiredHarvestFieldsImpl
-                .getFormFields(huntingYear, OFFICIAL_CODE_GREY_SEAL, SEASON, isDeerPilotEnabled);
+                .getFormFields(huntingYear, OFFICIAL_CODE_GREY_SEAL, SEASON);
 
         assertEquals(RequiredHarvestField.NO, formFields.getFeedingPlace());
         assertEquals(RequiredHarvestField.YES, formFields.getHarvestArea());
@@ -648,12 +650,11 @@ public class RequiredHarvestFieldsImplTest {
     }
 
     @Theory
-    public void testRoeDeer_season_formFields_startingFrom2017(@FromDataPoints("huntingYears") final int huntingYear,
-                                                               final boolean isDeerPilotEnabled) {
+    public void testRoeDeer_season_formFields_startingFrom2017(@FromDataPoints("huntingYears") final int huntingYear) {
         assumeTrue(huntingYear >= 2017);
 
         final RequiredHarvestFields.Report formFields = RequiredHarvestFieldsImpl
-                .getFormFields(huntingYear, OFFICIAL_CODE_ROE_DEER, SEASON, isDeerPilotEnabled);
+                .getFormFields(huntingYear, OFFICIAL_CODE_ROE_DEER, SEASON);
 
         assertEquals(RequiredHarvestField.NO, formFields.getFeedingPlace());
         assertEquals(RequiredHarvestField.NO, formFields.getHarvestArea());
@@ -667,12 +668,11 @@ public class RequiredHarvestFieldsImplTest {
     }
 
     @Theory
-    public void testRoeDeer_season_formFields_before2017(@FromDataPoints("huntingYears") final int huntingYear,
-                                                         final boolean isDeerPilotEnabled) {
+    public void testRoeDeer_season_formFields_before2017(@FromDataPoints("huntingYears") final int huntingYear) {
         assumeTrue(huntingYear < 2017);
 
         final RequiredHarvestFields.Report formFields = RequiredHarvestFieldsImpl
-                .getFormFields(huntingYear, OFFICIAL_CODE_ROE_DEER, SEASON, isDeerPilotEnabled);
+                .getFormFields(huntingYear, OFFICIAL_CODE_ROE_DEER, SEASON);
 
         assertEquals(RequiredHarvestField.NO, formFields.getFeedingPlace());
         assertEquals(RequiredHarvestField.NO, formFields.getHarvestArea());
@@ -702,11 +702,10 @@ public class RequiredHarvestFieldsImplTest {
     }
 
     @Theory
-    public void testWolf_season_formFields(@FromDataPoints("huntingYears") final int huntingYear,
-                                           final boolean isDeerPilotEnabled) {
+    public void testWolf_season_formFields(@FromDataPoints("huntingYears") final int huntingYear) {
 
         final RequiredHarvestFields.Report formFields =
-                RequiredHarvestFieldsImpl.getFormFields(huntingYear, OFFICIAL_CODE_WOLF, SEASON, isDeerPilotEnabled);
+                RequiredHarvestFieldsImpl.getFormFields(huntingYear, OFFICIAL_CODE_WOLF, SEASON);
 
         assertEquals(RequiredHarvestField.NO, formFields.getFeedingPlace());
         assertEquals(RequiredHarvestField.NO, formFields.getHarvestArea());
@@ -730,17 +729,19 @@ public class RequiredHarvestFieldsImplTest {
 
         assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getAge());
         assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getGender());
-        assertEquals(RequiredHarvestSpecimenField.NO, specimenFields.getWeight());
 
         if (huntingYear >= 2020) {
             if (isClientSupportFor2020Fields) {
                 assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeightEstimated());
                 assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeightMeasured());
+                assertEquals(RequiredHarvestSpecimenField.NO, specimenFields.getWeight());
             } else {
                 assertNoMooselikeFieldsExceptWeightEstimated(specimenFields);
+                assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeight());
             }
         } else {
             assertNoMooselikeFields(specimenFields);
+            assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeight());
         }
     }
 
@@ -753,17 +754,19 @@ public class RequiredHarvestFieldsImplTest {
 
         assertEquals(RequiredHarvestSpecimenField.YES, specimenFields.getAge());
         assertEquals(RequiredHarvestSpecimenField.YES, specimenFields.getGender());
-        assertEquals(RequiredHarvestSpecimenField.NO, specimenFields.getWeight());
 
         if (huntingYear >= 2020) {
             if (isClientSupportFor2020Fields) {
                 assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeightEstimated());
                 assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeightMeasured());
+                assertEquals(RequiredHarvestSpecimenField.NO, specimenFields.getWeight());
             } else {
                 assertNoMooselikeFieldsExceptWeightEstimated(specimenFields);
+                assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeight());
             }
         } else {
             assertNoMooselikeFields(specimenFields);
+            assertEquals(RequiredHarvestSpecimenField.VOLUNTARY, specimenFields.getWeight());
         }
     }
 
@@ -790,11 +793,10 @@ public class RequiredHarvestFieldsImplTest {
     }
 
     @Theory
-    public void testWildBoar_season_formFields(@FromDataPoints("huntingYears") final int huntingYear,
-                                               final boolean isDeerPilotEnabled) {
+    public void testWildBoar_season_formFields(@FromDataPoints("huntingYears") final int huntingYear) {
 
         final RequiredHarvestFields.Report formFields = RequiredHarvestFieldsImpl
-                .getFormFields(huntingYear, OFFICIAL_CODE_WILD_BOAR, SEASON, isDeerPilotEnabled);
+                .getFormFields(huntingYear, OFFICIAL_CODE_WILD_BOAR, SEASON);
 
         assertEquals(RequiredHarvestField.VOLUNTARY, formFields.getFeedingPlace());
         assertEquals(RequiredHarvestField.NO, formFields.getHarvestArea());

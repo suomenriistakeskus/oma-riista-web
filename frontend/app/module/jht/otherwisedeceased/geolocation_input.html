@@ -1,0 +1,53 @@
+<div class="row form-group">
+    <div class="col-xs-12">
+        <label class="control-label" translate="harvestreport.form.locationInput"></label>
+
+        <div class="form-group">
+
+            <!-- radio buttons -->
+            <div class="col-xs-5">
+                <div class="form-control-wrapper">
+                    <div class="form-group">
+                        <label class="radio-inline"><input type="radio" ng-change="$ctrl.coordinateSystemChanged()"
+                                                           ng-model="$ctrl.coordinateSystem"
+                                                           value="ETRS-TM35FIN">ETRS-TM35FIN</label>
+                        <label class="radio-inline"><input type="radio" ng-change="$ctrl.coordinateSystemChanged()"
+                                                           ng-model="$ctrl.coordinateSystem" value="WGS84">ETRS89 (WGS84)</label>
+                        <label class="radio-inline"><input type="radio" ng-change="$ctrl.coordinateSystemChanged()"
+                                                           ng-model="$ctrl.coordinateSystem" value="KKJ">KKJ</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- latitude -->
+            <div class="col-xs-2">
+                <div class="row form-group-sm">
+                    <label class="col-xs-3 control-label" for="coordinateLat"
+                           translate="global.geoLocation.lat"></label>
+                    <div class="col-xs-9">
+                        <input class="form-control" type="text" id="coordinateLat" name="lat" ng-model="$ctrl.coordinatesInput.lat"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- longitude -->
+            <div class="col-xs-2">
+                <div class="row form-group-sm">
+                    <label class="col-xs-3 control-label" for="coordinateLon"
+                           translate="global.geoLocation.lon"></label>
+                    <div class="col-xs-9">
+                        <input class="form-control" type="text" id="coordinateLon" name="lon" ng-model="$ctrl.coordinatesInput.lng"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- button -->
+            <div class="col-xs-3">
+                <a ng-click="$ctrl.setCoordinates()" class="btn btn-primary btn-xs">
+                    <span class="glyphicon glyphicon-map-marker"></span> &nbsp;
+                    <span translate="harvestreport.form.setlocation"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

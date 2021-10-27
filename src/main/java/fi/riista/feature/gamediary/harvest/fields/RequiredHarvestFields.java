@@ -9,13 +9,12 @@ public class RequiredHarvestFields {
     public static RequiredHarvestFields.Report getFormFields(final int huntingYear,
                                                              final int gameSpeciesCode,
                                                              final HarvestReportingType reportingType,
-                                                             final boolean legallyMandatoryOnly,
-                                                             final boolean isDeerPilotEnabled) {
+                                                             final boolean legallyMandatoryOnly) {
         if (legallyMandatoryOnly) {
-            return LegallyMandatoryFieldsMooselike.getFormFields(gameSpeciesCode, isDeerPilotEnabled);
+            return LegallyMandatoryFieldsMooselike.getFormFields(gameSpeciesCode);
         }
 
-        return RequiredHarvestFieldsImpl.getFormFields(huntingYear, gameSpeciesCode, reportingType, isDeerPilotEnabled);
+        return RequiredHarvestFieldsImpl.getFormFields(huntingYear, gameSpeciesCode, reportingType);
     }
 
     public static RequiredHarvestFields.Specimen getSpecimenFields(final int huntingYear,

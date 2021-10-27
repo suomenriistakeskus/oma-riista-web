@@ -120,7 +120,7 @@ public class HarvestSpecimenService
         for (final HarvestSpecimenBusinessFields specimen : specimens) {
             executeValidation(
                     new HarvestSpecimenValidator(
-                            fieldRequirements, specimen, speciesCode, associatedWithHuntingDay, legallyMandatoryFieldsOnly),
+                            fieldRequirements, specimen, speciesCode, associatedWithHuntingDay),
                     skipNewAntlerFieldsWhenAssociatedWithHuntingDay);
         }
     }

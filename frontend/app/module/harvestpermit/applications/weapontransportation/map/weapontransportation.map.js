@@ -5,7 +5,7 @@ angular.module('app.harvestpermit.application.weapontransportation.map', ['app.m
         $stateProvider
             .state('profile.permitwizard.weapontransportation.map', {
                 url: '/map',
-                templateUrl: 'harvestpermit/applications/wizard/area/map.html',
+                templateUrl: 'harvestpermit/applications/weapontransportation/map/map.html',
                 controller: 'DerogationPermitWizardMapController',
                 controllerAs: '$ctrl',
                 resolve: {
@@ -25,7 +25,7 @@ angular.module('app.harvestpermit.application.weapontransportation.map', ['app.m
             })
             .state('jht.decision.application.wizard.weapontransportation.map', {
                 url: '/map',
-                templateUrl: 'harvestpermit/applications/wizard/area/map.html',
+                templateUrl: 'harvestpermit/applications/weapontransportation/map/map.html',
                 controller: 'DerogationPermitWizardMapController',
                 controllerAs: '$ctrl',
                 resolve: {
@@ -45,7 +45,7 @@ angular.module('app.harvestpermit.application.weapontransportation.map', ['app.m
             })
             .state('profile.permitwizard.weapontransportation.mapdetails', {
                 url: '/mapdetails',
-                templateUrl: 'harvestpermit/applications/wizard/area/mapdetails.html',
+                templateUrl: 'harvestpermit/applications/weapontransportation/map/mapdetails.html',
                 controller: 'DerogationPermitWizardMapDetailsController',
                 controllerAs: '$ctrl',
                 resolve: {
@@ -65,7 +65,7 @@ angular.module('app.harvestpermit.application.weapontransportation.map', ['app.m
             })
             .state('jht.decision.application.wizard.weapontransportation.mapdetails', {
                 url: '/mapdetails',
-                templateUrl: 'harvestpermit/applications/wizard/area/mapdetails.html',
+                templateUrl: 'harvestpermit/applications/weapontransportation/map/mapdetails.html',
                 controller: 'DerogationPermitWizardMapDetailsController',
                 controllerAs: '$ctrl',
                 resolve: {

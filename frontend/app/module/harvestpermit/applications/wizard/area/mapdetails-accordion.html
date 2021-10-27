@@ -1,0 +1,79 @@
+<uib-accordion close-others="true" ng-if="!$ctrl.isAreaDefined()">
+    <div uib-accordion-group class="panel-default"
+         template-url="common/accordion-group.html"
+         is-open="$ctrl.firstPanelOpen">
+        <uib-accordion-heading>
+            <div class="panel-title">
+                <span panel-toggle="$ctrl.firstPanelOpen"></span>
+                <span translate="harvestpermit.wizard.common.map.addArea"></span>
+            </div>
+        </uib-accordion-heading>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <p>
+                    <button type="button" class="btn btn-primary"
+                            ng-click="$ctrl.addAreaUnion()">
+                        <span class="fa fa-fw fa-plus"></span>
+                        <span translate="harvestpermit.wizard.common.map.addAreaUnion"></span>
+                    </button>
+                    <button type="button" class="btn btn-default"
+                            ng-click="$ctrl.addPersonalArea()">
+                        <span class="fa fa-fw fa-plus"></span>
+                        <span translate="harvestpermit.wizard.common.map.addPersonalArea"></span>
+                    </button>
+                    <button type="button" class="btn btn-default"
+                            ng-click="$ctrl.addClubArea()">
+                        <span class="fa fa-fw fa-plus"></span>
+                        <span translate="harvestpermit.wizard.common.map.addClubArea"></span>
+                    </button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div uib-accordion-group class="panel-default"
+         template-url="common/accordion-group.html"
+         is-open="$ctrl.secondPanelOpen">
+        <uib-accordion-heading>
+            <div class="panel-title">
+                <span panel-toggle="$ctrl.secondPanelOpen"></span>
+                <span translate="harvestpermit.wizard.common.map.addAttachment"></span>
+            </div>
+        </uib-accordion-heading>
+        <permit-application-attachment-upload
+                uri="$ctrl.attachmentBaseUri"
+                attachment-type="'PROTECTED_AREA'"
+                done="$ctrl.refreshAttachments()"></permit-application-attachment-upload>
+    </div>
+    <div uib-accordion-group class="panel-default"
+         template-url="common/accordion-group.html"
+         is-open="$ctrl.thirdPanelOpen">
+        <uib-accordion-heading>
+            <div class="panel-title">
+                <span panel-toggle="$ctrl.thirdPanelOpen"></span>
+                <span translate="harvestpermit.wizard.common.map.areaDescription"></span>
+            </div>
+        </uib-accordion-heading>
+        <form name="areaDescriptionForm">
+            <div class="form-group" show-errors>
+                <label class="control-label"
+                       for="areaDescription"
+                       translate="harvestpermit.wizard.common.map.areaDescription">
+                </label>
+
+                <textarea class="form-control" rows="4"
+                          name="areaDescription"
+                          id="areaDescription"
+                          ng-model="$ctrl.areaFreeDescription"></textarea>
+            </div>
+            <p class="text-right">
+                <button type="button"
+                        class="btn btn-primary"
+                        ng-click="$ctrl.assignAreaDescription($ctrl.areaFreeDescription)"
+                        translate="harvestpermit.wizard.common.map.confirmDescription">
+                </button>
+            </p>
+        </form>
+    </div>
+</uib-accordion>

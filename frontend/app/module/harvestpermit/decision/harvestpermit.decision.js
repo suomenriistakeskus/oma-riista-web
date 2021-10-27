@@ -31,6 +31,7 @@ angular.module('app.harvestpermit.decision', [])
             getRevisions: {method: 'GET', url: apiPrefix + '/revisions', isArray: true},
             assign: {method: 'POST', url: apiPrefix + '/assign'},
             unassign: {method: 'POST', url: apiPrefix + '/unassign'},
+            setForbiddenMethods: {method: 'POST', url: apiPrefix + '/set-forbidden-methods', params: {forbiddenMethodsOnly: '@forbiddenMethodsOnly'}},
             lock: {method: 'POST', url: apiPrefix + '/lock'},
             unlock: {method: 'POST', url: apiPrefix + '/unlock'},
             updatePosted: {

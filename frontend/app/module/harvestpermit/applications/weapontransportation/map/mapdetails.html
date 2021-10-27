@@ -1,0 +1,35 @@
+<ng-form name="derogationAreaDetailsForm">
+
+    <div class="alert alert-info">
+        <span class="fa fa-info-circle"></span>
+        <div class="alert-content">
+            <span class="alert-title" translate="harvestpermit.wizard.common.map.areaDetailsTitle"></span>
+            <p translate="harvestpermit.wizard.weaponTransportation.map.areaDetailsInstruction"></p>
+        </div>
+    </div>
+
+    <permit-application-attachment-list ng-if="$ctrl.attachmentList.length > 0"
+                                        attachment-type="'PROTECTED_AREA'"
+                                        attachments="$ctrl.attachmentList"
+                                        attachment-config="$ctrl.attachmentConfig"
+                                        refresh="$ctrl.refreshAttachments()">
+    </permit-application-attachment-list>
+
+    <derogation-area-details-description area-info="$ctrl.areaInfo"
+                                         clear-area-description="$ctrl.clearAreaDescription()">
+    </derogation-area-details-description>
+
+    <derogation-area-details-accordion application-id="$ctrl.applicationId"
+                                       area-info="$ctrl.areaInfo"
+                                       attachment-list="$ctrl.attachmentList"
+                                       refresh-attachments="$ctrl.refreshAttachments()">
+    </derogation-area-details-accordion>
+</ng-form>
+<hr class="invisible">
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(derogationAreaDetailsForm)"
+        previous="$ctrl.previous(derogationAreaDetailsForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(derogationAreaDetailsForm)">
+</permit-application-wizard-navigation>

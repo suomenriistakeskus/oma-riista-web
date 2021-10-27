@@ -62,7 +62,7 @@ In the project root execute:
 
     mvn jetty:run
 
-Open another terminal to continuosly build frontend sources:
+Open another terminal to continuously build frontend sources:
 
     cd frontend
     npm install

@@ -10,6 +10,7 @@
         <label for="rkaSelect" class="control-label" translate="occupation.nomination.organisationSearch.chooseRka"></label>
         <select class="form-control" name="rkaSelect" id="rkaSelect"
                 ng-model="$ctrl.selectedArea"
+                ng-disabled="!!$ctrl.disableSelection"
                 required
                 ng-change="$ctrl.updateModel()"
                 ng-options="a.name for a in $ctrl.areas track by a.officialCode">
@@ -21,6 +22,7 @@
         <label for="rhySelect" class="control-label" translate="occupation.nomination.organisationSearch.chooseRhy"></label>
         <select class="form-control" name="rhySelect" id="rhySelect"
                 ng-model="$ctrl.selectedRhy"
+                ng-disabled="!!$ctrl.disableSelection"
                 required
                 ng-change="$ctrl.updateModel()"
                 ng-options="rhy.name for rhy in $ctrl.selectedArea.subOrganisations track by rhy.officialCode">

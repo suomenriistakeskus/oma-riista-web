@@ -38,12 +38,13 @@ angular.module('app.club.reports', [])
                         }
                         return null;
                     },
-                    lukeReportParams: function (MoosePermits, clubId, permitId, selectedYearAndSpecies) {
+                    lukeReportParams: function (MoosePermits, clubId, permitId, selectedYearAndSpecies, ActiveRoleService) {
                         return permitId
                             ? MoosePermits.lukeReportParams({
                                 clubId: clubId,
                                 permitId: permitId,
-                                species: selectedYearAndSpecies.species
+                                species: selectedYearAndSpecies.species,
+                                activeOccupationId: ActiveRoleService.getActiveOccupationId()
                             }).$promise
                             : null;
                     }

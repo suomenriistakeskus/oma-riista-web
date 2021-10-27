@@ -30,6 +30,8 @@ public class HarvestReportAutomaticApprovalFeature {
     private static final LocalDate HUNTING_YEAR_2017 = new LocalDate(2017, 8, 1);
     private static final LocalDate HUNTING_YEAR_2018 = new LocalDate(2018, 8, 1);
     private static final LocalDate HUNTING_YEAR_2020 = new LocalDate(2020, 8, 1);
+    private static final LocalDate HUNTING_YEAR_2021 = new LocalDate(2021, 8, 1);
+    private static final LocalDate AUTO_APPROVE_COMMON_EIDER = new LocalDate(2020, 6, 1);
 
     private static final Map<Integer, LocalDate> AUTO_APPROVE_ENABLED =
             ImmutableMap.<Integer, LocalDate>builder()
@@ -44,11 +46,13 @@ public class HarvestReportAutomaticApprovalFeature {
                     .put(GameSpecies.OFFICIAL_CODE_SHOVELER, HUNTING_YEAR_2020)
                     .put(GameSpecies.OFFICIAL_CODE_POCHARD, HUNTING_YEAR_2020)
                     .put(GameSpecies.OFFICIAL_CODE_TUFTED_DUCK, HUNTING_YEAR_2020)
-                    .put(GameSpecies.OFFICIAL_CODE_COMMON_EIDER, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_COMMON_EIDER, AUTO_APPROVE_COMMON_EIDER)
                     .put(GameSpecies.OFFICIAL_CODE_LONG_TAILED_DUCK, HUNTING_YEAR_2020)
                     .put(GameSpecies.OFFICIAL_CODE_RED_BREASTED_MERGANSER, HUNTING_YEAR_2020)
                     .put(GameSpecies.OFFICIAL_CODE_GOOSANDER, HUNTING_YEAR_2020)
                     .put(GameSpecies.OFFICIAL_CODE_COOT, HUNTING_YEAR_2020)
+                    .put(GameSpecies.OFFICIAL_CODE_RINGED_SEAL, HUNTING_YEAR_2021)
+                    .put(GameSpecies.OFFICIAL_CODE_GREYLAG_GOOSE, HUNTING_YEAR_2021)
                     .build();
 
     public static final String AUTO_ACCEPT_REASON = "Automaattihyväksytty";

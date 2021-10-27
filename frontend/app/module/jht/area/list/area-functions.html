@@ -30,5 +30,23 @@
                 <span translate="club.area.button.toChangesExcel"></span>
             </a>
         </li>
+        <li>
+            <a ng-click="$ctrl.importArea()">
+                <span class="glyphicon glyphicon-import"></span> &nbsp;
+                <span translate="moderator.area.button.importArea"></span>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
+            <a ng-click="$ctrl.exportGeoJson()">
+                <span class="glyphicon glyphicon-globe"></span> &nbsp;
+                <span translate="moderator.area.button.toGeojson"></span>
+            </a>
+        </li>
+        <li>
+            <a ng-click="$ctrl.addAreas()">
+                <span class="glyphicon glyphicon-import"></span> &nbsp;
+                <span translate="moderator.area.button.addAreas"></span>
+            </a>
+        </li>
     </ul>
 </div>

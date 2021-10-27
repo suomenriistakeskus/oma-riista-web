@@ -27,6 +27,7 @@ angular.module('app.harvestpermit.application', [])
             annualRenewals: postMethod('/search/annualrenewals', true),
             listYears: getMethod('/years', true),
             listHandlers: getMethod('/handlers', true),
+            listSpecies: postMethod('/species', true),
 
             // Wizard
             createAmendmentApplication: postMethod('/amendment'),

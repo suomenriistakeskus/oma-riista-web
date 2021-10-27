@@ -12,14 +12,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_PARTRIDGE;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_ROE_DEER;
 import static fi.riista.feature.permit.PermitTypeCode.FOWL_AND_UNPROTECTED_BIRD;
+import static fi.riista.feature.permit.PermitTypeCode.GAME_MANAGEMENT;
 import static fi.riista.feature.permit.PermitTypeCode.MAMMAL_DAMAGE_BASED;
 import static fi.riista.feature.permit.PermitTypeCode.NEST_REMOVAL_BASED;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 
@@ -50,14 +51,14 @@ public class HabidesXmlGeneratorTest implements DefaultEntitySupplierProvider {
 
     @Test
     public void createMethodsForBirdsReturnsNotRelevantIfMethodsIsEmpty() {
-        final DERO_Methods result = HabidesXmlGenerator.createMethods(f, Collections.emptyList(), OFFICIAL_CODE_PARTRIDGE);
+        final DERO_Methods result = HabidesXmlGenerator.createMethods(f, emptyList(), OFFICIAL_CODE_PARTRIDGE);
         assertEquals(1, result.getMethod().size());
         assertEquals(HabidesXmlGenerator.BirdMethodsType.SELECTIVE_OR_NOT_RELEVANT.getLabel(), result.getMethod().get(0));
     }
 
     @Test
     public void createMethodsForHabitatsReturnsNotRelevantIfMethodsIsEmpty() {
-        final DERO_Methods result = HabidesXmlGenerator.createMethods(f, Collections.emptyList(), OFFICIAL_CODE_ROE_DEER);
+        final DERO_Methods result = HabidesXmlGenerator.createMethods(f, emptyList(), OFFICIAL_CODE_ROE_DEER);
         assertEquals(1, result.getMethod().size());
         assertEquals(HabidesXmlGenerator.HabitatsMethodsType.NOT_LISTED_OR_NOT_RELEVANT.getLabel(), result.getMethod().get(0));
     }
@@ -149,7 +150,7 @@ public class HabidesXmlGeneratorTest implements DefaultEntitySupplierProvider {
         final DERO_Reasons result = HabidesXmlGenerator.createReasons(f, createReasonsList(new PermitDecisionDerogationReasonType[]{
                 PermitDecisionDerogationReasonType.REASON_FAUNA,
                 PermitDecisionDerogationReasonType.REASON_FLORA
-        }), OFFICIAL_CODE_PARTRIDGE);
+        }), OFFICIAL_CODE_PARTRIDGE, FOWL_AND_UNPROTECTED_BIRD);
         assertEquals(1, result.getReason().size());
         assertEquals(HabidesXmlGenerator.ReasonsType.FLORA_AND_FAUNA.label, result.getReason().get(0));
 
@@ -170,7 +171,7 @@ public class HabidesXmlGeneratorTest implements DefaultEntitySupplierProvider {
                 PermitDecisionDerogationReasonType.REASON_RESEARCH,
                 PermitDecisionDerogationReasonType.REASON_POPULATION_PRESERVATION,
                 PermitDecisionDerogationReasonType.REASON_WATER_SYSTEM
-        }), OFFICIAL_CODE_PARTRIDGE);
+        }), OFFICIAL_CODE_PARTRIDGE, FOWL_AND_UNPROTECTED_BIRD);
         assertEquals(6, result.getReason().size());
         assertEquals(HabidesXmlGenerator.ReasonsType.PUBLIC_HEALTH_AND_SAFETY.label, result.getReason().get(0));
         assertEquals(HabidesXmlGenerator.ReasonsType.AIR_SAFETY.label, result.getReason().get(1));
@@ -224,13 +225,27 @@ public class HabidesXmlGeneratorTest implements DefaultEntitySupplierProvider {
                 PermitDecisionDerogationReasonType.REASON_CROPS_DAMAGE_41C,
                 PermitDecisionDerogationReasonType.REASON_FAUNA_41C,
                 PermitDecisionDerogationReasonType.REASON_FLORA_41C
-        }), OFFICIAL_CODE_ROE_DEER);
+        }), OFFICIAL_CODE_ROE_DEER, MAMMAL_DAMAGE_BASED);
         assertEquals(5, result.getReason().size());
         assertEquals(HabidesXmlGenerator.ReasonsType.HABITATS_FLORA_AND_FAUNA.label, result.getReason().get(0));
         assertEquals(HabidesXmlGenerator.ReasonsType.HABITATS_CROPS_LIVESTOCK_ETC.label, result.getReason().get(1));
         assertEquals(HabidesXmlGenerator.ReasonsType.HABITATS_PUBLIC_HEALTH_AND_SAFETY.label, result.getReason().get(2));
         assertEquals(HabidesXmlGenerator.ReasonsType.HABITATS_RESEARCH.label, result.getReason().get(3));
         assertEquals(HabidesXmlGenerator.ReasonsType.HABITATS_REPOPULATION.label, result.getReason().get(4));
+    }
+
+    @Test
+    public void testCreateReasons_gameManagementPermitBirdSpecies() {
+        final DERO_Reasons result = HabidesXmlGenerator.createReasons(f, emptyList(), OFFICIAL_CODE_PARTRIDGE, GAME_MANAGEMENT);
+        assertEquals(1, result.getReason().size());
+        assertEquals(HabidesXmlGenerator.ReasonsType.REPOPULATION.label, result.getReason().get(0));
+    }
+
+    @Test
+    public void testCreateReasons_gameManagementPermitMammalSpecies() {
+        final DERO_Reasons result = HabidesXmlGenerator.createReasons(f, emptyList(), OFFICIAL_CODE_ROE_DEER, GAME_MANAGEMENT);
+        assertEquals(1, result.getReason().size());
+        assertEquals(HabidesXmlGenerator.ReasonsType.HABITATS_REPOPULATION.label, result.getReason().get(0));
     }
 
     @Test
@@ -248,6 +263,13 @@ public class HabidesXmlGeneratorTest implements DefaultEntitySupplierProvider {
     }
 
     @Test
+    public void testCreateActivity_gameManagementBird() {
+        final DERO_Activities activities = HabidesXmlGenerator.createActivities(f, OFFICIAL_CODE_PARTRIDGE, GAME_MANAGEMENT);
+        assertEquals(1, activities.getActivity().size());
+        assertEquals(HabidesXmlGenerator.ActivitiesType.CAPTURE_FOR_CAPTIVITY.label, activities.getActivity().get(0));
+    }
+
+    @Test
     public void activityForKillingMammal() {
         final DERO_Activities activities = HabidesXmlGenerator.createActivities(f, OFFICIAL_CODE_ROE_DEER, MAMMAL_DAMAGE_BASED);
         assertEquals(1, activities.getActivity().size());
@@ -259,6 +281,13 @@ public class HabidesXmlGeneratorTest implements DefaultEntitySupplierProvider {
         final DERO_Activities activities = HabidesXmlGenerator.createActivities(f, OFFICIAL_CODE_ROE_DEER, NEST_REMOVAL_BASED);
         assertEquals(1, activities.getActivity().size());
         assertEquals(HabidesXmlGenerator.ActivitiesType.HABITATS_ANIMALS_DESTROY_BREEDING_SITES.label, activities.getActivity().get(0));
+    }
+
+    @Test
+    public void testCreateActivity_gameManagementMammal() {
+        final DERO_Activities activities = HabidesXmlGenerator.createActivities(f, OFFICIAL_CODE_ROE_DEER, GAME_MANAGEMENT);
+        assertEquals(1, activities.getActivity().size());
+        assertEquals(HabidesXmlGenerator.ActivitiesType.HABITATS_ANIMALS_CAPTURE_FOR_CAPTIVITY.label, activities.getActivity().get(0));
     }
 
     @Test

@@ -5,7 +5,6 @@ import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.address.Address;
-import fi.riista.feature.organization.lupahallinta.LHOrganisation;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
@@ -60,11 +59,11 @@ public class HuntingClubExportToLupahallintaFeatureTest extends EmbeddedDatabase
 
     @Test
     public void testDoNotExportTestClubs() {
-        final HuntingClub club = createClub(false);
+        final HuntingClub club = createClub();
         club.setOfficialCode("8999999");
         final Occupation member1 = createContactPersonWithValidity(club, null, null, false);
 
-        final HuntingClub club2 = createClub(false);
+        final HuntingClub club2 = createClub();
         club2.setOfficialCode("9999999");
         final Occupation member2 = createContactPersonWithValidity(club2, null, null, false);
 
@@ -89,7 +88,7 @@ public class HuntingClubExportToLupahallintaFeatureTest extends EmbeddedDatabase
         createContactPersonWithValidity(club, null, today.minusDays(1), false);
         createContactPersonWithValidity(club, null, null, true);
 
-        final HuntingClub clubMissingFromLhOrg = createClub(false);
+        final HuntingClub clubMissingFromLhOrg = createClub();
         final Occupation member4 = createContactPersonWithValidity(clubMissingFromLhOrg, null, null, false);
 
         withPersistedAndAuthenticatedRestUser(() -> {
@@ -117,7 +116,7 @@ public class HuntingClubExportToLupahallintaFeatureTest extends EmbeddedDatabase
         member1.getPerson().setLastName("AA");
         member1.getPerson().setByName("AB");
 
-        final HuntingClub clubMissingFromLhOrg = createClub(false);
+        final HuntingClub clubMissingFromLhOrg = createClub();
         final Occupation member5 = createContactPersonWithValidity(clubMissingFromLhOrg, null, null, false);
 
         withPersistedAndAuthenticatedRestUser(() -> {
@@ -154,16 +153,8 @@ public class HuntingClubExportToLupahallintaFeatureTest extends EmbeddedDatabase
     }
 
     private HuntingClub createClub() {
-        return createClub(true);
-    }
-
-    private HuntingClub createClub(boolean createLhOrg) {
         final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys(this.rka);
         final HuntingClub c = model().newHuntingClub(rhy);
-        if (createLhOrg) {
-            final LHOrganisation lhOrg = model().newLHOrganisation(rhy);
-            c.setOfficialCode(lhOrg.getOfficialCode());
-        }
         return c;
     }
 

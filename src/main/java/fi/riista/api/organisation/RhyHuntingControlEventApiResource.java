@@ -1,13 +1,19 @@
 package fi.riista.api.organisation;
 
+import com.google.common.collect.ImmutableList;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
+import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysDTO;
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlAttachmentDTO;
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventAttachmentFeature;
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventCrudFeature;
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventDTO;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventExcelView;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventExportDTO;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventExportFeature;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,11 +29,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+
+import static fi.riista.util.MediaTypeExtras.APPLICATION_EXCEL_VALUE;
 
 @RestController
 @RequestMapping(value = "/api/v1/riistanhoitoyhdistys", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -41,6 +50,12 @@ public class RhyHuntingControlEventApiResource {
 
     @Resource
     private CustomJacksonObjectMapper objectMapper;
+
+    @Resource
+    private HuntingControlEventExportFeature exportFeature;
+
+    @Resource
+    private MessageSource messageSource;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "{rhyId:\\d+}/huntingcontrolevents/{year:\\d+}")
@@ -110,4 +125,18 @@ public class RhyHuntingControlEventApiResource {
         return attachmentFeature.getAttachment(attachmentId);
     }
 
+    @PostMapping(value = "{rhyId:\\d+}/huntingcontrolevents/excel/{year:\\d+}", produces = APPLICATION_EXCEL_VALUE)
+    public ModelAndView exportExcel(final @PathVariable long rhyId,
+                                    final @PathVariable int year) {
+        final HuntingControlEventExportDTO exported = exportFeature.export(rhyId, year);
+
+        return new ModelAndView(new HuntingControlEventExcelView(new EnumLocaliser(messageSource), ImmutableList.of(exported)));
+    }
+
+    @PostMapping(value = "huntingcontrolevents/excel/all/{year:\\d+}", produces = APPLICATION_EXCEL_VALUE)
+    public ModelAndView exportAllExcel(final @PathVariable int year) {
+        final List<HuntingControlEventExportDTO> events = exportFeature.exportAll(year);
+
+        return new ModelAndView(new HuntingControlEventExcelView(new EnumLocaliser(messageSource), events));
+    }
 }

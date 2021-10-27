@@ -3,6 +3,8 @@ package fi.riista.feature.permit.application.search;
 import com.google.common.collect.ImmutableList;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.common.decision.DecisionHandlerDTO;
+import fi.riista.feature.gamediary.GameSpeciesDTO;
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationRepository;
 import org.springframework.data.domain.PageRequest;
@@ -103,5 +105,13 @@ public class HarvestPermitApplicationSearchFeature {
         return harvestPermitApplicationRepository.listHandlers().stream()
                 .map(u -> new DecisionHandlerDTO(u.getId(), u.getFullName()))
                 .collect(Collectors.toList());
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_MODERATOR')")
+    @Transactional(readOnly = true)
+    public List<GameSpeciesDTO> listSpecies(final HarvestPermitCategory permitCategory) {
+        return permitCategory == null
+                ? GameSpeciesDTO.transformList(harvestPermitApplicationRepository.listSpecies())
+                : GameSpeciesDTO.transformList(harvestPermitApplicationRepository.listSpecies(permitCategory));
     }
 }

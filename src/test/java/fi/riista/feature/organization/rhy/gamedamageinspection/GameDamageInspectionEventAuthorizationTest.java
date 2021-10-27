@@ -1,14 +1,14 @@
 package fi.riista.feature.organization.rhy.gamedamageinspection;
 
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Resource;
-
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
+import static fi.riista.feature.organization.occupation.OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.DELETE;
@@ -17,9 +17,6 @@ import static fi.riista.security.EntityPermission.UPDATE;
 import static fi.riista.util.DateUtil.today;
 
 public class GameDamageInspectionEventAuthorizationTest extends EmbeddedDatabaseTest {
-
-    @Resource
-    private GameDamageInspectionEventRepository repository;
 
     private Riistanhoitoyhdistys rhy;
     private GameDamageInspectionEvent event;
@@ -31,8 +28,13 @@ public class GameDamageInspectionEventAuthorizationTest extends EmbeddedDatabase
     }
 
     private void createEvent() {
+        final Person inspector = model().newPerson(rhy);
+        model().newOccupation(rhy, inspector, RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA, today(), today());
+
         final GameSpecies species = model().newGameSpecies(OFFICIAL_CODE_MOOSE);
         event = model().newGameDamageInspectionEvent(rhy, species);
+        event.setExpensesIncluded(true);
+        event.setInspector(inspector);
     }
 
     @Test

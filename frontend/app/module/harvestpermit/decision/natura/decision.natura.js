@@ -50,7 +50,7 @@ angular.module('app.harvestpermit.decision.natura', [])
                     switch (category) {
                         case 'DOG_UNLEASH':
                             return DogUnleashApplication.getFullDetails({id: applicationId}).$promise.then(function (app) {
-                                return [createApplicationLocationMarker(app.derogationPermitApplicationAreaDTO.geoLocation, WGS84, $translate)].concat(app.events.map(
+                                return [createApplicationLocationMarker($translate, WGS84, app.derogationPermitApplicationAreaDTO.geoLocation)].concat(app.events.map(
                                     function (event) {
                                         var latlng = WGS84.fromETRS(event.geoLocation.latitude, event.geoLocation.longitude);
                                         var markerColor = 'green';
@@ -62,11 +62,11 @@ angular.module('app.harvestpermit.decision.natura', [])
                             });
                         case 'DOG_DISTURBANCE':
                             return DogDisturbanceApplication.getFullDetails({id: applicationId}).$promise.then(function (app) {
-                                return [createApplicationLocationMarker(app.derogationPermitApplicationAreaDTO.geoLocation, WGS84, $translate)];
+                                return [createApplicationLocationMarker($translate, WGS84, app.derogationPermitApplicationAreaDTO.geoLocation)];
                             });
                         case 'BIRD':
                             return BirdPermitApplication.getFullDetails({id: applicationId}).$promise.then(function (app) {
-                                return [createApplicationLocationMarker(app.protectedArea.geoLocation, WGS84, $translate)];
+                                return [createApplicationLocationMarker($translate, WGS84, app.protectedArea.geoLocation)];
                             });
                         default:
                             return null;

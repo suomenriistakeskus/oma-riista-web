@@ -8,15 +8,11 @@
         <strong>{{'harvestpermit.mine.applications.permitCategory.' + $ctrl.type.category| translate}}</strong>
     </p>
     <div ng-switch="$ctrl.type.begin != null && $ctrl.type.end != null">
-        <div ng-switch-when="true" ng-switch="$ctrl.isLargeCarnivoreLynx()">
-            <div ng-switch-when="true" >
-                <span translate="harvestpermit.new.applicationPeriodEnd"></span>
-                <span>{{$ctrl.type.end|date:'d.M.yyyy'}}</span>
-            </div>
-            <div ng-switch-when="false">
-                <span translate="harvestpermit.new.applicationPeriod"></span><br/>
-                <span>{{$ctrl.type.begin|date:'d.M.'}} - {{$ctrl.type.end|date:'d.M.yyyy'}}</span>
-            </div>
+        <div ng-switch-when="true">
+            <span translate="harvestpermit.new.applicationPeriod"></span><br/>
+            <span>{{$ctrl.type.begin|date:'d.M.'}} - {{$ctrl.type.end|date:'d.M.yyyy'}}</span>
+            <span translate="global.timeOfDayAbbreviation"></span>
+            <span>{{$ctrl.type.end|date:'HH.mm'}}</span>
         </div>
         <hr ng-switch-when="false" class="invisible"/>
     </div>

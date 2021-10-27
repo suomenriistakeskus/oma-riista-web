@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import static fi.riista.util.DateUtil.now;
 import static org.apache.poi.ss.usermodel.BorderStyle.NONE;
@@ -338,7 +339,11 @@ public class GameDamageInspectionEventExcelView extends AbstractXlsxView {
                     dto.getGeoLocation().getLatitude() + " / " + dto.getGeoLocation().getLongitude() :
                     "";
 
-            excelHelper.appendTextCell(dto.getInspectorName()).withBorders(NONE, NONE, THIN, THIN).withFont(tableCellFont)
+            final String inspectorName = Optional.ofNullable(dto.getInspector())
+                    .map(inspector -> inspector.getFirstName() + " " + inspector.getLastName())
+                    .orElseGet(() -> dto.getInspectorName());
+
+            excelHelper.appendTextCell(inspectorName).withBorders(NONE, NONE, THIN, THIN).withFont(tableCellFont)
                     .appendDateCell(dto.getDate()).withBorders(NONE, NONE, THIN, THIN).withFont(tableCellFont)
                     .appendTextCell(speciesName).withBorders(NONE, NONE, THIN, THIN).withFont(tableCellFont)
                     .appendTextCell(location).withBorders(NONE, NONE, THIN, THIN).withFont(tableCellFont);

@@ -108,9 +108,10 @@ class PermitDecisionInvoicePdfBuilder extends AcroFormPdfBuilder {
     private void addInvoiceLines(final PdfWriter writer) throws IOException {
         writer.topOffsetMm(90).marginLeftMm(20)
                 .normalFont()
-                .writeLine(i18n("Päätösnumero", "Beslutnummer"))
+                .writeLine(i18n("Päätösnumero ja luvansaaja", "Beslutnummer och licenshavaren"))
                 .addVerticalSpaceMm(3)
                 .writeLine(model.getProductName())
+                .writeLine(model.getPermitHolder())
                 .writeEmptyLine()
                 .marginLeftMm(115)
                 .writeLine(i18n("Maksettava yhteensä", "Bet. sammanlagt"));
@@ -120,6 +121,7 @@ class PermitDecisionInvoicePdfBuilder extends AcroFormPdfBuilder {
                 .writeLine(i18n("Hinta", "Pris"))
                 .addVerticalSpaceMm(3)
                 .writeLine(model.getProductAmountText())
+                .writeEmptyLine()
                 .writeEmptyLine()
                 .writeLine(model.getProductAmountText());
 
@@ -146,7 +148,7 @@ class PermitDecisionInvoicePdfBuilder extends AcroFormPdfBuilder {
         textField("iban", model.getInvoiceAccountDetails().getCombinedBankNameAndIbanForInvoicePdf());
         textField("bic", model.getInvoiceAccountDetails().getBic().toString());
         textField("saaja", model.getLocalisedString(RiistakeskusConstants.NAME));
-        textField("maksaja", Joiner.on('\n').join(model.getInvoiceRecipient().formatAsLines()));
+        textField("maksaja", Joiner.on('\n').join(model.getInvoiceRecipient().formatAsLinesWithPermitHolder()));
         textField("erapaiva", model.getDueDateString());
         textField("summa", model.getInvoiceAmountText());
         textField("viitenumero", model.getInvoiceReferenceForHuman());

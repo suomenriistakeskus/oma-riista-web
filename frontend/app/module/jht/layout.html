@@ -30,6 +30,9 @@
                     </li>
                 </ul>
             </li>
+            <li active-if-state-includes="jht.largecarnivorereport">
+                <a ui-sref="jht.largecarnivorereport" translate="jht.menu.largeCarnivoreReport"></a>
+            </li>
             <li active-if-state-includes="jht.harvestpermits">
                 <a ui-sref="jht.harvestpermits" translate="jht.menu.permits"></a>
             </li>
@@ -88,6 +91,9 @@
             </li>
             <li ng-if="::$ctrl.isAuthorizedForHarvestRegistry" active-if-state-includes="jht.harvestregistry">
                 <a ui-sref="jht.harvestregistry" translate="jht.menu.harvestRegistry"></a>
+            </li>
+            <li ng-if="::$ctrl.isAuthorizedForOtherwiseDeceased" active-if-state-includes="jht.otherwisedeceased">
+                <a ui-sref="jht.otherwisedeceased" translate="jht.menu.otherwiseDeceased"></a>
             </li>
         </ul>
     </div>

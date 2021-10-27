@@ -126,6 +126,9 @@ angular.module('app.occupation.services', [])
             },
             findBySsn: function (ssn) {
                 return HttpPost.post('api/v1/organisation/findperson/ssn', {ssn: ssn});
+            },
+            findByHunterNumbers: function (hunterNumbers) {
+                return HttpPost.post('api/v1/organisation/findperson/hunternumbers', {hunterNumbers: hunterNumbers});
             }
         };
     })
@@ -188,4 +191,8 @@ angular.module('app.occupation.services', [])
                 ? _.reject(occupationTypes, onlyModeratorCanModify)
                 : occupationTypes;
         };
+    })
+    .factory('OccupationContactInfoVisibilityRules', function ($resource) {
+            return $resource('api/v1/organisation/occupation/contact-info-visibility-rules', {}, {});
     });
+

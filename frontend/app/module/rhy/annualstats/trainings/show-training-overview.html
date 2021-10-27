@@ -9,11 +9,17 @@
                 <tbody>
                     <tr>
                         <td class="col-xs-8" computed-marker-title="rhy.annualStats.trainings.overview.allEvents"></td>
-                        <td num-pieces="::$ctrl.statistics.allTrainingEvents"></td>
+                        <td class="text-right">
+                            <span ng-bind="$ctrl.getEventCount()"></span>&nbsp
+                            <span class="unit-suffix" translate="global.pcs"></span>
+                        </td>
                     </tr>
                     <tr class="indented-row">
                         <td class="col-xs-8" computed-marker-title="rhy.annualStats.trainings.overview.allParticipants"></td>
-                        <td num-persons="::$ctrl.statistics.allTrainingParticipants"></td>
+                        <td class="text-right">
+                            <span ng-bind="$ctrl.getParticipantCount()"></span>&nbsp
+                            <span class="unit-suffix" translate="global.personUnit"></span>
+                        </td>
                     </tr>
                 </tbody>
             </table>

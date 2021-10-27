@@ -34,7 +34,6 @@ public class ObservationDTOBuilderForTests extends ObservationDTO.Builder<Observ
     private final ObservationMetadata metadata;
 
     private boolean isCarnivoreAuthority = false;
-    private boolean isDeerPilotEnabled = false;
 
     public ObservationDTOBuilderForTests(@Nonnull final ObservationMetadata metadata) {
         this.metadata = requireNonNull(metadata);
@@ -52,11 +51,6 @@ public class ObservationDTOBuilderForTests extends ObservationDTO.Builder<Observ
         return self();
     }
 
-    public ObservationDTOBuilderForTests withDeerPilotEnabled() {
-        this.isDeerPilotEnabled = true;
-        return self();
-    }
-
     public ObservationDTOBuilderForTests populateWith(@Nonnull final Observation observation) {
 
         dto.setRhyId(F.getId(observation.getRhy()));
@@ -69,10 +63,10 @@ public class ObservationDTOBuilderForTests extends ObservationDTO.Builder<Observ
 
         final ObservationContextSensitiveFields contextSensitiveFields = metadata.getContextSensitiveFields();
 
-        if (contextSensitiveFields.getDeerHuntingType().isDeerHuntingFieldAllowed(isDeerPilotEnabled)) {
+        if (contextSensitiveFields.getDeerHuntingType().isDeerHuntingFieldAllowed()) {
             dto.setDeerHuntingType(observation.getDeerHuntingType());
         }
-        if (contextSensitiveFields.getDeerHuntingTypeDescription().isDeerHuntingFieldAllowed(isDeerPilotEnabled)) {
+        if (contextSensitiveFields.getDeerHuntingTypeDescription().isDeerHuntingFieldAllowed()) {
             dto.setDeerHuntingTypeDescription(observation.getDeerHuntingTypeDescription());
         }
 

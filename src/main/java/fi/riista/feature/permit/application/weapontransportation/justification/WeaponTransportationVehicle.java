@@ -38,21 +38,15 @@ public class WeaponTransportationVehicle extends BaseEntity<Long> {
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(columnDefinition = "text")
-    private String registerNumber;
-
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    @Column(columnDefinition = "text")
     private String description;
 
     public WeaponTransportationVehicle() {}
 
     public WeaponTransportationVehicle(final WeaponTransportationPermitApplication weaponTransportationPermitApplication,
                                        final WeaponTransportationVehicleType type,
-                                       final String registerNumber,
                                        final String description) {
         this.weaponTransportationPermitApplication = weaponTransportationPermitApplication;
         this.type = type;
-        this.registerNumber = registerNumber;
         this.description = description;
     }
 
@@ -90,14 +84,6 @@ public class WeaponTransportationVehicle extends BaseEntity<Long> {
 
     public void setType(final WeaponTransportationVehicleType type) {
         this.type = type;
-    }
-
-    public String getRegisterNumber() {
-        return registerNumber;
-    }
-
-    public void setRegisterNumber(final String registerNumber) {
-        this.registerNumber = registerNumber;
     }
 
     public String getDescription() {

@@ -5,36 +5,35 @@ import fi.riista.util.LocalisedEnum;
 public enum GroupHuntingMethod implements LocalisedEnum {
     // KOIRAN KANSSA:
     // 1 = passilinja, koira ohjaajineen metsässä
-    OPTION_1(1, true, "PASSILINJA_KOIRA_OHJAAJINEEN_METSASSA"),
+    PASSILINJA_KOIRA_OHJAAJINEEN_METSASSA(1, true),
 
     // 2 = hiipiminen pysäyttävälle koiralle
-    OPTION_2(2, true, "HIIPIMINEN_PYSAYTTAVALLE_KOIRALLE"),
+    HIIPIMINEN_PYSAYTTAVALLE_KOIRALLE(2, true),
 
     // ILMAN KOIRAA:
     // 3 = passilinja ja tiivis ajoketju
-    OPTION_3(3, false, "PASSILINJA_JA_TIIVIS_AJOKETJU"),
+    PASSILINJA_JA_TIIVIS_AJOKETJU(3, false),
 
     // 4 = passilinja ja miesajo jäljityksenä
-    OPTION_4(4, false, "PASSILINJA_JA_MIESAJO_JALJITYKSENA"),
+    PASSILINJA_JA_MIESAJO_JALJITYKSENA(4, false),
 
     // 5 = jäljitys eli naakiminen ilman passeja
-    OPTION_5(5, false, "JALJITYS_ELI_NAAKIMINEN_ILMAN_PASSEJA"),
+    JALJITYS_ELI_NAAKIMINEN_ILMAN_PASSEJA(5, false),
 
     // 6 = väijyntä kulkupaikoilta
-    OPTION_6(6, false, "VAIJYNTA_KULKUPAIKOILLA"),
+    VAIJYNTA_KULKUPAIKOILLA(6, false),
 
     // 7 = väijyntä ravintokohteilta
-    OPTION_7(7, false, "VAIJYNTA_RAVINTOKOHTEILLA"),
+    VAIJYNTA_RAVINTOKOHTEILLA(7, false),
 
     // 8 = houkuttelu
-    OPTION_8(8, false, "HOUKUTTELU"),
+    HOUKUTTELU(8, false),
 
     // 9 = muu, mikä
-    OPTION_9(9, false, "MUU");
+    MUU(9, false);
 
     private final int typeCode;
     private final boolean withHound;
-    private final String explicitName;
 
     public static GroupHuntingMethod valueOf(final Integer typeCode) {
         if (typeCode == null) {
@@ -50,10 +49,9 @@ public enum GroupHuntingMethod implements LocalisedEnum {
         throw new IllegalArgumentException("Invalid HuntingMethod code: " + typeCode);
     }
 
-    GroupHuntingMethod(final int typeCode, final boolean withHound, final String explicitName) {
+    GroupHuntingMethod(final int typeCode, final boolean withHound) {
         this.typeCode = typeCode;
         this.withHound = withHound;
-        this.explicitName = explicitName;
     }
 
     public int getTypeCode() {
@@ -62,9 +60,5 @@ public enum GroupHuntingMethod implements LocalisedEnum {
 
     public boolean isWithHound() {
         return withHound;
-    }
-
-    public String getExplicitName() {
-        return explicitName;
     }
 }

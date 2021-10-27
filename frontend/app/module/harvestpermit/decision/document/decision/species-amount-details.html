@@ -1,0 +1,40 @@
+<table class="table r-decision-species-amount-details">
+    <thead>
+    <tr>
+        <th ng-if="$ctrl.specimenPresent" translate="harvestpermit.common.permittedAmount.specimen"></th>
+        <th ng-if="$ctrl.eggPresent" translate="harvestpermit.common.permittedAmount.egg"></th>
+        <th ng-if="$ctrl.nestPresent" translate="harvestpermit.common.permittedAmount.nest"></th>
+        <th ng-if="$ctrl.constructionPresent" translate="harvestpermit.common.permittedAmount.construction"></th>
+        <th translate="harvestpermit.common.validity"></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr ng-repeat="amount in ::$ctrl.amounts track by amount.id">
+        <td ng-if="$ctrl.specimenPresent">
+            <span ng-bind="::amount.specimenAmount"></span>
+            <span translate="global.pcs"></span>
+        </td>
+        <td ng-if="$ctrl.eggPresent">
+            <span ng-bind="::amount.eggAmount"></span>
+            <span translate="global.pcs"></span>
+        </td>
+        <td ng-if="$ctrl.nestPresent">
+            <span ng-bind="::amount.nestAmount"></span>
+            <span translate="global.pcs"></span>
+        </td>
+        <td ng-if="$ctrl.constructionPresent">
+            <span ng-bind="::amount.constructionAmount"></span>
+            <span translate="global.pcs"></span>
+        </td>
+        <td>
+            <span ng-bind="amount.beginDate | date:'d.M.yyyy'"></span>
+            <span>-</span>
+            <span ng-bind="amount.endDate | date:'d.M.yyyy'"></span>
+            <span ng-if="amount.beginDate2">&nbsp;</span>
+            <span ng-bind="amount.beginDate2 | date:'d.M.yyyy'"></span>
+            <span ng-if="amount.beginDate2">-</span>
+            <span ng-bind="amount.endDate2 | date:'d.M.yyyy'"></span>
+        </td>
+    </tr>
+    </tbody>
+</table>

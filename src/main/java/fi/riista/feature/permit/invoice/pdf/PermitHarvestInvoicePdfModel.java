@@ -1,6 +1,5 @@
 package fi.riista.feature.permit.invoice.pdf;
 
-import com.google.common.collect.ImmutableList;
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.money.FinnishBankAccount;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -21,13 +20,11 @@ import org.joda.time.format.DateTimeFormatter;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Locale;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static fi.riista.feature.common.money.FinnishBankAccount.MOOSELIKE_HARVEST_FEE_DANSKE;
-import static fi.riista.feature.common.money.FinnishBankAccount.MOOSELIKE_HARVEST_FEE_NORDEA;
-import static fi.riista.feature.common.money.FinnishBankAccount.MOOSELIKE_HARVEST_FEE_OP_POHJOLA;
+import static fi.riista.feature.permit.invoice.harvest.PermitHarvestInvoiceAccounts.HARVEST_FEE_ACCOUNTS;
+import static fi.riista.feature.permit.invoice.harvest.PermitHarvestInvoiceAccounts.HARVEST_FEE_ALLOWED_RECEIPT_ACCOUNTS;
 import static fi.riista.util.DateUtil.today;
 import static java.util.Objects.requireNonNull;
 
@@ -39,12 +36,6 @@ public class PermitHarvestInvoicePdfModel {
         RECEIPT
     }
 
-    /*package*/ static List<FinnishBankAccount> HARVEST_FEE_ACCOUNTS = ImmutableList.of(
-            MOOSELIKE_HARVEST_FEE_OP_POHJOLA,
-            MOOSELIKE_HARVEST_FEE_DANSKE,
-            MOOSELIKE_HARVEST_FEE_NORDEA
-    );
-
     static final String PAYMENT_RECIPIENT = "MMM/Hirvieläinten pyyntilupamaksujen keräilytili";
 
     static final DateTimeFormatter INVOICE_DATE_PATTERN = DateTimeFormat.forPattern("d.M.yyyy");
@@ -52,12 +43,16 @@ public class PermitHarvestInvoicePdfModel {
 
     public static PermitHarvestInvoicePdfModel createInvoice(final @Nonnull HarvestPermitSpeciesAmount speciesAmount,
                                                              final @Nonnull Invoice invoice) {
+        // The pdf shall contain multiple bank accounts, assert that the account in invoice is listed
+        checkArgument(HARVEST_FEE_ACCOUNTS.contains(invoice.resolveBankAccountDetails()));
 
         return create(ResultType.INVOICE, speciesAmount, invoice);
     }
 
     public static PermitHarvestInvoicePdfModel createReceipt(final @Nonnull HarvestPermitSpeciesAmount speciesAmount,
                                                              final @Nonnull Invoice invoice) {
+        // Receipt may contain old accounts, allow all in HARVEST_FEE_ALLOWED_RECEIPT_ACCOUNTS
+        checkArgument(HARVEST_FEE_ALLOWED_RECEIPT_ACCOUNTS.contains(invoice.resolveBankAccountDetails()));
 
         requireNonNull(invoice.getPaymentDate(), "paymentDate is null");
         return create(ResultType.RECEIPT, speciesAmount, invoice);
@@ -65,6 +60,8 @@ public class PermitHarvestInvoicePdfModel {
 
     public static PermitHarvestInvoicePdfModel createReminder(final @Nonnull HarvestPermitSpeciesAmount speciesAmount,
                                                               final @Nonnull Invoice invoice) {
+        // The pdf shall contain multiple bank accounts, assert that the account in invoice is listed
+        checkArgument(HARVEST_FEE_ACCOUNTS.contains(invoice.resolveBankAccountDetails()));
 
         return create(ResultType.REMINDER, speciesAmount, invoice);
     }
@@ -76,8 +73,6 @@ public class PermitHarvestInvoicePdfModel {
         requireNonNull(speciesAmount);
         requireNonNull(invoice);
 
-        // The pdf shall contain multiple bank accounts, assert that the account in invoice is listed
-        checkArgument(HARVEST_FEE_ACCOUNTS.contains(invoice.resolveBankAccountDetails()));
 
         final HarvestPermit permit = speciesAmount.getHarvestPermit();
         final GameSpecies gameSpecies = speciesAmount.getGameSpecies();
@@ -112,6 +107,9 @@ public class PermitHarvestInvoicePdfModel {
         requireNonNull(decision);
         requireNonNull(invoiceAccountDetails);
         requireNonNull(gameSpecies);
+
+        // The pdf shall contain multiple bank accounts, assert that the account in invoice is listed
+        checkArgument(HARVEST_FEE_ACCOUNTS.contains(invoiceAccountDetails));
 
         final LocalDate invoiceDate = decision.getPublishDate().toLocalDate();
         final PermitHarvestInvoicePdfPrice specimenPrice =

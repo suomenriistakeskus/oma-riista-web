@@ -46,48 +46,6 @@
             </div>
 
             <div class="form-group row" show-errors>
-                <label for="inspectorName" class="col-xs-4 control-label">
-                    <span translate="rhy.gameDamageInspectionEvent.inspectorName"></span>
-                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                </label>
-
-                <div class="col-xs-8">
-                    <input type="text" class="form-control"
-                           name="inspectorName" id="inspectorName"
-                           ng-model="$ctrl.event.inspectorName"
-                           required/>
-                </div>
-            </div>
-
-            <div class="form-group row">
-                <label for="map" class="col-xs-4 control-label">
-                    <span translate="rhy.gameDamageInspectionEvent.formLocation"></span>
-                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                </label>
-
-                <div class="col-xs-8">
-                    <leaflet class="r-cursor-pointer"
-                             id="map"
-                             defaults="$ctrl.leaflet.mapDefaults"
-                             layers="$ctrl.leaflet.mapDefaults.mmlLayers"
-                             controls="$ctrl.leaflet.mapDefaults.controls"
-                             bounds="$ctrl.leaflet.bounds"
-                             geojson="$ctrl.leaflet.mapFeatures"
-                             geojson-watch-options="$ctrl.leaflet.mapDefaults.geojsonWatchOptions"
-                             r-geolocation-marker="$ctrl.event.geoLocation"
-                             r-geolocation-marker-force-finland="true"
-                             r-geolocation-editable="true"
-                             height="400px">
-                    </leaflet>
-                    <div r-geolocation-input="$ctrl.event.geoLocation">
-                    </div>
-                    <div class="alert alert-danger"
-                         ng-if="!$ctrl.inRhyArea"
-                         translate="rhy.gameDamageInspectionEvent.notInRhyArea"></div>
-                </div>
-            </div>
-
-            <div class="form-group row" show-errors>
                 <label for="date" class="col-xs-4 control-label">
                     <span translate="rhy.gameDamageInspectionEvent.date"></span>
                     <span class="glyphicon glyphicon-asterisk text-danger"></span>
@@ -99,7 +57,8 @@
                                name="date" id="date"
                                ng-model="$ctrl.event.date"
                                required
-                               uib-datepicker-popup is-open="isDatePickerOpen"/>
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               ng-change="$ctrl.onDateChange()"/>
 
                         <span class="input-group-btn">
                                 <button type="button" class="btn btn-default" tabindex="-1"
@@ -172,6 +131,65 @@
             </div>
 
             <div class="form-group row" show-errors>
+                <label for="inspector" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.inspectorName"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <select class="form-control text-capitalize"
+                            name="inspector" id="inspector"
+                            ng-model="$ctrl.event.inspector"
+                            ng-options="inspector as $ctrl.getInspectorName(inspector) for inspector in $ctrl.availableInspectors"
+                            ng-required="!$ctrl.event.inspectorName"
+                            ng-disabled="!$ctrl.event.date">
+                        <option ng-if="!$ctrl.event.date" disabled value="" translate="rhy.gameDamageInspectionEvent.selectDate"></option>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="form-group row" ng-if="$ctrl.event.inspectorName && !$ctrl.event.inspector" show-errors>
+                <label for="inspectorName" class="col-xs-4 control-label">
+                </label>
+
+                <div class="col-xs-8">
+                    <input type="text" class="form-control"
+                           name="inspectorName" id="inspectorName"
+                           ng-model="$ctrl.event.inspectorName"
+                           disabled/>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label for="map" class="col-xs-4 control-label">
+                    <span translate="rhy.gameDamageInspectionEvent.formLocation"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+
+                <div class="col-xs-8">
+                    <leaflet class="r-cursor-pointer"
+                             id="map"
+                             defaults="$ctrl.leaflet.mapDefaults"
+                             layers="$ctrl.leaflet.mapDefaults.mmlLayers"
+                             controls="$ctrl.leaflet.mapDefaults.controls"
+                             bounds="$ctrl.leaflet.bounds"
+                             geojson="$ctrl.leaflet.mapFeatures"
+                             geojson-watch-options="$ctrl.leaflet.mapDefaults.geojsonWatchOptions"
+                             r-geolocation-marker="$ctrl.event.geoLocation"
+                             r-geolocation-marker-force-finland="true"
+                             r-geolocation-editable="true"
+                             height="400px">
+                    </leaflet>
+                    <div r-geolocation-input="$ctrl.event.geoLocation">
+                    </div>
+                    <div class="alert alert-danger"
+                         ng-if="!$ctrl.inRhyArea"
+                         translate="rhy.gameDamageInspectionEvent.notInRhyArea"></div>
+                </div>
+            </div>
+
+            <div class="form-group row" show-errors>
                 <label for="description" class="col-xs-4 control-label" translate="rhy.gameDamageInspectionEvent.description"></label>
 
                 <div class="col-xs-8">
@@ -183,9 +201,29 @@
                 </div>
             </div>
 
+            <div class="form-group">
+                <label for="expensesIncluded" class="col-xs-4 control-label" translate="rhy.gameDamageInspectionEvent.expensesIncluded"></label>
+                <div id="expensesIncluded" class="btn-group col-xs-8">
+                    <label class="btn btn-default"
+                           ng-model="$ctrl.event.expensesIncluded"
+                           uib-btn-radio="true">
+                    <span class="text-muted fa fa-fw fa-lg fa-check-circle"
+                          ng-class="{invisible: !$ctrl.event.expensesIncluded}"></span>
+                    </label>
+
+                    <label class="btn"
+                           ng-class="$ctrl.event.expensesIncluded ? 'btn-default': 'btn-primary'"
+                           ng-model="$ctrl.event.expensesIncluded"
+                           uib-btn-radio="false">
+                    <span class="fa fa-fw fa-lg fa-check-circle"
+                          ng-class="{invisible: $ctrl.event.expensesIncluded}"></span>
+                    </label>
+                </div>
+            </div>
+
         </uib-tab>
 
-        <uib-tab index="1">
+        <uib-tab index="1" disable="!$ctrl.event.expensesIncluded">
             <uib-tab-heading>
                 <span translate="rhy.gameDamageInspectionEvent.eventExpenses"></span>
             </uib-tab-heading>
@@ -205,7 +243,7 @@
                            ng-model="$ctrl.event.hourlyExpensesUnit"
                            ng-change="$ctrl.onRhyExpensesChanged()"
                            ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
-                           required/>
+                           ng-required="$ctrl.event.expensesIncluded"/>
                 </div>
             </div>
 
@@ -248,7 +286,7 @@
                                 name="expenseType-{{$index}}" id="expenseType-{{$index}}"
                                 ng-model="kmExpenses.expenseType"
                                 ng-options="('rhy.gameDamageInspectionEvent.kmExpenses.expenseTypes.'+o|translate) for o in $ctrl.gameDamageInspectionExpenseTypes"
-                                required></select>
+                                ng-required="$ctrl.event.expensesIncluded"></select>
                     </div>
 
                     <div class="col-xs-3">
@@ -270,7 +308,7 @@
                         <input type="text" class="form-control"
                                name="additionalInfo-{{$index}}" id="additionalInfo-{{$index}}"
                                ng-model="kmExpenses.additionalInfo"
-                               required/>
+                               ng-required="$ctrl.event.expensesIncluded"/>
                     </div>
                 </div>
 
@@ -290,7 +328,7 @@
                                    ng-model="kmExpenses.kilometers"
                                    ng-change="$ctrl.onKilometerExpensesChanged()"
                                    ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
-                                   required/>
+                                   ng-required="$ctrl.event.expensesIncluded"/>
                         </div>
                     </div>
 
@@ -309,7 +347,7 @@
                                    ng-model="kmExpenses.expenseUnit"
                                    ng-change="$ctrl.onKilometerExpensesChanged()"
                                    ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
-                                   required/>
+                                   ng-required="$ctrl.event.expensesIncluded"/>
                         </div>
                     </div>
 
@@ -357,7 +395,7 @@
                            ng-model="$ctrl.event.dailyAllowance"
                            ng-change="$ctrl.onTravelExpensesChanged()"
                            ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
-                           required/>
+                           ng-required="$ctrl.event.expensesIncluded"/>
                 </div>
             </div>
 
@@ -391,11 +429,17 @@
     </uib-tabset>
 </div>
 
-<div class="modal-footer">
-    <button ng-if="$ctrl.activeTabIndex === 1" type="button" class="btn btn-default" ng-click="$ctrl.previous()" translate="global.pager.previous"></button>
-    <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()" translate="global.button.cancel"></button>
-    <button ng-if="$ctrl.activeTabIndex === 1" type="submit" class="btn btn-primary" ng-disabled="form.$invalid || !$ctrl.isFormValid()" translate="global.button.save"></button>
-    <button ng-if="$ctrl.activeTabIndex === 0" type="button" class="btn btn-primary" ng-click="$ctrl.next()()" translate="global.pager.next"></button>
+<div class="modal-footer" ng-switch="$ctrl.activeTabIndex">
+    <div ng-switch-when="0">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()" translate="global.button.cancel"></button>
+        <button ng-if="$ctrl.event.expensesIncluded" type="button" class="btn btn-primary" ng-click="$ctrl.next()()" translate="global.pager.next"></button>
+        <button ng-if="!$ctrl.event.expensesIncluded" type="submit" class="btn btn-primary" ng-disabled="form.$invalid || !$ctrl.isFormValid()" translate="global.button.save"></button>
+    </div>
+    <div ng-switch-when="1">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.previous()" translate="global.pager.previous"></button>
+        <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()" translate="global.button.cancel"></button>
+        <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid || !$ctrl.isFormValid()" translate="global.button.save"></button>
+    </div>
 </div>
 
 </form>

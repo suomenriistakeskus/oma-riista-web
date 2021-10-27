@@ -384,7 +384,7 @@ angular.module('app.diary.harvest.view', [])
             diaryParameters: '<',
             fields: '<'
         },
-        controller: function ($scope, $filter, AntlerGuide, DiaryEntrySpecimenFormService) {
+        controller: function ($scope, $filter, AntlerGuide, DiaryEntrySpecimenFormService, GameSpeciesCodes) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
@@ -492,6 +492,11 @@ angular.module('app.diary.harvest.view', [])
 
             $ctrl.isAntlerGuideVisible = function () {
                 return AntlerGuide.isVisible($ctrl.harvest, $ctrl.fields);
+            };
+
+            $ctrl.isWhiteTailedDeer = function () {
+                var species = $ctrl.harvest.gameSpeciesCode;
+                return species === GameSpeciesCodes.WHITE_TAILED_DEER;
             };
 
             function allSpecimensValid() {
@@ -666,8 +671,7 @@ angular.module('app.diary.harvest.view', [])
                 if (!!fields) {
                     return fields.isVisibleReportField('deerHuntingType');
                 } else {
-                    return GameSpeciesCodes.isWhiteTailedDeer(entry.gameSpeciesCode) &&
-                        AuthenticationService.isDeerPilotUser();
+                    return GameSpeciesCodes.isWhiteTailedDeer(entry.gameSpeciesCode);
                 }
             };
 

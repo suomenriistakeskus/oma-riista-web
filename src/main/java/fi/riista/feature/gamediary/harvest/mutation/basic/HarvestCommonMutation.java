@@ -8,6 +8,7 @@ import fi.riista.feature.gamediary.harvest.mutation.HarvestMutation;
 import fi.riista.feature.gamediary.harvest.mutation.HarvestMutationRole;
 import fi.riista.feature.gamediary.harvest.mutation.exception.HarvestSpeciesChangeForbiddenException;
 import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
+import fi.riista.feature.huntingclub.hunting.mobile.MobileGroupHarvestDTO;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 
@@ -45,6 +46,17 @@ public class HarvestCommonMutation implements HarvestMutation {
         if (mutationRole != HarvestMutationRole.AUTHOR_OR_ACTOR) {
             throw new RuntimeException("Invalid role for mobile " + mutationRole);
         }
+    }
+
+    public HarvestCommonMutation(final MobileGroupHarvestDTO dto,
+                                 final GameSpecies species,
+                                 final HarvestMutationRole mutationRole) {
+
+        this.pointOfTime = requireNonNull(dto.getPointOfTime());
+        this.harvestDate = dto.getPointOfTime().toLocalDate();
+        this.species = requireNonNull(species);
+        this.amount = dto.getAmount();
+        this.mutationRole = requireNonNull(mutationRole);
     }
 
     public LocalDate getHarvestDate() {

@@ -32,6 +32,12 @@ public interface OrganisationRepository extends BaseRepository<Organisation, Lon
             " WHERE o.organisationType = :orgType AND o.active = true")
     List<Organisation> findActiveByOrganisationType(@Param("orgType") OrganisationType organisationType, Sort sort);
 
+    @Query("SELECT o FROM #{#entityName} o" +
+            " WHERE o.organisationType = :orgType AND o.active = true AND o.parentOrganisation = :parent")
+    List<Organisation> findActiveByParentOrganisationAndOrganisationType(@Param("parent") Organisation parent,
+                                                                         @Param("orgType") OrganisationType organisationType,
+                                                                         Sort sort);
+
     @Query("select distinct o from #{#entityName} o" +
             " where o.organisationType = ?1" +
             " and o.officialCode = ?2")

@@ -63,13 +63,13 @@ public class ObservationMetadata extends ObservationSpecimenOps implements Value
     public void mutateDeerHuntingTypeFields(@Nonnull final ObservationDTOBase dto) {
         requireNonNull(dto);
 
-        if (contextSensitiveFields.getDeerHuntingType().isDeerHuntingFieldAllowed(/*isDeerPilotEnabled*/true)) {
+        if (contextSensitiveFields.getDeerHuntingType().isDeerHuntingFieldAllowed()) {
             dto.setDeerHuntingType(someOtherThan(dto.getDeerHuntingType(), DeerHuntingType.class));
         } else {
             throw new IllegalStateException("Cannot mutate deer pilot field: deerHuntingType");
         }
 
-        if (contextSensitiveFields.getDeerHuntingTypeDescription().isDeerHuntingFieldAllowed(/*isDeerPilotEnabled*/true)) {
+        if (contextSensitiveFields.getDeerHuntingTypeDescription().isDeerHuntingFieldAllowed()) {
             dto.setDeerHuntingTypeDescription("deerHuntingTypeDescription-" + nextPositiveInt());
         } else {
             throw new IllegalStateException("Cannot mutate deer pilot field: deerHuntingTypeDescription");

@@ -4,10 +4,12 @@ angular.module('app.harvestpermit.search.application', [])
     .service('ModeratorPermitApplicationSearchFilters', function (LocalStorageService, AuthenticationService) {
         var initialFilters = {
             status: 'DRAFT',
-            harvestPermitCategory: 'ALL',
+            harvestPermitCategory: null,
             huntingYear: null,
             rkaOfficialCode: null,
-            rhyOfficialCode: null
+            rhyOfficialCode: null,
+            decisionLocale: null,
+            pageNumber: 0
         };
 
         var self = this;
@@ -44,7 +46,7 @@ angular.module('app.harvestpermit.search.application', [])
                     'huntingYear', 'harvestPermitCategory', 'status',
                     'decisionType', 'grantStatus', 'appealStatus', 'handlerId',
                     'protectedAreaType', 'derogationReason', 'forbiddenMethod',
-                    'validityYears'
+                    'validityYears', 'decisionLocale', 'pageNumber'
                 ]));
 
             } else {
@@ -144,7 +146,7 @@ angular.module('app.harvestpermit.search.application', [])
                 };
 
                 if ($ctrl.tab) {
-                    doSearch(0);
+                    doSearch($ctrl.filters.pageNumber);
                 }
 
                 $ctrl.$onChanges = function (changes) {
@@ -178,6 +180,7 @@ angular.module('app.harvestpermit.search.application', [])
 
                 search(page).then(function (res) {
                     $ctrl.results = res;
+                    $ctrl.filters.pageNumber = page;
                     ModeratorPermitApplicationSearchFilters.save($ctrl.filters);
 
                 }).finally(function () {
@@ -218,12 +221,14 @@ angular.module('app.harvestpermit.search.application', [])
 
                     // optional
                     gameSpeciesCode: f.gameSpeciesCode,
+                    // Deprecated value 'ALL' might be in local storage, so, it needs to be handled too.
                     harvestPermitCategory: f.harvestPermitCategory === 'ALL' ? null : f.harvestPermitCategory,
                     validityYears: f.validityYears,
                     rhyOfficialCode: f.rhyOfficialCode,
                     rkaOfficialCode: f.rkaOfficialCode,
                     applicationNumber: f.applicationNumber,
                     handlerId: f.handlerId,
+                    decisionLocale: f.decisionLocale,
                     decisionType: f.decisionType ? [f.decisionType] : null,
                     grantStatus: f.grantStatus ? [f.grantStatus] : null,
                     appealStatus: f.appealStatus ? [f.appealStatus] : null,
@@ -271,6 +276,7 @@ angular.module('app.harvestpermit.search.application', [])
                 $ctrl.forbiddenMethodList = PermitDecisionForbiddenMethodType;
                 $ctrl.protectedAreaTypeList = ProtectedAreaTypes;
                 $ctrl.derogationReasonList = DerogationReasonType;
+                $ctrl.languages = ['fi', 'sv'];
 
                 var endYear = new Date().getFullYear();
                 var beginYear = Math.max(endYear - 5, 2018);
@@ -287,7 +293,7 @@ angular.module('app.harvestpermit.search.application', [])
 
             $ctrl.$onChanges = function (changes) {
                 if (changes.filters) {
-                    $ctrl.onFilterChange();
+                    $ctrl.reloadValues();
                 }
             };
 
@@ -304,6 +310,11 @@ angular.module('app.harvestpermit.search.application', [])
             };
 
             $ctrl.onFilterChange = function () {
+                $ctrl.filters.pageNumber = 0;
+                $ctrl.reloadValues();
+            };
+
+            $ctrl.reloadValues = function () {
                 $ctrl.filterMode = getCurrentFilterMode();
                 $ctrl.search();
             };
@@ -331,7 +342,7 @@ angular.module('app.harvestpermit.search.application', [])
         bindings: {
             results: '<'
         },
-        controller: function ($state, $translate, PermitDecision, HarvestPermitCategoryType) {
+        controller: function ($state, $translate, PermitDecision, HarvestPermitCategoryType, MooselikeApplicationLate) {
             var $ctrl = this;
 
             $ctrl.openApplication = function (application) {
@@ -347,15 +358,8 @@ angular.module('app.harvestpermit.search.application', [])
             };
 
             $ctrl.isLateApplication = function (application) {
-                if (application.harvestPermitCategory === 'MOOSELIKE' && application.submitDate) {
-                    var submitDate = moment(application.submitDate, 'YYYY-MM-DD');
-
-                    if (submitDate.isValid()) {
-                        var month = submitDate.month() + 1; // zero indexed
-                        return month > 4; // Submitted after 30.4.
-                    }
-                }
-                return false;
+                return application.harvestPermitCategory === 'MOOSELIKE' &&
+                    MooselikeApplicationLate.isLate(application.huntingYear, application.submitDate);
             };
 
             $ctrl.resolveUnifiedStatus = function (application) {

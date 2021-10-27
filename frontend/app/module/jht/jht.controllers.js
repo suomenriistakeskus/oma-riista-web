@@ -17,6 +17,9 @@ angular.module('app.jht.controllers', ['app.admin.users'])
 
                     $ctrl.isAuthorizedForHarvestRegistry = ActiveRoleService.isAdmin() ||
                         AvailableRoleService.hasPrivilege(ModeratorPrivileges.harvestRegistry);
+
+                    $ctrl.isAuthorizedForOtherwiseDeceased = ActiveRoleService.isAdmin() ||
+                        AvailableRoleService.hasPrivilege(ModeratorPrivileges.otherwiseDeceased);
                 },
                 resolve: {
                     renewalTodos: function (ModeratorTodos) {

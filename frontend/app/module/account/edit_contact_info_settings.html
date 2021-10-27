@@ -1,0 +1,85 @@
+<form name="profileOtherForm"
+      role="form" class="form"
+      novalidate autocomplete="off"
+      ng-submit="$ctrl.save()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="account.edit.contactInfo.title"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="table-responsive">
+            <table class="table table-condensed contact-info-visibility-table">
+                <thead>
+                <tr>
+                    <th class="col-xs-7 role-title" translate="account.edit.contactInfo.occupation"></th>
+                    <th class="col-xs-2" translate="global.button.selectAll"></th>
+                    <th class="col-xs-1" translate="account.edit.contactInfo.selectName"></th>
+                    <th class="col-xs-1" translate="account.edit.contactInfo.selectPhoneNumber"></th>
+                    <th class="col-xs-1" translate="account.edit.contactInfo.selectEmail"></th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr ng-repeat="occupation in $ctrl.occupations track by occupation.id">
+                    <td class="role">
+                        <span ng-bind="::(occupation.occupationType | translateWithPrefix:'occupation.type.')"></span>
+                        <span ng-bind="::occupation.organisation | rI18nNameFilter"></span>
+                    </td>
+
+                    <td>
+                        <button ng-show="::$ctrl.isAnyEditable(occupation)" type="button" class="btn btn-primary selection-toggle"
+                                ng-click="$ctrl.toggleSelection(occupation)">
+                            {{$ctrl.isAnyEditableFalse(occupation) ? 'global.button.select' : 'global.button.delete' | translate}}
+                        </button>
+                    </td>
+
+                    <td ng-switch="::$ctrl.getVisibilityRule(occupation).nameVisibility">
+                        <span ng-switch-when="ALWAYS" class="text-primary fa fa-fw fa-check always-check"></span>
+                        <div ng-switch-when="OPTIONAL" class="checkbox">
+                            <label>
+                                <input class="selection-check" type="checkbox"
+                                       ng-model="occupation.nameVisibility"
+                                       ng-change="$ctrl.onNameVisibilityChange(occupation)"/>
+                            </label>
+                        </div>
+                    </td>
+
+                    <td ng-switch="::$ctrl.getVisibilityRule(occupation).phoneNumberVisibility">
+                        <span ng-switch-when="ALWAYS" class="text-primary fa fa-fw fa-check always-check"></span>
+                        <div ng-switch-when="OPTIONAL" class="checkbox">
+                            <label>
+                                <input class="selection-check" type="checkbox"
+                                       ng-model="occupation.phoneNumberVisibility"
+                                       ng-disabled="!occupation.nameVisibility"/>
+                            </label>
+                        </div>
+                    </td>
+
+                    <td ng-switch="::$ctrl.getVisibilityRule(occupation).emailVisibility">
+                        <span ng-switch-when="ALWAYS" class="text-primary fa fa-fw fa-check always-check"></span>
+                        <div ng-switch-when="OPTIONAL" class="checkbox">
+                            <label>
+                                <input class="selection-check" type="checkbox"
+                                       ng-model="occupation.emailVisibility"
+                                       ng-disabled="!occupation.nameVisibility"/>
+                            </label>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-disabled="profileOtherForm.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

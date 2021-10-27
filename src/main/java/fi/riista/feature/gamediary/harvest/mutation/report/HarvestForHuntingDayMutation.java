@@ -14,10 +14,10 @@ public class HarvestForHuntingDayMutation implements HarvestMutationForReportTyp
     private final Person activePerson;
     private final GroupHuntingDayService groupHuntingDayService;
 
-    public HarvestForHuntingDayMutation(@Nonnull final HarvestDTO dto,
+    public HarvestForHuntingDayMutation(final long groupHuntingDayId,
                                         final Person activePerson,
                                         @Nonnull final GroupHuntingDayService groupHuntingDayService) {
-        this.groupHuntingDayId = Objects.requireNonNull(dto.getHuntingDayId());
+        this.groupHuntingDayId = groupHuntingDayId;
         this.groupHuntingDayService = Objects.requireNonNull(groupHuntingDayService);
         this.activePerson = activePerson;
     }

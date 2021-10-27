@@ -20,6 +20,7 @@ public enum SystemUserPrivilege implements PersistableEnum {
     EXPORT_SHOOTING_TEST_REGISTRY(SystemUser.Role.ROLE_REST),
     EXPORT_SRVA_RVR(SystemUser.Role.ROLE_REST),
     EXPORT_MR_JHT(SystemUser.Role.ROLE_REST),
+    EXPORT_OTHERWISE_DECEASED(SystemUser.Role.ROLE_REST),
     IMPORT_JHT(SystemUser.Role.ROLE_REST),
     IMPORT_METSAHALLITUS_PERMITS(SystemUser.Role.ROLE_REST),
     IMPORT_METSASTAJAREKISTERI(SystemUser.Role.ROLE_REST),
@@ -29,7 +30,8 @@ public enum SystemUserPrivilege implements PersistableEnum {
     HARVEST_REGISTRY(SystemUser.Role.ROLE_MODERATOR),
     EXPORT_HABIDES_REPORTS(SystemUser.Role.ROLE_MODERATOR),
     SAVE_INCOMPLETE_HARVEST_DATA(SystemUser.Role.ROLE_MODERATOR),
-    MODERATE_DISABILITY_PERMIT_APPLICATION(SystemUser.Role.ROLE_MODERATOR);
+    MODERATE_DISABILITY_PERMIT_APPLICATION(SystemUser.Role.ROLE_MODERATOR),
+    MUUTOIN_KUOLLEET(SystemUser.Role.ROLE_MODERATOR);
 
     private final SystemUser.Role role;
 

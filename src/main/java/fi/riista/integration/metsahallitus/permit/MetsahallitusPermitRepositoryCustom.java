@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface MetsahallitusPermitRepositoryCustom {
     List<MetsahallitusPermit> findByPerson(Person person);
+
+    long deleteOldPermits();
 }

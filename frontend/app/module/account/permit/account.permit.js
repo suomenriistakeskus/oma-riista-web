@@ -192,7 +192,7 @@ angular.module('app.account.permit', [])
             };
 
             $ctrl.canDelete = function () {
-                return $ctrl.application.status === 'DRAFT' && $ctrl.application.harvestPermitCategory !== 'MOOSELIKE';
+                return $ctrl.application.status === 'DRAFT';
             };
 
             $ctrl.actionDisabled = function () {

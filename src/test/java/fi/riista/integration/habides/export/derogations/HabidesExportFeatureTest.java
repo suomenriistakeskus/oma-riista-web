@@ -10,12 +10,14 @@ import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.nestremoval.HarvestPermitNestLocationType;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.harvestpermit.usage.PermitUsage;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.bird.BirdPermitApplication;
+import fi.riista.feature.permit.application.gamemanagement.GameManagementPermitApplication;
 import fi.riista.feature.permit.application.mammal.MammalPermitApplication;
 import fi.riista.feature.permit.application.nestremoval.NestRemovalPermitApplication;
 import fi.riista.feature.permit.area.HarvestPermitArea;
@@ -24,6 +26,7 @@ import fi.riista.feature.permit.decision.methods.ForbiddenMethodType;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
 import fi.riista.sql.SQRhy;
 import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.F;
 import org.apache.commons.io.FileUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -155,6 +158,13 @@ public class HabidesExportFeatureTest extends EmbeddedDatabaseTest {
         final HarvestPermit harvestPermit5 = newBirdHarvestPermit(rhy2, 2019, bird, 3, null, 0,
                 "Area 54", false, true, true, NO_FORBIDDEN_METHODS);
         addHarvest(harvestPermit5, 2019, bird, 3, true);
+
+        newGameManagementPermit(rhy1, 2020, bird3, 2, 10, null,
+                null, null, "Bird Capture Area", true, true,
+                ALL_FORBIDDEN_METHODS);
+        newGameManagementPermit(rhy2, 2020, mammal1, 10, null, null,
+                null, null, "Mammal Capture Area",
+                true, true, ALL_FORBIDDEN_METHODS);
     }
 
     @After
@@ -219,13 +229,13 @@ public class HabidesExportFeatureTest extends EmbeddedDatabaseTest {
                 addHarvest(harvestPermit, 2019, bird, 3, true);
             }
 
-            assertMaxQueryCount(12, () -> {
+            assertMaxQueryCount(14, () -> {
             onSavedAndAuthenticated(createNewAdmin(), () -> exportReport(BIRD_3, 2019));
         });
     }
 
     @Test
-    public void exportBirdReportSuccessfully_onlyNestsEggsAndConstructions() throws Exception {
+    public void exportBirdReportSuccessfully_nestRemovalAndGameManagement() throws Exception {
         final String expected = expectedReport(BIRD_4);
 
         onSavedAndAuthenticated(
@@ -534,6 +544,74 @@ public class HabidesExportFeatureTest extends EmbeddedDatabaseTest {
                     .orElse(null);
             model().newHarvestPermitNestRemovalUsage(harvestPermitSpeciesAmount2, nestUsage2, eggUsage2, constructionUsage2, geoLocation(), HarvestPermitNestLocationType.NEST);
 
+        }
+
+        return harvestPermit;
+    }
+
+    private HarvestPermit newGameManagementPermit(
+            final Riistanhoitoyhdistys rhy,
+            final int year,
+            final GameSpecies species,
+            final Integer specimenAmount,
+            final Integer eggAmount,
+            final GameSpecies species2,
+            final Integer specimenAmount2,
+            final Integer eggAmount2,
+            final String areaName,
+            final boolean usedMotorVehicles,
+            final boolean isLocked,
+            final List<ForbiddenMethodType> forbiddenMethodTypes) {
+
+        final HarvestPermitArea harvestPermitArea = model().newHarvestPermitArea();
+        final HarvestPermitApplication harvestPermitApplication =
+                model().newHarvestPermitApplication(rhy, harvestPermitArea, species, HarvestPermitCategory.GAME_MANAGEMENT);
+        final GameManagementPermitApplication gameManagementPermitApplication =
+                model().newGameManagementPermitApplication(harvestPermitApplication);
+        gameManagementPermitApplication.setAreaDescription(areaName);
+
+        final PermitDecision permitDecision = model().newPermitDecision(rhy, species);
+        permitDecision.setApplication(harvestPermitApplication);
+        permitDecision.setLegalSection32(usedMotorVehicles);
+        if (!isLocked) {
+            permitDecision.setStatusDraft();
+        }
+
+        forbiddenMethodTypes.forEach(forbiddenMethodType -> model().newPermitDecisionForbiddenMethod(permitDecision, species, forbiddenMethodType));
+
+        final PermitDecisionSpeciesAmount decisionSpeciesAmount =
+                model().newPermitDecisionSpeciesAmount(permitDecision, species, specimenAmount.floatValue(), null, eggAmount, null);
+        final HarvestPermit harvestPermit = model().newHarvestPermit(rhy, permitNumber(year, 1), PermitTypeCode.GAME_MANAGEMENT);
+        harvestPermit.setPermitDecision(permitDecision);
+
+        final HarvestPermitSpeciesAmount harvestPermitSpeciesAmount = model().newHarvestPermitSpeciesAmount(harvestPermit, decisionSpeciesAmount);
+        harvestPermitSpeciesAmount.setBeginDate(new LocalDate(year, 8, 1));
+        harvestPermitSpeciesAmount.setEndDate(new LocalDate(year, 8, 30));
+
+        final Integer specimenUsage = Optional.ofNullable(specimenAmount)
+                .map(specimen -> specimen > 0 ? specimen - 1 : specimen)
+                .orElse(null);
+        final Integer eggUsage = Optional.ofNullable(eggAmount)
+                .map(eggs -> eggs > 0 ? eggs - 1 : eggs)
+                .orElse(null);
+        final PermitUsage usage = model().newPermitUsage(harvestPermitSpeciesAmount, specimenUsage, eggUsage);
+        model().newPermitUsageLocation(usage);
+
+        if (species2 != null) {
+            final PermitDecisionSpeciesAmount decisionSpeciesAmount2 =
+                    model().newPermitDecisionSpeciesAmount(permitDecision, species2, F.mapNullable(specimenAmount2, Integer::floatValue), null, eggAmount2, null);
+            final HarvestPermitSpeciesAmount harvestPermitSpeciesAmount2 = model().newHarvestPermitSpeciesAmount(harvestPermit, decisionSpeciesAmount2);
+            harvestPermitSpeciesAmount2.setBeginDate(new LocalDate(year, 9, 1));
+            harvestPermitSpeciesAmount2.setEndDate(new LocalDate(year, 9, 30));
+
+            final Integer specimenUsage2 = Optional.ofNullable(specimenAmount2)
+                    .map(specimen -> specimen > 0 ? specimen - 1 : specimen)
+                    .orElse(null);
+            final Integer eggUsage2 = Optional.ofNullable(eggAmount2)
+                    .map(eggs -> eggs > 0 ? eggs - 1 : eggs)
+                    .orElse(null);
+            final PermitUsage usage2 = model().newPermitUsage(harvestPermitSpeciesAmount, specimenUsage2, eggUsage2);
+            model().newPermitUsageLocation(usage2);
         }
 
         return harvestPermit;

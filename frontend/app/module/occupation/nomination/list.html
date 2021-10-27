@@ -2,9 +2,12 @@
     <div class="col-md-9 col-md-offset-3">
         <button type="button" class="btn btn-primary pull-right"
                 ng-show="$ctrl.showAddTraining()"
+                ng-click="$ctrl.addMultiTraining()"
+                translate="occupation.nomination.button.addMultiTraining"></button>
+        <button type="button" class="btn btn-primary pull-right"
+                ng-show="$ctrl.showAddTraining()"
                 ng-click="$ctrl.addTraining()"
                 translate="occupation.nomination.button.addTraining"></button>
-
         <ul class="nav nav-pills">
             <li ng-class="{'active': $ctrl.searchParams.nominationStatus == 'KOULUTUS'}">
                 <a ng-click="$ctrl.selectNominationStatus('KOULUTUS')">1. <span

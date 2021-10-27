@@ -1,8 +1,7 @@
 package fi.riista.feature.permit.application.create;
 
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
-import org.joda.time.LocalDate;
-import org.junit.Ignore;
+import org.joda.time.LocalDateTime;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -16,18 +15,18 @@ import static org.junit.Assert.assertTrue;
 
 public class HarvestPermitApplicationTypeFactoryTest {
 
-    private static HarvestPermitApplicationTypeFactory factory(final LocalDate today) {
-        return new HarvestPermitApplicationTypeFactory(today);
+    private static HarvestPermitApplicationTypeFactory factory(final LocalDateTime now) {
+        return new HarvestPermitApplicationTypeFactory(now);
     }
 
     @Test
     public void testMooselikePeriod_FirstDay() {
-        final LocalDate today = new LocalDate(2020, 4, 1);
-        final HarvestPermitApplicationTypeDTO dto = factory(today).mooselikeForHuntingYear(2020);
+        final LocalDateTime now = new LocalDateTime(2020, 4, 1, 0, 0);
+        final HarvestPermitApplicationTypeDTO dto = factory(now).mooselikeForHuntingYear(2020);
 
         assertEquals(HarvestPermitCategory.MOOSELIKE, dto.getCategory());
-        assertEquals(new LocalDate(2020, 4, 1), dto.getBegin());
-        assertEquals(new LocalDate(2020, 4, 30), dto.getEnd());
+        assertEquals(new LocalDateTime(2020, 4, 1, 0, 0), dto.getBegin());
+        assertEquals(new LocalDateTime(2020, 4, 30, 16, 15), dto.getEnd());
         assertEquals(2020, dto.getHuntingYear());
         assertEquals(new BigDecimal("100.00"), dto.getPrice());
         assertTrue(dto.isActive());
@@ -35,12 +34,12 @@ public class HarvestPermitApplicationTypeFactoryTest {
 
     @Test
     public void testMooselikePeriod_BeforeFirstDay() {
-        final LocalDate today = new LocalDate(2020, 3, 31);
-        final HarvestPermitApplicationTypeDTO dto = factory(today).mooselikeForHuntingYear(2020);
+        final LocalDateTime now = new LocalDateTime(2020, 3, 31, 23, 59);
+        final HarvestPermitApplicationTypeDTO dto = factory(now).mooselikeForHuntingYear(2020);
 
         assertEquals(HarvestPermitCategory.MOOSELIKE, dto.getCategory());
-        assertEquals(new LocalDate(2020, 4, 1), dto.getBegin());
-        assertEquals(new LocalDate(2020, 4, 30), dto.getEnd());
+        assertEquals(new LocalDateTime(2020, 4, 1, 0, 0), dto.getBegin());
+        assertEquals(new LocalDateTime(2020, 4, 30, 16, 15), dto.getEnd());
         assertEquals(2020, dto.getHuntingYear());
         assertEquals(new BigDecimal("100.00"), dto.getPrice());
         assertFalse(dto.isActive());
@@ -82,55 +81,58 @@ public class HarvestPermitApplicationTypeFactoryTest {
             assertEquals(HarvestPermitCategory.LARGE_CARNIVORE_BEAR, dto.getCategory());
             assertEquals(2019, dto.getHuntingYear());
             assertEquals(new BigDecimal("200.00"), dto.getPrice());
-            assertFalse(dto.isActive());
+            assertTrue(dto.isActive());
         });
     }
 
-    @Ignore
     @Test
-    public void testKannanhoidollinenIlves() {
+    public void testKannanhoidollinenIlves_disabledEveryDay() {
         assertForEveryDayOfYear(today -> {
-            final HarvestPermitApplicationTypeDTO dto = factory(today).lynxForHuntingYear(2019);
+            final HarvestPermitApplicationTypeDTO dto = factory(today).lynxForHuntingYear(2022);
             assertEquals(HarvestPermitCategory.LARGE_CARNIVORE_LYNX, dto.getCategory());
-            assertEquals(2019, dto.getHuntingYear());
+            assertEquals(2022, dto.getHuntingYear());
             assertEquals(new BigDecimal("200.00"), dto.getPrice());
             assertFalse(dto.isActive());
         });
     }
 
-
     @Test
-    public void testKannanhoidollinenIlves_BeforeFirstDay() {
-        final LocalDate testDate = new LocalDate(2020, 9, 10);
-        testKannanhoidollinenIlves(testDate, false);
-    }
+    public void testKannanhoidollinenIlves_2021_firstDay() {
+        final LocalDateTime now = new LocalDateTime(2021, 9, 14, 00, 00);
+        final HarvestPermitApplicationTypeDTO dto = factory(now).lynxForHuntingYear(2021);
 
-    @Test
-    public void testKannanhoidollinenIlves_FirstDay() {
-        final LocalDate testDate = new LocalDate(2020, 9, 11);
-        testKannanhoidollinenIlves(testDate, true);
-    }
-
-    @Test
-    public void testKannanhoidollinenIlves_LastDay() {
-        final LocalDate testDate = new LocalDate(2020, 10, 23);
-        testKannanhoidollinenIlves(testDate, true);
-    }
-
-    @Test
-    public void testKannanhoidollinenIlves_AfterLastDay() {
-        final LocalDate testDate = new LocalDate(2020, 10, 24);
-        testKannanhoidollinenIlves(testDate, false);
-    }
-
-    private void testKannanhoidollinenIlves(final LocalDate testDate, final boolean expectedActive) {
-        final HarvestPermitApplicationTypeDTO dto = factory(testDate).lynxForHuntingYear(2020);
         assertEquals(HarvestPermitCategory.LARGE_CARNIVORE_LYNX, dto.getCategory());
-        assertEquals(new LocalDate(2020, 9, 11), dto.getBegin());
-        assertEquals(new LocalDate(2020, 10, 23), dto.getEnd());
-        assertEquals(2020, dto.getHuntingYear());
+        assertEquals(new LocalDateTime(2021, 9, 14, 0, 0), dto.getBegin());
+        assertEquals(new LocalDateTime(2021, 10, 10, 23, 59), dto.getEnd());
+        assertEquals(2021, dto.getHuntingYear());
         assertEquals(new BigDecimal("200.00"), dto.getPrice());
-        assertEquals(expectedActive, dto.isActive());
+        assertTrue(dto.isActive());
+    }
+
+    @Test
+    public void testKannanhoidollinenIlves_2021_beforeFirstDay() {
+        final LocalDateTime now = new LocalDateTime(2021, 9, 13, 23, 59);
+        final HarvestPermitApplicationTypeDTO dto = factory(now).lynxForHuntingYear(2021);
+
+        assertEquals(HarvestPermitCategory.LARGE_CARNIVORE_LYNX, dto.getCategory());
+        assertEquals(new LocalDateTime(2021, 9, 14, 0, 0), dto.getBegin());
+        assertEquals(new LocalDateTime(2021, 10, 10, 23, 59), dto.getEnd());
+        assertEquals(2021, dto.getHuntingYear());
+        assertEquals(new BigDecimal("200.00"), dto.getPrice());
+        assertFalse(dto.isActive());
+    }
+
+    @Test
+    public void testKannanhoidollinenIlves_2021_afterLastDay() {
+        final LocalDateTime now = new LocalDateTime(2021, 10, 11, 0, 0);
+        final HarvestPermitApplicationTypeDTO dto = factory(now).lynxForHuntingYear(2021);
+
+        assertEquals(HarvestPermitCategory.LARGE_CARNIVORE_LYNX, dto.getCategory());
+        assertEquals(new LocalDateTime(2021, 9, 14, 0, 0), dto.getBegin());
+        assertEquals(new LocalDateTime(2021, 10, 10, 23, 59), dto.getEnd());
+        assertEquals(2021, dto.getHuntingYear());
+        assertEquals(new BigDecimal("200.00"), dto.getPrice());
+        assertFalse(dto.isActive());
     }
 
     @Test
@@ -140,7 +142,7 @@ public class HarvestPermitApplicationTypeFactoryTest {
             assertEquals(HarvestPermitCategory.LARGE_CARNIVORE_LYNX_PORONHOITO, dto.getCategory());
             assertEquals(2019, dto.getHuntingYear());
             assertEquals(new BigDecimal("200.00"), dto.getPrice());
-            assertFalse(dto.isActive());
+            assertTrue(dto.isActive());
         });
     }
 
@@ -226,8 +228,8 @@ public class HarvestPermitApplicationTypeFactoryTest {
         });
     }
 
-    private static void assertForEveryDayOfYear(final Consumer<LocalDate> consumer) {
-        final LocalDate firsDayOfYear = new LocalDate(2019, 1, 1);
+    private static void assertForEveryDayOfYear(final Consumer<LocalDateTime> consumer) {
+        final LocalDateTime firsDayOfYear = new LocalDateTime(2019, 1, 1, 0, 0);
         IntStream.range(0, 365).forEach(plusDays -> {
             consumer.accept(firsDayOfYear.plusDays(plusDays));
         });

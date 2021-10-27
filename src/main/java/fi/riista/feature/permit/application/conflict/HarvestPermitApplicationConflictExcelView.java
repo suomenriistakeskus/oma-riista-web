@@ -86,7 +86,7 @@ public class HarvestPermitApplicationConflictExcelView extends AbstractXlsxView 
 
             helper.appendTextCell(f.getPropertyNumber());
             helper.appendTextCell(f.getPropertyName());
-            helper.appendNumberCell(NumberUtils.squareMetersToHectares(f.getConflictAreaSize()));
+            helper.appendNumberCell(NumberUtils.squareMetersToHectares(f.getConflictAreaSize(), 2));
             helper.appendTextCell(f.isMetsahallitus() ? booleanTrue : booleanFalse);
         }
 

@@ -1,9 +1,9 @@
 package fi.riista.feature.permit.application.weapontransportation;
 
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HasParentApplication;
 import fi.riista.feature.permit.application.derogation.area.DerogationPermitApplicationAreaInfo;
 import fi.riista.feature.permit.application.weapontransportation.justification.TransportedWeapon;
 import fi.riista.feature.permit.application.weapontransportation.justification.WeaponTransportationVehicle;
@@ -19,17 +19,12 @@ import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,7 +33,7 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(AccessType.FIELD)
-public class WeaponTransportationPermitApplication extends LifecycleEntity<Long> implements DerogationPermitApplicationAreaInfo {
+public class WeaponTransportationPermitApplication extends HasParentApplication implements DerogationPermitApplicationAreaInfo {
 
     public static final String ID_COLUMN_NAME = "weapon_transportation_permit_application_id";
 
@@ -53,11 +48,6 @@ public class WeaponTransportationPermitApplication extends LifecycleEntity<Long>
     }
 
     private Long id;
-
-    @NotNull
-    @JoinColumn(unique = true, nullable = false)
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    private HarvestPermitApplication harvestPermitApplication;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -111,14 +101,6 @@ public class WeaponTransportationPermitApplication extends LifecycleEntity<Long>
     @Override
     public void setId(final Long id) {
         this.id = id;
-    }
-
-    public HarvestPermitApplication getHarvestPermitApplication() {
-        return harvestPermitApplication;
-    }
-
-    public void setHarvestPermitApplication(final HarvestPermitApplication harvestPermitApplication) {
-        this.harvestPermitApplication = harvestPermitApplication;
     }
 
     public WeaponTransportationReasonType getReasonType() {

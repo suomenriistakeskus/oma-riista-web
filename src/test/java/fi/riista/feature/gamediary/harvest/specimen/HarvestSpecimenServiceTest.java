@@ -191,58 +191,12 @@ public class HarvestSpecimenServiceTest
     }
 
     @Test
-    public void testAddSpecimens_whenMandatorySpecimenFieldsMissingWithinClubHunting() {
-        testAllVersions(wrapExceptionExpectation(HarvestSpecimenValidationException.class, ctx -> {
-            final HarvestSpecimenDTO dto = ctx.createDTO();
-
-            // Failure expected to be caused by missing fitness class.
-            dto.setFitnessClass(null);
-
-            ctx.invokeAdd(1, singletonList(dto));
-
-        })).accept(() -> {
-            final HuntingGroupFixture f = new HuntingGroupFixture(model());
-            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, today());
-            final Harvest harvest = model().newHarvest(f.species, f.clubContact, huntingDay.getStartDate());
-            harvest.updateHuntingDayOfGroup(huntingDay, null);
-
-            persistInCurrentlyOpenTransaction();
-            return harvest;
-        });
-    }
-
-    @Test
     public void testSetSpecimens_whenSpeciesForbidsMultipleSpecimens() {
         testAllVersions(expectMultipleSpecimenNotAllowedException(ctx -> {
 
             ctx.invokeSet(2, ctx.createDTOs(2));
 
         })).accept(this::newPersistentMooseHarvest);
-    }
-
-    @Test
-    public void testSetSpecimens_whenMandatorySpecimenFieldsMissingWithinClubHunting() {
-        testAllVersions(wrapExceptionExpectation(HarvestSpecimenValidationException.class, ctx -> {
-
-            final HarvestSpecimen specimen = ctx.createSpecimen();
-            persistInCurrentlyOpenTransaction();
-
-            final HarvestSpecimenDTO dto = ctx.transform(specimen);
-
-            // Failure expected to be caused by missing fitness class.
-            dto.setFitnessClass(null);
-
-            ctx.invokeSet(1, singletonList(dto));
-
-        })).accept(() -> {
-            final HuntingGroupFixture f = new HuntingGroupFixture(model());
-            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, today());
-
-            final Harvest harvest = model().newHarvest(f.species, f.clubContact, huntingDay.getStartDate());
-            harvest.updateHuntingDayOfGroup(huntingDay, null);
-
-            return harvest;
-        });
     }
 
     private class HarvestSpecimenOpsForTest extends HarvestSpecimenPopulator

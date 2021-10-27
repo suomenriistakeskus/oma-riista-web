@@ -62,7 +62,7 @@ public class WeaponTransportationJustificationFeature {
         transportedWeaponRepository.deleteByWeaponTransportationPermitApplication(transportApplication);
         if (!justification.getTransportedWeapons().isEmpty()) {
             final List<TransportedWeapon> transportedWeapons = justification.getTransportedWeapons().stream()
-                    .map(info -> new TransportedWeapon(transportApplication, info.getType(), info.getAmount(), info.getDescription(), info.getCaliber()))
+                    .map(info -> new TransportedWeapon(transportApplication, info.getType(), info.getDescription()))
                     .collect(Collectors.toList());
             transportedWeaponRepository.saveAll(transportedWeapons);
         }
@@ -70,7 +70,7 @@ public class WeaponTransportationJustificationFeature {
         vehicleRepository.deleteByWeaponTransportationPermitApplication(transportApplication);
         if (!justification.getVehicles().isEmpty()) {
             final List<WeaponTransportationVehicle> vehicles = justification.getVehicles().stream()
-                    .map(vehicle -> new WeaponTransportationVehicle(transportApplication, vehicle.getType(), vehicle.getRegisterNumber(), vehicle.getDescription()))
+                    .map(vehicle -> new WeaponTransportationVehicle(transportApplication, vehicle.getType(), vehicle.getDescription()))
                     .collect(Collectors.toList());
             vehicleRepository.saveAll(vehicles);
         }

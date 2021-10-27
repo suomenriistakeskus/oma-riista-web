@@ -1,7 +1,6 @@
 package fi.riista.feature.gamediary.mobile;
 
 import fi.riista.feature.common.entity.Required;
-import fi.riista.feature.error.ProhibitedFieldFound;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.fixture.ObservationFixtureMixin;
 import fi.riista.feature.gamediary.observation.Observation;
@@ -29,15 +28,12 @@ import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.LOW
 import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOST_RECENT;
 import static fi.riista.feature.gamediary.observation.ObservationType.NAKO;
 import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.VOLUNTARY;
-import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.VOLUNTARY_DEER_PILOT;
 import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.YES;
-import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.YES_DEER_PILOT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(Theories.class)
@@ -91,20 +87,41 @@ public class MobileObservationFeature_DeerHuntingDayTest extends MobileObservati
         assumeTrue(version.greaterThanOrEqualTo(LOWEST_VERSION_SUPPORTING_DEER_HUNTING_TYPE));
 
         withDeerHuntingGroupFixture(fixture -> {
-            assertThrows(ProhibitedFieldFound.class, () -> {
-                makeWithinDeerHuntingObservation(version, fixture, /*random guy*/model().newPerson());
-            });
+            final Person randomGuy = model().newPerson();
+            createObservationMetaF(fixture.species, version, DEER_HUNTING, NAKO)
+                    .forMobile()
+                    .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
+                    .withMooselikeAmountFieldsAs(Required.YES)
+                    .consumeBy(obsMeta -> {
+
+                        onSavedAndAuthenticated(createUser(randomGuy), () -> {
+
+                            final MobileObservationDTO inputDto = obsMeta.dtoBuilder()
+                                    .withDeerHuntingType(DOG_HUNTING)
+                                    .withGeoLocation(fixture.zoneCentroid)
+                                    .mutateMooselikeAmountFields()
+                                    .build();
+
+                            final MobileObservationDTO outputDto = invokeCreateObservation(inputDto);
+
+                            runInTransaction(() -> {
+                                final Observation observation = assertObservationCreated(outputDto.getId());
+
+                                assertThat(observation.getHuntingDayOfGroup(), is(nullValue()));
+                                assertThat(observation.getApproverToHuntingDay(), is(nullValue()));
+                            });
+                        });
+                    });
         });
     }
 
     private void makeWithinDeerHuntingObservation(final ObservationSpecVersion version,
                                                   final HuntingGroupFixture fixture,
                                                   final Person author) {
-        model().newDeerPilot(fixture.permit);
 
         createObservationMetaF(fixture.species, version, DEER_HUNTING, NAKO)
                 .forMobile()
-                .withDeerHuntingTypeFieldsAs(YES_DEER_PILOT, VOLUNTARY_DEER_PILOT)
+                .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
                 .withMooselikeAmountFieldsAs(Required.YES)
                 .consumeBy(obsMeta -> {
 
@@ -205,11 +222,9 @@ public class MobileObservationFeature_DeerHuntingDayTest extends MobileObservati
                 fixt.speciesAmount.setEndDate2(end2);
             }
 
-            model().newDeerPilot(fixt.permit);
-
             createObservationMetaF(fixt.species, MOST_RECENT, DEER_HUNTING, NAKO)
                     .forMobile()
-                    .withDeerHuntingTypeFieldsAs(YES_DEER_PILOT, VOLUNTARY_DEER_PILOT)
+                    .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
                     .withMooselikeAmountFieldsAs(Required.YES)
                     .consumeBy(obsMeta -> {
 

@@ -19,6 +19,7 @@ angular.module('app.organisation.controllers', [])
                     $scope.showOccupationMenu = organisation.hasOccupations;
                     $scope.showDecisionrecipients = organisation.organisationType === 'RKA';
                     $scope.showDecisionauthorities = organisation.organisationType === 'RKA';
+                    $scope.showRkaMeetings = organisation.organisationType === 'RKA';
                 }
             })
             .state('organisation.show', {
@@ -89,8 +90,27 @@ angular.module('app.organisation.controllers', [])
                         return RkaAuthority.listByRka({rkaId: rkaId});
                     }
                 }
+            })
+            .state('organisation.rkameeting', {
+                url: '/rkameeting',
+                templateUrl: 'organisation/rkameeting.html',
+                controller: 'RkaMeetingController',
+                controllerAs: '$ctrl',
+                resolve: {
+                    rkaId: function (orgId) {
+                        return orgId;
+                    }
+                }
             });
     })
     .controller('OrganisationShowController', function (organisation) {
         this.organisation = organisation;
+    })
+    .controller('RkaMeetingController', function (rkaId, FetchAndSaveBlob) {
+
+        var $ctrl = this;
+
+        $ctrl.exportMeetingRepresentatives = function () {
+            FetchAndSaveBlob.post('/api/v1/rka/' + rkaId + '/meeting/representatives/excel');
+        };
     });

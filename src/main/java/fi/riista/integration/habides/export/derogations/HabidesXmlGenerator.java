@@ -10,6 +10,7 @@ import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReason;
 import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethod;
+import fi.riista.util.F;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -18,6 +19,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static fi.riista.feature.permit.PermitTypeCode.GAME_MANAGEMENT;
+import static fi.riista.feature.permit.PermitTypeCode.NEST_REMOVAL_BASED;
 
 public final class HabidesXmlGenerator {
 
@@ -269,10 +273,10 @@ public final class HabidesXmlGenerator {
             final List<HarvestPermitSpeciesAmount> amounts,
             final Map<Long, Integer> harvestAmounts,
             final Map<Long, HabidesNestRemovalAmount> nestEggConstructionAmounts,
+            final Map<Long, HabidesPermitUsage> permitUsages,
             final Map<Long, List<PermitDecisionDerogationReason>> reasons,
             final Map<Long, Map<Integer, List<PermitDecisionForbiddenMethod>>> methods,
             final Map<Long, String> locations,
-            final Map<Long, String> nestLocations,
             final Map<String, String> nutsAreas,
             final Map<Long, String> authorities) {
 
@@ -283,17 +287,26 @@ public final class HabidesXmlGenerator {
                 .withLang("en")
                 .withUserIdentity("FIMMM");
 
-        for (HarvestPermitSpeciesAmount amount : amounts) {
+        for (final HarvestPermitSpeciesAmount amount : amounts) {
             final Long permitId = amount.getHarvestPermit().getId();
             final Long decisionId = amount.getHarvestPermit().getPermitDecision().getId();
             final Long applicationId = amount.getHarvestPermit().getPermitDecision().getApplication().getId();
-            final boolean isNestRemovalPermit =
-                    PermitTypeCode.isNestRemovalPermitTypeCode(amount.getHarvestPermit().getPermitTypeCode());
-            final Float harvestAmount =
-                    !isNestRemovalPermit ? harvestAmounts.getOrDefault(permitId, 0).floatValue() : null;
+
+            final HabidesDerogationEntityDTO actuallyTaken = new HabidesDerogationEntityDTO();
             final HabidesNestRemovalAmount nestEggConstructionAmount =
                     nestEggConstructionAmounts.getOrDefault(permitId, new HabidesNestRemovalAmount(null, null, null));
-            final String location = isNestRemovalPermit ? nestLocations.get(applicationId) : locations.get(applicationId);
+            final HabidesPermitUsage permitUsage =
+                    permitUsages.getOrDefault(permitId, new HabidesPermitUsage(null, null));
+
+            final Float harvestAmount = Optional.ofNullable(harvestAmounts.get(permitId)).map(Integer::floatValue).orElse(null);
+            final Float usageSpecimenAmount = Optional.ofNullable(permitUsage.getSpecimenAmount()).map(Integer::floatValue).orElse(null);
+            actuallyTaken.setIndividuals(Optional.ofNullable(harvestAmount).orElse(usageSpecimenAmount));
+
+            actuallyTaken.setEggs(Optional.ofNullable(nestEggConstructionAmount.getEggAmount()).orElseGet(permitUsage::getEggAmount));
+            actuallyTaken.setNests(nestEggConstructionAmount.getNestAmount());
+            actuallyTaken.setBreeding(nestEggConstructionAmount.getConstructionAmount());
+
+            final String location = locations.get(applicationId);
             final List<PermitDecisionForbiddenMethod> methodList =
                     methods.getOrDefault(decisionId, Collections.emptyMap())
                             .getOrDefault(species.getOfficialCode(), Collections.emptyList());
@@ -302,10 +315,7 @@ public final class HabidesXmlGenerator {
                     createDerogation(f,
                             species,
                             amount,
-                            harvestAmount,
-                            nestEggConstructionAmount.getNestAmount(),
-                            nestEggConstructionAmount.getEggAmount(),
-                            nestEggConstructionAmount.getConstructionAmount(),
+                            actuallyTaken,
                             reasons.get(decisionId),
                             methodList,
                             location,
@@ -320,10 +330,7 @@ public final class HabidesXmlGenerator {
             final ObjectFactory f,
             final GameSpecies species,
             final HarvestPermitSpeciesAmount amount,
-            final Float harvestedAmount,
-            final Integer usedNestAmount,
-            final Integer usedEggAmount,
-            final Integer usedConstructionAmount,
+            final HabidesDerogationEntityDTO actuallyTaken,
             final List<PermitDecisionDerogationReason> reasons,
             final List<PermitDecisionForbiddenMethod> methods,
             final String location,
@@ -341,6 +348,11 @@ public final class HabidesXmlGenerator {
         final DERO_DirectiveType directive = isBirdPermitSpecies ? DERO_DirectiveType.HTTP_ROD_EIONET_EUROPA_EU_OBLIGATIONS_276 :
                 DERO_DirectiveType.HTTP_ROD_EIONET_EUROPA_EU_OBLIGATIONS_268;
         final String rhyOfficialCode = MergedRhyMapping.translateIfMerged(rhy.getOfficialCode());
+        final HabidesDerogationEntityDTO licensed = new HabidesDerogationEntityDTO(
+                amount.getSpecimenAmount(),
+                amount.getNestAmount(),
+                amount.getEggAmount(),
+                amount.getConstructionAmount());
 
         return derogation
                 // attributes
@@ -364,7 +376,7 @@ public final class HabidesXmlGenerator {
                 .withRegions(f.createDERO_Regions().withRegion(nutsAreas.get(rhyOfficialCode)))
                 .withLocation(location)
                 .withDerogationJustifications(createDerogationJustificationsType(f, decision, methods, species.getOfficialCode()))
-                .withReasons(createReasons(f, reasons, species.getOfficialCode()))
+                .withReasons(createReasons(f, reasons, species.getOfficialCode(), permit.getPermitTypeCode()))
                 .withDerogationJustificationDetails("")
                 .withStrictlySupervisedConditions("")
                 .withSelectiveBasis("")
@@ -375,8 +387,8 @@ public final class HabidesXmlGenerator {
                 .withMethods(createMethods(f, methods, species.getOfficialCode()))
                 .withFurtherDetails(methodsAsString(methods))
                 .withModesOfTransport(createModesOfTransport(f, decision))
-                .withLicensed(createDerogationEntity(f, amount.getSpecimenAmount(), amount.getNestAmount(), amount.getEggAmount(), amount.getConstructionAmount()))
-                .withActuallyTaken(createDerogationEntity(f, harvestedAmount, usedNestAmount, usedEggAmount, usedConstructionAmount))
+                .withLicensed(createDerogationEntity(f, licensed))
+                .withActuallyTaken(createDerogationEntity(f, actuallyTaken))
                 .withAllMeasuresTaken("true")
                 .withEUAllMeasuresTaken("true")
                 .withDetrimentalToPopulation("")
@@ -413,10 +425,16 @@ public final class HabidesXmlGenerator {
     /* package */ static DERO_Reasons createReasons(
             final ObjectFactory f,
             final List<PermitDecisionDerogationReason> derogationReasons,
-            final int speciesCode) {
+            final int speciesCode,
+            final String permitTypeCode) {
         final DERO_Reasons reasons = f.createDERO_Reasons();
 
-        if (derogationReasons != null) {
+        if (PermitTypeCode.isGameManagementPermitTypeCode(permitTypeCode)) {
+            reasons.withReason(
+                    GameSpecies.isBirdPermitSpecies(speciesCode) ?
+                            ReasonsType.REPOPULATION.label :
+                            ReasonsType.HABITATS_REPOPULATION.label);
+        } else if (derogationReasons != null) {
             reasons.withReason(
                     derogationReasons
                             .stream()
@@ -426,6 +444,7 @@ public final class HabidesXmlGenerator {
                             .sorted()
                             .collect(Collectors.toList()));
         }
+
         return reasons;
     }
 
@@ -443,16 +462,31 @@ public final class HabidesXmlGenerator {
                                                           final int speciesCode,
                                                           final String permitTypeCode) {
         final DERO_Activities activities = f.createDERO_Activities();
-        final boolean isNestRemovalPermit = PermitTypeCode.isNestRemovalPermitTypeCode(permitTypeCode);
 
         if (GameSpecies.isBirdPermitSpecies(speciesCode)) {
-            activities.withActivity(isNestRemovalPermit ?
-                    ActivitiesType.DESTROY_NESTS_OR_EGGS.label :
-                    ActivitiesType.KILLING.label);
+            switch (permitTypeCode) {
+                case NEST_REMOVAL_BASED:
+                    activities.withActivity(ActivitiesType.DESTROY_NESTS_OR_EGGS.label);
+                    break;
+                case GAME_MANAGEMENT:
+                    activities.withActivity(ActivitiesType.CAPTURE_FOR_CAPTIVITY.label);
+                    break;
+                default:
+                    activities.withActivity(ActivitiesType.KILLING.label);
+                    break;
+            }
         } else {
-            activities.withActivity(isNestRemovalPermit ?
-                    ActivitiesType.HABITATS_ANIMALS_DESTROY_BREEDING_SITES.label :
-                    ActivitiesType.HABITATS_ANIMALS_KILLING.label);
+            switch (permitTypeCode) {
+                case NEST_REMOVAL_BASED:
+                    activities.withActivity(ActivitiesType.HABITATS_ANIMALS_DESTROY_BREEDING_SITES.label);
+                    break;
+                case GAME_MANAGEMENT:
+                    activities.withActivity(ActivitiesType.HABITATS_ANIMALS_CAPTURE_FOR_CAPTIVITY.label);
+                    break;
+                default:
+                    activities.withActivity(ActivitiesType.HABITATS_ANIMALS_KILLING.label);
+                    break;
+            }
         }
 
         return activities;
@@ -523,23 +557,24 @@ public final class HabidesXmlGenerator {
 
     private static DERO_DerogationEntity createDerogationEntity(
             final ObjectFactory f,
-            final Float individuals,
-            final Integer nests,
-            final Integer eggs,
-            final Integer breeding) {
-        final String individualsStr = Optional.ofNullable(individuals)
+            final HabidesDerogationEntityDTO derogationEntityDTO) {
+        final String individualsStr = Optional.ofNullable(derogationEntityDTO.getIndividuals())
                 .map(amount -> BigDecimal.valueOf(amount).setScale(0, BigDecimal.ROUND_DOWN).toString())
                 .orElse("");
-        final String eggsStr = Optional.ofNullable(eggs)
-                .map(amount -> eggs.toString())
+        final String eggsStr = Optional.ofNullable(derogationEntityDTO.getEggs())
+                .map(Object::toString)
                 .orElse("");
-        final String nestsStr = Optional.ofNullable(nests)
-                .map(amount -> nests.toString())
+        final String nestsStr = Optional.ofNullable(derogationEntityDTO.getNests())
+                .map(Object::toString)
                 .orElse("");
-        final String breedingStr = Optional.ofNullable(breeding)
-                .map(amount -> breeding.toString())
+        final String breedingStr = Optional.ofNullable(derogationEntityDTO.getBreeding())
+                .map(Object::toString)
                 .orElse("");
-        final String noFigure = individuals == null && nests == null && eggs == null && breeding == null ?
+        final String noFigure = F.allNull(
+                derogationEntityDTO.getIndividuals(),
+                derogationEntityDTO.getEggs(),
+                derogationEntityDTO.getNests(),
+                derogationEntityDTO.getBreeding()) ?
                 "true" : "false";
         return f.createDERO_DerogationEntity()
                 .withIndividuals(individualsStr)

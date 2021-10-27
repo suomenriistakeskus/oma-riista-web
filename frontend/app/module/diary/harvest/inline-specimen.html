@@ -448,8 +448,9 @@
                       ng-required="$ctrl.isFieldRequired('additionalInfo')"></textarea>
         </div>
 
-        <div class="col-xs-offset-4 col-xs-8 help-block">
-            <span translate="gamediary.form.additionalInfoHelp"></span>
+        <div class="col-xs-offset-4 col-xs-8 help-block" ng-switch="$ctrl.isWhiteTailedDeer()">
+            <span ng-switch-when="true" translate="gamediary.form.additionalInfoHelpForWTD"></span>
+            <span ng-switch-default translate="gamediary.form.additionalInfoHelp"></span>
         </div>
     </div>
 </div>

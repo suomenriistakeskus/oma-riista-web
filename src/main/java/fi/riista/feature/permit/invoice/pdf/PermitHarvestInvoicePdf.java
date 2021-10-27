@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 
-import static fi.riista.feature.common.money.FinnishBankAccount.MOOSELIKE_HARVEST_FEE_OP_POHJOLA;
+import static fi.riista.feature.permit.invoice.harvest.PermitHarvestInvoiceAccounts.PRIMARY_HARVEST_FEE_ACCOUNT;
 import static java.util.Objects.requireNonNull;
 
 public class PermitHarvestInvoicePdf {
@@ -20,7 +20,7 @@ public class PermitHarvestInvoicePdf {
                                                              final @Nonnull GameSpecies gameSpecies) throws IOException {
 
         return create(PermitHarvestInvoicePdfModel.createBlank(
-                decision, MOOSELIKE_HARVEST_FEE_OP_POHJOLA, gameSpecies));
+                decision, PRIMARY_HARVEST_FEE_ACCOUNT, gameSpecies));
     }
 
     public static PermitHarvestInvoicePdf createInvoice(final @Nonnull HarvestPermitSpeciesAmount speciesAmount,

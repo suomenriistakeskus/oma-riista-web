@@ -1,9 +1,15 @@
 package fi.riista.feature.permit.application.conflict;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQueryFactory;
 import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.SQLQueryFactory;
@@ -23,22 +29,48 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static fi.riista.util.DateUtil.huntingYear;
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @Component
 public class SearchApplicationConflictsFeature {
 
     private static final Logger LOG = LoggerFactory.getLogger(SearchApplicationConflictsFeature.class);
+
+    private static int DEFAULT_SPLICE_SIZE = 16384;
+
+    private final LoadingCache<Integer, Boolean> VALTIONMAA_PALSTA_CACHE = CacheBuilder.newBuilder()
+            .expireAfterAccess(2, TimeUnit.HOURS)
+            .build(new CacheLoader<Integer, Boolean>() {
+                @Override
+                public Boolean load(final Integer aLong) throws Exception {
+                    return filterStateArea(Collections.singletonList(aLong)).contains(aLong);
+                }
+
+                @Override
+                public Map<Integer, Boolean> loadAll(final Iterable<? extends Integer> keys) throws Exception {
+                    final ImmutableList<Integer> ints = ImmutableList.copyOf(keys);
+                    final Set<Integer> valtiomaaPalstas = filterStateArea(ints);
+                    return ints.stream().collect(toMap(identity(), v -> valtiomaaPalstas.contains(v)));
+                }
+            });
 
     @Resource
     private HarvestPermitApplicationRepository harvestPermitApplicationRepository;
@@ -53,12 +85,15 @@ public class SearchApplicationConflictsFeature {
     private HarvestPermitApplicationConflictPalstaRepository harvestPermitApplicationConflictPalstaRepository;
 
     @Resource
+    private HarvestPermitApplicationConflictBatchRepository harvestPermitApplicationConflictBatchRepository;
+
+    @Resource
     private JPQLQueryFactory jpqlQueryFactory;
 
     @Resource
     private SQLQueryFactory sqlQueryFactory;
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public Long getPendingBatchId() {
         final QHarvestPermitApplicationConflictBatch BATCH = QHarvestPermitApplicationConflictBatch.harvestPermitApplicationConflictBatch;
@@ -69,7 +104,7 @@ public class SearchApplicationConflictsFeature {
                 .fetchOne();
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
     public void markBatchComplete(final long batchId) {
         final QHarvestPermitApplicationConflictBatch BATCH = QHarvestPermitApplicationConflictBatch.harvestPermitApplicationConflictBatch;
@@ -80,7 +115,7 @@ public class SearchApplicationConflictsFeature {
                 .execute();
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public boolean isConflictCalculationPending(final long batchId) {
         final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
@@ -111,7 +146,7 @@ public class SearchApplicationConflictsFeature {
         return applicationCount > 0 && (conflictCount == 0 || palstaConflictCount == 0);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public List<Long> getApplicationIdsToCalculate(final long batchId) {
         final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
@@ -139,7 +174,7 @@ public class SearchApplicationConflictsFeature {
                 .fetch();
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    // Not authorized, should only be set to run from admin context
     @Transactional
     public void calculateConflictingApplications(final long applicationId, final long batchId) {
         final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -180,7 +215,7 @@ public class SearchApplicationConflictsFeature {
                 harvestPermitApplicationSpeciesAmountRepository.findSpeciesByApplication(second));
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public List<Long> getConflictIdListForSecondStep(final long batchId) {
         final SQHarvestPermitApplicationConflict CONFLICT = SQHarvestPermitApplicationConflict.harvestPermitApplicationConflict;
@@ -208,9 +243,30 @@ public class SearchApplicationConflictsFeature {
                 .fetch();
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
-    @Transactional
-    public void calculatePalstaListForConflict(final long conflictId) {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @Transactional(rollbackFor = ExecutionException.class)
+    public String adminRetryConflictCalculation(final long batchId, final long conflictId, final int chunkSize) throws ExecutionException {
+        final HarvestPermitApplicationConflictBatch batch = harvestPermitApplicationConflictBatchRepository.getOne(batchId);
+        checkArgument(batch.getCompletedAt() != null, "Batch must be completed");
+
+        final HarvestPermitApplicationConflict conflict = harvestPermitApplicationConflictRepository.getOne(conflictId);
+        checkArgument(conflict.getBatchId().equals(batchId), "Batch id must match");
+
+        if (conflict.getProcessingPalstaSeconds() == null) {
+            doCalculateConflict(conflictId, chunkSize);
+            return "calculated";
+        }
+
+        return "already finished";
+    }
+
+    // Not authorized, should only be set to run from admin context
+    @Transactional(rollbackFor = ExecutionException.class)
+    public void calculatePalstaListForConflict(final long conflictId) throws ExecutionException {
+        doCalculateConflict(conflictId, DEFAULT_SPLICE_SIZE);
+    }
+
+    private void doCalculateConflict(final long conflictId, final int chunkSize) throws ExecutionException {
         final Stopwatch stopwatch = Stopwatch.createStarted();
         final HarvestPermitApplicationConflict conflict = harvestPermitApplicationConflictRepository.getOne(conflictId);
 
@@ -219,11 +275,15 @@ public class SearchApplicationConflictsFeature {
 
         final List<HarvestPermitApplicationConflictPalsta> listOfConflicts =
                 harvestPermitApplicationRepository.findIntersectingPalsta(
-                        conflict.getFirstApplication(), conflict.getSecondApplication());
+                        conflict.getFirstApplication(), conflict.getSecondApplication(), chunkSize);
 
         final List<Integer> palstaIds = listOfConflicts.stream()
                 .mapToInt(HarvestPermitApplicationConflictPalsta::getPalstaId).boxed().collect(toList());
-        final Set<Integer> metsahallitusPalstaIds = filterStateArea(palstaIds);
+
+        final Set<Integer> metsahallitusPalstaIds = VALTIONMAA_PALSTA_CACHE.getAll(palstaIds).entrySet().stream()
+                .filter(e -> e.getValue())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
 
         listOfConflicts.forEach(palsta -> {
             palsta.setBatchId(conflict.getBatchId());
@@ -257,15 +317,18 @@ public class SearchApplicationConflictsFeature {
         conflict.setProcessingPalstaSeconds(stopwatch.elapsed(TimeUnit.SECONDS));
     }
 
-    private Set<Integer> filterStateArea(final List<Integer> listOfPalstaId) {
+    private Set<Integer> filterStateArea(final List<? extends Integer> listOfPalstaId) {
         final SQValtionmaa VALTIONMAA = SQValtionmaa.valtionmaa;
         final SQPalstaalue PALSTA_ALUE = SQPalstaalue.palstaalue;
 
         return ImmutableSet.copyOf(sqlQueryFactory
                 .select(PALSTA_ALUE.id)
                 .from(PALSTA_ALUE)
-                .join(VALTIONMAA).on(VALTIONMAA.geom.intersects(PALSTA_ALUE.geom.buffer(-0.01)))
-                .where(PALSTA_ALUE.id.in(listOfPalstaId))
-                .fetch());
+                .where(PALSTA_ALUE.id.in(listOfPalstaId)
+                        .and(JPAExpressions.selectOne()
+                                .from(VALTIONMAA)
+                                .where(VALTIONMAA.geom.intersects(PALSTA_ALUE.geom.buffer(-0.01)))
+                                .exists()
+                        )).fetch());
     }
 }

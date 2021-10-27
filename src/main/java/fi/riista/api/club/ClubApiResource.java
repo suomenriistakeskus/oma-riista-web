@@ -5,12 +5,10 @@ import fi.riista.feature.huntingclub.CreateHuntingClubDTO;
 import fi.riista.feature.huntingclub.HuntingClubCrudFeature;
 import fi.riista.feature.huntingclub.HuntingClubDTO;
 import fi.riista.feature.huntingclub.hunting.excel.ClubHuntingDataExcelFeature;
-import fi.riista.feature.huntingclub.register.RegisterHuntingClubFeature;
 import fi.riista.feature.huntingclub.statistics.HuntingClubHarvestStatisticsDTO;
 import fi.riista.feature.huntingclub.statistics.HuntingClubHarvestStatisticsFeature;
 import fi.riista.feature.huntingclub.statistics.HuntingClubStatisticsFeature;
 import fi.riista.feature.huntingclub.statistics.HuntingClubStatisticsRow;
-import fi.riista.feature.organization.lupahallinta.LHOrganisationSearchDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.http.HttpStatus;
@@ -26,9 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
-import javax.validation.groups.Default;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/club", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -39,9 +35,6 @@ public class ClubApiResource {
 
     @Resource
     private HuntingClubHarvestStatisticsFeature huntingClubHarvestSummaryFeature;
-
-    @Resource
-    private RegisterHuntingClubFeature registerHuntingClubFeature;
 
     @Resource
     private ClubHuntingDataExcelFeature huntingDataExcelFeature;
@@ -96,25 +89,6 @@ public class ClubApiResource {
     public HuntingClubHarvestStatisticsDTO getHarvestSummary(@PathVariable final long id,
                                                              @RequestParam final int calendarYear) {
         return huntingClubHarvestSummaryFeature.getSummary(id, calendarYear);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/lh/findByName", method = RequestMethod.GET)
-    public List<LHOrganisationSearchDTO> findLhClubByName(@RequestParam final String queryString) {
-        return registerHuntingClubFeature.findByName(queryString);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/lh/findByCode", method = RequestMethod.GET)
-    public List<LHOrganisationSearchDTO> findLhClubByOfficialCode(@RequestParam final String queryString) {
-        return registerHuntingClubFeature.findByOfficialCode(queryString);
-    }
-
-    @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/lh/register", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, Object> registerHuntingClub(@Validated({LHOrganisationSearchDTO.Register.class, Default.class})
-                                                   @RequestBody LHOrganisationSearchDTO dto) {
-        return registerHuntingClubFeature.register(dto);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)

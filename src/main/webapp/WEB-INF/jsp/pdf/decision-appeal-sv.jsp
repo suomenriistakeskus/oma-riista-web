@@ -84,7 +84,9 @@
     <p>
         Besvär ska inom besvärstiden lämnas till den förvaltningsdomstol som är behörig. Besvär kan levereras till
         förvaltningsdomstolen personligen eller genom sändebud eller ombud. Besvär kan även skickas per post, e-post
-        eller fax till förvaltningsdomstolens registratorskontor eller via den elektroniska tjänsten.
+        eller fax till förvaltningsdomstolens registratorskontor eller via den elektroniska tjänsten
+        <a href="https://asiointi2.oikeus.fi/hallintotuomioistuimet/" target="_blank">
+            (https://asiointi2.oikeus.fi/hallintotuomioistuimet/)</a>.
         Besvärshandlingarna ska vara framme i förvaltningsdomstolen på besvärstidens sista dag senast kl. 16.15.
         Postning eller annan leverans sker på avsändarens ansvar. Om besvärstidens sista dag är en helgdag, lördag,
         självständighetsdagen, första maj, julafton eller midsommarafton, fortsätter besvärstiden emellertid ännu

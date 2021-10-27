@@ -119,8 +119,8 @@ public class PermitDecisionAttachmentFeature {
         decision.assertHandler(activeUserService.requireActiveUser());
 
         final String attachmentName = new LocalisedString(
-                "Saate hirvieläinten pyyntiluvan saajille 2020",
-                "Följebrev till mottagarna av hjortdjurslicenser 2020")
+                "Saate hirvieläinten pyyntiluvan saajille 2021",
+                "Följebrev till mottagarna av hjortdjurslicenser 2021")
                 .getTranslation(decision.getLocale());
         final String attachmentResourceName = new LocalisedString(
                 "moose-decision-attachment-fi.pdf",

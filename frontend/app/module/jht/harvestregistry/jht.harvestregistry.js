@@ -23,13 +23,25 @@ angular.module('app.jht.harvestregistry', [])
             }
         });
     })
-    .controller('HarvestRegistrySearchController', function (Species, TranslatedSpecies, PersonSearchService,
+    .service('HarvestRegistrySpecies',function (Species, TranslatedSpecies){
+        var self = this;
+
+        self.buildSpecies = function () {
+            return _.chain(Species.getSpeciesMapping())
+                .map(function (species) {
+                    return TranslatedSpecies.translateSpecies(species);
+                })
+                .sortBy('name')
+                .value();
+        };
+    })
+    .controller('HarvestRegistrySearchController', function (HarvestRegistrySpecies, PersonSearchService,
                                                              HarvestRegistry, FetchAndSaveBlob,
                                                              dateRange, areas, municipalities) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                $ctrl.speciesOptions = buildSpecies();
+                $ctrl.speciesOptions = HarvestRegistrySpecies.buildSpecies();
                 $ctrl.filters = {
                     selectedSpeciesCode: null,
                     beginDate: dateRange[0],
@@ -50,8 +62,8 @@ angular.module('app.jht.harvestregistry', [])
                 $ctrl.slice = null;
             };
 
-        $ctrl.doSearch = function (pageNumber) {
-            var selectedSpeciesCode = $ctrl.filters.selectedSpeciesCode;
+            $ctrl.doSearch = function (pageNumber) {
+                var selectedSpeciesCode = $ctrl.filters.selectedSpeciesCode;
 
                 HarvestRegistry.query({
                     page: pageNumber,
@@ -86,34 +98,34 @@ angular.module('app.jht.harvestregistry', [])
                 $ctrl.filters.shooterHunterNumber = null;
             };
 
-        $ctrl.clearMunicipality = function () {
-            $ctrl.uiSelectModelMunicipality = null;
-            $ctrl.selectedMunicipality = null;
-        };
+            $ctrl.clearMunicipality = function () {
+                $ctrl.uiSelectModelMunicipality = null;
+                $ctrl.selectedMunicipality = null;
+            };
 
-        $ctrl.onSelectShooter = function (person) {
+            $ctrl.onSelectShooter = function (person) {
                 $ctrl.filters.shooterHunterNumber = person.hunterNumber;
             };
 
-        $ctrl.onSelectMunicipality = function (municipality) {
-            $ctrl.selectedMunicipality = municipality;
-        };
+            $ctrl.onSelectMunicipality = function (municipality) {
+                $ctrl.selectedMunicipality = municipality;
+            };
 
-        $ctrl.searchMunicipalities = function (term) {
-            return _.filter($ctrl.municipalities, function (m) {
-                return m.officialCode === term ||
-                    _.startsWith(_.toLower(m.name.finnish), _.toLower(term)) ||
-                    _.startsWith(_.toLower(m.name.swedish), _.toLower(term));
-            });
-        };
+            $ctrl.searchMunicipalities = function (term) {
+                return _.filter($ctrl.municipalities, function (m) {
+                    return m.officialCode === term ||
+                        _.startsWith(_.toLower(m.name.finnish), _.toLower(term)) ||
+                        _.startsWith(_.toLower(m.name.swedish), _.toLower(term));
+                });
+            };
 
-        $ctrl.filtersChanged = function (form) {
-            $ctrl.filtersValid = !form.$invalid;
-        };
+            $ctrl.filtersChanged = function (form) {
+                $ctrl.filtersValid = !form.$invalid;
+            };
 
-        $ctrl.exportExcel = function () {
-            if ($ctrl.filtersValid) {
-                FetchAndSaveBlob.post('/api/v1/harvestregistry/excel', {
+            $ctrl.exportExcel = function () {
+                if ($ctrl.filtersValid) {
+                    FetchAndSaveBlob.post('/api/v1/harvestregistry/excel', {
                         page: 0,
                         pageSize: 1,
                         beginDate: $ctrl.filters.beginDate,
@@ -123,27 +135,19 @@ angular.module('app.jht.harvestregistry', [])
                         shooterHunterNumber: $ctrl.filters.shooterHunterNumber,
                         rkaCode: $ctrl.selectedRka ? $ctrl.selectedRka.officialCode : null,
                         rhyCode: $ctrl.selectedRhy ? $ctrl.selectedRhy.officialCode : null
-                });
-            }
-        };
+                    });
+                }
+            };
 
-            function buildSpecies() {
-                return _.chain(Species.getSpeciesMapping())
-                    .map(function (species) {
-                        return TranslatedSpecies.translateSpecies(species);
-                    })
-                    .sortBy('name')
-                    .value();
-            }
         }
     )
     .component('jhtHarvestRegistryTable', {
         templateUrl: 'jht/harvestregistry/harvestregistry-table.html',
         bindings: {
             items: '<',
-            areas: '<'
+            includedFields: '<'
         },
-        controller: function () {
+        controller: function ($uibModal) {
             var $ctrl = this;
 
             $ctrl.resolveRkaName = function (item) {
@@ -155,6 +159,18 @@ angular.module('app.jht.harvestregistry', [])
                 var rka = resolveRka(item);
 
                 return rka ? resolveRhy(rka, item).name : null;
+            };
+
+
+            $ctrl.showLocationDialog= function (geolocation){
+                $uibModal.open({
+                    templateUrl: 'rhy/harvestregistry/harvest-registry-location.html',
+                    controller: 'RhyHarvestRegistryLocationModalController',
+                    controllerAs: '$ctrl',
+                    resolve: {
+                        location: geolocation
+                    }
+                }).result.then($ctrl.onSuccess, $ctrl.onFailure);
             };
 
             function resolveRka(item) {

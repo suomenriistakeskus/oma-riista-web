@@ -191,6 +191,28 @@
             </div>
         </div>
 
+        <div class="form-group">
+            <label for="nonSubsidizable" class="col-xs-4 control-label" translate="event.form.nonSubsidizable"></label>
+            <div name="nonSubsidizable" id="nonSubsidizable" class="btn-group col-xs-8">
+                <label class="btn btn-default"
+                       ng-model="viewState.event.nonSubsidizable"
+                       uib-btn-radio="false"
+                       ng-disabled="viewState.event.lockedAsPastCalendarEvent || isInRowEditMode()">
+                    <span class="text-muted fa fa-fw fa-lg fa-check-circle"
+                          ng-class="{invisible: viewState.event.nonSubsidizable}"></span>
+                </label>
+
+                <label class="btn"
+                       ng-class="viewState.event.nonSubsidizable ? 'btn-primary' : 'btn-default'"
+                       ng-model="viewState.event.nonSubsidizable"
+                       uib-btn-radio="true"
+                       ng-disabled="viewState.event.lockedAsPastCalendarEvent || isInRowEditMode()">
+                    <span class="fa fa-fw fa-lg fa-check-circle"
+                          ng-class="{invisible: !viewState.event.nonSubsidizable}"></span>
+                </label>
+            </div>
+        </div>
+
         <div class="form-group" ng-if="isRemoteEventAllowed(viewState.event.calendarEventType)">
             <label for="remote" class="col-xs-4 control-label" translate="event.form.remoteTrainingEvent"></label>
             <div id="remote" class="btn-group col-xs-8">

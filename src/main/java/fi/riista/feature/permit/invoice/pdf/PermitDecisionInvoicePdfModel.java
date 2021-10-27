@@ -3,6 +3,7 @@ package fi.riista.feature.permit.invoice.pdf;
 import com.google.common.base.Preconditions;
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.money.FinnishBankAccount;
+import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.invoice.Invoice;
 import fi.riista.feature.permit.invoice.InvoiceType;
@@ -21,9 +22,13 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import static fi.riista.util.DateUtil.today;
 import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
+import static org.springframework.util.StringUtils.hasText;
 
 class PermitDecisionInvoicePdfModel {
 
@@ -48,7 +53,8 @@ class PermitDecisionInvoicePdfModel {
 
         return new PermitDecisionInvoicePdfModel(resultType, decision.getLocale(), amount,
                 invoice.resolveBankAccountDetails(), invoice.getInvoiceNumber(), invoice.getCreditorReference(),
-                InvoicePdfRecipient.create(decision), invoiceDate, decision.createPermitNumber(), invoice.getDueDate(),
+                InvoicePdfRecipient.create(decision), invoiceDate, decision.createPermitNumber(), decision.getPermitHolder(),
+                invoice.getDueDate(),
                 invoice.getPaymentDate());
     }
 
@@ -66,6 +72,7 @@ class PermitDecisionInvoicePdfModel {
     private final LocalDate dueDate;
     private final LocalDate paymentDate;
     private final String permitNumber;
+    private final PermitHolder permitHolder;
     private final BigDecimalMoney paymentAmount;
 
     PermitDecisionInvoicePdfModel(final @Nonnull ResultType resultType,
@@ -77,6 +84,7 @@ class PermitDecisionInvoicePdfModel {
                                   final @Nonnull InvoicePdfRecipient invoiceRecipient,
                                   final @Nonnull LocalDate invoiceDate,
                                   final @Nonnull String permitNumber,
+                                  final @Nonnull PermitHolder permitHolder,
                                   final LocalDate dueDate,
                                   final LocalDate paymentDate) {
         this.resultType = requireNonNull(resultType);
@@ -88,6 +96,7 @@ class PermitDecisionInvoicePdfModel {
         this.invoiceDate = requireNonNull(invoiceDate);
         this.invoiceRecipient = requireNonNull(invoiceRecipient);
         this.permitNumber = requireNonNull(permitNumber);
+        this.permitHolder = requireNonNull(permitHolder);
         this.dueDate = dueDate;
         this.paymentDate = paymentDate;
 
@@ -167,6 +176,14 @@ class PermitDecisionInvoicePdfModel {
         return getLocalisedString(
                 String.format("Päätös %s, käsittelymaksu", permitNumber),
                 String.format("Beslut %s, handläggningsavgift", permitNumber));
+    }
+
+    @Nonnull
+    public String getPermitHolder() {
+        final String code = permitHolder.getCode();
+        return hasText(code)
+                ? String.format("%s (%s)", permitHolder.getName(), code)
+                : permitHolder.getName();
     }
 
     @NotNull

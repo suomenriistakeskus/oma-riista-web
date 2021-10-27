@@ -227,6 +227,11 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
         return isInCoordinatorUpdateableState() && !isEndDateForCoordinatorUpdatesPassed();
     }
 
+    public boolean isGameDamageStatisticsUpdateable() {
+        final LocalDate lastRefreshDate = new LocalDate(year + 1, 3, 5);
+        return isInCoordinatorUpdateableState() && !today().isAfter(lastRefreshDate);
+    }
+
     private boolean isInCoordinatorUpdateableState() {
         return state == NOT_STARTED || state == IN_PROGRESS;
     }

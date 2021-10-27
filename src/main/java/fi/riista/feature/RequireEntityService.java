@@ -4,6 +4,7 @@ import fi.riista.feature.account.area.PersonalArea;
 import fi.riista.feature.account.area.union.PersonalAreaUnion;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.announcement.Announcement;
+import fi.riista.feature.common.decision.nomination.NominationDecision;
 import fi.riista.feature.common.entity.BaseEntity;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gamediary.harvest.Harvest;
@@ -23,6 +24,7 @@ import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.Riistakeskus;
 import fi.riista.feature.organization.RiistakeskusRepository;
 import fi.riista.feature.organization.calendar.Venue;
+import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatistics;
@@ -30,7 +32,6 @@ import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlAtta
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEvent;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.decision.PermitDecision;
-import fi.riista.feature.common.decision.nomination.NominationDecision;
 import fi.riista.feature.permit.invoice.Invoice;
 import fi.riista.feature.permit.invoice.batch.PermitDecisionInvoiceBatch;
 import fi.riista.feature.permit.invoice.payment.InvoicePaymentLine;
@@ -192,6 +193,10 @@ public class RequireEntityService {
 
     public HuntingControlAttachment requireHuntingControlAttachment(final Long id, final Enum<?> permission) {
         return require(id, HuntingControlAttachment.class, permission);
+    }
+
+    public Occupation requireOccupation(final Long id, final Enum<?> permission) {
+        return require(id, Occupation.class, permission);
     }
 
     private <T extends BaseEntity<ID>, ID extends java.io.Serializable> T require(final ID id,

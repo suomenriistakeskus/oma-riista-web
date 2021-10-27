@@ -3,15 +3,14 @@
     <span ng-if="!$ctrl.areaInfo.geoLocation" class="fa fa-exclamation-triangle"></span>
 
     <div class="alert-content">
-        <span class="alert-title" translate="harvestpermit.wizard.carnivore.map.areaTitle"></span>
+        <span class="alert-title" translate="harvestpermit.wizard.common.map.areaTitle"></span>
         <p translate="harvestpermit.wizard.research.map.instruction"></p>
-        <p translate="harvestpermit.wizard.carnivore.map.geoLocationInstruction"></p>
+        <p translate="harvestpermit.wizard.common.map.geoLocationInstruction"></p>
     </div>
 </div>
 
 <ng-form name="derogationAreaForm">
-    <!-- TODO: Figure out whether to copy or refactor this component out from bird wizard -->
-    <bird-application-location-editor protected-area="$ctrl.areaInfo"></bird-application-location-editor>
+    <derogation-application-location-editor protected-area="$ctrl.areaInfo"></derogation-application-location-editor>
 </ng-form>
 
 <hr class="invisible">

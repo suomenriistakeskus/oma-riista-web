@@ -7,6 +7,12 @@ angular.module('app.srva.services', [])
         injuredAnimal: 'INJURED_ANIMAL'
     })
 
+    .constant('SrvaEventType', {
+        trafficAccident: 'TRAFFIC_ACCIDENT',
+        railwayAccident: 'RAILWAY_ACCIDENT',
+        other: 'OTHER'
+    })
+
     .constant('SrvaEventState', {
         unfinished: 'UNFINISHED',
         approved: 'APPROVED',
@@ -57,7 +63,7 @@ angular.module('app.srva.services', [])
         return this;
     })
 
-    .service('SrvaEventListSearchParametersService', function (Helpers, SrvaEventState, SrvaEventName) {
+    .service('SrvaEventListSearchParametersService', function (Helpers, SrvaEventState, SrvaEventName, SrvaEventType) {
         this.createEmpty = function () {
             return {
                 gameSpeciesCode: null,
@@ -74,6 +80,11 @@ angular.module('app.srva.services', [])
                     {name: SrvaEventName.accident, isChecked: true},
                     {name: SrvaEventName.deportation, isChecked: true},
                     {name: SrvaEventName.injuredAnimal, isChecked: true}
+                ],
+                eventTypes: [
+                    {name: SrvaEventType.trafficAccident, isChecked: true},
+                    {name: SrvaEventType.railwayAccident, isChecked: true},
+                    {name: SrvaEventType.other, isChecked: true}
                 ]
             };
         };
@@ -98,7 +109,8 @@ angular.module('app.srva.services', [])
                 beginDate: Helpers.dateToString(searchParams.dateRange.beginDate),
                 endDate: Helpers.dateToString(searchParams.dateRange.endDate),
                 states: filterEnabledChoices(searchParams.states),
-                eventNames: filterEnabledChoices(searchParams.eventNames)
+                eventNames: filterEnabledChoices(searchParams.eventNames),
+                eventTypes: filterEnabledChoices(searchParams.eventTypes)
             };
         };
 
@@ -107,7 +119,7 @@ angular.module('app.srva.services', [])
         }
     })
 
-    .service('SrvaEventMapSearchParametersService', function (Helpers, SrvaEventState, SrvaEventName) {
+    .service('SrvaEventMapSearchParametersService', function (Helpers, SrvaEventState, SrvaEventName, SrvaEventType) {
         this.createEmpty = function (initialRhyCode) {
             return {
                 gameSpeciesCode: null,
@@ -126,7 +138,13 @@ angular.module('app.srva.services', [])
                     {name: SrvaEventName.accident, isChecked: true},
                     {name: SrvaEventName.deportation, isChecked: true},
                     {name: SrvaEventName.injuredAnimal, isChecked: true}
+                ],
+                eventTypes: [
+                    {name: SrvaEventType.trafficAccident, isChecked: true},
+                    {name: SrvaEventType.railwayAccident, isChecked: true},
+                    {name: SrvaEventType.other, isChecked: true}
                 ]
+
             };
         };
 
@@ -153,7 +171,8 @@ angular.module('app.srva.services', [])
                 beginDate: Helpers.dateToString(searchParams.dateRange.beginDate),
                 endDate: Helpers.dateToString(searchParams.dateRange.endDate),
                 states: filterEnabledChoices(searchParams.states),
-                eventNames: filterEnabledChoices(searchParams.eventNames)
+                eventNames: filterEnabledChoices(searchParams.eventNames),
+                eventTypes: filterEnabledChoices(searchParams.eventTypes)
             };
         };
 

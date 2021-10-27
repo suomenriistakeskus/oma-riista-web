@@ -32,6 +32,7 @@ import org.springframework.util.StringUtils;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
@@ -61,6 +62,7 @@ public class HarvestPermitApplicationSearchQueryBuilder {
     private Integer huntingYear;
     private Integer validityYears;
     private HarvestPermitCategory harvestPermitCategory;
+    private Locale decisionLocale;
     private Integer gameSpeciesCode;
 
     public HarvestPermitApplicationSearchQueryBuilder(final JPQLQueryFactory jpqlQueryFactory) {
@@ -114,6 +116,11 @@ public class HarvestPermitApplicationSearchQueryBuilder {
 
     public HarvestPermitApplicationSearchQueryBuilder withHarvestPermitCategory(final HarvestPermitCategory harvestPermitCategory) {
         this.harvestPermitCategory = harvestPermitCategory;
+        return this;
+    }
+
+    public HarvestPermitApplicationSearchQueryBuilder withDecisionLocale(final Locale decisionLocale) {
+        this.decisionLocale = decisionLocale;
         return this;
     }
 
@@ -185,6 +192,12 @@ public class HarvestPermitApplicationSearchQueryBuilder {
 
         if (harvestPermitCategory != null) {
             query.where(APPLICATION.harvestPermitCategory.eq(harvestPermitCategory));
+        }
+
+        if (decisionLocale != null) {
+            query.where(DECISION.isNotNull().and(DECISION.locale.eq(decisionLocale)).or(
+                    DECISION.isNull().and(APPLICATION.decisionLocale.eq(decisionLocale))
+            ));
         }
 
         if (gameSpeciesCode != null) {

@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static fi.riista.util.DateUtil.streamCurrentAndNextHuntingYear;
 import static fi.riista.util.DateUtil.today;
 
 @Service
@@ -79,6 +80,7 @@ public class CalendarEventCrudFeature extends AbstractCrudFeature<Long, Calendar
             entity.setVenue(venueRepository.getOne(dto.getVenue().getId()));
             entity.setPublicVisibility(dto.getPublicVisibility());
             entity.setExcludedFromStatistics(dto.getExcludedFromStatistics());
+            entity.setNonSubsidizable(dto.isNonSubsidizable());
             entity.setRemoteEvent(dto.isRemoteEvent());
         }
 

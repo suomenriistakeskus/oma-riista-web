@@ -35,10 +35,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 @Component
-public class MobileObservationDTOTransformer extends ObservationDTOTransformerBase<MobileObservationDTO> {
-
-    @Resource
-    private JPAQueryFactory queryFactory;
+public class MobileObservationDTOTransformer extends MobileObservationDTOTransformerBase<MobileObservationDTO> {
 
     // Transactional propagation not mandated since entity associations are not traversed.
     @Transactional(readOnly = true)
@@ -168,21 +165,5 @@ public class MobileObservationDTOTransformer extends ObservationDTOTransformerBa
         }
 
         return dto;
-    }
-
-    private Map<Long, ObservationBaseFields> getBaseFieldsOfObservations(final List<Observation> observations,
-                                                                         final ObservationSpecVersion specVersion) {
-        final QObservation observation = QObservation.observation;
-        final QGameSpecies species = QGameSpecies.gameSpecies;
-        final QObservationBaseFields baseFields = QObservationBaseFields.observationBaseFields;
-
-        return queryFactory.select(observation.id, baseFields)
-                .from(observation)
-                .join(observation.species, species)
-                .join(species.observationBaseFields, baseFields)
-                .where(observation.in(observations).and(baseFields.metadataVersion.eq(specVersion.toIntValue())))
-                .fetch()
-                .stream()
-                .collect(toMap(t -> t.get(0, Long.class), t -> t.get(1, ObservationBaseFields.class)));
     }
 }

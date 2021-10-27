@@ -29,8 +29,6 @@
                 <span><c:out value="${model.contactPerson.address.postalCode}"/></span>
                 <span><c:out value="${model.contactPerson.address.city}"/>,</span>
                 <span><c:out value="${model.contactPerson.address.country}"/></span>
-                <br>
-                <span><c:out value="${model.contactPerson.phoneNumber}"/></span>
             </p>
         </div>
         <div class="col-2">

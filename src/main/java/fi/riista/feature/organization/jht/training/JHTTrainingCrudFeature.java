@@ -18,6 +18,7 @@ import fi.riista.feature.organization.person.Person_;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.security.EntityPermission;
+import org.joda.time.LocalDate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,12 +34,14 @@ import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkState;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.EHDOLLA;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.ESITETTY;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.NIMITETTY;
+import static fi.riista.feature.organization.occupation.Occupation.FOREIGN_PERSON_ELIGIBLE_FOR_OCCUPATION;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -234,5 +237,27 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
         final Person person = requireEntityService.requirePerson(personId, EntityPermission.READ);
 
         return jhtTrainingDTOTransformer.apply(jhtTrainingRepository.findByPerson(person));
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, LocalDate> lastTrainings(final List<Long> personIds,
+                                              final OccupationType occupationType) {
+        userAuthorizationHelper.assertCoordinatorAnywhereOrModerator();
+        return jhtTrainingRepository.findLatestTrainingDatesForOccupation(personIds, occupationType);
+    }
+
+    @Transactional
+    public void createMulti(final JHTMultiTrainingDTO multiTrainingDto) {
+        personLookupService.findByHunterNumberIn(multiTrainingDto.getHunterNumbers(), FOREIGN_PERSON_ELIGIBLE_FOR_OCCUPATION)
+                .forEach(person -> {
+                    final JHTTrainingDTO dto = new JHTTrainingDTO();
+                    dto.setPerson(JHTTrainingDTO.PersonDTO.create(person));
+                    dto.setTrainingType(multiTrainingDto.getTrainingType());
+                    dto.setOccupationType(multiTrainingDto.getOccupationType());
+                    dto.setTrainingDate(multiTrainingDto.getTrainingDate());
+                    dto.setTrainingLocation(multiTrainingDto.getTrainingLocation());
+
+                    create(dto);
+                });
     }
 }

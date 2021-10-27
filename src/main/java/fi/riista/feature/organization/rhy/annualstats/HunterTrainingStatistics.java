@@ -46,6 +46,22 @@ public class HunterTrainingStatistics
         result.setCarnivoreContactPersonTrainingParticipants(nullableIntSum(a, b, s -> s.getCarnivoreContactPersonTrainingParticipants()));
         result.setAccidentPreventionTrainingEvents(nullableIntSum(a, b, s -> s.getAccidentPreventionTrainingEvents()));
         result.setAccidentPreventionTrainingParticipants(nullableIntSum(a, b, s -> s.getAccidentPreventionTrainingParticipants()));
+
+        result.setNonSubsidizableMooselikeHuntingTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableMooselikeHuntingTrainingEvents()));
+        result.setNonSubsidizableMooselikeHuntingTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableMooselikeHuntingTrainingParticipants()));
+        result.setNonSubsidizableMooselikeHuntingLeaderTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableMooselikeHuntingLeaderTrainingEvents()));
+        result.setNonSubsidizableMooselikeHuntingLeaderTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableMooselikeHuntingLeaderTrainingParticipants()));
+        result.setNonSubsidizableCarnivoreHuntingTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableCarnivoreHuntingTrainingEvents()));
+        result.setNonSubsidizableCarnivoreHuntingTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableCarnivoreHuntingTrainingParticipants()));
+        result.setNonSubsidizableCarnivoreHuntingLeaderTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableCarnivoreHuntingLeaderTrainingEvents()));
+        result.setNonSubsidizableCarnivoreHuntingLeaderTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableCarnivoreHuntingLeaderTrainingParticipants()));
+        result.setNonSubsidizableSrvaTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableSrvaTrainingEvents()));
+        result.setNonSubsidizableSrvaTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableSrvaTrainingParticipants()));
+        result.setNonSubsidizableCarnivoreContactPersonTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableCarnivoreContactPersonTrainingEvents()));
+        result.setNonSubsidizableCarnivoreContactPersonTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableCarnivoreContactPersonTrainingParticipants()));
+        result.setNonSubsidizableAccidentPreventionTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableAccidentPreventionTrainingEvents()));
+        result.setNonSubsidizableAccidentPreventionTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableAccidentPreventionTrainingParticipants()));
+
         result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
         return result;
     }
@@ -66,13 +82,21 @@ public class HunterTrainingStatistics
     @Column(name = "mooselike_hunting_training_events")
     private Integer mooselikeHuntingTrainingEvents;
 
-    @Column(name= "mooselike_hunting_training_events_overridden", nullable = false)
+    @Min(0)
+    @Column(name = "non_subsidizable_mooselike_hunting_training_events")
+    private Integer nonSubsidizableMooselikeHuntingTrainingEvents;
+
+    @Column(name = "mooselike_hunting_training_events_overridden", nullable = false)
     private boolean mooselikeHuntingTrainingEventsOverridden;
 
     // Hirvieläinten metsästäjät -koulutukseen osallistuneet, lkm
     @Min(0)
     @Column(name = "mooselike_hunting_training_participants")
     private Integer mooselikeHuntingTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_mooselike_hunting_training_participants")
+    private Integer nonSubsidizableMooselikeHuntingTrainingParticipants;
 
     @Column(name = "mooselike_hunting_training_participants_overridden", nullable = false)
     private boolean mooselikeHuntingTrainingParticipantsOverridden;
@@ -82,6 +106,10 @@ public class HunterTrainingStatistics
     @Column(name = "mooselike_hunting_leader_training_events")
     private Integer mooselikeHuntingLeaderTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_mooselike_hunting_leader_training_events")
+    private Integer nonSubsidizableMooselikeHuntingLeaderTrainingEvents;
+
     @Column(name = "mooselike_hunting_leader_training_events_overridden", nullable = false)
     private boolean mooselikeHuntingLeaderTrainingEventsOverridden;
 
@@ -89,6 +117,10 @@ public class HunterTrainingStatistics
     @Min(0)
     @Column(name = "mooselike_hunting_leader_training_participants")
     private Integer mooselikeHuntingLeaderTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_mooselike_hunting_leader_training_participants")
+    private Integer nonSubsidizableMooselikeHuntingLeaderTrainingParticipants;
 
     @Column(name = "mooselike_hunting_leader_training_participants_overridden", nullable = false)
     private boolean mooselikeHuntingLeaderTrainingParticipantsOverridden;
@@ -98,6 +130,10 @@ public class HunterTrainingStatistics
     @Column(name = "carnivore_hunting_training_events")
     private Integer carnivoreHuntingTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_carnivore_hunting_training_events")
+    private Integer nonSubsidizableCarnivoreHuntingTrainingEvents;
+
     @Column(name = "carnivore_hunting_training_events_overridden", nullable = false)
     private boolean carnivoreHuntingTrainingEventsOverridden;
 
@@ -105,6 +141,10 @@ public class HunterTrainingStatistics
     @Min(0)
     @Column(name = "carnivore_hunting_training_participants")
     private Integer carnivoreHuntingTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_carnivore_hunting_training_participants")
+    private Integer nonSubsidizableCarnivoreHuntingTrainingParticipants;
 
     @Column(name = "carnivore_hunting_training_participants_overridden", nullable = false)
     private boolean carnivoreHuntingTrainingParticipantsOverridden;
@@ -114,6 +154,10 @@ public class HunterTrainingStatistics
     @Column(name = "carnivore_hunting_leader_training_events")
     private Integer carnivoreHuntingLeaderTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_carnivore_hunting_leader_training_events")
+    private Integer nonSubsidizableCarnivoreHuntingLeaderTrainingEvents;
+
     @Column(name = "carnivore_hunting_leader_training_events_overridden", nullable = false)
     private boolean carnivoreHuntingLeaderTrainingEventsOverridden;
 
@@ -121,6 +165,10 @@ public class HunterTrainingStatistics
     @Min(0)
     @Column(name = "carnivore_hunting_leader_training_participants")
     private Integer carnivoreHuntingLeaderTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_carnivore_hunting_leader_training_participants")
+    private Integer nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants;
 
     @Column(name = "carnivore_hunting_leader_training_participants_overridden", nullable = false)
     private boolean carnivoreHuntingLeaderTrainingParticipantsOverridden;
@@ -130,6 +178,10 @@ public class HunterTrainingStatistics
     @Column(name = "srva_training_events")
     private Integer srvaTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_srva_training_events")
+    private Integer nonSubsidizableSrvaTrainingEvents;
+
     @Column(name = "srva_training_events_overridden", nullable = false)
     private boolean srvaTrainingEventsOverridden;
 
@@ -137,6 +189,10 @@ public class HunterTrainingStatistics
     @Min(0)
     @Column(name = "srva_training_participants")
     private Integer srvaTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_srva_training_participants")
+    private Integer nonSubsidizableSrvaTrainingParticipants;
 
     @Column(name = "srva_training_participants_overridden", nullable = false)
     private boolean srvaTrainingParticipantsOverridden;
@@ -146,6 +202,10 @@ public class HunterTrainingStatistics
     @Column(name = "carnivore_contact_person_training_events")
     private Integer carnivoreContactPersonTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_carnivore_contact_person_training_events")
+    private Integer nonSubsidizableCarnivoreContactPersonTrainingEvents;
+
     @Column(name = "carnivore_contact_person_training_events_overridden", nullable = false)
     private boolean carnivoreContactPersonTrainingEventsOverridden;
 
@@ -153,6 +213,10 @@ public class HunterTrainingStatistics
     @Min(0)
     @Column(name = "carnivore_contact_person_training_participants")
     private Integer carnivoreContactPersonTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_carnivore_contact_person_training_participants")
+    private Integer nonSubsidizableCarnivoreContactPersonTrainingParticipants;
 
     @Column(name = "carnivore_contact_person_training_participants_overridden", nullable = false)
     private boolean carnivoreContactPersonTrainingParticipantsOverridden;
@@ -162,6 +226,10 @@ public class HunterTrainingStatistics
     @Column(name = "accident_prevention_training_events")
     private Integer accidentPreventionTrainingEvents;
 
+    @Min(0)
+    @Column(name = "non_subsidizable_accident_prevention_training_events")
+    private Integer nonSubsidizableAccidentPreventionTrainingEvents;
+
     @Column(name = "accident_prevention_training_events_overridden", nullable = false)
     private boolean accidentPreventionTrainingEventsOverridden;
 
@@ -169,6 +237,10 @@ public class HunterTrainingStatistics
     @Min(0)
     @Column(name = "accident_prevention_training_participants")
     private Integer accidentPreventionTrainingParticipants;
+
+    @Min(0)
+    @Column(name = "non_subsidizable_accident_prevention_training_participants")
+    private Integer nonSubsidizableAccidentPreventionTrainingParticipants;
 
     @Column(name = "accident_prevention_training_participants_overridden", nullable = false)
     private boolean accidentPreventionTrainingParticipantsOverridden;
@@ -185,45 +257,59 @@ public class HunterTrainingStatistics
         requireNonNull(that);
 
         this.mooselikeHuntingTrainingEvents = that.mooselikeHuntingTrainingEvents;
+        this.nonSubsidizableMooselikeHuntingTrainingEvents = that.nonSubsidizableMooselikeHuntingTrainingEvents;
         this.mooselikeHuntingTrainingEventsOverridden = that.mooselikeHuntingTrainingEventsOverridden;
 
         this.mooselikeHuntingTrainingParticipants = that.mooselikeHuntingTrainingParticipants;
+        this.nonSubsidizableMooselikeHuntingTrainingParticipants = that.nonSubsidizableMooselikeHuntingTrainingParticipants;
         this.mooselikeHuntingTrainingParticipantsOverridden = that.mooselikeHuntingTrainingParticipantsOverridden;
 
         this.mooselikeHuntingLeaderTrainingEvents = that.mooselikeHuntingLeaderTrainingEvents;
+        this.nonSubsidizableMooselikeHuntingLeaderTrainingEvents = that.nonSubsidizableMooselikeHuntingLeaderTrainingEvents;
         this.mooselikeHuntingLeaderTrainingEventsOverridden = that.mooselikeHuntingLeaderTrainingEventsOverridden;
 
         this.mooselikeHuntingLeaderTrainingParticipants = that.mooselikeHuntingLeaderTrainingParticipants;
+        this.nonSubsidizableMooselikeHuntingLeaderTrainingParticipants = that.nonSubsidizableMooselikeHuntingLeaderTrainingParticipants;
         this.mooselikeHuntingLeaderTrainingParticipantsOverridden = that.mooselikeHuntingLeaderTrainingParticipantsOverridden;
 
         this.carnivoreHuntingTrainingEvents = that.carnivoreHuntingTrainingEvents;
+        this.nonSubsidizableCarnivoreHuntingTrainingEvents = that.nonSubsidizableCarnivoreHuntingTrainingEvents;
         this.carnivoreHuntingTrainingEventsOverridden = that.carnivoreHuntingTrainingEventsOverridden;
 
         this.carnivoreHuntingTrainingParticipants = that.carnivoreHuntingTrainingParticipants;
+        this.nonSubsidizableCarnivoreHuntingTrainingParticipants = that.nonSubsidizableCarnivoreHuntingTrainingParticipants;
         this.carnivoreHuntingTrainingParticipantsOverridden = that.carnivoreHuntingTrainingParticipantsOverridden;
 
         this.carnivoreHuntingLeaderTrainingEvents = that.carnivoreHuntingLeaderTrainingEvents;
+        this.nonSubsidizableCarnivoreHuntingLeaderTrainingEvents = that.nonSubsidizableCarnivoreHuntingLeaderTrainingEvents;
         this.carnivoreHuntingLeaderTrainingEventsOverridden = that.carnivoreHuntingLeaderTrainingEventsOverridden;
 
         this.carnivoreHuntingLeaderTrainingParticipants = that.carnivoreHuntingLeaderTrainingParticipants;
+        this.nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants = that.nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants;
         this.carnivoreHuntingLeaderTrainingParticipantsOverridden = that.carnivoreHuntingLeaderTrainingParticipantsOverridden;
 
         this.srvaTrainingEvents = that.srvaTrainingEvents;
+        this.nonSubsidizableSrvaTrainingEvents = that.nonSubsidizableSrvaTrainingEvents;
         this.srvaTrainingEventsOverridden = that.srvaTrainingEventsOverridden;
 
         this.srvaTrainingParticipants = that.srvaTrainingParticipants;
+        this.nonSubsidizableSrvaTrainingParticipants = that.nonSubsidizableSrvaTrainingParticipants;
         this.srvaTrainingParticipantsOverridden = that.srvaTrainingParticipantsOverridden;
 
         this.carnivoreContactPersonTrainingEvents = that.carnivoreContactPersonTrainingEvents;
+        this.nonSubsidizableCarnivoreContactPersonTrainingEvents = that.nonSubsidizableCarnivoreContactPersonTrainingEvents;
         this.carnivoreContactPersonTrainingEventsOverridden = that.carnivoreContactPersonTrainingEventsOverridden;
 
         this.carnivoreContactPersonTrainingParticipants = that.carnivoreContactPersonTrainingParticipants;
+        this.nonSubsidizableCarnivoreContactPersonTrainingParticipants = that.nonSubsidizableCarnivoreContactPersonTrainingParticipants;
         this.carnivoreContactPersonTrainingParticipantsOverridden = that.carnivoreContactPersonTrainingParticipantsOverridden;
 
         this.accidentPreventionTrainingEvents = that.accidentPreventionTrainingEvents;
+        this.nonSubsidizableAccidentPreventionTrainingEvents = that.nonSubsidizableAccidentPreventionTrainingEvents;
         this.accidentPreventionTrainingEventsOverridden = that.accidentPreventionTrainingEventsOverridden;
 
         this.accidentPreventionTrainingParticipants = that.accidentPreventionTrainingParticipants;
+        this.nonSubsidizableAccidentPreventionTrainingParticipants = that.nonSubsidizableAccidentPreventionTrainingParticipants;
         this.accidentPreventionTrainingParticipantsOverridden = that.accidentPreventionTrainingParticipantsOverridden;
 
         this.lastModified = that.lastModified;
@@ -240,99 +326,141 @@ public class HunterTrainingStatistics
 
         return Objects.equals(mooselikeHuntingTrainingEvents, that.mooselikeHuntingTrainingEvents) &&
                 Objects.equals(mooselikeHuntingTrainingParticipants, that.mooselikeHuntingTrainingParticipants) &&
+                Objects.equals(nonSubsidizableMooselikeHuntingTrainingEvents, that.nonSubsidizableMooselikeHuntingTrainingEvents) &&
+                Objects.equals(nonSubsidizableMooselikeHuntingTrainingParticipants, that.nonSubsidizableMooselikeHuntingTrainingParticipants) &&
 
                 Objects.equals(mooselikeHuntingLeaderTrainingEvents, that.mooselikeHuntingLeaderTrainingEvents) &&
                 Objects.equals(mooselikeHuntingLeaderTrainingParticipants, that.mooselikeHuntingLeaderTrainingParticipants) &&
+                Objects.equals(nonSubsidizableMooselikeHuntingLeaderTrainingEvents, that.nonSubsidizableMooselikeHuntingLeaderTrainingEvents) &&
+                Objects.equals(nonSubsidizableMooselikeHuntingLeaderTrainingParticipants, that.nonSubsidizableMooselikeHuntingLeaderTrainingParticipants) &&
 
                 Objects.equals(carnivoreHuntingTrainingEvents, that.carnivoreHuntingTrainingEvents) &&
                 Objects.equals(carnivoreHuntingTrainingParticipants, that.carnivoreHuntingTrainingParticipants) &&
+                Objects.equals(nonSubsidizableCarnivoreHuntingTrainingEvents, that.nonSubsidizableCarnivoreHuntingTrainingEvents) &&
+                Objects.equals(nonSubsidizableCarnivoreHuntingTrainingParticipants, that.nonSubsidizableCarnivoreHuntingTrainingParticipants) &&
 
                 Objects.equals(carnivoreHuntingLeaderTrainingEvents, that.carnivoreHuntingLeaderTrainingEvents) &&
                 Objects.equals(carnivoreHuntingLeaderTrainingParticipants, that.carnivoreHuntingLeaderTrainingParticipants) &&
+                Objects.equals(nonSubsidizableCarnivoreHuntingLeaderTrainingEvents, that.nonSubsidizableCarnivoreHuntingLeaderTrainingEvents) &&
+                Objects.equals(nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants, that.nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants) &&
 
                 Objects.equals(srvaTrainingEvents, that.srvaTrainingEvents) &&
                 Objects.equals(srvaTrainingParticipants, that.srvaTrainingParticipants) &&
+                Objects.equals(nonSubsidizableSrvaTrainingEvents, that.nonSubsidizableSrvaTrainingEvents) &&
+                Objects.equals(nonSubsidizableSrvaTrainingParticipants, that.nonSubsidizableSrvaTrainingParticipants) &&
 
                 Objects.equals(carnivoreContactPersonTrainingEvents, that.carnivoreContactPersonTrainingEvents) &&
                 Objects.equals(carnivoreContactPersonTrainingParticipants, that.carnivoreContactPersonTrainingParticipants) &&
+                Objects.equals(nonSubsidizableCarnivoreContactPersonTrainingEvents, that.nonSubsidizableCarnivoreContactPersonTrainingEvents) &&
+                Objects.equals(nonSubsidizableCarnivoreContactPersonTrainingParticipants, that.nonSubsidizableCarnivoreContactPersonTrainingParticipants) &&
 
                 Objects.equals(accidentPreventionTrainingEvents, that.accidentPreventionTrainingEvents) &&
-                Objects.equals(accidentPreventionTrainingParticipants, that.accidentPreventionTrainingParticipants);
+                Objects.equals(accidentPreventionTrainingParticipants, that.accidentPreventionTrainingParticipants) &&
+                Objects.equals(nonSubsidizableAccidentPreventionTrainingEvents, that.nonSubsidizableAccidentPreventionTrainingEvents) &&
+                Objects.equals(nonSubsidizableAccidentPreventionTrainingParticipants, that.nonSubsidizableAccidentPreventionTrainingParticipants);
     }
 
     @Override
     public void assignFrom(@Nonnull final HunterTrainingStatistics that) {
         // Includes manually updateable fields only.
 
-        if (!Objects.equals(this.mooselikeHuntingTrainingEvents, that.mooselikeHuntingTrainingEvents)) {
+        if (!Objects.equals(this.mooselikeHuntingTrainingEvents, that.mooselikeHuntingTrainingEvents) ||
+                !Objects.equals(this.nonSubsidizableMooselikeHuntingTrainingEvents, that.nonSubsidizableMooselikeHuntingTrainingEvents)) {
             this.mooselikeHuntingTrainingEventsOverridden = true;
         }
         this.mooselikeHuntingTrainingEvents = that.mooselikeHuntingTrainingEvents;
+        this.nonSubsidizableMooselikeHuntingTrainingEvents = that.nonSubsidizableMooselikeHuntingTrainingEvents;
 
-        if (!Objects.equals(this.mooselikeHuntingTrainingParticipants, that.mooselikeHuntingTrainingParticipants)) {
+        if (!Objects.equals(this.mooselikeHuntingTrainingParticipants, that.mooselikeHuntingTrainingParticipants) ||
+                !Objects.equals(this.nonSubsidizableMooselikeHuntingTrainingParticipants, that.nonSubsidizableMooselikeHuntingTrainingParticipants)) {
             this.mooselikeHuntingTrainingParticipantsOverridden = true;
         }
         this.mooselikeHuntingTrainingParticipants = that.mooselikeHuntingTrainingParticipants;
+        this.nonSubsidizableMooselikeHuntingTrainingParticipants = that.nonSubsidizableMooselikeHuntingTrainingParticipants;
 
-        if (!Objects.equals(this.mooselikeHuntingLeaderTrainingEvents, that.mooselikeHuntingLeaderTrainingEvents)) {
+        if (!Objects.equals(this.mooselikeHuntingLeaderTrainingEvents, that.mooselikeHuntingLeaderTrainingEvents)||
+                !Objects.equals(this.nonSubsidizableMooselikeHuntingLeaderTrainingEvents, that.nonSubsidizableMooselikeHuntingLeaderTrainingEvents)) {
             this.mooselikeHuntingLeaderTrainingEventsOverridden = true;
         }
         this.mooselikeHuntingLeaderTrainingEvents = that.mooselikeHuntingLeaderTrainingEvents;
+        this.nonSubsidizableMooselikeHuntingLeaderTrainingEvents = that.nonSubsidizableMooselikeHuntingLeaderTrainingEvents;
 
-        if (!Objects.equals(this.mooselikeHuntingLeaderTrainingParticipants, that.mooselikeHuntingLeaderTrainingParticipants)) {
+        if (!Objects.equals(this.mooselikeHuntingLeaderTrainingParticipants, that.mooselikeHuntingLeaderTrainingParticipants)||
+                !Objects.equals(this.nonSubsidizableMooselikeHuntingLeaderTrainingParticipants, that.nonSubsidizableMooselikeHuntingLeaderTrainingParticipants)) {
             this.mooselikeHuntingLeaderTrainingParticipantsOverridden = true;
         }
         this.mooselikeHuntingLeaderTrainingParticipants = that.mooselikeHuntingLeaderTrainingParticipants;
+        this.nonSubsidizableMooselikeHuntingLeaderTrainingParticipants = that.nonSubsidizableMooselikeHuntingLeaderTrainingParticipants;
 
-        if (!Objects.equals(this.carnivoreHuntingTrainingEvents, that.carnivoreHuntingTrainingEvents)) {
+        if (!Objects.equals(this.carnivoreHuntingTrainingEvents, that.carnivoreHuntingTrainingEvents)||
+                !Objects.equals(this.nonSubsidizableCarnivoreHuntingTrainingEvents, that.nonSubsidizableCarnivoreHuntingTrainingEvents)) {
             this.carnivoreHuntingTrainingEventsOverridden = true;
         }
         this.carnivoreHuntingTrainingEvents = that.carnivoreHuntingTrainingEvents;
+        this.nonSubsidizableCarnivoreHuntingTrainingEvents = that.nonSubsidizableCarnivoreHuntingTrainingEvents;
 
-        if (!Objects.equals(this.carnivoreHuntingTrainingParticipants, that.carnivoreHuntingTrainingParticipants)) {
+        if (!Objects.equals(this.carnivoreHuntingTrainingParticipants, that.carnivoreHuntingTrainingParticipants)||
+                !Objects.equals(this.nonSubsidizableCarnivoreHuntingTrainingParticipants, that.nonSubsidizableCarnivoreHuntingTrainingParticipants)) {
             this.carnivoreHuntingTrainingParticipantsOverridden = true;
         }
         this.carnivoreHuntingTrainingParticipants = that.carnivoreHuntingTrainingParticipants;
+        this.nonSubsidizableCarnivoreHuntingTrainingParticipants = that.nonSubsidizableCarnivoreHuntingTrainingParticipants;
 
-        if (!Objects.equals(this.carnivoreHuntingLeaderTrainingEvents, that.carnivoreHuntingLeaderTrainingEvents)) {
+        if (!Objects.equals(this.carnivoreHuntingLeaderTrainingEvents, that.carnivoreHuntingLeaderTrainingEvents)||
+                !Objects.equals(this.nonSubsidizableCarnivoreHuntingLeaderTrainingEvents, that.nonSubsidizableCarnivoreHuntingLeaderTrainingEvents)) {
             this.carnivoreHuntingLeaderTrainingEventsOverridden = true;
         }
         this.carnivoreHuntingLeaderTrainingEvents = that.carnivoreHuntingLeaderTrainingEvents;
+        this.nonSubsidizableCarnivoreHuntingLeaderTrainingEvents = that.nonSubsidizableCarnivoreHuntingLeaderTrainingEvents;
 
-        if (!Objects.equals(this.carnivoreHuntingLeaderTrainingParticipants, that.carnivoreHuntingLeaderTrainingParticipants)) {
+        if (!Objects.equals(this.carnivoreHuntingLeaderTrainingParticipants, that.carnivoreHuntingLeaderTrainingParticipants)||
+                !Objects.equals(this.nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants, that.nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants)) {
             this.carnivoreHuntingLeaderTrainingParticipantsOverridden = true;
         }
         this.carnivoreHuntingLeaderTrainingParticipants = that.carnivoreHuntingLeaderTrainingParticipants;
+        this.nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants = that.nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants;
 
-        if (!Objects.equals(this.srvaTrainingEvents, that.srvaTrainingEvents)) {
+        if (!Objects.equals(this.srvaTrainingEvents, that.srvaTrainingEvents)||
+                !Objects.equals(this.nonSubsidizableSrvaTrainingEvents, that.nonSubsidizableSrvaTrainingEvents)) {
             this.srvaTrainingEventsOverridden = true;
         }
         this.srvaTrainingEvents = that.srvaTrainingEvents;
+        this.nonSubsidizableSrvaTrainingEvents = that.nonSubsidizableSrvaTrainingEvents;
 
-        if (!Objects.equals(this.srvaTrainingParticipants, that.srvaTrainingParticipants)) {
+        if (!Objects.equals(this.srvaTrainingParticipants, that.srvaTrainingParticipants)||
+                !Objects.equals(this.nonSubsidizableSrvaTrainingParticipants, that.nonSubsidizableSrvaTrainingParticipants)) {
             this.srvaTrainingParticipantsOverridden = true;
         }
         this.srvaTrainingParticipants = that.srvaTrainingParticipants;
+        this.nonSubsidizableSrvaTrainingParticipants = that.nonSubsidizableSrvaTrainingParticipants;
 
-        if (!Objects.equals(this.carnivoreContactPersonTrainingEvents, that.carnivoreContactPersonTrainingEvents)) {
+        if (!Objects.equals(this.carnivoreContactPersonTrainingEvents, that.carnivoreContactPersonTrainingEvents)||
+                !Objects.equals(this.nonSubsidizableCarnivoreContactPersonTrainingEvents, that.nonSubsidizableCarnivoreContactPersonTrainingEvents)) {
             this.carnivoreContactPersonTrainingEventsOverridden = true;
         }
         this.carnivoreContactPersonTrainingEvents = that.carnivoreContactPersonTrainingEvents;
+        this.nonSubsidizableCarnivoreContactPersonTrainingEvents = that.nonSubsidizableCarnivoreContactPersonTrainingEvents;
 
-        if (!Objects.equals(this.carnivoreContactPersonTrainingParticipants, that.carnivoreContactPersonTrainingParticipants)) {
+        if (!Objects.equals(this.carnivoreContactPersonTrainingParticipants, that.carnivoreContactPersonTrainingParticipants)||
+                !Objects.equals(this.nonSubsidizableCarnivoreContactPersonTrainingParticipants, that.nonSubsidizableCarnivoreContactPersonTrainingParticipants)) {
             this.carnivoreContactPersonTrainingParticipantsOverridden = true;
         }
         this.carnivoreContactPersonTrainingParticipants = that.carnivoreContactPersonTrainingParticipants;
+        this.nonSubsidizableCarnivoreContactPersonTrainingParticipants = that.nonSubsidizableCarnivoreContactPersonTrainingParticipants;
 
-        if (!Objects.equals(this.accidentPreventionTrainingEvents, that.accidentPreventionTrainingEvents)) {
+        if (!Objects.equals(this.accidentPreventionTrainingEvents, that.accidentPreventionTrainingEvents)||
+                !Objects.equals(this.nonSubsidizableAccidentPreventionTrainingEvents, that.nonSubsidizableAccidentPreventionTrainingEvents)) {
             this.accidentPreventionTrainingEventsOverridden = true;
         }
         this.accidentPreventionTrainingEvents = that.accidentPreventionTrainingEvents;
+        this.nonSubsidizableAccidentPreventionTrainingEvents = that.nonSubsidizableAccidentPreventionTrainingEvents;
 
-        if (!Objects.equals(this.accidentPreventionTrainingParticipants, that.accidentPreventionTrainingParticipants)) {
+        if (!Objects.equals(this.accidentPreventionTrainingParticipants, that.accidentPreventionTrainingParticipants)||
+                !Objects.equals(this.nonSubsidizableAccidentPreventionTrainingParticipants, that.nonSubsidizableAccidentPreventionTrainingParticipants)) {
             this.accidentPreventionTrainingParticipantsOverridden = true;
         }
         this.accidentPreventionTrainingParticipants = that.accidentPreventionTrainingParticipants;
+        this.nonSubsidizableAccidentPreventionTrainingParticipants = that.nonSubsidizableAccidentPreventionTrainingParticipants;
     }
 
     @Override
@@ -361,6 +489,15 @@ public class HunterTrainingStatistics
     }
 
     @Nullable
+    Integer countNonSubsidizableHunterTrainingEvents() {
+        return nullableIntSum(
+                nonSubsidizableMooselikeHuntingTrainingEvents, nonSubsidizableMooselikeHuntingLeaderTrainingEvents,
+                nonSubsidizableCarnivoreHuntingTrainingEvents, nonSubsidizableCarnivoreHuntingLeaderTrainingEvents,
+                nonSubsidizableSrvaTrainingEvents, nonSubsidizableCarnivoreContactPersonTrainingEvents,
+                nonSubsidizableAccidentPreventionTrainingEvents);
+    }
+
+    @Nullable
     Integer countHunterTrainingParticipants() {
         return nullableIntSum(
                 mooselikeHuntingTrainingParticipants, mooselikeHuntingLeaderTrainingParticipants,
@@ -369,7 +506,17 @@ public class HunterTrainingStatistics
                 accidentPreventionTrainingParticipants);
     }
 
+    @Nullable
+    Integer countNonSubsidizableHunterTrainingParticipants() {
+        return nullableIntSum(
+                nonSubsidizableMooselikeHuntingTrainingParticipants, nonSubsidizableMooselikeHuntingLeaderTrainingParticipants,
+                nonSubsidizableCarnivoreHuntingTrainingParticipants, nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants,
+                nonSubsidizableSrvaTrainingParticipants, nonSubsidizableCarnivoreContactPersonTrainingParticipants,
+                nonSubsidizableAccidentPreventionTrainingParticipants);
+    }
+
     // Accessors -->
+
 
     public Integer getMooselikeHuntingTrainingEvents() {
         return mooselikeHuntingTrainingEvents;
@@ -377,6 +524,14 @@ public class HunterTrainingStatistics
 
     public void setMooselikeHuntingTrainingEvents(final Integer mooselikeHuntingTrainingEvents) {
         this.mooselikeHuntingTrainingEvents = mooselikeHuntingTrainingEvents;
+    }
+
+    public Integer getNonSubsidizableMooselikeHuntingTrainingEvents() {
+        return nonSubsidizableMooselikeHuntingTrainingEvents;
+    }
+
+    public void setNonSubsidizableMooselikeHuntingTrainingEvents(final Integer nonSubsidizableMooselikeHuntingTrainingEvents) {
+        this.nonSubsidizableMooselikeHuntingTrainingEvents = nonSubsidizableMooselikeHuntingTrainingEvents;
     }
 
     public Integer getMooselikeHuntingTrainingParticipants() {
@@ -387,12 +542,12 @@ public class HunterTrainingStatistics
         this.mooselikeHuntingTrainingParticipants = mooselikeHuntingTrainingParticipants;
     }
 
-    public Integer getMooselikeHuntingLeaderTrainingParticipants() {
-        return mooselikeHuntingLeaderTrainingParticipants;
+    public Integer getNonSubsidizableMooselikeHuntingTrainingParticipants() {
+        return nonSubsidizableMooselikeHuntingTrainingParticipants;
     }
 
-    public void setMooselikeHuntingLeaderTrainingParticipants(final Integer mooselikeHuntingLeaderTrainingParticipants) {
-        this.mooselikeHuntingLeaderTrainingParticipants = mooselikeHuntingLeaderTrainingParticipants;
+    public void setNonSubsidizableMooselikeHuntingTrainingParticipants(final Integer nonSubsidizableMooselikeHuntingTrainingParticipants) {
+        this.nonSubsidizableMooselikeHuntingTrainingParticipants = nonSubsidizableMooselikeHuntingTrainingParticipants;
     }
 
     public Integer getMooselikeHuntingLeaderTrainingEvents() {
@@ -403,12 +558,44 @@ public class HunterTrainingStatistics
         this.mooselikeHuntingLeaderTrainingEvents = mooselikeHuntingLeaderTrainingEvents;
     }
 
+    public Integer getNonSubsidizableMooselikeHuntingLeaderTrainingEvents() {
+        return nonSubsidizableMooselikeHuntingLeaderTrainingEvents;
+    }
+
+    public void setNonSubsidizableMooselikeHuntingLeaderTrainingEvents(final Integer nonSubsidizableMooselikeHuntingLeaderTrainingEvents) {
+        this.nonSubsidizableMooselikeHuntingLeaderTrainingEvents = nonSubsidizableMooselikeHuntingLeaderTrainingEvents;
+    }
+
+    public Integer getMooselikeHuntingLeaderTrainingParticipants() {
+        return mooselikeHuntingLeaderTrainingParticipants;
+    }
+
+    public void setMooselikeHuntingLeaderTrainingParticipants(final Integer mooselikeHuntingLeaderTrainingParticipants) {
+        this.mooselikeHuntingLeaderTrainingParticipants = mooselikeHuntingLeaderTrainingParticipants;
+    }
+
+    public Integer getNonSubsidizableMooselikeHuntingLeaderTrainingParticipants() {
+        return nonSubsidizableMooselikeHuntingLeaderTrainingParticipants;
+    }
+
+    public void setNonSubsidizableMooselikeHuntingLeaderTrainingParticipants(final Integer nonSubsidizableMooselikeHuntingLeaderTrainingParticipants) {
+        this.nonSubsidizableMooselikeHuntingLeaderTrainingParticipants = nonSubsidizableMooselikeHuntingLeaderTrainingParticipants;
+    }
+
     public Integer getCarnivoreHuntingTrainingEvents() {
         return carnivoreHuntingTrainingEvents;
     }
 
     public void setCarnivoreHuntingTrainingEvents(final Integer carnivoreHuntingTrainingEvents) {
         this.carnivoreHuntingTrainingEvents = carnivoreHuntingTrainingEvents;
+    }
+
+    public Integer getNonSubsidizableCarnivoreHuntingTrainingEvents() {
+        return nonSubsidizableCarnivoreHuntingTrainingEvents;
+    }
+
+    public void setNonSubsidizableCarnivoreHuntingTrainingEvents(final Integer nonSubsidizableCarnivoreHuntingTrainingEvents) {
+        this.nonSubsidizableCarnivoreHuntingTrainingEvents = nonSubsidizableCarnivoreHuntingTrainingEvents;
     }
 
     public Integer getCarnivoreHuntingTrainingParticipants() {
@@ -419,12 +606,28 @@ public class HunterTrainingStatistics
         this.carnivoreHuntingTrainingParticipants = carnivoreHuntingTrainingParticipants;
     }
 
+    public Integer getNonSubsidizableCarnivoreHuntingTrainingParticipants() {
+        return nonSubsidizableCarnivoreHuntingTrainingParticipants;
+    }
+
+    public void setNonSubsidizableCarnivoreHuntingTrainingParticipants(final Integer nonSubsidizableCarnivoreHuntingTrainingParticipants) {
+        this.nonSubsidizableCarnivoreHuntingTrainingParticipants = nonSubsidizableCarnivoreHuntingTrainingParticipants;
+    }
+
     public Integer getCarnivoreHuntingLeaderTrainingEvents() {
         return carnivoreHuntingLeaderTrainingEvents;
     }
 
     public void setCarnivoreHuntingLeaderTrainingEvents(final Integer carnivoreHuntingLeaderTrainingEvents) {
         this.carnivoreHuntingLeaderTrainingEvents = carnivoreHuntingLeaderTrainingEvents;
+    }
+
+    public Integer getNonSubsidizableCarnivoreHuntingLeaderTrainingEvents() {
+        return nonSubsidizableCarnivoreHuntingLeaderTrainingEvents;
+    }
+
+    public void setNonSubsidizableCarnivoreHuntingLeaderTrainingEvents(final Integer nonSubsidizableCarnivoreHuntingLeaderTrainingEvents) {
+        this.nonSubsidizableCarnivoreHuntingLeaderTrainingEvents = nonSubsidizableCarnivoreHuntingLeaderTrainingEvents;
     }
 
     public Integer getCarnivoreHuntingLeaderTrainingParticipants() {
@@ -435,12 +638,28 @@ public class HunterTrainingStatistics
         this.carnivoreHuntingLeaderTrainingParticipants = carnivoreHuntingLeaderTrainingParticipants;
     }
 
+    public Integer getNonSubsidizableCarnivoreHuntingLeaderTrainingParticipants() {
+        return nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants;
+    }
+
+    public void setNonSubsidizableCarnivoreHuntingLeaderTrainingParticipants(final Integer nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants) {
+        this.nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants = nonSubsidizableCarnivoreHuntingLeaderTrainingParticipants;
+    }
+
     public Integer getSrvaTrainingEvents() {
         return srvaTrainingEvents;
     }
 
     public void setSrvaTrainingEvents(final Integer srvaTrainingEvents) {
         this.srvaTrainingEvents = srvaTrainingEvents;
+    }
+
+    public Integer getNonSubsidizableSrvaTrainingEvents() {
+        return nonSubsidizableSrvaTrainingEvents;
+    }
+
+    public void setNonSubsidizableSrvaTrainingEvents(final Integer nonSubsidizableSrvaTrainingEvents) {
+        this.nonSubsidizableSrvaTrainingEvents = nonSubsidizableSrvaTrainingEvents;
     }
 
     public Integer getSrvaTrainingParticipants() {
@@ -451,12 +670,28 @@ public class HunterTrainingStatistics
         this.srvaTrainingParticipants = srvaTrainingParticipants;
     }
 
+    public Integer getNonSubsidizableSrvaTrainingParticipants() {
+        return nonSubsidizableSrvaTrainingParticipants;
+    }
+
+    public void setNonSubsidizableSrvaTrainingParticipants(final Integer nonSubsidizableSrvaTrainingParticipants) {
+        this.nonSubsidizableSrvaTrainingParticipants = nonSubsidizableSrvaTrainingParticipants;
+    }
+
     public Integer getCarnivoreContactPersonTrainingEvents() {
         return carnivoreContactPersonTrainingEvents;
     }
 
     public void setCarnivoreContactPersonTrainingEvents(final Integer carnivoreContactPersonTrainingEvents) {
         this.carnivoreContactPersonTrainingEvents = carnivoreContactPersonTrainingEvents;
+    }
+
+    public Integer getNonSubsidizableCarnivoreContactPersonTrainingEvents() {
+        return nonSubsidizableCarnivoreContactPersonTrainingEvents;
+    }
+
+    public void setNonSubsidizableCarnivoreContactPersonTrainingEvents(final Integer nonSubsidizableCarnivoreContactPersonTrainingEvents) {
+        this.nonSubsidizableCarnivoreContactPersonTrainingEvents = nonSubsidizableCarnivoreContactPersonTrainingEvents;
     }
 
     public Integer getCarnivoreContactPersonTrainingParticipants() {
@@ -467,6 +702,14 @@ public class HunterTrainingStatistics
         this.carnivoreContactPersonTrainingParticipants = carnivoreContactPersonTrainingParticipants;
     }
 
+    public Integer getNonSubsidizableCarnivoreContactPersonTrainingParticipants() {
+        return nonSubsidizableCarnivoreContactPersonTrainingParticipants;
+    }
+
+    public void setNonSubsidizableCarnivoreContactPersonTrainingParticipants(final Integer nonSubsidizableCarnivoreContactPersonTrainingParticipants) {
+        this.nonSubsidizableCarnivoreContactPersonTrainingParticipants = nonSubsidizableCarnivoreContactPersonTrainingParticipants;
+    }
+
     public Integer getAccidentPreventionTrainingEvents() {
         return accidentPreventionTrainingEvents;
     }
@@ -475,12 +718,28 @@ public class HunterTrainingStatistics
         this.accidentPreventionTrainingEvents = accidentPreventionTrainingEvents;
     }
 
+    public Integer getNonSubsidizableAccidentPreventionTrainingEvents() {
+        return nonSubsidizableAccidentPreventionTrainingEvents;
+    }
+
+    public void setNonSubsidizableAccidentPreventionTrainingEvents(final Integer nonSubsidizableAccidentPreventionTrainingEvents) {
+        this.nonSubsidizableAccidentPreventionTrainingEvents = nonSubsidizableAccidentPreventionTrainingEvents;
+    }
+
     public Integer getAccidentPreventionTrainingParticipants() {
         return accidentPreventionTrainingParticipants;
     }
 
     public void setAccidentPreventionTrainingParticipants(final Integer accidentPreventionTrainingParticipants) {
         this.accidentPreventionTrainingParticipants = accidentPreventionTrainingParticipants;
+    }
+
+    public Integer getNonSubsidizableAccidentPreventionTrainingParticipants() {
+        return nonSubsidizableAccidentPreventionTrainingParticipants;
+    }
+
+    public void setNonSubsidizableAccidentPreventionTrainingParticipants(final Integer nonSubsidizableAccidentPreventionTrainingParticipants) {
+        this.nonSubsidizableAccidentPreventionTrainingParticipants = nonSubsidizableAccidentPreventionTrainingParticipants;
     }
 
     @Override

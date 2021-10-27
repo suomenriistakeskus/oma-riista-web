@@ -1,7 +1,20 @@
-<div class="btn-group">
+<div class="btn-group" role="group" uib-dropdown dropdown-append-to-body>
     <button type="button"
-            class="btn btn-primary"
+            class="btn btn-primary" uib-dropdown-toggle
             ng-show="$ctrl.canSend"
-            ng-click="$ctrl.openSendModal()"
-            translate="announcements.list.buttonSend"></button>
+            translate="announcements.list.buttonSend">
+        <ul class="dropdown-menu" uib-dropdown-menu>
+            <li>
+                <a ng-click="$ctrl.openSendModal('ALL')" ng-if="::$ctrl.canSendToAll">
+                    <span translate="announcements.form.visibleToAll"></span>
+                </a>
+                <a ng-click="$ctrl.openSendModal('RHY')" ng-if="::$ctrl.canSendToRhy">
+                    <span translate="announcements.form.visibleToRhyMembers"></span>
+                </a>
+                <a ng-click="$ctrl.openSendModal('CUSTOM')" ng-if="::$ctrl.canSend">
+                    <span translate="announcements.list.selectRecipients"></span>
+                </a>
+            </li>
+        </ul>
+    </button>
 </div>

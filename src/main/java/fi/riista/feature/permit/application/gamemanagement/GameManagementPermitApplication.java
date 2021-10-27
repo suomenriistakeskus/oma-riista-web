@@ -1,9 +1,9 @@
 package fi.riista.feature.permit.application.gamemanagement;
 
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HasParentApplication;
 import fi.riista.feature.permit.application.derogation.area.DerogationPermitApplicationAreaInfo;
 import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -14,15 +14,11 @@ import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -30,16 +26,11 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(AccessType.FIELD)
-public class GameManagementPermitApplication extends LifecycleEntity<Long> implements DerogationPermitApplicationAreaInfo {
+public class GameManagementPermitApplication extends HasParentApplication implements DerogationPermitApplicationAreaInfo {
 
     public static final String ID_COLUMN_NAME = "game_management_permit_application_id";
 
     private Long id;
-
-    @NotNull
-    @JoinColumn(unique = true, nullable = false)
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    private HarvestPermitApplication harvestPermitApplication;
 
     @Column
     @Min(1)
@@ -65,7 +56,7 @@ public class GameManagementPermitApplication extends LifecycleEntity<Long> imple
         requireNonNull(application);
         checkArgument(application.getHarvestPermitCategory() == HarvestPermitCategory.GAME_MANAGEMENT,
                 "Application category must be game management");
-        this.harvestPermitApplication = application;
+        setHarvestPermitApplication(application);
     }
 
     public GameManagementPermitApplication() {}
@@ -84,10 +75,6 @@ public class GameManagementPermitApplication extends LifecycleEntity<Long> imple
     @Override
     public void setId(final Long id) {
         this.id = id;
-    }
-
-    public HarvestPermitApplication getHarvestPermitApplication() {
-        return harvestPermitApplication;
     }
 
     @Override

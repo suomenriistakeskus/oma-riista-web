@@ -97,7 +97,7 @@ public class RhyAnnualStatisticsApiResource {
     public RhyAnnualStatisticsDTO updateHuntingControl(final @PathVariable long annualStatisticsId,
                                                        final @RequestBody @Valid HuntingControlStatistics input) {
 
-        return annualStatisticsCrudFeature.updateHuntingControl(annualStatisticsId, input);
+        return annualStatisticsCrudFeature.moderatorUpdateHuntingControl(annualStatisticsId, input);
     }
 
     @PutMapping(value = "/{annualStatisticsId:\\d+}/gamedamage", consumes = APPLICATION_JSON_VALUE)

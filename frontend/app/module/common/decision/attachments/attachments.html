@@ -12,6 +12,16 @@
                     <span translate="decision.attachment.listing.title"></span>
                 </uib-tab-heading>
 
+                <div ng-if="$ctrl.showDefaultMooseAttachmentButton" class="row" style="margin-top: 20px">
+                    <div class="col-xs-12 text-right">
+                        <button type="button" class="btn btn-default"
+                                ng-click="$ctrl.addDefaultMooseAttachment()">
+                            <span class="fa fa-fw fa-file-text"></span>
+                            <span translate="decision.attachment.addDefaultMooseAttachment"></span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="table-responsive">
                     <table class="table">
                         <thead>

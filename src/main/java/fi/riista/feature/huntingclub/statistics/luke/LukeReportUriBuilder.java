@@ -34,12 +34,10 @@ public class LukeReportUriBuilder {
     private final String rkaOfficialCode;
     private final String htaOfficialCode;
     private final String clubOfficialCode;
-    private final boolean isInPilot;
 
     public LukeReportUriBuilder(final @Nonnull URI baseUri,
                                 final @Nonnull HarvestPermit permit,
-                                final HuntingClub club,
-                                final boolean isInPilot) {
+                                final HuntingClub club) {
         this.baseUri = Objects.requireNonNull(baseUri);
         this.permitId = permit.getId();
         this.clubId = F.getId(club);
@@ -48,7 +46,6 @@ public class LukeReportUriBuilder {
         this.rkaOfficialCode = permit.getRhy().getParentOrganisation().getOfficialCode();
         this.htaOfficialCode = permit.getMooseArea() != null ? permit.getMooseArea().getNumber() : null;
         this.clubOfficialCode = club != null ? club.getOfficialCode() : null;
-        this.isInPilot = isInPilot;
     }
 
     public Long getPermitId() {
@@ -91,10 +88,6 @@ public class LukeReportUriBuilder {
                 .toUri();
     }
 
-    public boolean isInPilot() {
-        return isInPilot;
-    }
-
     @Nonnull
     private String getOrganisationId(final LukeReportParams.LukeArea area) {
         switch (area) {
@@ -111,5 +104,9 @@ public class LukeReportUriBuilder {
             default:
                 return "";
         }
+    }
+
+    public String getRhyOfficialCode() {
+        return rhyOfficialCode;
     }
 }

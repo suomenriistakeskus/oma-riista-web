@@ -1,0 +1,154 @@
+<!-- info fields -->
+<div class="r-otherwise-deceased" ng-if="!!$ctrl.item">
+    <div class="row">
+        <div class="col-md-6">
+            <table class="details" width="100%">
+                <tr>
+                    <th translate="jht.otherwiseDeceased.fields.pointOfTime"></th>
+                    <th translate="jht.otherwiseDeceased.fields.source"></th>
+                </tr>
+                <tr>
+                    <td ng-bind="$ctrl.item.pointOfTime | date:'d.M.yyyy HH:mm'"></td>
+
+                    <td ng-switch="$ctrl.item.source">
+                        <span ng-switch-when="OTHER">
+                            <span translate="jht.otherwiseDeceased.fields.other">
+                            </span><span ng-if="$ctrl.item.sourceOther">: {{ $ctrl.item.sourceOther }}</span>
+                        </span>
+                        <span ng-switch-default translate="jht.otherwiseDeceased.sources.{{$ctrl.item.source}}"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <th translate="jht.otherwiseDeceased.fields.species"></th>
+                    <th translate="jht.otherwiseDeceased.fields.age"></th>
+                </tr>
+                <tr>
+                    <td ng-bind="$ctrl.item.gameSpeciesCode | translateSpeciesCode"></td>
+                    <td translate="global.gameAge.{{$ctrl.item.age}}"></td>
+                </tr>
+                <tr>
+                    <th translate="jht.otherwiseDeceased.fields.gender"></th>
+                    <th translate="jht.otherwiseDeceased.fields.weight"></th>
+                </tr>
+                <tr>
+                    <td translate="global.gameGender.{{$ctrl.item.gender}}"></td>
+                    <td ng-bind="$ctrl.item.weight"></td>
+                </tr>
+                <tr>
+                    <th translate="jht.otherwiseDeceased.fields.cause"></th>
+                    <th translate="jht.otherwiseDeceased.fields.rka"></th>
+                </tr>
+                <tr>
+                    <td>
+                        <span translate="jht.otherwiseDeceased.causes.{{$ctrl.item.cause}}">
+                        </span><span ng-if="$ctrl.hasOtherCause()">: {{ $ctrl.item.causeOther }}</span>
+                    </td>
+                    <td ng-bind="$ctrl.item.rka | rI18nNameFilter"></td>
+                </tr>
+                <tr>
+                    <th colspan="2" translate="jht.otherwiseDeceased.fields.description"></th>
+                </tr>
+                <tr>
+                    <td colspan="2" ng-switch="!!$ctrl.item.description">
+                        <r-paragraphed-text ng-switch-when="true" content="$ctrl.item.description"></r-paragraphed-text>
+                        <p ng-switch-default>-</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="2" translate="jht.otherwiseDeceased.fields.additionalInfo"></th>
+                </tr>
+                <tr>
+                    <td colspan="2" ng-switch="!!$ctrl.item.additionalInfo">
+                        <r-paragraphed-text ng-switch-when="true" content="$ctrl.item.additionalInfo"></r-paragraphed-text>
+                        <p ng-switch-default>-</p>
+                    </td>
+                </tr>
+                <tr>
+                    <th colspan="2" translate="jht.otherwiseDeceased.fields.attachments"></th>
+                </tr>
+                <tr>
+                    <td colspan="2" ng-switch="!!$ctrl.item.attachments && $ctrl.item.attachments.length > 0">
+                        <ul ng-switch-when="true" class="list-inline">
+                            <li ng-repeat="attachment in $ctrl.item.attachments track by attachment.id">
+                                <a ng-click="$ctrl.downloadAttachment(attachment.id)" ng-bind="attachment.filename"></a>
+                            </li>
+                        </ul>
+                        <p ng-switch-default translate="jht.otherwiseDeceased.noAttachments"></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- map -->
+
+        <div class="col-md-6">
+            <table class="details" width="100%">
+                <tr>
+                    <th translate="jht.otherwiseDeceased.fields.pointOfLocation"></th>
+                </tr>
+                <tr>
+                    <td>
+                        <p>
+                            <span ng-bind="$ctrl.item.municipality | rI18nNameFilter"></span>,
+                            <span ng-bind="$ctrl.item.rhy | rI18nNameFilter"></span>
+                        </p>
+                        <div ng-if="$ctrl.item.noExactLocation"
+                             translate="jht.otherwiseDeceased.fields.noExactLocation">
+                        </div>
+                        <leaflet class="r-cursor-pointer"
+                                 name="geoLocation"
+                                 id="geoLocation"
+                                 defaults="$ctrl.mapDefaults"
+                                 layers="$ctrl.mapDefaults.mmlLayers"
+                                 controls="$ctrl.mapDefaults.controls"
+                                 lf-center="$ctrl.center"
+                                 r-geolocation-marker="$ctrl.item.geoLocation"
+                                 r-geolocation-editable="false"
+                                 height="300px"
+                                 style="text-align: center; padding: 10px;">
+                        </leaflet>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- change history -->
+
+    <div class="row">
+        <strong>
+            <div class="col-xs-12" translate="jht.otherwiseDeceased.fields.changeLog"></div>
+        </strong>
+    </div>
+
+    <div class="row" ng-repeat="change in $ctrl.item.changeHistory track by change.id">
+        <div class="col-xs-2" ng-bind="::change.modificationTime | date:'d.M.yyyy HH:mm'"></div>
+        <div class="col-xs-3">
+            <span ng-bind="::change.author.firstName"></span>
+            <span ng-bind="::change.author.lastName"></span>
+        </div>
+        <div class="col-xs-7">
+            <span translate="jht.otherwiseDeceased.changeItem.{{change.changeType}}"></span>
+            <span ng-bind="::change.reasonForChange"></span>
+        </div>
+    </div>
+
+    <div class="row buttons">
+        <div class="col-md-12 text-right">
+            <span ng-switch="$ctrl.item.rejected">
+                <button ng-switch-when="false"
+                        type="button" class="btn btn-danger" ng-click="$ctrl.reject()"
+                        translate="global.button.reject"></button>
+                <button ng-switch-when="true"
+                        type="button" class="btn btn-danger" ng-click="$ctrl.restore()"
+                        translate="global.button.restore"></button>
+            </span>
+            <button type="button" class="btn btn-default" ng-click="$ctrl.copy()"
+                    ng-disabled="$ctrl.item.rejected"
+                    translate="global.button.copy"></button>
+            <button type="button" class="btn btn-primary" ng-click="$ctrl.edit()"
+                    ng-disabled="$ctrl.item.rejected"
+                    translate="global.button.edit"></button>
+        </div>
+    </div>
+</div>

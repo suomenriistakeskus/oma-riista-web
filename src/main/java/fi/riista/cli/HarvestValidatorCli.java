@@ -80,9 +80,6 @@ public class HarvestValidatorCli {
             final List<Long> harvestIdList =
                     queryFactory.select(HARVEST.id).from(HARVEST).orderBy(HARVEST.id.asc()).fetch();
 
-            // TODO: Check whether this needs to be set otherwise.
-            final boolean isDeerPilot2020Activated = false;
-
             for (final List<Long> partition : Lists.partition(harvestIdList, 1000)) {
                 transactionTemplate.execute(new TransactionCallbackWithoutResult() {
                     @Override
@@ -94,7 +91,7 @@ public class HarvestValidatorCli {
                                 .fetch();
 
                         // TODO: Fetch persons'
-                        validateBatch(harvestList, isDeerPilot2020Activated);
+                        validateBatch(harvestList);
 
                         entityManager.clear();
                     }
@@ -109,8 +106,7 @@ public class HarvestValidatorCli {
     private static int TOTAL_HARVEST_ERRORS = 0;
     private static int TOTAL_SPECIMEN_ERRORS = 0;
 
-    // TODO Remove `isDeerPilot2020Enabled` when deer pilot 2020 is over.
-    private static void validateBatch(final List<Harvest> harvestList, final boolean isDeerPilot2020Enabled) {
+    private static void validateBatch(final List<Harvest> harvestList) {
         for (final Harvest harvest : harvestList) {
             if (harvest.getHuntingDayOfGroup() != null) {
                 if (harvest.getHuntingDayOfGroup().getGroup().isFromMooseDataCard()) {
@@ -128,16 +124,12 @@ public class HarvestValidatorCli {
             final int huntingYear = DateUtil.huntingYearContaining(harvest.getPointOfTimeAsLocalDate());
             final HarvestReportingType reportingType = harvest.resolveReportingType();
 
-            // TODO Remove deer pilot translation when deer pilot 2020 is over.
-            final HarvestSpecVersion revisedSpecVersion =
-                    HarvestSpecVersion.CURRENTLY_SUPPORTED.revertIfNotOnDeerPilot(isDeerPilot2020Enabled);
-
             final RequiredHarvestFields.Specimen specimenFieldRequirements = RequiredHarvestFields.getSpecimenFields(
                     huntingYear, speciesCode, harvest.getHuntingMethod(), reportingType, legallyMandatoryFieldsOnly,
-                    revisedSpecVersion);
+                    HarvestSpecVersion.CURRENTLY_SUPPORTED);
 
             final RequiredHarvestFields.Report reportRequirements = RequiredHarvestFields.getFormFields(
-                    huntingYear, speciesCode, reportingType, legallyMandatoryFieldsOnly, isDeerPilot2020Enabled);
+                    huntingYear, speciesCode, reportingType, legallyMandatoryFieldsOnly);
 
             final HarvestFieldValidator harvestFieldValidator = new HarvestFieldValidator(reportRequirements, harvest);
             harvestFieldValidator.validateAll();
@@ -159,7 +151,7 @@ public class HarvestValidatorCli {
             for (final HarvestSpecimen specimen : harvest.getSortedSpecimens()) {
                 final HarvestSpecimenValidator specimenValidator =
                         new HarvestSpecimenValidator(specimenFieldRequirements, specimen, speciesCode,
-                                associatedWithHuntingDay, legallyMandatoryFieldsOnly);
+                                associatedWithHuntingDay);
                 specimenValidator.validateAll();
 
                 if (specimenValidator.hasErrors()) {
@@ -167,7 +159,7 @@ public class HarvestValidatorCli {
 
                     LOG.error(String.format("Harvest id=%d specimen id=%d reportingType=%s speciesCode=%d " +
                                     "huntingYear=%d huntingDay=%s age=%s gender=%s has missing fields %s and illegal " +
-                                    "values %s illegal fields %s and missing moose weight %s",
+                                    "values %s illegal fields %s",
                             harvest.getId(),
                             specimen.getId(),
                             reportingType,
@@ -178,8 +170,7 @@ public class HarvestValidatorCli {
                             specimen.getGender(),
                             specimenValidator.getMissingFields(),
                             specimenValidator.getIllegalValues(),
-                            specimenValidator.getIllegalFields(),
-                            specimenValidator.isMissingMooseWeight()));
+                            specimenValidator.getIllegalFields()));
 
                 }
             }

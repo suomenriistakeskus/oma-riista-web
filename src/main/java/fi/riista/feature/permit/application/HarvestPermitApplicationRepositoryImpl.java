@@ -18,9 +18,13 @@ import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.SQLQueryFactory;
 import fi.riista.feature.account.user.QSystemUser;
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.common.decision.DecisionStatus;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.gamediary.harvest.specimen.QHarvestSpecimen;
+import fi.riista.feature.gis.GISPoint;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
@@ -34,30 +38,40 @@ import fi.riista.feature.permit.application.amendment.QAmendmentApplicationData;
 import fi.riista.feature.permit.application.conflict.HarvestPermitApplicationConflictPalsta;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchDTO;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchQueryBuilder;
-import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.feature.permit.decision.revision.QPermitDecisionRevision;
+import fi.riista.feature.permit.decision.species.QPermitDecisionSpeciesAmount;
 import fi.riista.sql.SQKiinteistoNimet;
 import fi.riista.sql.SQPalstaalue;
 import fi.riista.sql.SQZone;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import fi.riista.util.Locales;
 import io.vavr.Tuple3;
 import org.apache.commons.lang3.StringUtils;
 import org.geolatte.geom.Geometry;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
+import javax.sql.DataSource;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -65,6 +79,10 @@ import java.util.stream.Collectors;
 import static com.querydsl.core.group.GroupBy.groupBy;
 import static fi.riista.feature.common.decision.GrantStatus.RESTRICTED;
 import static fi.riista.feature.common.decision.GrantStatus.UNCHANGED;
+import static fi.riista.feature.permit.application.HarvestPermitApplication.Status.ACTIVE;
+import static fi.riista.feature.permit.application.HarvestPermitApplication.Status.AMENDING;
+import static fi.riista.feature.permit.application.HarvestPermitApplication.Status.DRAFT;
+import static fi.riista.util.F.mapNullable;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
@@ -79,6 +97,16 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
     private static final QPermitDecisionRevision REV = QPermitDecisionRevision.permitDecisionRevision;
     private static final QPermitDecision DECISION = QPermitDecision.permitDecision;
     private static final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
+    private static final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
+    private static final QHarvestPermitApplicationSpeciesAmount SPA =
+            QHarvestPermitApplicationSpeciesAmount.harvestPermitApplicationSpeciesAmount;
+
+    private NamedParameterJdbcOperations jdbcTemplate;
+
+    @Autowired
+    public void setDataSource(DataSource dataSource) {
+        this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+    }
 
     @Resource
     private SQLQueryFactory sqlQueryFactory;
@@ -284,7 +312,40 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
                 .fetch();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<GameSpecies> listSpecies() {
+        final QPermitDecisionSpeciesAmount SPECIES_AMOUNT = QPermitDecisionSpeciesAmount.permitDecisionSpeciesAmount;
+        final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
+        return jpqlQueryFactory.select(SPECIES)
+                .from(SPECIES_AMOUNT)
+                .join(SPECIES_AMOUNT.gameSpecies, SPECIES)
+                .distinct()
+                .fetch();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GameSpecies> listSpecies(@Nonnull final HarvestPermitCategory permitCategory) {
+        requireNonNull(permitCategory);
+
+        final QHarvestPermitApplication APPLICATION = QHarvestPermitApplication.harvestPermitApplication;
+        final QPermitDecisionSpeciesAmount SPECIES_AMOUNT = QPermitDecisionSpeciesAmount.permitDecisionSpeciesAmount;
+        final QPermitDecision DECISION = QPermitDecision.permitDecision;
+
+        return jpqlQueryFactory.select(SPECIES_AMOUNT.gameSpecies)
+                .from(APPLICATION)
+                .join(APPLICATION.decision, DECISION)
+                .join(SPECIES_AMOUNT).on(SPECIES_AMOUNT.permitDecision.eq(DECISION))
+                .where(APPLICATION.harvestPermitCategory.eq(permitCategory))
+                .distinct()
+                .fetch();
+    }
+
     private HarvestPermitApplicationSearchQueryBuilder baseSearchQueryApplications(final HarvestPermitApplicationSearchDTO dto) {
+        // Use map nullable to avoid selecting default language when not specified in dto.
+        final Locale decisionLocale = mapNullable(dto.getDecisionLocale(), Locales::getLocaleByLanguageCode);
+
         final HarvestPermitApplicationSearchQueryBuilder builder =
                 new HarvestPermitApplicationSearchQueryBuilder(jpqlQueryFactory)
                         .withStatus(dto.getStatus())
@@ -295,6 +356,7 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
                         .withDerogationReason(dto.getDerogationReason())
                         .withForbiddenMethod(dto.getForbiddenMethod())
                         .withHarvestPermitCategory(dto.getHarvestPermitCategory())
+                        .withDecisionLocale(decisionLocale)
                         .withGameSpeciesCode(dto.getGameSpeciesCode())
                         .withHuntingYear(dto.getHuntingYear())
                         .withValidityYears(dto.getValidityYears())
@@ -312,11 +374,11 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
     @Override
     @Transactional(readOnly = true)
     public List<HarvestPermitApplicationConflictPalsta> findIntersectingPalsta(
-            final HarvestPermitApplication firstApplication, final HarvestPermitApplication secondApplication) {
+            final HarvestPermitApplication firstApplication, final HarvestPermitApplication secondApplication, final int chunkSize) {
         final Long firstZoneId = F.getId(firstApplication.getArea().getZone());
         final Long secondZoneId = F.getId(secondApplication.getArea().getZone());
 
-        LOG.info("findIntersectingPalsta firstZoneId={} secondZoneId={}", firstZoneId, secondZoneId);
+        LOG.info("findIntersectingPalsta firstZoneId={} secondZoneId={} chunkSize={}", firstZoneId, secondZoneId, chunkSize);
 
         final PathBuilder<Geometry> g1 = new PathBuilder<>(Geometry.class, "g1");
         final PathBuilder<Geometry> g2 = new PathBuilder<>(Geometry.class, "g2");
@@ -335,8 +397,8 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
 
         final NumberPath<Double> g4ConflictAreaSize = g4.getNumber("area_size", Double.class);
         return sqlQueryFactory.query()
-                .with(g1, loadSplicedZoneGeometryExpression(firstZoneId))
-                .with(g2, loadSplicedZoneGeometryExpression(secondZoneId))
+                .with(g1, loadSplicedZoneGeometryExpression(firstZoneId, chunkSize))
+                .with(g2, loadSplicedZoneGeometryExpression(secondZoneId, chunkSize))
                 .with(g3, SQLExpressions
                         .select(stDump(zoneIntersection).as("geom"))
                         .from(g1).join(g2).on(g1Geometry.intersects(g2Geometry)))
@@ -380,9 +442,92 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
         return GeometryExpressions.asGeometry(Expressions.template(Geometry.class, "(ST_Dump({0})).geom", geom));
     }
 
-    private static SQLQuery<Geometry> loadSplicedZoneGeometryExpression(final Long firstZoneId) {
+    private static SQLQuery<Geometry> loadSplicedZoneGeometryExpression(final Long firstZoneId, final int chunkSize) {
         return SQLExpressions
-                .select(stSubDivide(stDump(SQZone.zone.geom), Expressions.asNumber(16384)).as("geom"))
+                .select(stSubDivide(stDump(SQZone.zone.geom), Expressions.asNumber(chunkSize)).as("geom"))
                 .from(SQZone.zone).where(SQZone.zone.zoneId.eq(firstZoneId));
     }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public List<HarvestPermitApplication> findByPermitDecisionIn(final Collection<PermitDecision> decisions) {
+        if (decisions.isEmpty()) {
+            return emptyList();
+        }
+
+        return jpqlQueryFactory.select(APPLICATION)
+                .from(DECISION)
+                .join(DECISION.application, APPLICATION)
+                .where(DECISION.in(decisions))
+                .fetch();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public List<HarvestPermitApplication> findNotHandledByHuntingYearAndSpeciesAndCategory(final int huntingYear,
+                                                                                           final GameSpecies species,
+                                                                                           final HarvestPermitCategory category) {
+        final LocalDate huntingYearStart = DateUtil.huntingYearBeginDate(huntingYear);
+        final LocalDate huntingYearEnd = DateUtil.huntingYearEndDate(huntingYear);
+
+        return jpqlQueryFactory
+                .select(APPLICATION)
+                .from(SPA)
+                .innerJoin(SPA.harvestPermitApplication, APPLICATION)
+                .innerJoin(SPA.gameSpecies, SPECIES)
+                .leftJoin(APPLICATION.decision, DECISION)
+                .where(SPA.beginDate.between(huntingYearStart, huntingYearEnd)
+                        .and(SPECIES.eq(species))
+                        .and(APPLICATION.harvestPermitCategory.eq(category))
+                        .and(DECISION.isNull())
+                        .and(APPLICATION.status.eq(ACTIVE).or(APPLICATION.status.eq(AMENDING))))
+                .fetch();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public List<Long> findApplicationIdsInReindeerArea(final Collection<HarvestPermitApplication> applications,
+                                                       final HarvestPermitCategory category) {
+        if (applications.isEmpty()) {
+            return emptyList();
+        }
+
+        final Set<Long> appIds = F.getUniqueIds(applications);
+
+        String parentApp = "";
+        switch (category) {
+            case MAMMAL:
+                parentApp = "mammal_permit_application";
+                break;
+            case LARGE_CARNIVORE_BEAR:
+            case LARGE_CARNIVORE_LYNX:
+            case LARGE_CARNIVORE_LYNX_PORONHOITO:
+            case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
+                parentApp = "carnivore_permit_application";
+                break;
+            case DEPORTATION:
+                parentApp = "deportation_permit_application";
+                break;
+            case RESEARCH:
+                parentApp = "research_permit_application";
+                break;
+            default:
+                throw new IllegalArgumentException("Category not supported");
+        }
+
+        final String sql = "SELECT app.harvest_permit_application_id " +
+                "FROM " + parentApp + " parentApp " +
+                "JOIN harvest_permit_application app " +
+                "ON parentApp.harvest_permit_application_id = app.harvest_permit_application_id " +
+                "JOIN harvest_area area " +
+                "ON ST_Contains(area.geom, ST_SetSRID(ST_MakePoint(parentApp.longitude, parentApp.latitude), 3067)) " +
+                "WHERE app.harvest_permit_application_id IN (:appIds) " +
+                "AND area.type = 'PORONHOITOALUE'";
+
+        return jdbcTemplate.query(sql,
+                new MapSqlParameterSource("appIds", appIds),
+                (rs, rowNum) -> rs.getLong("harvest_permit_application_id"));
+    }
+
 }

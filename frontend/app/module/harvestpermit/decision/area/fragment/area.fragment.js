@@ -126,7 +126,9 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
                         return feature.properties.hash && feature.properties.hash === fragment.hash;
                     });
 
-                    var fragmentStatus = PermitAreaFragmentStatus.create($ctrl.fragmentSizeLimitHa * 10000);
+                    var fragmentStatus =
+                        PermitAreaFragmentStatus.create($ctrl.applicationId, $ctrl.fragmentSizeLimitHa * 10000);
+
                     PermitAreaFragmentInfoModal.showPopup(
                         $ctrl.applicationId, fragment, fragmentStatus, feature
                     ).then(function () {
@@ -271,7 +273,7 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
 
             function createGeoJsonLayer(featureCollection, fragmentSizeLimitHa) {
                 var fragmentSizeLimit = fragmentSizeLimitHa * 10000;
-                var fragmentStatus = PermitAreaFragmentStatus.create(fragmentSizeLimit);
+                var fragmentStatus = PermitAreaFragmentStatus.create($ctrl.applicationId, fragmentSizeLimit);
                 $ctrl.layers = [];
 
                 return L.geoJSON(featureCollection, {
@@ -358,7 +360,9 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
             }
 
             function updateFragmentList() {
-                $ctrl.fragmentStatus = PermitAreaFragmentStatus.create($ctrl.fragmentSizeLimitHa * 10000);
+                $ctrl.fragmentStatus =
+                    PermitAreaFragmentStatus.create($ctrl.applicationId, $ctrl.fragmentSizeLimitHa * 10000);
+
                 PermitAreaFragmentLoadingService.getFragmentInfoes({
                     applicationId: $ctrl.applicationId,
                     fragmentSizeLimit: $ctrl.fragmentSizeLimitHa * 10000
@@ -372,7 +376,8 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
     })
 
     .factory('PermitAreaFragmentStatus', function (LocalStorageService) {
-        function Service(fragmentSizeLimit) {
+        function Service(applicationId, fragmentSizeLimit) {
+            this.applicationId = applicationId;
             this.fragmentSizeLimit = fragmentSizeLimit;
             this.areaSizeGetter = _.property('properties.areaSize');
             this.hashGetter = _.property('properties.hash');
@@ -380,14 +385,19 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
 
         var proto = Service.prototype;
 
+        function cacheKey(id, hash) {
+            return 'fragment-' + id + '-' + hash;
+        }
+
         proto.isFeatureFragment = function (feature) {
             var hash = this.hashGetter(feature);
 
+
             if (this.areaSizeGetter(feature) < this.fragmentSizeLimit) {
-                if (hash && LocalStorageService.getKey('fragment-' + hash) === '0') {
+                if (hash && LocalStorageService.getKey(cacheKey(this.applicationId, hash)) === '0') {
                     return false;
                 }
-                if (hash && LocalStorageService.getKey('fragment-' + hash) === '1') {
+                if (hash && LocalStorageService.getKey(cacheKey(this.applicationId, hash)) === '1') {
                     return true;
                 }
                 return null;
@@ -400,10 +410,11 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
             var hash = fragment.hash;
 
             if (fragment.bothSize.total < this.fragmentSizeLimit) {
-                if (hash && LocalStorageService.getKey('fragment-' + hash) === '0') {
+
+                if (hash && LocalStorageService.getKey(cacheKey(this.applicationId, hash)) === '0') {
                     return false;
                 }
-                if (hash && LocalStorageService.getKey('fragment-' + hash) === '1') {
+                if (hash && LocalStorageService.getKey(cacheKey(this.applicationId, hash)) === '1') {
                     return true;
                 }
                 return null;
@@ -415,13 +426,13 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
             var hash = fragment.hash;
 
             if (hash) {
-                LocalStorageService.setKey('fragment-' + hash, value ? '1' : '0');
+                LocalStorageService.setKey(cacheKey(this.applicationId, hash), value ? '1' : '0');
             }
         };
 
         return {
-            create: function (fragmentSizeLimit) {
-                return new Service(fragmentSizeLimit);
+            create: function (applicationId, fragmentSizeLimit) {
+                return new Service(applicationId, fragmentSizeLimit);
             }
         };
     })

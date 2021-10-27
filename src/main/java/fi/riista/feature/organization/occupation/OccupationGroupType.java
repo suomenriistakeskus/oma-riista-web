@@ -1,17 +1,27 @@
 package fi.riista.feature.organization.occupation;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.util.Collect;
 import fi.riista.util.F;
 import fi.riista.util.LocalisedEnum;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static fi.riista.util.Collect.nullSafeGroupingBy;
 
 public enum OccupationGroupType implements LocalisedEnum {
     TOIMINNANOHJAAJA,
@@ -37,19 +47,22 @@ public enum OccupationGroupType implements LocalisedEnum {
     RYHMAN_JASEN,
     HALLITUS;
 
-    private static final Map<OccupationGroupType, ImmutableSet<OccupationType>> groupTypeToOccupationTypeMapping;
+    private static final ImmutableMap<OccupationGroupType, List<OccupationType>> groupTypeToOccupationTypeMapping;
+
     static {
-        final Map<OccupationGroupType, ImmutableSet<OccupationType>> aMap = new HashMap<>();
-        for (final OccupationType occupationType : OccupationType.values()) {
-            aMap.put(mapToGroupType(occupationType), ImmutableSet.of(occupationType));
-        }
-        aMap.put(HALLITUS, ImmutableSet.copyOf(OccupationType.boardValues()));
-        groupTypeToOccupationTypeMapping = Collections.unmodifiableMap(aMap);
+        final Map<OccupationGroupType, List<OccupationType>> typesByGroup = Stream.of(OccupationType.values())
+                .collect(nullSafeGroupingBy(OccupationGroupType::mapToGroupType));
+
+        groupTypeToOccupationTypeMapping =
+                ImmutableMap.<OccupationGroupType, List<OccupationType>>builderWithExpectedSize(typesByGroup.size() + 1)
+                        .putAll(typesByGroup)
+                        .put(HALLITUS, ImmutableList.copyOf(OccupationType.boardValues()))
+                        .build();
     }
 
-    public static final ImmutableSet<OccupationType> getOccupationTypes(final OccupationGroupType groupType) {
-        final ImmutableSet<OccupationType> occupationTypes = groupTypeToOccupationTypeMapping.get(groupType);
-        return Optional.ofNullable(occupationTypes).orElseGet(() -> ImmutableSet.copyOf(EnumSet.noneOf(OccupationType.class)));
+    public static final List<OccupationType> getOccupationTypes(final OccupationGroupType groupType) {
+        final List<OccupationType> occupationTypes = groupTypeToOccupationTypeMapping.get(groupType);
+        return Optional.ofNullable(occupationTypes).orElseGet(() -> ImmutableList.of());
     }
 
     public static ImmutableSet<OccupationGroupType> getApplicableTypes(@Nullable final OrganisationType organisationType) {
@@ -58,6 +71,7 @@ public enum OccupationGroupType implements LocalisedEnum {
                 : F.filterToEnumSet(OccupationType.class, occType -> occType.isApplicableFor(organisationType));
         final EnumSet<OccupationGroupType> groupTypes = occupationTypes.stream()
                 .map(OccupationGroupType::mapToGroupType)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toCollection(() -> EnumSet.noneOf(OccupationGroupType.class)));
         if (organisationType == OrganisationType.RHY) {
             groupTypes.add(HALLITUS);
@@ -110,6 +124,9 @@ public enum OccupationGroupType implements LocalisedEnum {
                 return RYHMAN_METSASTYKSENJOHTAJA;
             case RYHMAN_JASEN:
                 return RYHMAN_JASEN;
+            case ALUEKOKOUKSEN_EDUSTAJA:
+            case ALUEKOKOUKSEN_VARAEDUSTAJA:
+                return null;
             default:
                 throw new IllegalArgumentException("Unknown occupation type");
 

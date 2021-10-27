@@ -486,9 +486,9 @@ angular.module('app.clubhunting.add', [])
 
     .controller('ClubHarvestFormController', function ($filter, $scope, ActiveRoleService, ClubHuntingHarvestFields,
                                                        HarvestFieldsService, ModeratorPrivileges, AntlerGuide,
-                                                       createHuntingDayForEntry, entry, fields, groupId, huntingDays,
-                                                       huntingFinished, memberCandidates, parameters,
-                                                       permitSpeciesAmount) {
+                                                       GameSpeciesCodes, createHuntingDayForEntry, entry, fields,
+                                                       groupId, huntingDays, huntingFinished, memberCandidates,
+                                                       parameters, permitSpeciesAmount) {
         $scope.entry = entry;
         $scope.fields = fields;
 
@@ -516,8 +516,7 @@ angular.module('app.clubhunting.add', [])
                 $scope.entry.geoLocation.latitude &&
                 $scope.entry.actorInfo && $scope.entry.actorInfo.hunterNumber &&
                 isHuntingDayInfoValid() &&
-                $scope.entry.pointOfTime &&
-                !$scope.isWeightInfoInadequate();
+                $scope.entry.pointOfTime;
         };
 
         function isHuntingDayInfoValid() {
@@ -584,6 +583,10 @@ angular.module('app.clubhunting.add', [])
 
         $scope.isAntlerGuideVisible = function () {
             return AntlerGuide.isVisible($scope.entry, $scope.fields);
+        };
+
+        $scope.isWhiteTailedDeer = function () {
+            return entry.gameSpeciesCode === GameSpeciesCodes.WHITE_TAILED_DEER;
         };
     })
 

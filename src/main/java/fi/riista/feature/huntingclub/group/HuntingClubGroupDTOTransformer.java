@@ -2,7 +2,6 @@ package fi.riista.feature.huntingclub.group;
 
 import com.querydsl.core.group.GroupBy;
 import com.querydsl.jpa.JPQLQueryFactory;
-import fi.riista.feature.account.pilot.DeerPilotRepository;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -57,9 +56,6 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
     private HarvestPermitRepository harvestPermitRepository;
 
     @Resource
-    private DeerPilotRepository deerPilotRepository;
-
-    @Resource
     private ActiveUserService activeUserService;
 
     @Resource
@@ -84,7 +80,6 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
         final List<Long> idsOfGroupsHavingHuntingDays = getGroupIdsHavingHuntingDays(list);
 
         final Function<HuntingClubGroup, Long> memberCountFn = getGroupMemberCountMapping(list);
-        final List<HuntingClubGroup> groupsInPilot = deerPilotRepository.filterGroupsInPilot(list);
         final boolean adminOrModerator = activeUser.isModeratorOrAdmin();
 
         return list.stream().map(group -> {
@@ -93,7 +88,7 @@ public class HuntingClubGroupDTOTransformer extends ListTransformer<HuntingClubG
             final HarvestPermit permit = groupToPermitMapping.apply(group);
 
             final HuntingClubGroupDTO dto =
-                    HuntingClubGroupDTO.create(group, gameSpecies, permit, groupsInPilot.contains(group));
+                    HuntingClubGroupDTO.create(group, gameSpecies, permit);
 
             dto.setHuntingDaysExist(idsOfGroupsHavingHuntingDays.contains(group.getId()));
             dto.setMemberCount(memberCountFn.apply(group));

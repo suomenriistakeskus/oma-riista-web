@@ -130,7 +130,7 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
                 .getSpecimenFields(huntingYear, gameSpeciesCode, isClientSupportFor2020Fields);
 
         final HarvestSpecimenValidator builder = new HarvestSpecimenValidator(
-                specimenRequirements, specimen, gameSpeciesCode, true, true);
+                specimenRequirements, specimen, gameSpeciesCode, true);
 
         consumer.accept(builder);
         builder.throwOnErrors();

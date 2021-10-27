@@ -59,6 +59,9 @@ public class RhyAnnualStatisticsDTO extends BaseEntityDTO<Long> {
     private Integer allTrainingEvents;
     private Integer allTrainingParticipants;
 
+    private Integer allNonSubsidizableTrainingEvents;
+    private Integer allNonSubsidizableTrainingParticipants;
+
     private Boolean readyForInspection;
     private Boolean completeForApproval;
 
@@ -308,6 +311,22 @@ public class RhyAnnualStatisticsDTO extends BaseEntityDTO<Long> {
 
     public void setAllTrainingParticipants(final Integer allTrainingParticipants) {
         this.allTrainingParticipants = allTrainingParticipants;
+    }
+
+    public Integer getAllNonSubsidizableTrainingEvents() {
+        return allNonSubsidizableTrainingEvents;
+    }
+
+    public void setAllNonSubsidizableTrainingEvents(final Integer allNonSubsidizableTrainingEvents) {
+        this.allNonSubsidizableTrainingEvents = allNonSubsidizableTrainingEvents;
+    }
+
+    public Integer getAllNonSubsidizableTrainingParticipants() {
+        return allNonSubsidizableTrainingParticipants;
+    }
+
+    public void setAllNonSubsidizableTrainingParticipants(final Integer allNonSubsidizableTrainingParticipants) {
+        this.allNonSubsidizableTrainingParticipants = allNonSubsidizableTrainingParticipants;
     }
 
     public Boolean getReadyForInspection() {

@@ -21,6 +21,7 @@ import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
+import fi.riista.util.F;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
@@ -29,9 +30,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static fi.riista.feature.gamediary.srva.SrvaEventNameEnum.ACCIDENT;
 
 @Service
 public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
@@ -156,13 +161,26 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
                 : null;
 
         final QSrvaEvent SRVA = QSrvaEvent.srvaEvent;
-        final BooleanExpression eventNames = SRVA.eventName.in(dto.getEventNames());
+
+        final List<SrvaEventNameEnum> eventNames = Optional.ofNullable(dto.getEventNames())
+                .orElseGet(ArrayList::new);
+        final BooleanExpression eventNamesRestriction = SRVA.eventName.in(eventNames);
+
         final BooleanExpression rhyRestriction = currentRhy != null ? SRVA.rhy.eq(currentRhy) : null;
-        final BooleanExpression otherRhyRestriction = getOtherRhySpec(SRVA, dto, currentRhy);
+
+        final List<BooleanExpression> eventTypeRestrictions = new ArrayList<>();
+        if (dto.getEventTypes() != null) {
+            dto.getEventTypes().forEach(eventType ->
+                    eventTypeRestrictions.add(SRVA.eventName.eq(ACCIDENT).and(SRVA.eventType.eq(eventType))));
+        }
+
+        final BooleanExpression accidentSubtypeRestriction = !F.isNullOrEmpty(dto.getEventTypes()) ?
+                eventTypeRestrictions.stream().reduce(BooleanExpression::or).get() :
+                null;
 
         final JPQLQuery<SrvaEvent> q = jpqlQueryFactory.select(SRVA)
                 .from(SRVA)
-                .where(eventNames.and(rhyRestriction).or(otherRhyRestriction))
+                .where(eventNamesRestriction.and(rhyRestriction).or(accidentSubtypeRestriction))
                 .orderBy(SRVA.id.asc());
 
         if (Objects.nonNull(dto.getRhyCode())) {
@@ -200,17 +218,5 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
         }
 
         return q;
-    }
-
-    private static BooleanExpression getOtherRhySpec(final QSrvaEvent SRVA,
-                                                     final SrvaEventSearchDTO dto,
-                                                     final Riistanhoitoyhdistys currentRhy) {
-
-        final String currentRhyCode = currentRhy != null ? currentRhy.getOfficialCode() : null;
-        final boolean differentRhy = !Objects.equals(currentRhyCode, dto.getRhyCode());
-
-        return differentRhy && dto.getEventNames() != null && dto.getEventNames().contains(SrvaEventNameEnum.ACCIDENT)
-                ? SRVA.eventName.eq(SrvaEventNameEnum.ACCIDENT)
-                : null;
     }
 }

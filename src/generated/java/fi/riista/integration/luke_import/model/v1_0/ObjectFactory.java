@@ -34,14 +34,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link MooseDataCardContainer }
-     * 
-     */
-    public MooseDataCardContainer createMooseDataCardContainer() {
-        return new MooseDataCardContainer();
-    }
-
-    /**
      * Create an instance of {@link MooseDataCard }
      * 
      */
@@ -271,6 +263,14 @@ public class ObjectFactory {
      */
     public ImageType createImageType() {
         return new ImageType();
+    }
+
+    /**
+     * Create an instance of {@link MooseDataCardContainer }
+     * 
+     */
+    public MooseDataCardContainer createMooseDataCardContainer() {
+        return new MooseDataCardContainer();
     }
 
     /**

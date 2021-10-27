@@ -3,6 +3,7 @@ package fi.riista.feature.organization.rhy.gamedamageinspection;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.DateUtil;
 import org.hibernate.annotations.Type;
@@ -48,8 +49,7 @@ public class GameDamageInspectionEvent extends LifecycleEntity<Long> {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private GameSpecies gameSpecies;
 
-    @NotNull
-    @Column(nullable = false)
+    @Column
     @Size(min = 2, max = 255)
     private String inspectorName;
 
@@ -72,12 +72,10 @@ public class GameDamageInspectionEvent extends LifecycleEntity<Long> {
     @Column(columnDefinition = "text")
     private String description;
 
-    @NotNull
-    @Column(nullable = false)
+    @Column
     private BigDecimal hourlyExpensesUnit;
 
-    @NotNull
-    @Column(nullable = false)
+    @Column
     private BigDecimal dailyAllowance;
 
     @OneToMany(mappedBy = "gameDamageInspectionEvent")
@@ -88,6 +86,12 @@ public class GameDamageInspectionEvent extends LifecycleEntity<Long> {
     @Type(type = "jts_geometry")
     @Column(nullable = false, columnDefinition = "Geometry")
     private Point geom;
+
+    @Column(nullable = false)
+    private boolean expensesIncluded;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Person inspector;
 
     @PrePersist
     @PreUpdate
@@ -212,5 +216,21 @@ public class GameDamageInspectionEvent extends LifecycleEntity<Long> {
 
     public Set<GameDamageInspectionKmExpense> getGameDamageInspectionKmExpenses() {
         return gameDamageInspectionKmExpenses;
+    }
+
+    public boolean getExpensesIncluded() {
+        return expensesIncluded;
+    }
+
+    public void setExpensesIncluded(final boolean expensesIncluded) {
+        this.expensesIncluded = expensesIncluded;
+    }
+
+    public Person getInspector() {
+        return inspector;
+    }
+
+    public void setInspector(final Person inspector) {
+        this.inspector = inspector;
     }
 }

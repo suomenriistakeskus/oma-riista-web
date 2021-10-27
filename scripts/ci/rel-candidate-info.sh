@@ -2,7 +2,7 @@
 
 CI_PROJECT_NAME=${CI_PROJECT_NAME:-test-project}
 
-REQUIRED_TOOLS="curl git"
+REQUIRED_TOOLS="curl git tr"
 
 REQUIRED_VARIABLES='SLACK_HOOK_FOR_CANDIDATES'
 
@@ -30,7 +30,7 @@ done
 LAST_TAG_HASH=$(git log --no-walk --tags --format='%H' | head -1)
 LAST_TAG_NAME=$(git describe --tags)
 
-COMMITS=$(git log --format='%s' ${LAST_TAG_HASH}..HEAD)
+COMMITS=$(git log --format='%s' ${LAST_TAG_HASH}..HEAD | tr -d '"')
 
 MESSAGE="*New release of ${CI_PROJECT_NAME} available*\n\nContent compared to the last version (${LAST_TAG_NAME}):\n$COMMITS\n"
 

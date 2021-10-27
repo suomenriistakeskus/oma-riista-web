@@ -8,7 +8,8 @@ angular.module('app.account.controllers', ['ui.router', 'app.account.services'])
         harvestRegistry: 'HARVEST_REGISTRY',
         habides: 'EXPORT_HABIDES_REPORTS',
         saveHarvestWithIncompleteData: "SAVE_INCOMPLETE_HARVEST_DATA",
-        moderateDisabilityPermitApplication: 'MODERATE_DISABILITY_PERMIT_APPLICATION'
+        moderateDisabilityPermitApplication: 'MODERATE_DISABILITY_PERMIT_APPLICATION',
+        otherwiseDeceased: 'MUUTOIN_KUOLLEET'
     })
     .config(function ($stateProvider) {
         $stateProvider
@@ -70,86 +71,6 @@ angular.module('app.account.controllers', ['ui.router', 'app.account.services'])
                     }
                 }
             });
-    })
-
-    .controller('AccountClubRegisterController', function ($q, $http, $filter, personId) {
-        var $ctrl = this;
-
-        $ctrl.selectedOrganisation = null;
-        $ctrl.nameQuery = '';
-        $ctrl.codeQuery = '';
-        $ctrl.warningClubAlreadyActive = false;
-        $ctrl.existingContactPersonName = '';
-
-        var i18nFilter = $filter('rI18nNameFilter');
-
-        this.searchResultTitle = function (item) {
-            if (!item) {
-                return '?';
-            }
-
-            return i18nFilter(item) +
-                (item.contactPersonName ? ' - ' + item.contactPersonName : '') +
-                ((item.hasActiveContactPerson) ? ' (*)' : '');
-        };
-
-        function search(url, queryString) {
-            if (!_.isString(queryString) || _.isEmpty(queryString)) {
-                return $q.when([]);
-            }
-
-            $ctrl.selectedOrganisation = null;
-            $ctrl.warningClubAlreadyActive = false;
-            $ctrl.existingContactPersonName = '';
-
-            return $http.get(url, {params: {queryString: queryString}}).then(function (response) {
-                return response.data;
-            });
-        }
-
-        this.searchByName = function ($viewValue) {
-            $ctrl.codeQuery = '';
-            return search('/api/v1/club/lh/findByName', $viewValue);
-        };
-
-        this.searchByCode = function ($viewValue) {
-            $ctrl.nameQuery = '';
-            return search('/api/v1/club/lh/findByCode', $viewValue);
-        };
-
-        this.onSelectSearchResult = function ($item, $model, $label) {
-            $ctrl.selectedOrganisation = $item;
-            $ctrl.codeQuery = '';
-            $ctrl.nameQuery = '';
-
-            if ($item) {
-                $ctrl.warningClubAlreadyActive = $item.hasActiveContactPerson;
-                $ctrl.existingContactPersonName = $item.contactPersonName;
-            } else {
-                $ctrl.warningClubAlreadyActive = false;
-                $ctrl.existingContactPersonName = '';
-            }
-        };
-
-        this.canSave = function () {
-            return $ctrl.selectedOrganisation && !this.selectedOrganisation.hasActiveContactPerson;
-        };
-
-        this.save = function () {
-            $ctrl.selectedOrganisation.personId = personId;
-            $http.post('/api/v1/club/lh/register', $ctrl.selectedOrganisation).then(function (response) {
-                if (response.data.result === 'success') {
-                    $ctrl.$close(response.data);
-                } else if (response.data.result === 'exists') {
-                    $ctrl.warningClubAlreadyActive = true;
-                    $ctrl.existingContactPersonName = response.data.contactPersonName;
-                }
-            });
-        };
-
-        this.cancel = function () {
-            $ctrl.$dismiss('cancel');
-        };
     })
 
     .controller('AccountClubCreateController', function (Clubs, MapUtil, MapState, MapDefaults, NotificationService, personId) {

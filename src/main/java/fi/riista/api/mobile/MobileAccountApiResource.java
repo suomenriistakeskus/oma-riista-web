@@ -2,6 +2,8 @@ package fi.riista.api.mobile;
 
 import fi.riista.feature.account.mobile.MobileAccountDTO;
 import fi.riista.feature.account.mobile.MobileAccountFeature;
+import fi.riista.feature.account.mobile.MobileOccupationDTO;
+import fi.riista.feature.organization.occupation.OccupationCrudFeature;
 import fi.riista.feature.push.MobilePushRegistrationDTO;
 import fi.riista.feature.push.RegisterMobileClientDeviceFeature;
 import net.rossillo.spring.web.mvc.CacheControl;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 public class MobileAccountApiResource {
@@ -30,6 +33,9 @@ public class MobileAccountApiResource {
     @Resource
     private RegisterMobileClientDeviceFeature registerMobileClientDeviceFeature;
 
+    @Resource
+    private OccupationCrudFeature occupationCrudFeature;
+
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = ACCOUNT_RESOURCE_URL, produces = MediaType.APPLICATION_JSON_VALUE)
     public MobileAccountDTO getAccount() {
@@ -40,4 +46,11 @@ public class MobileAccountApiResource {
     public void registerDeviceForPushNotifications(@RequestBody @Valid final MobilePushRegistrationDTO dto) {
         registerMobileClientDeviceFeature.registerDevice(dto);
     }
+
+    @GetMapping(value = API_PREFIX + "/club/my-memberships")
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    public List<MobileOccupationDTO> myMemberships() {
+        return occupationCrudFeature.listMyClubMemberships();
+    }
+
 }

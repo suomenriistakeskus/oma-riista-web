@@ -44,12 +44,12 @@
             <licensedJustification></licensedJustification>
         </licensed>
         <actuallyTaken>
-            <individuals>0</individuals>
+            <individuals></individuals>
             <eggs></eggs>
             <nests></nests>
             <breeding></breeding>
             <otherType></otherType>
-            <noFigureProvided>false</noFigureProvided>
+            <noFigureProvided>true</noFigureProvided>
             <licensedJustification></licensedJustification>
         </actuallyTaken>
         <allMeasuresTaken>true</allMeasuresTaken>

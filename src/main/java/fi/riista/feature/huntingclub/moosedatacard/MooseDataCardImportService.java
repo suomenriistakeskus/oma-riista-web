@@ -13,6 +13,7 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.moosedatacard.converter.MooseDataCardHuntingDayConverter;
@@ -27,7 +28,6 @@ import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardFilen
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardPage1Validator;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardValidationResult;
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardValidator;
-import fi.riista.feature.huntingclub.register.RegisterHuntingClubService;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.integration.luke_import.model.v1_0.MooseDataCard;
@@ -76,13 +76,14 @@ public class MooseDataCardImportService {
     private PersonRepository personRepo;
 
     @Resource
+    private HuntingClubRepository huntingClubRepository;
+
+    @Resource
     private MooseDataCardImportRepository importRepo;
 
     @Resource
     private GameSpeciesService gameSpeciesService;
 
-    @Resource
-    private RegisterHuntingClubService registerHuntingClubService;
 
     @Resource
     private MooseDataCardHuntingSummaryTransferer huntingSummaryTransferer;
@@ -199,7 +200,7 @@ public class MooseDataCardImportService {
 
         return Try.success(input.mooseDataCard).flatMapTry(mooseDataCard -> {
 
-            final HuntingClub club = registerHuntingClubService.findExistingOrCreate(input.clubCode);
+            final HuntingClub club = huntingClubRepository.findByOfficialCode(input.clubCode);
             final Person contactPerson = personRepo.findById(input.contactPersonId).orElse(null);
 
             final HarvestPermitSpeciesAmount speciesAmount =

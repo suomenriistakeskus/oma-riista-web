@@ -7,6 +7,8 @@ import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonType;
 import fi.riista.feature.permit.decision.methods.ForbiddenMethodType;
+import fi.riista.util.Locales;
+import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.data.domain.PageRequest;
 
 import javax.annotation.Nullable;
@@ -14,6 +16,7 @@ import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
+import java.util.Arrays;
 import java.util.Set;
 
 public class HarvestPermitApplicationSearchDTO {
@@ -50,6 +53,9 @@ public class HarvestPermitApplicationSearchDTO {
 
     private HarvestPermitCategory harvestPermitCategory;
 
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String decisionLocale;
+
     private Integer gameSpeciesCode;
 
     private Long handlerId;
@@ -80,6 +86,12 @@ public class HarvestPermitApplicationSearchDTO {
     @AssertTrue
     public boolean isPageInfoValidWhenPresent() {
         return (page == null && size == null) || isPageInfoPresent();
+    }
+
+    @AssertTrue
+    public boolean isLocaleValid() {
+        return decisionLocale == null ||
+                Arrays.asList(Locales.FI_LANG, Locales.SV_LANG).contains(decisionLocale);
     }
 
     public boolean isPageInfoPresent() {
@@ -140,6 +152,14 @@ public class HarvestPermitApplicationSearchDTO {
 
     public void setHarvestPermitCategory(final HarvestPermitCategory harvestPermitCategory) {
         this.harvestPermitCategory = harvestPermitCategory;
+    }
+
+    public String getDecisionLocale() {
+        return decisionLocale;
+    }
+
+    public void setDecisionLocale(final String decisionLocale) {
+        this.decisionLocale = decisionLocale;
     }
 
     public Integer getGameSpeciesCode() {

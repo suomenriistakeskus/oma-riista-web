@@ -16,6 +16,7 @@ import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspect
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventRepository;
 import fi.riista.util.DateUtil;
 import io.vavr.Tuple2;
+import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +63,7 @@ import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOK
 import static fi.riista.feature.organization.occupation.OccupationType.METSASTAJATUTKINNON_VASTAANOTTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA;
+import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.IN_PROGRESS;
 import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.NOT_STARTED;
 import static fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType.LARGE_CARNIVORE;
 import static fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType.MOOSELIKE;
@@ -69,6 +71,7 @@ import static fi.riista.feature.shootingtest.ShootingTestType.ROE_DEER;
 import static fi.riista.feature.shootingtest.ShootingTestType.MOOSE;
 import static fi.riista.feature.shootingtest.ShootingTestType.BEAR;
 import static fi.riista.feature.shootingtest.ShootingTestType.BOW;
+import static fi.riista.util.DateUtil.today;
 import static java.util.Objects.requireNonNull;
 
 @Component
@@ -123,16 +126,16 @@ public class AnnualStatisticsService {
     public void refresh(@Nonnull final RhyAnnualStatistics statistics) {
         requireNonNull(statistics);
 
-        if (isRefreshable(statistics)) {
-            final AnnualStatisticsResolver resolver = getAnnualStatisticsResolver(statistics);
+        final AnnualStatisticsResolver resolver = getAnnualStatisticsResolver(statistics);
 
+        final boolean isStatisticsRefreshable = isRefreshable(statistics);
+        if (isStatisticsRefreshable) {
             // SRVA must be updated first because it might be null (as JPA-embeddable)
             statistics.setSrva(resolveSrvaEventStatistics(resolver));
 
             final RhyBasicInfo basicInfo = refresh(statistics.getOrCreateBasicInfo(), resolver);
             final HunterExamStatistics hunterExams = refresh(statistics.getOrCreateHunterExams(), resolver);
             final AnnualShootingTestStatistics shootingTests = refresh(statistics.getOrCreateShootingTests(), resolver);
-            final GameDamageStatistics gameDamage = refresh(statistics.getOrCreateGameDamage(), resolver);
             final HuntingControlStatistics huntingControl = refresh(statistics.getOrCreateHuntingControl(), resolver);
             final HunterExamTrainingStatistics hunterExamTraining =
                     refresh(statistics.getOrCreateHunterExamTraining(), resolver);
@@ -148,7 +151,6 @@ public class AnnualStatisticsService {
             statistics.setBasicInfo(basicInfo);
             statistics.setHunterExams(hunterExams);
             statistics.setShootingTests(shootingTests);
-            statistics.setGameDamage(gameDamage);
             statistics.setHuntingControl(huntingControl);
             statistics.setHunterExamTraining(hunterExamTraining);
             statistics.setOtherHuntingRelated(otherHuntingRelated);
@@ -157,7 +159,15 @@ public class AnnualStatisticsService {
             statistics.setYouthTraining(youthTraining);
             statistics.setJhtTraining(jhtTraining);
             statistics.setOtherHunterTraining(otherHunterTraining);
+        }
 
+        final boolean isGameDamageStatisticsRefreshable = isRefreshableGameDamageStatistics(statistics);
+        if (isGameDamageStatisticsRefreshable) {
+            final GameDamageStatistics gameDamage = refresh(statistics.getOrCreateGameDamage(), resolver);
+            statistics.setGameDamage(gameDamage);
+        }
+
+        if (isStatisticsRefreshable || isGameDamageStatisticsRefreshable) {
             statisticsRepository.saveAndFlush(statistics);
         }
     }
@@ -169,7 +179,7 @@ public class AnnualStatisticsService {
         requireNonNull(resolver, "resolver is null");
 
         final RhyBasicInfo copy = basicInfo.makeCopy();
-        final boolean yearChanged = DateUtil.today().getYear() != resolver.getCalendarYear();
+        final boolean yearChanged = today().getYear() != resolver.getCalendarYear();
 
         if (basicInfo.getIban() == null) {
             Optional.ofNullable(resolver.getIbanFromPreviousYear()).ifPresent(copy::setIban);
@@ -337,8 +347,8 @@ public class AnnualStatisticsService {
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public void updateHuntingControl(@Nonnull final RhyAnnualStatistics statistics,
-                                     @Nonnull final HuntingControlStatistics group) {
+    public void moderatorUpdateHuntingControl(@Nonnull final RhyAnnualStatistics statistics,
+                                              @Nonnull final HuntingControlStatistics group) {
         updateGroup(statistics, statistics.getOrCreateHuntingControl(), group);
     }
 
@@ -405,9 +415,16 @@ public class AnnualStatisticsService {
         if (!copy.isHunterExamTrainingEventsManuallyOverridden()) {
             copy.setHunterExamTrainingEvents(resolver.getEventTypeCount(METSASTAJAKURSSI));
         }
+
+        if (!copy.isNonSubsidizableHunterExamTrainingEventsOverridden()) {
+            copy.setNonSubsidizableHunterExamTrainingEvents(resolver.getNonSubsidizableEventTypeCount(METSASTAJAKURSSI));
+        }
+
         if (!copy.isHunterExamTraininingParticipantsOverridden()) {
             copy.setHunterExamTrainingParticipants(resolver.getEventParticipantsCount(METSASTAJAKURSSI));
+            copy.setNonSubsidizableHunterExamTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(METSASTAJAKURSSI));
         }
+
         return copy;
     }
 
@@ -431,6 +448,8 @@ public class AnnualStatisticsService {
 
         final HunterExamTrainingStatistics updated = original.makeCopy();
         updated.setHunterExamTrainingParticipants(dto.getHunterExamTrainingParticipants());
+        updated.setNonSubsidizableHunterExamTrainingEvents(dto.getNonSubsidizableHunterExamTrainingEvents());
+        updated.setNonSubsidizableHunterExamTrainingParticipants(dto.getNonSubsidizableHunterExamTrainingParticipants());
 
         final boolean changed = original.merge(updated);
 
@@ -466,33 +485,41 @@ public class AnnualStatisticsService {
         // Shooting test trainings
         if (!copy.isShootingTestTrainingEventsOverridden()) {
             copy.setShootingTestTrainingEvents(resolver.getEventTypeCount(AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS));
+            copy.setNonSubsidizableShootingTestTrainingEvents(resolver.getNonSubsidizableEventTypeCount(AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS));
         }
         if (!copy.isShootingTestTrainingParticipantsOverridden()) {
             copy.setShootingTestTrainingParticipants(resolver.getEventParticipantsCount(AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS));
+            copy.setNonSubsidizableShootingTestTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(AMPUMAKOKEENVASTAANOTTAJA_KOULUTUS));
         }
 
         // Hunter exam official trainings
         if (!copy.isHunterExamOfficialTrainingEventsOverridden()) {
             copy.setHunterExamOfficialTrainingEvents(resolver.getEventTypeCount(METSASTAJATUTKINNONVASTAANOTTAJA_KOULUTUS));
+            copy.setNonSubsidizableHunterExamOfficialTrainingEvents(resolver.getNonSubsidizableEventTypeCount(METSASTAJATUTKINNONVASTAANOTTAJA_KOULUTUS));
         }
         if (!copy.isHunterExamOfficialTrainingParticipantsOverridden()) {
             copy.setHunterExamOfficialTrainingParticipants(resolver.getEventParticipantsCount(METSASTAJATUTKINNONVASTAANOTTAJA_KOULUTUS));
+            copy.setNonSubsidizableHunterExamOfficialTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(METSASTAJATUTKINNONVASTAANOTTAJA_KOULUTUS));
         }
 
         // Game damage trainings
         if (!copy.isGameDamageTrainingEventsOverridden()) {
             copy.setGameDamageTrainingEvents(resolver.getEventTypeCount(RIISTAVAHINKOTARKASTAJA_KOULUTUS));
+            copy.setNonSubsidizableGameDamageTrainingEvents(resolver.getNonSubsidizableEventTypeCount(RIISTAVAHINKOTARKASTAJA_KOULUTUS));
         }
         if (!copy.isGameDamageTrainingParticipantsOverridden()) {
             copy.setGameDamageTrainingParticipants(resolver.getEventParticipantsCount(RIISTAVAHINKOTARKASTAJA_KOULUTUS));
+            copy.setNonSubsidizableGameDamageTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(RIISTAVAHINKOTARKASTAJA_KOULUTUS));
         }
 
         // Hunting control trainings
         if (!copy.isHuntingControlTrainingEventsOverridden()) {
             copy.setHuntingControlTrainingEvents(resolver.getEventTypeCount(METSASTYKSENVALVOJA_KOULUTUS));
+            copy.setNonSubsidizableHuntingControlTrainingEvents(resolver.getNonSubsidizableEventTypeCount(METSASTYKSENVALVOJA_KOULUTUS));
         }
         if (!copy.isHuntingControlTrainingParticipantsOverridden()) {
             copy.setHuntingControlTrainingParticipants(resolver.getEventParticipantsCount(METSASTYKSENVALVOJA_KOULUTUS));
+            copy.setNonSubsidizableHuntingControlTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(METSASTYKSENVALVOJA_KOULUTUS));
         }
 
         return copy;
@@ -516,57 +543,71 @@ public class AnnualStatisticsService {
         // Mooselike hunting trainings
         if (!copy.isMooselikeHuntingTrainingEventsOverridden()) {
             copy.setMooselikeHuntingTrainingEvents(resolver.getEventTypeCount(METSASTAJAKOULUTUS_HIRVIELAIMET));
+            copy.setNonSubsidizableMooselikeHuntingTrainingEvents(resolver.getNonSubsidizableEventTypeCount(METSASTAJAKOULUTUS_HIRVIELAIMET));
         }
         if (!copy.isMooselikeHuntingTrainingParticipantsOverridden()) {
             copy.setMooselikeHuntingTrainingParticipants(resolver.getEventParticipantsCount(METSASTAJAKOULUTUS_HIRVIELAIMET));
+            copy.setNonSubsidizableMooselikeHuntingTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(METSASTAJAKOULUTUS_HIRVIELAIMET));
         }
 
         // Mooselike hunting leader trainings
         if (!copy.isMooselikeHuntingLeaderTrainingEventsOverridden()) {
             copy.setMooselikeHuntingLeaderTrainingEvents(resolver.getEventTypeCount(METSASTYKSENJOHTAJA_HIRVIELAIMET));
+            copy.setNonSubsidizableMooselikeHuntingLeaderTrainingEvents(resolver.getNonSubsidizableEventTypeCount(METSASTYKSENJOHTAJA_HIRVIELAIMET));
         }
         if (!copy.isMooselikeHuntingLeaderTrainingParticipantsOverridden()) {
             copy.setMooselikeHuntingLeaderTrainingParticipants(resolver.getEventParticipantsCount(METSASTYKSENJOHTAJA_HIRVIELAIMET));
+            copy.setNonSubsidizableMooselikeHuntingLeaderTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(METSASTYKSENJOHTAJA_HIRVIELAIMET));
         }
 
         // Carnivore hunting trainings
         if (!copy.isCarnivoreHuntingTrainingEventsOverridden()) {
             copy.setCarnivoreHuntingTrainingEvents(resolver.getEventTypeCount(METSASTAJAKOULUTUS_SUURPEDOT));
+            copy.setNonSubsidizableCarnivoreHuntingTrainingEvents(resolver.getNonSubsidizableEventTypeCount(METSASTAJAKOULUTUS_SUURPEDOT));
         }
         if (!copy.isCarnivoreHuntingTrainingParticipantsOverridden()) {
             copy.setCarnivoreHuntingTrainingParticipants(resolver.getEventParticipantsCount(METSASTAJAKOULUTUS_SUURPEDOT));
+            copy.setNonSubsidizableCarnivoreHuntingTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(METSASTAJAKOULUTUS_SUURPEDOT));
         }
 
         // Carnivore hunting leader trainings
         if (!copy.isCarnivoreHuntingLeaderTrainingEventsOverridden()) {
             copy.setCarnivoreHuntingLeaderTrainingEvents(resolver.getEventTypeCount(METSASTYKSENJOHTAJA_SUURPEDOT));
+            copy.setNonSubsidizableCarnivoreHuntingLeaderTrainingEvents(resolver.getNonSubsidizableEventTypeCount(METSASTYKSENJOHTAJA_SUURPEDOT));
         }
         if (!copy.isCarnivoreHuntingLeaderTrainingParticipantsOverridden()) {
             copy.setCarnivoreHuntingLeaderTrainingParticipants(resolver.getEventParticipantsCount(METSASTYKSENJOHTAJA_SUURPEDOT));
+            copy.setNonSubsidizableCarnivoreHuntingLeaderTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(METSASTYKSENJOHTAJA_SUURPEDOT));
         }
 
         // Srva trainings
         if (!copy.isSrvaTrainingEventsOverridden()) {
             copy.setSrvaTrainingEvents(resolver.getEventTypeCount(SRVAKOULUTUS));
+            copy.setNonSubsidizableSrvaTrainingEvents(resolver.getNonSubsidizableEventTypeCount(SRVAKOULUTUS));
         }
         if (!copy.isSrvaTrainingParticipantsOverridden()) {
             copy.setSrvaTrainingParticipants(resolver.getEventParticipantsCount(SRVAKOULUTUS));
+            copy.setNonSubsidizableSrvaTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(SRVAKOULUTUS));
         }
 
         // Carnivore contact person trainings
         if (!copy.isCarnivoreContactPersonTrainingEventsOverridden()) {
             copy.setCarnivoreContactPersonTrainingEvents(resolver.getEventTypeCount(PETOYHDYSHENKILO_KOULUTUS));
+            copy.setNonSubsidizableCarnivoreContactPersonTrainingEvents(resolver.getNonSubsidizableEventTypeCount(PETOYHDYSHENKILO_KOULUTUS));
         }
         if (!copy.isCarnivoreContactPersonTrainingParticipantsOverridden()) {
             copy.setCarnivoreContactPersonTrainingParticipants(resolver.getEventParticipantsCount(PETOYHDYSHENKILO_KOULUTUS));
+            copy.setNonSubsidizableCarnivoreContactPersonTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(PETOYHDYSHENKILO_KOULUTUS));
         }
 
         // Accident prevention trainings
         if (!copy.isAccidentPreventionTrainingEventsOverridden()) {
             copy.setAccidentPreventionTrainingEvents(resolver.getEventTypeCount(VAHINKOKOULUTUS));
+            copy.setNonSubsidizableAccidentPreventionTrainingEvents(resolver.getNonSubsidizableEventTypeCount(VAHINKOKOULUTUS));
         }
         if (!copy.isAccidentPreventionTrainingParticipantsOverridden()) {
             copy.setAccidentPreventionTrainingParticipants(resolver.getEventParticipantsCount(VAHINKOKOULUTUS));
+            copy.setNonSubsidizableAccidentPreventionTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(VAHINKOKOULUTUS));
         }
 
         return copy;
@@ -590,25 +631,31 @@ public class AnnualStatisticsService {
         //  School trainings
         if (!copy.isSchoolTrainingEventsOverridden()) {
             copy.setSchoolTrainingEvents(resolver.getEventTypeCount(TILAISUUS_KOULUILLE));
+            copy.setNonSubsidizableSchoolTrainingEvents(resolver.getNonSubsidizableEventTypeCount(TILAISUUS_KOULUILLE));
         }
         if (!copy.isSchoolTrainingParticipantsOverridden()) {
             copy.setSchoolTrainingParticipants(resolver.getEventParticipantsCount(TILAISUUS_KOULUILLE));
+            copy.setNonSubsidizableSchoolTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(TILAISUUS_KOULUILLE));
         }
 
         //  College trainings
         if (!copy.isCollegeTrainingEventsOverridden()) {
             copy.setCollegeTrainingEvents(resolver.getEventTypeCount(OPPILAITOSTILAISUUS));
+            copy.setNonSubsidizableCollegeTrainingEvents(resolver.getNonSubsidizableEventTypeCount(OPPILAITOSTILAISUUS));
         }
         if (!copy.isCollegeTrainingParticipantsOverridden()) {
             copy.setCollegeTrainingParticipants(resolver.getEventParticipantsCount(OPPILAITOSTILAISUUS));
+            copy.setNonSubsidizableCollegeTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(OPPILAITOSTILAISUUS));
         }
 
         //  Other youth trainings
         if (!copy.isOtherYouthTargetedTrainingEventsOverridden()) {
             copy.setOtherYouthTargetedTrainingEvents(resolver.getEventTypeCount(NUORISOTILAISUUS));
+            copy.setNonSubsidizableOtherYouthTargetedTrainingEvents(resolver.getNonSubsidizableEventTypeCount(NUORISOTILAISUUS));
         }
         if (!copy.isOtherYouthTargetedTrainingParticipantsOverridden()) {
             copy.setOtherYouthTargetedTrainingParticipants(resolver.getEventParticipantsCount(NUORISOTILAISUUS));
+            copy.setNonSubsidizableOtherYouthTargetedTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(NUORISOTILAISUUS));
         }
 
         return copy;
@@ -631,51 +678,65 @@ public class AnnualStatisticsService {
 
         if (!copy.isSmallCarnivoreHuntingTrainingEventsOverridden()) {
             copy.setSmallCarnivoreHuntingTrainingEvents(resolver.getEventTypeCount(PIENPETOJEN_PYYNTI_KOULUTUS));
+            copy.setNonSubsidizableSmallCarnivoreHuntingTrainingEvents(resolver.getNonSubsidizableEventTypeCount(PIENPETOJEN_PYYNTI_KOULUTUS));
         }
         if (!copy.isSmallCarnivoreHuntingTrainingParticipantsOverridden()) {
             copy.setSmallCarnivoreHuntingTrainingParticipants(resolver.getEventParticipantsCount(PIENPETOJEN_PYYNTI_KOULUTUS));
+            copy.setNonSubsidizableSmallCarnivoreHuntingTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(PIENPETOJEN_PYYNTI_KOULUTUS));
         }
 
         if (!copy.isGameCountingTrainingEventsOverridden()) {
             copy.setGameCountingTrainingEvents(resolver.getEventTypeCount(RIISTALASKENTA_KOULUTUS));
+            copy.setNonSubsidizableGameCountingTrainingEvents(resolver.getNonSubsidizableEventTypeCount(RIISTALASKENTA_KOULUTUS));
         }
         if (!copy.isGameCountingTrainingParticipantsOverridden()) {
             copy.setGameCountingTrainingParticipants(resolver.getEventParticipantsCount(RIISTALASKENTA_KOULUTUS));
+            copy.setNonSubsidizableGameCountingTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(RIISTALASKENTA_KOULUTUS));
         }
 
         if (!copy.isGamePopulationManagementTrainingEventsOverridden()) {
             copy.setGamePopulationManagementTrainingEvents(resolver.getEventTypeCount(RIISTAKANTOJEN_HOITO_KOULUTUS));
+            copy.setNonSubsidizableGamePopulationManagementTrainingEvents(resolver.getNonSubsidizableEventTypeCount(RIISTAKANTOJEN_HOITO_KOULUTUS));
         }
         if (!copy.isGamePopulationManagementTrainingParticipantsOverridden()) {
             copy.setGamePopulationManagementTrainingParticipants(resolver.getEventParticipantsCount(RIISTAKANTOJEN_HOITO_KOULUTUS));
+            copy.setNonSubsidizableGamePopulationManagementTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(RIISTAKANTOJEN_HOITO_KOULUTUS));
         }
 
         if (!copy.isGameEnvironmentalCareTrainingEventsOverridden()) {
             copy.setGameEnvironmentalCareTrainingEvents(resolver.getEventTypeCount(RIISTAN_ELINYMPARISTON_HOITO_KOULUTUS));
+            copy.setNonSubsidizableGameEnvironmentalCareTrainingEvents(resolver.getNonSubsidizableEventTypeCount(RIISTAN_ELINYMPARISTON_HOITO_KOULUTUS));
         }
         if (!copy.isGameEnvironmentalCareTrainingParticipantsOverridden()) {
             copy.setGameEnvironmentalCareTrainingParticipants(resolver.getEventParticipantsCount(RIISTAN_ELINYMPARISTON_HOITO_KOULUTUS));
+            copy.setNonSubsidizableGameEnvironmentalCareTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(RIISTAN_ELINYMPARISTON_HOITO_KOULUTUS));
         }
 
         if (!copy.isOtherGamekeepingTrainingEventsOverridden()) {
             copy.setOtherGamekeepingTrainingEvents(resolver.getEventTypeCount(MUU_RIISTANHOITOKOULUTUS));
+            copy.setNonSubsidizableOtherGamekeepingTrainingEvents(resolver.getNonSubsidizableEventTypeCount(MUU_RIISTANHOITOKOULUTUS));
         }
         if (!copy.isOtherGamekeepingTrainingParticipantsOverridden()) {
             copy.setOtherGamekeepingTrainingParticipants(resolver.getEventParticipantsCount(MUU_RIISTANHOITOKOULUTUS));
+            copy.setNonSubsidizableOtherGamekeepingTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(MUU_RIISTANHOITOKOULUTUS));
         }
 
         if (!copy.isShootingTrainingEventsOverridden()) {
             copy.setShootingTrainingEvents(resolver.getEventTypeCount(AMPUMAKOULUTUS));
+            copy.setNonSubsidizableShootingTrainingEvents(resolver.getNonSubsidizableEventTypeCount(AMPUMAKOULUTUS));
         }
         if (!copy.isShootingTrainingParticipantsOverridden()) {
             copy.setShootingTrainingParticipants(resolver.getEventParticipantsCount(AMPUMAKOULUTUS));
+            copy.setNonSubsidizableShootingTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(AMPUMAKOULUTUS));
         }
 
         if (!copy.isTrackerTrainingEventsOverridden()) {
             copy.setTrackerTrainingEvents(resolver.getEventTypeCount(JALJESTAJAKOULUTUS));
+            copy.setNonSubsidizableTrackerTrainingEvents(resolver.getNonSubsidizableEventTypeCount(JALJESTAJAKOULUTUS));
         }
         if (!copy.isTrackerTrainingParticipantsOverridden()) {
             copy.setTrackerTrainingParticipants(resolver.getEventParticipantsCount(JALJESTAJAKOULUTUS));
+            copy.setNonSubsidizableTrackerTrainingParticipants(resolver.getNonSubsidizableEventParticipantsCount(JALJESTAJAKOULUTUS));
         }
 
         return copy;
@@ -794,6 +855,10 @@ public class AnnualStatisticsService {
 
     private static boolean isRefreshable(final RhyAnnualStatistics statistics) {
         return statistics.isNew() || statistics.isUpdateableByCoordinator();
+    }
+
+    private static boolean isRefreshableGameDamageStatistics(final RhyAnnualStatistics statistics) {
+        return statistics.isNew() || statistics.isGameDamageStatisticsUpdateable();
     }
 
     private <T extends AnnualStatisticsManuallyEditableFields<T>> void updateGroup(final RhyAnnualStatistics statistics,

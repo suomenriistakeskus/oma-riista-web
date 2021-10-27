@@ -22,10 +22,9 @@ import static java.util.Objects.requireNonNull;
 public class RequiredHarvestFieldsResponseDTO {
 
     public static Builder builder(@Nonnull final RequiredHarvestFieldsRequestDTO request,
-                                  @Nonnull final HarvestSpecVersion specVersion,
-                                  final boolean isDeerPilotEnabled) {
+                                  @Nonnull final HarvestSpecVersion specVersion) {
 
-        return new Builder(request, specVersion, isDeerPilotEnabled);
+        return new Builder(request, specVersion);
     }
 
     private final HarvestReportingType reportingType;
@@ -82,7 +81,6 @@ public class RequiredHarvestFieldsResponseDTO {
 
         private final RequiredHarvestFieldsRequestDTO request;
         private final HarvestSpecVersion specVersion;
-        private final boolean isDeerPilotEnabled;
 
         private HarvestReportingType reportingType;
         private HarvestSeasonDTO season;
@@ -92,12 +90,10 @@ public class RequiredHarvestFieldsResponseDTO {
         private Map<String, String> municipalityName;
 
         public Builder(@Nonnull final RequiredHarvestFieldsRequestDTO request,
-                       @Nonnull final HarvestSpecVersion specVersion,
-                       final boolean isDeerPilotEnabled) {
+                       @Nonnull final HarvestSpecVersion specVersion) {
 
             this.request = requireNonNull(request);
             this.specVersion = requireNonNull(specVersion);
-            this.isDeerPilotEnabled = isDeerPilotEnabled;
         }
 
         public Builder withReportingType(final HarvestReportingType reportingType) {
@@ -145,7 +141,7 @@ public class RequiredHarvestFieldsResponseDTO {
 
             final int huntingYear = DateUtil.huntingYearContaining(request.getHarvestDate());
             return RequiredHarvestReportFieldsDTO
-                    .create(request.getGameSpeciesCode(), huntingYear, reportingType, isDeerPilotEnabled);
+                    .create(request.getGameSpeciesCode(), huntingYear, reportingType);
         }
 
         private RequiredHarvestSpecimenFieldsDTO getSpecimenFields() {

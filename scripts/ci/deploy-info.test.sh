@@ -77,7 +77,7 @@ Something else
 
 Sending following message to Slack:
 ---8<---
-*New release of test-project available*
+*Deployment of test-project to PRODUCTION started*
 
 Content of *1970-01-02_0200-0-g2222*:
 - <https://bar/browse/OR-1|OR-1>: MOCKed

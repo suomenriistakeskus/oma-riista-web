@@ -2,7 +2,6 @@ package fi.riista.feature.harvestpermit;
 
 import com.google.common.base.Preconditions;
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserRepository;
@@ -64,9 +63,6 @@ public class HarvestPermitDetailsFeature {
     @Resource
     private PermitDecisionRepository permitDecisionRepository;
 
-    @Resource
-    private DeerPilotService deerPilotService;
-
     @Transactional(readOnly = true)
     public OrganisationNameDTO getRhyCode(long permitId) {
         final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
@@ -125,9 +121,7 @@ public class HarvestPermitDetailsFeature {
                         .thenComparing(Harvest::getPointOfTime, reverseOrder()))
                 .collect(toList());
 
-        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED
-                // TODO Remove this when deer pilot 2020 is over.
-                .revertIfNotOnDeerPilot(deerPilotService.isPilotPermit(harvestPermitId));
+        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED;
 
         return resolveHarvestCreators(harvestPermit, harvestDTOTransformer.apply(sortedHarvests, specVersion));
     }

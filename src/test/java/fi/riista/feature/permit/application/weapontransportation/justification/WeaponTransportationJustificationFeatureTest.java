@@ -16,11 +16,9 @@ import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
-
 import java.util.List;
 
 import static java.util.Collections.singletonList;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -65,23 +63,17 @@ public class WeaponTransportationJustificationFeatureTest extends EmbeddedDataba
 
         model().newTransportedWeapon(transportApplication,
                 TransportedWeaponType.KIVAARI,
-                1,
-                null,
-                ".57");
+                null);
         model().newTransportedWeapon(transportApplication,
                 TransportedWeaponType.HAULIKKO,
-                2,
-                null,
-                ".44");
+                null);
 
         model().newWeaponTransportationVehicle(transportApplication,
                 WeaponTransportationVehicleType.AUTO,
-                "ABC-123",
                 null);
 
         model().newWeaponTransportationVehicle(transportApplication,
                 WeaponTransportationVehicleType.MUU,
-                "DEF-456",
                 "Description");
     }
 
@@ -114,9 +106,9 @@ public class WeaponTransportationJustificationFeatureTest extends EmbeddedDataba
     public void testUpdateJustification() {
         onSavedAndAuthenticated(user, () -> {
             final TransportedWeaponDTO updateTransportedWeaponDTO =
-                    new TransportedWeaponDTO(TransportedWeaponType.METSASTYSJOUSI, 3, "Updated description", ".357");
+                    new TransportedWeaponDTO(TransportedWeaponType.METSASTYSJOUSI, "Updated description");
             final WeaponTransportationVehicleDTO updatedVehicleDTO =
-                    new WeaponTransportationVehicleDTO(WeaponTransportationVehicleType.MONKIJA, null, null);
+                    new WeaponTransportationVehicleDTO(WeaponTransportationVehicleType.MONKIJA, null);
             final JustificationDTO updateJustificationDTO =
                     new JustificationDTO("Updated Justification", singletonList(updateTransportedWeaponDTO), singletonList(updatedVehicleDTO));
             feature.updateJustification(application.getId(), updateJustificationDTO);
@@ -133,9 +125,7 @@ public class WeaponTransportationJustificationFeatureTest extends EmbeddedDataba
 
                 final TransportedWeapon weaponInfo = transportedWeapons.get(0);
                 assertEquals(updateTransportedWeaponDTO.getType(), weaponInfo.getType());
-                assertEquals(updateTransportedWeaponDTO.getAmount(), weaponInfo.getAmount());
                 assertEquals(updateTransportedWeaponDTO.getDescription(), weaponInfo.getDescription());
-                assertEquals(updateTransportedWeaponDTO.getCaliber(), weaponInfo.getCaliber());
 
                 final List<WeaponTransportationVehicle> vehicles =
                         vehicleRepository.findByWeaponTransportationPermitApplicationOrderById(updatedApplication);
@@ -143,7 +133,6 @@ public class WeaponTransportationJustificationFeatureTest extends EmbeddedDataba
 
                 final WeaponTransportationVehicle vehicle = vehicles.get(0);
                 assertEquals(updatedVehicleDTO.getType(), vehicle.getType());
-                assertEquals(updatedVehicleDTO.getRegisterNumber(), vehicle.getRegisterNumber());
                 assertEquals(updatedVehicleDTO.getDescription(), vehicle.getDescription());
             });
         });

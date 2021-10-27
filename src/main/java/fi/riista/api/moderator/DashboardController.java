@@ -2,9 +2,6 @@ package fi.riista.api.moderator;
 
 import fi.riista.feature.dashboard.DashboardAnnouncementsDTO;
 import fi.riista.feature.dashboard.DashboardClubsDTO;
-import fi.riista.feature.dashboard.DashboardDeerPilotFeature;
-import fi.riista.feature.dashboard.DashboardDeerPilotMemberDTO;
-import fi.riista.feature.dashboard.DashboardDeerPilotMemberExcelView;
 import fi.riista.feature.dashboard.DashboardFeature;
 import fi.riista.feature.dashboard.DashboardHarvestReportDTO;
 import fi.riista.feature.dashboard.DashboardHarvestReportExcelView;
@@ -61,9 +58,6 @@ public class DashboardController {
     private DashboardMooselikeEndOfHuntingExcelFeature dashboardMooselikeEndOfHuntingExcelFeature;
 
     @Resource
-    private DashboardDeerPilotFeature dashboardDeerPilotFeature;
-
-    @Resource
     private EventSearchExcelFeature eventSearchExcelFeature;
 
     @Resource
@@ -97,13 +91,6 @@ public class DashboardController {
     @GetMapping("moosehunting")
     public DashboardMooseHuntingDTO getMooseHuntingMetrics() {
         return dashboardFeature.getMetricsMooseHunting();
-    }
-
-    @PostMapping("/deerpilot/excel/{rhyCode:\\d+}")
-    public ModelAndView searchDeerPilotMemberExcel(@PathVariable final String rhyCode) {
-        final List<DashboardDeerPilotMemberDTO> memberDTOS =
-                dashboardDeerPilotFeature.exportRhyDeerStatistics(rhyCode);
-        return new ModelAndView(new DashboardDeerPilotMemberExcelView(memberDTOS));
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)

@@ -31,20 +31,19 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
     private final Map<Integer, LocalisedString> species;
     private final List<ClubHuntingDataExcelDTO> groupData;
     private final String filename;
-    private final boolean includeDeerPilotFields;
+    private final LocalisedString clubName;
 
     public ClubHuntingDataExcelView(final EnumLocaliser localiser,
                                     final Map<Integer, LocalisedString> species,
                                     final LocalisedString clubName,
-                                    final List<ClubHuntingDataExcelDTO> groupData,
-                                    final boolean includeDeerPilotFields) {
+                                    final List<ClubHuntingDataExcelDTO> groupData) {
         this.localiser = localiser;
         this.species = species;
         this.groupData = groupData;
         this.filename = String.format("%s - %s.xlsx",
                 localiser.getTranslation(clubName),
                 Constants.FILENAME_TS_PATTERN.print(DateUtil.now()));
-        this.includeDeerPilotFields = includeDeerPilotFields;
+        this.clubName = clubName;
     }
 
     @Override
@@ -64,15 +63,21 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
     private void createDaysSheet(Workbook workbook) {
         final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation("huntingDays"));
         helper.appendHeaderRow(concatAndTranslate(new String[]{
+                "OrganisationType.RHY", "OrganisationType.CLUB", "permitNumber",
                 "groupName", "startDate", "startTime", "endDate", "endTime", "breakDuration", "huntingDuration", "showDepth",
                 "groupHuntingMethod", "numberOfHunters", "numberOfHounds"
         }));
 
         for (final ClubHuntingDataExcelDTO group : groupData) {
             final String groupName = localiser.getTranslation(group.getGroupName());
+            final String rhyName = localiser.getTranslation(group.getRhyName());
+            final String clubName = localiser.getTranslation(this.clubName);
 
             for (GroupHuntingDayDTO day : group.getDays()) {
                 helper.appendRow()
+                        .appendTextCell(rhyName)
+                        .appendTextCell(clubName)
+                        .appendTextCell(group.getPermitNumber())
                         .appendTextCell(groupName)
                         .appendDateCell(DateUtil.toDateNullSafe(day.getStartDate()))
                         .appendTimeCell(DateUtil.toDateTodayNullSafe(day.getStartTime()))
@@ -91,16 +96,19 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
 
     private void createHarvestsSheet(Workbook workbook) {
         final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation("harvests"));
-        helper.appendHeaderRow(concatAndTranslate(F.concat(getCommonHeaders(), getWithinDeerHuntingHeaders()),
+        helper.appendHeaderRow(concatAndTranslate(getCommonHeaders(),
                 "gender", "age", "notEdible", "weightEstimated", "weightMeasured", "fitnessClass", "antlersType",
                 "antlersWidth", "antlerPointsLeft", "antlerPointsRight", "additionalInfo"));
 
         for (final ClubHuntingDataExcelDTO group : groupData) {
             final String groupName = localiser.getTranslation(group.getGroupName());
+            final String rhyName = localiser.getTranslation(group.getRhyName());
+            final String clubName = localiser.getTranslation(this.clubName);
+            final String permitNumber = group.getPermitNumber();
 
             for (HarvestDTO harvest : group.getHarvests()) {
                 helper.appendRow();
-                addCommonColumns(helper, groupName, harvest, harvest.getAuthorInfo(), harvest.getActorInfo());
+                addCommonColumns(helper, rhyName, clubName, permitNumber, groupName, harvest, harvest.getAuthorInfo(), harvest.getActorInfo());
                 addWithinDeerHuntingCells(helper, harvest);
 
                 HarvestSpecimenDTO specimen = harvest.getSpecimens().get(0);
@@ -122,7 +130,7 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
 
     private void createObservationsSheet(Workbook workbook) {
         final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation("observations"));
-        helper.appendHeaderRow(concatAndTranslate(F.concat(getCommonHeaders(), getWithinDeerHuntingHeaders()),
+        helper.appendHeaderRow(concatAndTranslate(F.concat(getCommonHeaders()),
                 "observationType", "amount", "mooselikeMaleAmount", "mooselikeFemaleAmount", "mooselikeFemale1CalfAmount",
                 "mooselikeFemale2CalfsAmount", "mooselikeFemale3CalfsAmount", "mooselikeFemale4CalfsAmount",
                 "mooselikeCalfAmount", "mooselikeUnknownSpecimenAmount", "gender", "age", "gameMarking",
@@ -130,13 +138,16 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
 
         for (final ClubHuntingDataExcelDTO group : groupData) {
             final String groupName = localiser.getTranslation(group.getGroupName());
+            final String rhyName = localiser.getTranslation(group.getRhyName());
+            final String clubName = localiser.getTranslation(this.clubName);
+            final String permitNumber = group.getPermitNumber();
 
             group.getObservations().forEach(observation -> {
                 final List<ObservationSpecimenDTO> specimens = observation.getSpecimens();
 
                 if (CollectionUtils.isEmpty(specimens)) {
                     helper.appendRow();
-                    addCommonColumns(helper, groupName, observation, observation.getAuthorInfo(), observation.getActorInfo());
+                    addCommonColumns(helper, rhyName, clubName, permitNumber, groupName, observation, observation.getAuthorInfo(), observation.getActorInfo());
 
                     addWithinDeerHuntingCells(helper, observation);
                     helper.appendTextCell(localise(observation.getObservationType()))
@@ -145,7 +156,7 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
                 } else {
                     specimens.forEach(specimen -> {
                         helper.appendRow();
-                        addCommonColumns(helper, groupName, observation, observation.getAuthorInfo(), observation.getActorInfo());
+                        addCommonColumns(helper, rhyName, clubName, permitNumber, groupName, observation, observation.getAuthorInfo(), observation.getActorInfo());
 
                         addWithinDeerHuntingCells(helper, observation);
                         helper.appendTextCell(localise(observation.getObservationType()))
@@ -175,35 +186,28 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
     }
 
     private void addWithinDeerHuntingCells(ExcelHelper helper, ObservationDTO observation) {
-        if (includeDeerPilotFields) {
             helper.appendTextCell(localiser.getTranslation(observation.getDeerHuntingType()))
                     .appendTextCell(observation.getDeerHuntingTypeDescription());
-        }
     }
 
     private void addWithinDeerHuntingCells(ExcelHelper helper, HarvestDTO harvest) {
-        if (includeDeerPilotFields) {
             helper.appendTextCell(localiser.getTranslation(harvest.getDeerHuntingType()))
                     .appendTextCell(harvest.getDeerHuntingOtherTypeDescription());
-        }
     }
 
-    private  String[] getWithinDeerHuntingHeaders() {
+    private void addCommonColumns(final ExcelHelper helper,
+                                  final String rhyName,
+                                  final String clubName,
+                                  final String permitNumber,
+                                  final String groupName,
+                                  final HuntingDiaryEntryDTO entry,
+                                  final PersonWithHunterNumberDTO author,
+                                  final PersonWithHunterNumberDTO actor) {
 
-        if (!includeDeerPilotFields) {
-            return new String[]{};
-        }
-
-        return new String[]{ "deerHuntingType", "deerHuntingTypeDescription" };
-    }
-
-    private void addCommonColumns(ExcelHelper helper,
-                                  String groupName,
-                                  HuntingDiaryEntryDTO entry,
-                                  PersonWithHunterNumberDTO author,
-                                  PersonWithHunterNumberDTO actor) {
-
-        helper.appendTextCell(groupName)
+        helper.appendTextCell(rhyName)
+                .appendTextCell(clubName)
+                .appendTextCell(permitNumber)
+                .appendTextCell(groupName)
                 .appendDateCell(entry.getPointOfTime().toDate())
                 .appendTimeCell(entry.getPointOfTime().toDate())
                 .appendTextCell(localiser.getTranslation(entry.getGeoLocation().getSource()))
@@ -223,8 +227,10 @@ public class ClubHuntingDataExcelView extends AbstractXlsxView {
 
     private static String[] getCommonHeaders() {
         return new String[]{
+                "OrganisationType.RHY", "OrganisationType.CLUB", "permitNumber",
                 "groupName", "date", "clockTime", "geolocationSource", "geolocationAccuracy", "latitude", "longitude",
-                "lastNameOfAuthor", "firstNameOfAuthor", "lastNameOfHunter", "firstNameOfHunter", "species"
+                "lastNameOfAuthor", "firstNameOfAuthor", "lastNameOfHunter", "firstNameOfHunter", "species",
+                "deerHuntingType", "deerHuntingTypeDescription"
         };
     }
 

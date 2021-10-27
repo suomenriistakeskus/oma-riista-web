@@ -4,6 +4,7 @@ import fi.riista.util.ValueGeneratorMixin;
 
 import javax.annotation.Nonnull;
 
+import static fi.riista.util.F.mapNullable;
 import static java.util.Objects.requireNonNull;
 
 public interface RhyAnnualStatisticsTestDataPopulator extends ValueGeneratorMixin {
@@ -102,57 +103,101 @@ public interface RhyAnnualStatisticsTestDataPopulator extends ValueGeneratorMixi
 
         final HunterExamTrainingStatistics hunterExamTraining = statistics.getOrCreateHunterExamTraining();
         hunterExamTraining.setHunterExamTrainingEvents(57);
+        hunterExamTraining.setNonSubsidizableHunterExamTrainingEvents(2*57);
         hunterExamTraining.setHunterExamTrainingParticipants(58);
+        hunterExamTraining.setNonSubsidizableHunterExamTrainingParticipants(2*58);
 
         final JHTTrainingStatistics jhtTraining = statistics.getOrCreateJhtTraining();
         jhtTraining.setShootingTestTrainingEvents(59);
+        jhtTraining.setNonSubsidizableShootingTestTrainingEvents(2*59);
         jhtTraining.setShootingTestTrainingParticipants(60);
+        jhtTraining.setNonSubsidizableShootingTestTrainingParticipants(2*60);
         jhtTraining.setHunterExamOfficialTrainingEvents(61);
+        jhtTraining.setNonSubsidizableHunterExamOfficialTrainingEvents(2*61);
         jhtTraining.setHunterExamOfficialTrainingParticipants(62);
+        jhtTraining.setNonSubsidizableHunterExamOfficialTrainingParticipants(2*62);
         jhtTraining.setGameDamageTrainingEvents(63);
+        jhtTraining.setNonSubsidizableGameDamageTrainingEvents(2*63);
         jhtTraining.setGameDamageTrainingParticipants(64);
+        jhtTraining.setNonSubsidizableGameDamageTrainingParticipants(2*64);
         jhtTraining.setHuntingControlTrainingEvents(65);
+        jhtTraining.setNonSubsidizableHuntingControlTrainingEvents(2*65);
         jhtTraining.setHuntingControlTrainingParticipants(66);
+        jhtTraining.setNonSubsidizableHuntingControlTrainingParticipants(2*66);
 
         final HunterTrainingStatistics hunterTraining = statistics.getOrCreateHunterTraining();
         hunterTraining.setMooselikeHuntingLeaderTrainingEvents(67);
+        hunterTraining.setNonSubsidizableMooselikeHuntingLeaderTrainingEvents(2*67);
         hunterTraining.setMooselikeHuntingLeaderTrainingParticipants(68);
+        hunterTraining.setNonSubsidizableMooselikeHuntingLeaderTrainingParticipants(2*68);
         hunterTraining.setCarnivoreHuntingLeaderTrainingEvents(69);
+        hunterTraining.setNonSubsidizableCarnivoreHuntingLeaderTrainingEvents(2*69);
         hunterTraining.setCarnivoreHuntingLeaderTrainingParticipants(70);
+        hunterTraining.setNonSubsidizableCarnivoreHuntingLeaderTrainingParticipants(2*70);
         hunterTraining.setMooselikeHuntingTrainingEvents(71);
+        hunterTraining.setNonSubsidizableMooselikeHuntingTrainingEvents(2*71);
         hunterTraining.setMooselikeHuntingTrainingParticipants(72);
+        hunterTraining.setNonSubsidizableMooselikeHuntingTrainingParticipants(2*72);
         hunterTraining.setCarnivoreHuntingTrainingEvents(73);
+        hunterTraining.setNonSubsidizableCarnivoreHuntingTrainingEvents(2*73);
         hunterTraining.setCarnivoreHuntingTrainingParticipants(74);
+        hunterTraining.setNonSubsidizableCarnivoreHuntingTrainingParticipants(2*74);
         hunterTraining.setSrvaTrainingEvents(75);
+        hunterTraining.setNonSubsidizableSrvaTrainingEvents(2*75);
         hunterTraining.setSrvaTrainingParticipants(76);
+        hunterTraining.setNonSubsidizableSrvaTrainingParticipants(2*76);
         hunterTraining.setCarnivoreContactPersonTrainingEvents(77);
+        hunterTraining.setNonSubsidizableCarnivoreContactPersonTrainingEvents(2*77);
         hunterTraining.setCarnivoreContactPersonTrainingParticipants(78);
+        hunterTraining.setNonSubsidizableCarnivoreContactPersonTrainingParticipants(2*78);
         hunterTraining.setAccidentPreventionTrainingEvents(79);
+        hunterTraining.setNonSubsidizableAccidentPreventionTrainingEvents(2*79);
         hunterTraining.setAccidentPreventionTrainingParticipants(80);
+        hunterTraining.setNonSubsidizableAccidentPreventionTrainingParticipants(2*80);
 
         final YouthTrainingStatistics youthTraining = statistics.getOrCreateYouthTraining();
         youthTraining.setSchoolTrainingEvents(81);
+        youthTraining.setNonSubsidizableSchoolTrainingEvents(2*81);
         youthTraining.setSchoolTrainingParticipants(82);
+        youthTraining.setNonSubsidizableSchoolTrainingParticipants(2*82);
         youthTraining.setCollegeTrainingEvents(83);
+        youthTraining.setNonSubsidizableCollegeTrainingEvents(2*83);
         youthTraining.setCollegeTrainingParticipants(84);
+        youthTraining.setNonSubsidizableCollegeTrainingParticipants(2*84);
         youthTraining.setOtherYouthTargetedTrainingEvents(85);
+        youthTraining.setNonSubsidizableOtherYouthTargetedTrainingEvents(2*85);
         youthTraining.setOtherYouthTargetedTrainingParticipants(86);
+        youthTraining.setNonSubsidizableOtherYouthTargetedTrainingParticipants(2*86);
 
         final OtherHunterTrainingStatistics otherHunterTraining = statistics.getOrCreateOtherHunterTraining();
         otherHunterTraining.setSmallCarnivoreHuntingTrainingEvents(87);
+        otherHunterTraining.setNonSubsidizableSmallCarnivoreHuntingTrainingEvents(2*87);
         otherHunterTraining.setSmallCarnivoreHuntingTrainingParticipants(88);
+        otherHunterTraining.setNonSubsidizableSmallCarnivoreHuntingTrainingParticipants(2*88);
         otherHunterTraining.setGameCountingTrainingEvents(89);
+        otherHunterTraining.setNonSubsidizableGameCountingTrainingEvents(2*89);
         otherHunterTraining.setGameCountingTrainingParticipants(90);
+        otherHunterTraining.setNonSubsidizableGameCountingTrainingParticipants(2*90);
         otherHunterTraining.setGamePopulationManagementTrainingEvents(91);
+        otherHunterTraining.setNonSubsidizableGamePopulationManagementTrainingEvents(2*91);
         otherHunterTraining.setGamePopulationManagementTrainingParticipants(92);
+        otherHunterTraining.setNonSubsidizableGamePopulationManagementTrainingParticipants(2*92);
         otherHunterTraining.setGameEnvironmentalCareTrainingEvents(93);
+        otherHunterTraining.setNonSubsidizableGameEnvironmentalCareTrainingEvents(2*93);
         otherHunterTraining.setGameEnvironmentalCareTrainingParticipants(94);
+        otherHunterTraining.setNonSubsidizableGameEnvironmentalCareTrainingParticipants(2*94);
         otherHunterTraining.setOtherGamekeepingTrainingEvents(95);
+        otherHunterTraining.setNonSubsidizableOtherGamekeepingTrainingEvents(2*95);
         otherHunterTraining.setOtherGamekeepingTrainingParticipants(96);
+        otherHunterTraining.setNonSubsidizableOtherGamekeepingTrainingParticipants(2*96);
         otherHunterTraining.setShootingTrainingEvents(97);
+        otherHunterTraining.setNonSubsidizableShootingTrainingEvents(2*97);
         otherHunterTraining.setShootingTrainingParticipants(98);
+        otherHunterTraining.setNonSubsidizableShootingTrainingParticipants(2*98);
         otherHunterTraining.setTrackerTrainingEvents(99);
+        otherHunterTraining.setNonSubsidizableTrackerTrainingEvents(2*99);
         otherHunterTraining.setTrackerTrainingParticipants(100);
+        otherHunterTraining.setNonSubsidizableTrackerTrainingParticipants(2*100);
 
         final PublicEventStatistics publicEvents = statistics.getOrCreatePublicEvents();
         publicEvents.setPublicEvents(101);
@@ -223,9 +268,11 @@ public interface RhyAnnualStatisticsTestDataPopulator extends ValueGeneratorMixi
 
         final HunterTrainingStatistics hunterTraining = new HunterTrainingStatistics();
         hunterTraining.setMooselikeHuntingTrainingEvents(otherTrainingEvents);
+        hunterTraining.setNonSubsidizableMooselikeHuntingTrainingEvents(mapNullable(otherTrainingEvents, i->i*2));
 
         final YouthTrainingStatistics youthTraining = new YouthTrainingStatistics();
         youthTraining.setSchoolTrainingEvents(studentAndYouthTrainingEvents);
+        youthTraining.setNonSubsidizableSchoolTrainingEvents(mapNullable(studentAndYouthTrainingEvents, i->i*2));
 
         final SrvaEventStatistics srva = new SrvaEventStatistics();
         srva.getAccident().setMooses(srvaMooselikeEvents);
@@ -265,25 +312,32 @@ public interface RhyAnnualStatisticsTestDataPopulator extends ValueGeneratorMixi
 
         final HunterTrainingStatistics hunterTraining = statistics.getOrCreateHunterTraining();
         hunterTraining.setMooselikeHuntingTrainingEvents(hunterTrainingEvents);
+        hunterTraining.setNonSubsidizableMooselikeHuntingTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         hunterTraining.setMooselikeHuntingLeaderTrainingParticipants(0);
         hunterTraining.setCarnivoreHuntingLeaderTrainingEvents(hunterTrainingEvents);
+        hunterTraining.setNonSubsidizableCarnivoreHuntingLeaderTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         hunterTraining.setCarnivoreHuntingLeaderTrainingParticipants(0);
         hunterTraining.setMooselikeHuntingTrainingParticipants(0);
         hunterTraining.setCarnivoreHuntingTrainingEvents(hunterTrainingEvents);
+        hunterTraining.setNonSubsidizableCarnivoreHuntingTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         hunterTraining.setCarnivoreHuntingTrainingParticipants(0);
         hunterTraining.setSrvaTrainingEvents(hunterTrainingEvents);
         hunterTraining.setSrvaTrainingParticipants(0);
         hunterTraining.setCarnivoreContactPersonTrainingEvents(hunterTrainingEvents);
+        hunterTraining.setNonSubsidizableCarnivoreContactPersonTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         hunterTraining.setCarnivoreContactPersonTrainingParticipants(0);
         hunterTraining.setAccidentPreventionTrainingEvents(hunterTrainingEvents);
         hunterTraining.setAccidentPreventionTrainingParticipants(0);
 
         final YouthTrainingStatistics youthTraining = statistics.getOrCreateYouthTraining();
         youthTraining.setSchoolTrainingEvents(studentAndYouthTrainingEvents);
+        youthTraining.setNonSubsidizableSchoolTrainingEvents(mapNullable(studentAndYouthTrainingEvents, i->i*2));
         youthTraining.setSchoolTrainingParticipants(0);
         youthTraining.setCollegeTrainingEvents(studentAndYouthTrainingEvents);
+        youthTraining.setNonSubsidizableCollegeTrainingEvents(mapNullable(studentAndYouthTrainingEvents, i->i*2));
         youthTraining.setCollegeTrainingParticipants(0);
         youthTraining.setOtherYouthTargetedTrainingEvents(studentAndYouthTrainingEvents);
+        youthTraining.setNonSubsidizableOtherYouthTargetedTrainingEvents(mapNullable(studentAndYouthTrainingEvents, i->i*2));
         youthTraining.setOtherYouthTargetedTrainingParticipants(0);
 
         final SrvaEventStatistics srva = statistics.getOrCreateSrva();
@@ -314,28 +368,39 @@ public interface RhyAnnualStatisticsTestDataPopulator extends ValueGeneratorMixi
 
         final JHTTrainingStatistics jhtTraining = statistics.getOrCreateJhtTraining();
         jhtTraining.setGameDamageTrainingEvents(hunterTrainingEvents);
+        jhtTraining.setNonSubsidizableGameDamageTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         jhtTraining.setGameDamageTrainingParticipants(0);
         jhtTraining.setHunterExamOfficialTrainingEvents(hunterTrainingEvents);
+        jhtTraining.setNonSubsidizableHunterExamOfficialTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         jhtTraining.setHunterExamOfficialTrainingParticipants(0);
         jhtTraining.setHuntingControlTrainingEvents(hunterTrainingEvents);
+        jhtTraining.setNonSubsidizableHuntingControlTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         jhtTraining.setHuntingControlTrainingParticipants(0);
         jhtTraining.setShootingTestTrainingEvents(hunterTrainingEvents);
+        jhtTraining.setNonSubsidizableShootingTestTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         jhtTraining.setShootingTestTrainingParticipants(0);
 
         final OtherHunterTrainingStatistics otherHunterTraining = statistics.getOrCreateOtherHunterTraining();
         otherHunterTraining.setSmallCarnivoreHuntingTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setNonSubsidizableSmallCarnivoreHuntingTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         otherHunterTraining.setSmallCarnivoreHuntingTrainingParticipants(0);
         otherHunterTraining.setGameCountingTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setNonSubsidizableGameCountingTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         otherHunterTraining.setGameCountingTrainingParticipants(0);
         otherHunterTraining.setGamePopulationManagementTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setNonSubsidizableGamePopulationManagementTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         otherHunterTraining.setGamePopulationManagementTrainingParticipants(0);
         otherHunterTraining.setGameEnvironmentalCareTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setNonSubsidizableGameEnvironmentalCareTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         otherHunterTraining.setGameEnvironmentalCareTrainingParticipants(0);
         otherHunterTraining.setOtherGamekeepingTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setNonSubsidizableOtherGamekeepingTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         otherHunterTraining.setOtherGamekeepingTrainingParticipants(0);
         otherHunterTraining.setShootingTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setNonSubsidizableShootingTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         otherHunterTraining.setShootingTrainingParticipants(0);
         otherHunterTraining.setTrackerTrainingEvents(hunterTrainingEvents);
+        otherHunterTraining.setNonSubsidizableTrackerTrainingEvents(mapNullable(hunterTrainingEvents, i->i*2));
         otherHunterTraining.setTrackerTrainingParticipants(0);
 
         statistics.getOrCreateHuntingControl().setHuntingControlEvents(huntingControlEvents);

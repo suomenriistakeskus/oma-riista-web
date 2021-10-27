@@ -1,13 +1,10 @@
 package fi.riista.integration.fcm;
 
-import de.bytefish.fcmjava.client.FcmClient;
-import de.bytefish.fcmjava.model.builders.FcmMessageOptionsBuilder;
-import de.bytefish.fcmjava.model.options.FcmMessageOptions;
-import de.bytefish.fcmjava.requests.builders.NotificationPayloadBuilder;
-import de.bytefish.fcmjava.requests.notification.NotificationPayload;
-import de.bytefish.fcmjava.requests.notification.NotificationUnicastMessage;
-import de.bytefish.fcmjava.responses.FcmMessageResponse;
-import de.bytefish.fcmjava.responses.FcmMessageResultItem;
+import com.google.firebase.messaging.AndroidConfig;
+import com.google.firebase.messaging.BatchResponse;
+import com.google.firebase.messaging.MulticastMessage;
+import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.SendResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -16,6 +13,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.PropertySource;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Map;
+
+import static java.util.Collections.singletonMap;
 
 public class FcmCli {
     private static final Logger LOG = LoggerFactory.getLogger(FcmCli.class);
@@ -35,24 +36,30 @@ public class FcmCli {
             ctx.start();
 
             try {
-                final FcmClient fcmClient = ctx.getBean(FcmClient.class);
-                final FcmMessageOptions messageOptions = new FcmMessageOptionsBuilder()
-                        .setTimeToLive(Duration.ofDays(7))
+                final FcmMulticastSender sender = ctx.getBean(FcmMulticastSender.class);
+
+                final AndroidConfig androidConfig = AndroidConfig.builder()
+                        .setTtl(Duration.ofDays(7).getSeconds())
                         .build();
 
-                final NotificationPayload notificationPayload = new NotificationPayloadBuilder()
-                        .setSound("default")
-                        .setColor("#33aa99")
+                final Notification notification = Notification.builder()
+                        .setTitle("Message")
                         .setBody("Hello World")
                         .build();
 
-                final NotificationUnicastMessage notification = new NotificationUnicastMessage(
-                        messageOptions, to, notificationPayload);
-                final FcmMessageResponse response = fcmClient.send(notification);
+                final Map<String, String> data = singletonMap("announcement", "Test message");
+                final MulticastMessage msg = MulticastMessage.builder()
+                        .setAndroidConfig(androidConfig)
+                        .putAllData(data)
+                        .addAllTokens(Collections.singletonList(to))
+                        .setNotification(notification)
+                        .build();
 
-                LOG.info("{} errors {} success", response.getNumberOfFailure(), response.getNumberOfSuccess());
+                final BatchResponse response = sender.send(msg).get();
 
-                for (FcmMessageResultItem resultItem : response.getResults()) {
+                LOG.info("{} errors {} success", response.getFailureCount(), response.getSuccessCount());
+
+                for (final SendResponse resultItem : response.getResponses()) {
                     LOG.info("resultItem: {}", resultItem);
                 }
 

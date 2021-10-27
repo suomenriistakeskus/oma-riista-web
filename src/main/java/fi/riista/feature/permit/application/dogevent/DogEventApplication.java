@@ -4,6 +4,7 @@ import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HasParentApplication;
 import fi.riista.feature.permit.application.derogation.area.DerogationPermitApplicationAreaInfo;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -28,7 +29,7 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(AccessType.FIELD)
-public class DogEventApplication extends LifecycleEntity<Long> implements DerogationPermitApplicationAreaInfo {
+public class DogEventApplication extends HasParentApplication implements DerogationPermitApplicationAreaInfo {
 
     public static final String ID_COLUMN_NAME = "dog_event_application_id";
 
@@ -49,11 +50,6 @@ public class DogEventApplication extends LifecycleEntity<Long> implements Deroga
     }
 
     private Long id;
-
-    @NotNull
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(unique = true, nullable = false)
-    private HarvestPermitApplication harvestPermitApplication;
 
     @Min(0)
     @Column
@@ -81,14 +77,6 @@ public class DogEventApplication extends LifecycleEntity<Long> implements Deroga
     @Override
     public void setId(final Long id) {
         this.id = id;
-    }
-
-    public HarvestPermitApplication getHarvestPermitApplication() {
-        return harvestPermitApplication;
-    }
-
-    public void setHarvestPermitApplication(final HarvestPermitApplication harvestPermitApplication) {
-        this.harvestPermitApplication = harvestPermitApplication;
     }
 
     @Override

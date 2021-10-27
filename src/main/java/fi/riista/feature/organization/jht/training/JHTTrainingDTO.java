@@ -6,12 +6,12 @@ import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.validation.DoNotValidate;
-import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 public class JHTTrainingDTO extends BaseEntityDTO<Long> {

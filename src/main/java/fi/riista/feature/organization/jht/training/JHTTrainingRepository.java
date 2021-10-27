@@ -8,4 +8,5 @@ import java.util.List;
 public interface JHTTrainingRepository extends BaseRepository<JHTTraining, Long>, JHTTrainingRepositoryCustom {
 
     List<JHTTraining> findByPerson(Person person);
+
 }

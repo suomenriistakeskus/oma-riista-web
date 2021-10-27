@@ -1,0 +1,73 @@
+<form name="importAreaForm" role="form"
+      class="form form-horizontal" autocomplete="off"
+      ng-submit="$ctrl.doImport()">
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="moderator.area.import.modalTitle"></h3>
+    </div>
+
+    <div class="modal-body">
+        <p translate="moderator.area.import.instructions"></p>
+
+        <p class="text-danger"></p>
+
+        <div class="form-group row" show-errors="{ trigger: 'keypress' }">
+            <label for="externalId" class="col-xs-3 control-label">
+                <span translate="moderator.area.import.externalId"></span>
+            </label>
+
+            <div class="col-xs-6">
+                <input name="externalId" id="externalId"
+                       class="form-control"
+                       minlength="10"
+                       maxlength="10"
+                       ng-pattern="/^[a-zA-Z0-9]{10,}$/"
+                       focus-me
+                       required
+                       ng-model="$ctrl.externalId">
+
+                <p class="help-block has-error"
+                   ng-show="importAreaForm.externalId.$invalid"
+                   ng-messages="importAreaForm.externalId.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+            <div class="col-xs-3">
+                <button type="button" class="btn btn-primary btn-block"
+                        ng-disabled="importAreaForm.externalId.$invalid && !$ctrl.selectedArea"
+                        ng-click="$ctrl.search()">
+                    <span class="fa fa-search"></span>
+                    <span translate="moderator.area.import.search"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group row" ng-if="$ctrl.selectedArea">
+            <label for="areaName" class="control-label col-xs-3">
+                <span translate="moderator.area.import.areaName"></span>
+            </label>
+            <strong class="col-xs-6 form-control-static" id="areaName" name="areaName"
+                    ng-bind="$ctrl.selectedArea | rI18nNameFilter"></strong>
+            <div class="col-xs-3">
+                <button type="button" class="btn btn-default btn-block" ng-click="$ctrl.removeSelection()">
+                    <span class="text-danger fa fa-remove"></span>
+                    <span translate="moderator.area.import.removeSelection"></span>
+                </button>
+            </div>
+            <hr>
+        </div>
+        <div class="row" ng-if="$ctrl.error">
+            <span class="col-xs-12 text-danger" translate="moderator.area.import.notFound"></span>
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.close()"
+                translate="global.button.close"></button>
+        <button type="submit" class="btn btn-primary"
+                translate="moderator.area.import.doImport"
+                ng-disabled="!$ctrl.selectedArea"></button>
+    </div>
+</form>

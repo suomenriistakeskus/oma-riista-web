@@ -68,11 +68,23 @@ angular.module('app.dashboard', [])
     })
     .component('dashboardMhPermits', {
         templateUrl: 'dashboard/mh-permits.html',
-        controller: function ($resource) {
+        controller: function ($resource, HuntingYearService) {
             var $ctrl = this;
             $ctrl.$onInit = function () {
-                $ctrl.metrics = $resource('/api/v1/moderator/mh/statistics').get();
+                $ctrl.metrics = updateMetrics("");
+                $ctrl.huntingYearFilter = "";
+                $ctrl.availableHuntingYears = HuntingYearService.createHuntingYearChoices(2019, true);
             };
+
+            $ctrl.onHuntingYearChange = function () {
+                $ctrl.metrics = updateMetrics($ctrl.huntingYearFilter);
+            };
+
+            function updateMetrics(huntingYear) {
+                return !huntingYear
+                    ? $resource('/api/v1/moderator/mh/statistics').get()
+                    : $resource('/api/v1/moderator/mh/statistics?huntingYear='+huntingYear).get();
+            }
         }
     })
     .component('dashboardMobileLogin', {
@@ -100,22 +112,6 @@ angular.module('app.dashboard', [])
 
         }
     })
-    .component('dashboardDeerPilotStatistics', {
-        templateUrl: 'dashboard/deer-pilot-stats.html',
-        controller: function (FetchAndSaveBlob) {
-            var $ctrl = this;
-
-            $ctrl.$onInit = function () {
-                // Initialize variables used by organisation selection component
-                $ctrl.areaCode = '000';
-                $ctrl.rhyCode = null;
-            };
-
-            $ctrl.exportDeerPilotMemberStats = function () {
-                FetchAndSaveBlob.post('api/v1/dashboard/deerpilot/excel/' + $ctrl.rhyCode);
-            };
-        }
-    })
     .component('dashboardHarvestObservations', {
         templateUrl: 'dashboard/harvests_observations.html',
         controller: function ($resource) {
@@ -134,7 +130,6 @@ angular.module('app.dashboard', [])
                 $ctrl.metrics = $resource('/api/v1/dashboard/srva').get();
             };
         }
-
     })
     .component('dashboardBulkButton', {
         templateUrl: 'dashboard/bulk-button.html',

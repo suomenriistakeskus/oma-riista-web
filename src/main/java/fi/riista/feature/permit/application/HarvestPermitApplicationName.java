@@ -20,13 +20,13 @@ public class HarvestPermitApplicationName {
     public static final LocalisedString DOG_UNLEASH = LocalisedString.of("Koirakokeet tai kouluttaminen", "Hundprov och dressyr");
     public static final LocalisedString DOG_DISTURBANCE = LocalisedString.of("Karhun haukuttaminen ja taipumuskokeet", "Anlagsprov på björn");
     public static final LocalisedString DEPORTATION = LocalisedString.of("Poikkeuslupa riistaeläimen ja rauhoittamattoman eläimen häiritsemiseen (karkottaminen)",
-            "Poikkeuslupa riistaeläimen ja rauhoittamattoman eläimen häiritsemiseen (karkottaminen)");
+            "Dispens för att störa vilt och icke fredade djur (fördrivning)");
     public static final LocalisedString RESEARCH = LocalisedString.of("Elävänä pyydystäminen",
-            "Elävänä pyydystäminen");
+            "Levandefångst");
     public static final LocalisedString IMPORTING = LocalisedString.of("Vierasperäisen riistaeläimen maahantuonti",
-            "Vierasperäisen riistaeläimen maahantuonti");
+            "Införsel av vilt av främmande ursprung");
     public static final LocalisedString GAME_MANAGEMENT = LocalisedString.of("Riistanhoidollinen toimenpide tai eläimen tarhaaminen",
-            "Riistanhoidollinen toimenpide tai eläimen tarhaaminen");
+            "Viltvårdsåtgärd eller uppfödning av djur");
 
     private HarvestPermitApplicationName() {
         throw new AssertionError();

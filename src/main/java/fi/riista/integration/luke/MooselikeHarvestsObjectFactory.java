@@ -242,7 +242,7 @@ public class MooselikeHarvestsObjectFactory {
 
         dto.setSnowDepth(day.getSnowDepth());
         if (day.getHuntingMethod() != null) {
-            dto.setHuntingMethod(convertByEnumName(LEM_HuntingMethod.class, day.getHuntingMethod().getExplicitName()));
+            dto.setHuntingMethod(convertByEnumName(LEM_HuntingMethod.class, day.getHuntingMethod().name()));
         }
         dto.setNumberOfHunters(day.getNumberOfHunters());
         dto.setNumberOfHounds(day.getNumberOfHounds());

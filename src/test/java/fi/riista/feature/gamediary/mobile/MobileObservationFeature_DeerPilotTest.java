@@ -21,8 +21,8 @@ import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOS
 import static fi.riista.feature.gamediary.observation.ObservationTestAsserts.assertLargeCarnivoreFieldsAreNull;
 import static fi.riista.feature.gamediary.observation.ObservationTestAsserts.assertMooselikeAmountFieldsNotNull;
 import static fi.riista.feature.gamediary.observation.ObservationType.NAKO;
-import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.VOLUNTARY_DEER_PILOT;
-import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.YES_DEER_PILOT;
+import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.VOLUNTARY;
+import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.YES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -30,6 +30,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+// TODO: Is this test class still valid?
 public class MobileObservationFeature_DeerPilotTest extends MobileObservationFeatureTestBase
         implements HuntingGroupFixtureMixin, ObservationFixtureMixin {
 
@@ -42,24 +43,16 @@ public class MobileObservationFeature_DeerPilotTest extends MobileObservationFea
 
     @Test
     public void testCreateDeerPilotObservationWithPilotUser() {
-        enableDeerPilot();
-        testCreateDeerPilotObservation(OTHER, "DeerHuntingTypeDescription");
-    }
-
-    @Test(expected = ProhibitedFieldFound.class)
-    public void testCreateDeerPilotObservationWithNonPilotUser() {
         testCreateDeerPilotObservation(OTHER, "DeerHuntingTypeDescription");
     }
 
     @Test
     public void testCreateDeerPilotObservationWithoutVoluntaryField() {
-        enableDeerPilot();
         testCreateDeerPilotObservation(OTHER, null);
     }
 
     @Test(expected = RequiredFieldMissing.class)
     public void testCreateDeerPilotObservationWithoutRequiredField() {
-        enableDeerPilot();
         testCreateDeerPilotObservation(null, "DeerHuntingTypeDescription");
     }
 
@@ -70,7 +63,7 @@ public class MobileObservationFeature_DeerPilotTest extends MobileObservationFea
 
         createObservationMetaF(OFFICIAL_CODE_WHITE_TAILED_DEER, MOST_RECENT, DEER_HUNTING, NAKO)
                 .forMobile()
-                .withDeerHuntingTypeFieldsAs(YES_DEER_PILOT, VOLUNTARY_DEER_PILOT)
+                .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
                 .withMooselikeAmountFieldsAs(Required.YES)
                 .consumeBy(obsMeta -> {
 
@@ -124,7 +117,4 @@ public class MobileObservationFeature_DeerPilotTest extends MobileObservationFea
                 });
     }
 
-    private void enableDeerPilot() {
-        model().newDeerPilot(fixture.permit);
-    }
 }

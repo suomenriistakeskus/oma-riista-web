@@ -19,6 +19,7 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.Locales;
 import fi.riista.util.LocalisedString;
 import org.hamcrest.CustomTypeSafeMatcher;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import java.util.Objects;
 
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
@@ -771,5 +773,24 @@ public class PublicOccupationSearchFeatureTest extends EmbeddedDatabaseTest {
                 .filter(occupation -> occupation.getOccupationType().getOccupationType() == OccupationType.TOIMINNANOHJAAJA)
                 .count();
         assertEquals(0, coordinatorCount);
+    }
+
+    @Test
+    public void testRegionalMeetingRepresentativesNotListed() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+        final Person person = model().newPerson();
+        final Occupation representative = model().newOccupation(rhy, person, OccupationType.ALUEKOKOUKSEN_EDUSTAJA);
+        final Person person2 = model().newPerson();
+        model().newOccupation(rhy, person2, OccupationType.ALUEKOKOUKSEN_VARAEDUSTAJA);
+        representative.setSubstitute(person2);
+
+        persistInNewTransaction();
+
+        final PublicOccupationsAndOrganisationsDTO result = occupationSearchFeature.findOccupationsAndOrganisations(
+                PublicOccupationSearchParameters.builder()
+                        .withPageNumber(0)
+                        .withPageSize(100).build());
+
+        assertThat(result.getOccupations(), Matchers.is(empty()));
     }
 }

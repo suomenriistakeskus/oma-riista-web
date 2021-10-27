@@ -17,7 +17,6 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
-import fi.riista.sql.SQDeerPilot;
 import fi.riista.sql.SQGameObservation;
 import fi.riista.sql.SQGameSpecies;
 import fi.riista.sql.SQGroupHuntingDay;
@@ -77,7 +76,6 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
         final SQGameSpecies gameSpecies = new SQGameSpecies("game_species");
         final SQHuntingClubArea huntingClubArea = new SQHuntingClubArea("hunting_club_area");
         final SQZone zone = new SQZone("zone");
-        final SQDeerPilot deerPilot = new SQDeerPilot("deer_pilot");
         final SQHarvestPermitSpeciesAmount speciesAmount = new SQHarvestPermitSpeciesAmount("species_amount");
         final Date pointOfTime = Date.valueOf(observation.getPointOfTimeAsLocalDate().toString());
 
@@ -95,7 +93,6 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
                 .join(gameSpecies).on(gameSpecies.gameSpeciesId.eq(group.gameSpeciesId))
                 .join(huntingClubArea).on(huntingClubArea.huntingClubAreaId.eq(group.huntingAreaId))
                 .join(zone).on(zone.zoneId.eq(huntingClubArea.zoneId))
-                .join(deerPilot).on(deerPilot.harvestPermitId.eq(group.harvestPermitId))
                 .join(speciesAmount).on(speciesAmount.harvestPermitId.eq(group.harvestPermitId))
                 // Organisation is hunting group
                 .where(group.organisationType.eq(OrganisationType.CLUBGROUP.toString()),
@@ -144,20 +141,30 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
 
     @Transactional(readOnly = true)
     @Override
-    public List<Observation> findGroupObservations(
-            final HuntingClubGroup huntingClubGroup, final ObservationCategory observationCategory, final Interval interval) {
+    public List<Observation> findGroupObservationsWithinMooseHunting(final HuntingClubGroup huntingClubGroup,
+                                                                     final Interval interval) {
+        return findGroupObservations(asList(
+                gameObservationForGroupMemberInsideGroupHuntingArea(huntingClubGroup, ObservationCategory.MOOSE_HUNTING, interval),
+                gameObservationLinkedToGroupHuntingDay(huntingClubGroup),
+                gameObservationRejected(huntingClubGroup)
+        ));
+    }
 
+    @Transactional(readOnly = true)
+    @Override
+    public List<Observation> findGroupObservationsWithinDeerHunting(final HuntingClubGroup huntingClubGroup) {
+        return findGroupObservations(asList(
+                gameObservationLinkedToGroupHuntingDay(huntingClubGroup),
+                gameObservationRejected(huntingClubGroup)));
+    }
+
+    private List<Observation> findGroupObservations(final List<SubQueryExpression<Long>> subQueries) {
         final SQGameObservation observation = new SQGameObservation("game_observation");
         final QObservation observationEntity = new QObservation("game_observation");
 
-        final SubQueryExpression<Long> subQuery1 = gameObservationForGroupMemberInsideGroupHuntingArea(
-                huntingClubGroup, observationCategory, interval);
-        final SubQueryExpression<Long> subQuery2 = gameObservationLinkedToGroupHuntingDay(huntingClubGroup);
-        final SubQueryExpression<Long> subQuery3 = gameObservationRejected(huntingClubGroup);
-
         return new JPASQLQuery<Observation>(entityManager, sqlTemplates)
                 .select(observationEntity).from(observation)
-                .where(observation.gameObservationId.in(union(asList(subQuery1, subQuery2, subQuery3))))
+                .where(observation.gameObservationId.in(union(subQueries)))
                 .orderBy(observation.pointOfTime.desc(), observation.observerId.desc())
                 .fetch();
     }

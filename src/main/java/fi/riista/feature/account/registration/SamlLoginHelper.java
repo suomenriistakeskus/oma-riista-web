@@ -1,9 +1,12 @@
 package fi.riista.feature.account.registration;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.onelogin.saml2.Auth;
 import com.onelogin.saml2.servlet.ServletUtils;
 import com.onelogin.saml2.settings.Saml2Settings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
@@ -16,7 +19,11 @@ import java.util.Map;
 
 @Component
 public class SamlLoginHelper {
-    private Saml2Settings samlSettings;
+    private static Logger LOG = LoggerFactory.getLogger(SamlLoginHelper.class);
+
+    // List of supported settings. Outbound requests are always sent using the primary settings.
+    // When processing received requests, fall back to secondary settings is tried before failing the request.
+    private List<Saml2Settings> samlSettings;
 
     @Resource
     private SamlLoginParameters samlLoginParameters;
@@ -24,27 +31,31 @@ public class SamlLoginHelper {
     @PostConstruct
     public void initSettings() {
         this.samlSettings = samlLoginParameters.buildSettings();
+        Preconditions.checkState(!samlSettings.isEmpty());
+        LOG.info("Initialized saml login parameters with {} certificates", samlSettings.size());
     }
 
     @Nonnull
     public String buildSsoRedirectUri(final String relayState,
                                       final SamlLoginLanguage lang) throws Exception {
-        final CustomAuthnRequest authnRequest = new CustomAuthnRequest(samlSettings, lang);
+        final Saml2Settings settings = getPrimarySettings();
+        final CustomAuthnRequest authnRequest = new CustomAuthnRequest(settings, lang);
         final String samlRequest = authnRequest.getEncodedAuthnRequest();
 
-        final Map<String, String> parameters = buildAuthRequestParameters(samlRequest, relayState);
+        final Map<String, String> parameters = buildAuthRequestParameters(settings, samlRequest, relayState);
 
         return ServletUtils.sendRedirect(null,
-                samlSettings.getIdpSingleSignOnServiceUrl().toString(),
+                settings.getIdpSingleSignOnServiceUrl().toString(),
                 parameters, true);
     }
 
     @Nonnull
-    private Map<String, String> buildAuthRequestParameters(final String samlRequest,
+    private Map<String, String> buildAuthRequestParameters(final Saml2Settings settings,
+                                                           final String samlRequest,
                                                            final String relayState) throws Exception {
         return ImmutableMap.<String, String>builder()
                 .put("SAMLRequest", samlRequest)
-                .put("SigAlg", samlSettings.getSignatureAlgorithm())
+                .put("SigAlg", settings.getSignatureAlgorithm())
                 .put("Signature", createRequestSignature(samlRequest, relayState))
                 .put("RelayState", relayState)
                 .build();
@@ -52,17 +63,42 @@ public class SamlLoginHelper {
 
     @Nonnull
     private String createRequestSignature(final String samlRequest, final String relayState) throws Exception {
-        return new Auth(samlSettings, null, null)
-                .buildRequestSignature(samlRequest, relayState, samlSettings.getSignatureAlgorithm());
+        final Saml2Settings settings = getPrimarySettings();
+        return new Auth(settings, null, null)
+                .buildRequestSignature(samlRequest, relayState, settings.getSignatureAlgorithm());
+    }
+
+    private Saml2Settings getPrimarySettings() {
+        Preconditions.checkState(!samlSettings.isEmpty(), "Saml settings not configured.");
+        return samlSettings.get(0);
     }
 
     @Nonnull
     public SamlAuthenticationResult processAuthenticationResponse(
             final HttpServletRequest request,
             final HttpServletResponse response) throws Exception {
+
+        try {
+            final Saml2Settings settings = getPrimarySettings();
+            return doProcessAuthenticationResponse(settings, request, response);
+        } catch (Exception e) {
+            if (samlSettings.size() > 1) {
+                LOG.info("Trying secondary certificate for authentication response");
+                return doProcessAuthenticationResponse(samlSettings.get(1), request, response);
+            } else {
+                LOG.warn("Processing authentication response failed. Secondary certificate not configured.");
+                throw e;
+            }
+        }
+
+    }
+
+    private SamlAuthenticationResult doProcessAuthenticationResponse(final Saml2Settings settings,
+                                                                     final HttpServletRequest request,
+                                                                     final HttpServletResponse response) throws Exception {
         final String relayState = request.getParameter("RelayState");
 
-        final Auth auth = new Auth(samlSettings, request, response);
+        final Auth auth = new Auth(settings, request, response);
         auth.processResponse();
 
         if (auth.isAuthenticated() && auth.getErrors().isEmpty()) {
@@ -75,7 +111,24 @@ public class SamlLoginHelper {
     }
 
     public List<String> processLogoutRequest(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
-        final Auth auth = new Auth(samlSettings, request, response);
+        try {
+            final Saml2Settings settings = getPrimarySettings();
+            return doProcessLogoutRequest(settings, request, response);
+        } catch (Exception e) {
+            if (samlSettings.size() > 1) {
+                LOG.info("Trying secondary certificate for logout request");
+                return doProcessLogoutRequest(samlSettings.get(1), request, response);
+            } else {
+                LOG.warn("Processing logout request failed. Secondary certificate not configured.");
+                throw e;
+            }
+        }
+    }
+
+    private List<String> doProcessLogoutRequest(final Saml2Settings settings,
+                                                final HttpServletRequest request,
+                                                final HttpServletResponse response) throws Exception {
+        final Auth auth = new Auth(settings, request, response);
         auth.processSLO();
         return auth.getErrors();
     }

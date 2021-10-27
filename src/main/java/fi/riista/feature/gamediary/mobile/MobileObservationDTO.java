@@ -1,6 +1,9 @@
 package fi.riista.feature.gamediary.mobile;
 
 import fi.riista.feature.gamediary.DeerHuntingType;
+import fi.riista.feature.gamediary.HasHuntingDayId;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersionSupport;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationDTOBase;
@@ -78,13 +81,13 @@ public class MobileObservationDTO extends ObservationDTOBase {
 
     // Builder -->
 
-    public static Builder<?> builder(@Nonnull final ObservationBaseFields baseFields) {
+    public static Builder<?, ?> builder(@Nonnull final ObservationBaseFields baseFields) {
         return new ConcreteBuilder(baseFields);
     }
 
     // Allows sub-classing for tests and adding new fluent interface style methods.
-    public static abstract class Builder<SELF extends Builder<SELF>>
-            extends ObservationDTOBase.Builder<MobileObservationDTO, SELF> {
+    public static abstract class Builder<DTO extends MobileObservationDTO, SELF extends Builder<DTO, SELF>>
+            extends ObservationDTOBase.Builder<DTO, SELF> {
 
         private boolean nullWithinMooseHunting;
 
@@ -179,14 +182,9 @@ public class MobileObservationDTO extends ObservationDTOBase {
 
             return self();
         }
-
-        @Override
-        protected MobileObservationDTO createDTO() {
-            return new MobileObservationDTO();
-        }
     }
 
-    private static final class ConcreteBuilder extends Builder<ConcreteBuilder> {
+    private static final class ConcreteBuilder extends Builder<MobileObservationDTO, ConcreteBuilder> {
 
         public ConcreteBuilder(@Nonnull final ObservationBaseFields baseFields) {
             super(baseFields);
@@ -195,6 +193,11 @@ public class MobileObservationDTO extends ObservationDTOBase {
         @Override
         protected ConcreteBuilder self() {
             return this;
+        }
+
+        @Override
+        protected MobileObservationDTO createDTO() {
+            return new MobileObservationDTO();
         }
     }
 }

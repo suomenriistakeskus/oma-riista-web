@@ -73,7 +73,8 @@ public class HarvestSpecimenOps_EqualContentTest extends HarvestSpecimenOpsTestB
 
             // Reset DTO and set `antlersGirth` which is supported in specVersion 8.
             opsUnderTest.copyContentToDTO(specimen, dto);
-            dto.setAntlersGirth(50);
+            dto.setAntlersGirth(selectBelowExcluding(50, specimen.getAntlersGirth()));
+
             assertEquality(dto, opsUnderTest, !version.supportsAntlerFields2020() || huntingYear < 2020);
 
             createPopulator(speciesCode, version, huntingYear).mutateContent(dto);
@@ -128,7 +129,7 @@ public class HarvestSpecimenOps_EqualContentTest extends HarvestSpecimenOpsTestB
 
             // Reset DTO and set `antlersGirth` which is supported in specVersion 8.
             opsUnderTest.copyContentToDTO(specimen, dto);
-            dto.setAntlersGirth(50);
+            dto.setAntlersGirth(selectBelowExcluding(50, specimen.getAntlersGirth()));
             assertEquality(dto, opsUnderTest, !version.supportsAntlerFields2020() || huntingYear < 2020);
 
             populator.mutateContent(dto);
@@ -237,6 +238,13 @@ public class HarvestSpecimenOps_EqualContentTest extends HarvestSpecimenOpsTestB
             // Should not be equal because all business fields are different between the objects.
             assertEquality(dto, opsUnderTest, false);
         });
+    }
+
+    private int selectBelowExcluding(final int upperLimit, final Integer excluded) {
+        final Integer value = getNumberGenerator().nextNonNegativeIntAtMost(upperLimit);
+        return value.equals(excluded)
+                ? getNumberGenerator().nextNonNegativeIntAtMost(upperLimit)
+                : value;
     }
 
     private void assertEquality(final HarvestSpecimenDTO dto,

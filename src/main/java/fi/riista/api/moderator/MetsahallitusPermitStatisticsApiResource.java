@@ -6,6 +6,7 @@ import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -20,7 +21,8 @@ public class MetsahallitusPermitStatisticsApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping
-    public MetsahallitusPermitStatisticsDTO statistics(final Locale locale) {
-        return metsahallitusPermitStatisticsFeature.listStatistics(locale);
+    public MetsahallitusPermitStatisticsDTO statistics(@RequestParam(required = false) final Integer huntingYear,
+                                                       final Locale locale) {
+        return metsahallitusPermitStatisticsFeature.listStatistics(locale, huntingYear);
     }
 }

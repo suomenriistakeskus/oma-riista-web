@@ -37,11 +37,12 @@ angular.module('app.rhy.reports', [])
                         return null;
                     },
                     clubId: _.constant(null),
-                    lukeReportParams: function (MoosePermits, permitId, selectedYearAndSpecies) {
+                    lukeReportParams: function (MoosePermits, permitId, selectedYearAndSpecies, ActiveRoleService) {
                         return permitId
                             ? MoosePermits.lukeReportParams({
                                 permitId: permitId,
-                                species: selectedYearAndSpecies.species
+                                species: selectedYearAndSpecies.species,
+                                activeOccupationId: ActiveRoleService.getActiveOccupationId()
                             }).$promise
                             : null;
                     }

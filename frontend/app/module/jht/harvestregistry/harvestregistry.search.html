@@ -163,6 +163,6 @@
     </div>
 
     <slice-pager slice="$ctrl.slice" load-page="$ctrl.doSearch(page)"></slice-pager>
-    <jht-harvest-registry-table ng-if="$ctrl.slice.content.length > 0" items="$ctrl.slice.content"
-                                areas="$ctrl.areas"></jht-harvest-registry-table>
+    <jht-harvest-registry-table ng-if="$ctrl.slice.content.length > 0"
+                                items="$ctrl.slice.content" included-fields="'FULL'"></jht-harvest-registry-table>
 </div>

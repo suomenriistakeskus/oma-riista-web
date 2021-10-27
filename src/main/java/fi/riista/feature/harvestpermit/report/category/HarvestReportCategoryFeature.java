@@ -38,10 +38,9 @@ public class HarvestReportCategoryFeature {
             final int gameSpeciesCode = species.getOfficialCode();
             final int huntingYear = DateUtil.huntingYearContaining(season.getBeginDate());
 
-            // Deer pilot is not relevant for report fields of season harvests -> false
             // FIXME "fields" is actually unused property in front-end. To be removed.
             final RequiredHarvestReportFieldsDTO fields = RequiredHarvestReportFieldsDTO
-                    .create(gameSpeciesCode, huntingYear, HarvestReportingType.SEASON, false);
+                    .create(gameSpeciesCode, huntingYear, HarvestReportingType.SEASON);
 
             result.add(HarvestReportCategoryDTO.createForSeason(season, fields));
         }
@@ -53,10 +52,9 @@ public class HarvestReportCategoryFeature {
             final int gameSpeciesCode = species.getOfficialCode();
 
             if (!excludePermitNotRequiredWithoutSeason || GameSpecies.isPermitRequiredWithoutSeason(gameSpeciesCode)) {
-                // Deer pilot is not relevant for report fields of permit harvests -> false
                 // FIXME "fields" is actually unused property in front-end. To be removed.
                 final RequiredHarvestReportFieldsDTO fields = RequiredHarvestReportFieldsDTO
-                        .create(gameSpeciesCode, currentHuntingYear, HarvestReportingType.PERMIT, false);
+                        .create(gameSpeciesCode, currentHuntingYear, HarvestReportingType.PERMIT);
 
                 result.add(HarvestReportCategoryDTO.createForPermit(species, fields));
             }

@@ -3,11 +3,14 @@ package fi.riista.feature.organization.occupation;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.audit.AuditService;
+import fi.riista.feature.account.mobile.MobileOccupationDTO;
+import fi.riista.feature.account.mobile.MobileOccupationDTOFactory;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.address.AddressDTO;
+import fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRule.VisibilitySetting;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.person.PersonIsDeceasedException;
@@ -27,6 +30,10 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import static fi.riista.feature.organization.occupation.OccupationAuthorization.OccupationPermission.UPDATE_CONTACT_INFO_VISIBILITY;
+import static fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRule.VisibilitySetting.ALWAYS;
+import static fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRule.VisibilitySetting.NEVER;
+import static java.util.Collections.singleton;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 
@@ -55,6 +62,9 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
 
     @Resource
     private RequireEntityService requireEntityService;
+
+    @Resource
+    private MobileOccupationDTOFactory mobileOccupationDTOFactory;
 
     @Override
     protected JpaRepository<Occupation, Long> getRepository() {
@@ -93,6 +103,8 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
 
             entity.setOrganisationAndOccupationType(organisation, dto.getOccupationType());
             entity.setPerson(person);
+
+            entity.setDefaultContactInfoVisibility(organisation.getOrganisationType(), dto.getOccupationType());
         }
 
         assertCanEditOccupationsForCorrectOrganisationTypes(entity.getOrganisation().getOrganisationType());
@@ -112,8 +124,10 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
         }
 
         final PersonContactInfoDTO substitute = dto.getSubstitute();
-        assertCanCreateSubstituteOnlyForRhyBoard(organisation, dto, substitute);
-        assertRhyBoardMemberMustHaveSubstitute(organisation, dto, substitute);
+        assertCanCreateSubstituteOnlyBoardMembers(dto, substitute);
+        assertBoardMemberMustHaveSubstitute(dto, substitute);
+        assertRegionalMeetingRepresentativeMustHaveSubstitute(dto, substitute);
+
         if (substitute != null) {
 
             final Person substitutePerson = personRepository.getOne(substitute.getId());
@@ -223,25 +237,33 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
         }
     }
 
-    private static void assertCanCreateSubstituteOnlyForRhyBoard(final Organisation organisation,
-                                                                 final OccupationDTO occupation,
-                                                                 final PersonContactInfoDTO substitute) {
+    private static void assertCanCreateSubstituteOnlyBoardMembers(final OccupationDTO occupation,
+                                                                  final PersonContactInfoDTO substitute) {
         if (substitute != null &&
-                !(organisation.getOrganisationType() == OrganisationType.RHY &&
-                        occupation.getOccupationType().isBoardSpecific() &&
-                        occupation.getOccupationType() != OccupationType.HALLITUKSEN_VARAJASEN)) {
-                throw new AccessDeniedException("Board member substitute can be created only for RHY board members");
+                !(isBoardOccupationWithSubstitute(occupation)
+                        || occupation.getOccupationType() == OccupationType.ALUEKOKOUKSEN_EDUSTAJA)) {
+            throw new AccessDeniedException("Substitute not allowed");
         }
     }
 
-    private static void assertRhyBoardMemberMustHaveSubstitute(final Organisation organisation,
-                                                                final OccupationDTO occupation,
-                                                                final PersonContactInfoDTO substitute) {
-        if (organisation.getOrganisationType() == OrganisationType.RHY &&
-                occupation.getOccupationType().isBoardSpecific() &&
-                occupation.getOccupationType() != OccupationType.HALLITUKSEN_VARAJASEN &&
+    private static boolean isBoardOccupationWithSubstitute(final OccupationDTO occupation) {
+        return occupation.getOccupationType().isBoardSpecific() &&
+                occupation.getOccupationType() != OccupationType.HALLITUKSEN_VARAJASEN;
+    }
+
+    private static void assertBoardMemberMustHaveSubstitute(final OccupationDTO occupation,
+                                                            final PersonContactInfoDTO substitute) {
+        if (isBoardOccupationWithSubstitute(occupation) &&
                 substitute == null) {
             throw new AccessDeniedException("RHY board member must have substitute");
+        }
+    }
+
+    private static void assertRegionalMeetingRepresentativeMustHaveSubstitute(final OccupationDTO occupation,
+                                                                              final PersonContactInfoDTO substitute) {
+        if (occupation.getOccupationType() == OccupationType.ALUEKOKOUKSEN_EDUSTAJA &&
+                substitute == null) {
+            throw new AccessDeniedException("Regional meeting representative must have substitute");
         }
     }
 
@@ -252,6 +274,19 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
         assertCanListOccupations(organisation);
 
         return occupationRepository.findNotDeletedByOrganisation(organisation).stream()
+                .sorted(OCCUPATION_SORT)
+                .map(OccupationDTO::createWithPerson)
+                .collect(toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<OccupationDTO> listOccupationsByType(final Long organisationId,
+                                                     final OccupationType occupationType) {
+        final Organisation organisation =
+                requireEntityService.requireOrganisation(organisationId, EntityPermission.READ);
+        assertCanListOccupations(organisation);
+
+        return occupationRepository.findNotDeletedByOrganisationAndType(organisation, occupationType).stream()
                 .sorted(OCCUPATION_SORT)
                 .map(OccupationDTO::createWithPerson)
                 .collect(toList());
@@ -272,11 +307,52 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
                 .collect(toList());
     }
 
+    @Transactional
+    public void updateContactInfoVisibility(final List<OccupationContactInfoVisibilityDTO> dtoList) {
+        dtoList.forEach(dto -> {
+            final Occupation occupation = requireEntityService.requireOccupation(dto.getId(), UPDATE_CONTACT_INFO_VISIBILITY);
+            final Organisation organisation = occupation.getOrganisation();
+
+            assertContactInfoVisibilitySettings(organisation.getOrganisationType(), occupation.getOccupationType(), dto);
+
+            occupation.setNameVisibility(dto.isNameVisibility());
+            occupation.setPhoneNumberVisibility(dto.isPhoneNumberVisibility());
+            occupation.setEmailVisibility(dto.isEmailVisibility());
+        });
+    }
+
     private Organisation getOrganisation(final OccupationDTO dto) {
         return getOrganisation(dto.getOrganisationId());
     }
 
     private Organisation getOrganisation(final Long organisationId) {
         return organisationRepository.getOne(organisationId);
+    }
+
+    private static void assertContactInfoVisibilitySettings(final OrganisationType organisationType,
+                                                            final OccupationType occupationType,
+                                                            final OccupationContactInfoVisibilityDTO dto) {
+        final OccupationContactInfoVisibilityRule rule =
+                OccupationContactInfoVisibilityRuleMapping.get(organisationType, occupationType);
+
+        assertContactInfoVisibilitySetting(dto.isNameVisibility(), rule.getNameVisibility());
+        assertContactInfoVisibilitySetting(dto.isPhoneNumberVisibility(), rule.getPhoneNumberVisibility());
+        assertContactInfoVisibilitySetting(dto.isEmailVisibility(), rule.getEmailVisibility());
+    }
+
+    private static void assertContactInfoVisibilitySetting(final boolean visibility,
+                                                           final VisibilitySetting setting) {
+        if (visibility && setting == NEVER || !visibility && setting == ALWAYS) {
+            throw new IllegalArgumentException("Incorrect contact info visibility");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<MobileOccupationDTO> listMyClubMemberships() {
+        final Person person = activeUserService.requireActivePerson();
+        final List<Occupation> occupations =
+                occupationRepository.findActiveByPersonAndOrganisationTypes(person, singleton(OrganisationType.CLUB));
+
+        return mobileOccupationDTOFactory.create(occupations);
     }
 }

@@ -32,6 +32,16 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
     @Query("SELECT o FROM #{#entityName} o INNER JOIN FETCH o.organisation WHERE o.person = :person" + AND_ACTIVE)
     List<Occupation> findActiveByPerson(@Param("person") Person person);
 
+    @Query("SELECT o FROM #{#entityName} o" +
+            " INNER JOIN FETCH o.organisation" +
+            " WHERE o.person = :person" +
+            " AND o.occupationType = :type" +
+            " AND :date BETWEEN COALESCE(o.beginDate, :date) AND COALESCE(o.endDate, :date)" +
+            AND_NOT_DELETED)
+    List<Occupation> findActiveByPersonAndOccupationTypeAndDate(@Param("person") Person person,
+                                                                @Param("type") OccupationType occupationType,
+                                                                @Param("date") LocalDate date);
+
     @Query("SELECT o FROM #{#entityName} o INNER JOIN FETCH o.organisation WHERE o.person = :person" + AND_ACTIVE
             + " AND o.organisation.active = TRUE"
             + " AND (o.occupationType <> 'RYHMAN_METSASTYKSENJOHTAJA' OR o.organisation.huntingYear = :huntingYear)")
@@ -39,6 +49,10 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
 
     @Query("SELECT o FROM #{#entityName} o WHERE o.organisation = :org" + AND_NOT_DELETED)
     List<Occupation> findNotDeletedByOrganisation(@Param("org") Organisation organisation);
+
+    @Query("SELECT o FROM #{#entityName} o WHERE o.organisation = :org and o.occupationType = :type" + AND_NOT_DELETED)
+    List<Occupation> findNotDeletedByOrganisationAndType(@Param("org") Organisation organisation,
+                                                         @Param("type") OccupationType occupationType);
 
     @Query("SELECT o FROM #{#entityName} o " +
             " INNER JOIN FETCH o.organisation org" +

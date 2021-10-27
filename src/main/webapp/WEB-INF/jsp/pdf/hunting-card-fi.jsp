@@ -204,7 +204,7 @@
             PL 22<br/>
             00331 Helsinki<br/>
             puh 029 431 2002 (arkisin marras-kesäkuu: klo 9-16 ja heinä-lokakuu: klo 8-18)<br/>
-            e-mail: metsastajarekisteri@innofactor.com
+            e-mail: metsastajarekisteri@riista.fi
         </address>
     </div>
 

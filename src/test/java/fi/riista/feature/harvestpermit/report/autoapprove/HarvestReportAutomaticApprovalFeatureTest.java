@@ -21,6 +21,9 @@ import org.junit.runner.RunWith;
 import javax.annotation.Resource;
 import java.util.List;
 
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_COMMON_EIDER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_GREYLAG_GOOSE;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RINGED_SEAL;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_ROE_DEER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WILD_BOAR;
 import static fi.riista.feature.harvestpermit.report.HarvestReportState.APPROVED;
@@ -45,7 +48,7 @@ public class HarvestReportAutomaticApprovalFeatureTest extends EmbeddedDatabaseT
     private JPQLQueryFactory jpqlQueryFactory;
 
     @DataPoints
-    public static final ImmutableSet<Integer> BIRDS_REQUIRING_HARVEST_REPORT_AFTER_2020 =
+    public static final ImmutableSet<Integer> BIRDS_WITH_HARVEST_REPORT_AFTER_2020_HUNTING_YEAR =
             ImmutableSet.<Integer>builder()
                     .add(GameSpecies.OFFICIAL_CODE_WIGEON)
                     .add(GameSpecies.OFFICIAL_CODE_PINTAIL)
@@ -53,7 +56,6 @@ public class HarvestReportAutomaticApprovalFeatureTest extends EmbeddedDatabaseT
                     .add(GameSpecies.OFFICIAL_CODE_SHOVELER)
                     .add(GameSpecies.OFFICIAL_CODE_POCHARD)
                     .add(GameSpecies.OFFICIAL_CODE_TUFTED_DUCK)
-                    .add(GameSpecies.OFFICIAL_CODE_COMMON_EIDER)
                     .add(GameSpecies.OFFICIAL_CODE_LONG_TAILED_DUCK)
                     .add(GameSpecies.OFFICIAL_CODE_RED_BREASTED_MERGANSER)
                     .add(GameSpecies.OFFICIAL_CODE_GOOSANDER)
@@ -139,6 +141,54 @@ public class HarvestReportAutomaticApprovalFeatureTest extends EmbeddedDatabaseT
         final DateTime harvestReportModified = DateUtil.now().minusDays(1);
 
         runTest(gameSpeciesCode, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, false);
+    }
+
+    @Test
+    public void commonEiderHarvestPointOfTimeTooEarly() {
+        final DateTime harvestPointOfTime = new DateTime(2020, 5, 31, 23, 59);
+        final DateTime harvestReportModified = DateUtil.now().minusDays(1);
+
+        runTest(OFFICIAL_CODE_COMMON_EIDER, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, false);
+    }
+
+    @Test
+    public void commonEider2020ReportsAccepted() {
+        final DateTime harvestPointOfTime = new DateTime(2020, 6, 1, 00, 00);
+        final DateTime harvestReportModified = harvestPointOfTime.plusDays(1);
+
+        runTest(OFFICIAL_CODE_COMMON_EIDER, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, true);
+    }
+
+    @Test
+    public void ringedSealHarvestPointOfTimeTooEarly() {
+        final DateTime harvestPointOfTime = new DateTime(2021, 7, 31, 23, 59);
+        final DateTime harvestReportModified = DateUtil.now().minusDays(1);
+
+        runTest(OFFICIAL_CODE_RINGED_SEAL, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, false);
+    }
+
+    @Test
+    public void ringedSeal2020ReportsAccepted() {
+        final DateTime harvestPointOfTime = new DateTime(2021, 8, 1, 00, 00);
+        final DateTime harvestReportModified = harvestPointOfTime.plusDays(1);
+
+        runTest(OFFICIAL_CODE_RINGED_SEAL, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, true);
+    }
+
+    @Test
+    public void greylagGooseHarvestPointOfTimeTooEarly() {
+        final DateTime harvestPointOfTime = new DateTime(2021, 7, 31, 23, 59);
+        final DateTime harvestReportModified = DateUtil.now().minusDays(1);
+
+        runTest(OFFICIAL_CODE_GREYLAG_GOOSE, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, false);
+    }
+
+    @Test
+    public void greylagGoose2020ReportsAccepted() {
+        final DateTime harvestPointOfTime = new DateTime(2021, 8, 1, 00, 00);
+        final DateTime harvestReportModified = harvestPointOfTime.plusDays(1);
+
+        runTest(OFFICIAL_CODE_GREYLAG_GOOSE, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, true);
     }
 
     private void runTest(final int speciesCode, final HarvestReportState state, final DateTime harvestPointOfTime,

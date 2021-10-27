@@ -1,10 +1,10 @@
 package fi.riista.feature.permit.decision;
 
-import com.google.common.base.Preconditions;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.common.decision.DecisionActionType;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.decision.action.PermitDecisionAction;
 import fi.riista.feature.permit.decision.action.PermitDecisionActionRepository;
 import fi.riista.feature.permit.decision.document.PermitDecisionTextService;
@@ -17,6 +17,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+import static fi.riista.feature.permit.PermitTypeCode.FORBIDDEN_METHODS;
+import static fi.riista.feature.permit.PermitTypeCode.FOWL_AND_UNPROTECTED_BIRD;
+import static fi.riista.feature.permit.PermitTypeCode.MAMMAL_DAMAGE_BASED;
+import static fi.riista.feature.permit.PermitTypeCode.getPermitTypeCode;
+import static java.util.Arrays.asList;
+
 
 @Component
 public class PermitDecisionFeature {
@@ -107,10 +117,36 @@ public class PermitDecisionFeature {
     public void updateGrantStatus(final long id, final PermitDecisionGrantStatusDTO dto) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(id, EntityPermission.UPDATE);
         decision.assertEditableBy(activeUserService.requireActiveUser());
-        Preconditions.checkArgument(!decision.getApplication().getHarvestPermitCategory().hasSpeciesAmount(),
+        checkArgument(!decision.getApplication().getHarvestPermitCategory().hasSpeciesAmount(),
                 "Grant status update allowed only categories without species amounts");
 
         decision.setGrantStatus(dto.getGrantStatus());
+        generateAndUpdateDecisionText(decision);
+    }
+
+    @Transactional
+    public void updatePermitType(final long id, final boolean forbiddenMethods) {
+        final PermitDecision decision = requireEntityService.requirePermitDecision(id, EntityPermission.UPDATE);
+        decision.assertEditableBy(activeUserService.requireActiveUser());
+
+        final List<String> allowedTypeCodes = asList(FORBIDDEN_METHODS, FOWL_AND_UNPROTECTED_BIRD, MAMMAL_DAMAGE_BASED);
+        checkState(allowedTypeCodes.contains(decision.getPermitTypeCode()));
+
+        if (forbiddenMethods){
+            decision.setPermitTypeCode(FORBIDDEN_METHODS);
+        } else {
+            final HarvestPermitApplication application = decision.getApplication();
+            final String code = getPermitTypeCode(application.getHarvestPermitCategory(), application.getValidityYears());
+            decision.setPermitTypeCode(code);
+        }
+
+        // Ensure payment section is checked again by the handler after changing permit type code
+        decision.getCompleteStatus().setPayment(false);
+
+        generateAndUpdateDecisionText(decision);
+    }
+
+    private void generateAndUpdateDecisionText(final PermitDecision decision) {
         decision.getDocument().setDecision(permitDecisionTextService.generateDecision(decision));
     }
 }

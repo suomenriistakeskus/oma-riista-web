@@ -138,7 +138,7 @@ angular.module('app.harvestpermit.application.importing.species', ['app.metadata
                 return spa.gameSpeciesCode;
             });
 
-            return _.chain(Species.getSpeciesMapping())
+            return _.chain(Species.getPermitSpeciesWithoutAlienSpecies())
                 .filter(function (species) {
                     return !_.includes(selectedSpeciesCodes, species.code);
                 })

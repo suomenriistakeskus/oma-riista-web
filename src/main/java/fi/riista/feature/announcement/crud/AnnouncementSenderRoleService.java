@@ -8,6 +8,7 @@ import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.security.UserInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -81,5 +82,14 @@ public class AnnouncementSenderRoleService {
         }
 
         return Optional.of(organisation);
+    }
+
+    public Organisation resolveRhySubscriberOrganisation(final AnnouncementDTO dto, final UserInfo userInfo) {
+        final AnnouncementDTO.OrganisationDTO org = dto.getRhyMembershipSubscriber();
+        if (org != null) {
+            Preconditions.checkState(userInfo.isAdminOrModerator());
+            return organisationRepository.findByTypeAndOfficialCode(org.getOrganisationType(), org.getOfficialCode());
+        }
+        return null;
     }
 }

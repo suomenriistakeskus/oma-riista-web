@@ -2,22 +2,21 @@
      ng-repeat="a in $ctrl.areaList">
     <div class="panel-heading">
         <div class="row">
-            <div class="col-xs-8">
-                <p class="panel-title">
-                    <span ng-bind="a.name"></span>
-                    <button type="button" class="btn btn-link"
-                            ng-click="$ctrl.edit(a)">
-                        <span class="fa fa-lg fa-edit"></span>
-                    </button>
-                </p>
+            <div class="col-xs-6">
+                <span class="panel-title r-account-area-panel-title" ng-bind="a.name"></span>
+                <a class="r-account-area-edit-link" ng-click="$ctrl.edit(a)">
+                    <span class="fa fa-pencil r-account-area-edit-icon"></span>
+                    <span translate="account.areas.editInfo" class="r-account-area-info-text text-primary"></span>
+                </a>
             </div>
 
-            <div class="col-xs-4 text-right">
-                <button type="button" class="btn btn-link"
-                        ng-if="!!a.bounds"
-                        ng-click="$ctrl.printArea(a)">
-                    <span class="fa fa-2x fa-print text-primary"></span>
-                </button>
+            <div class="col-xs-6 text-right">
+                <a class="r-account-area-print-link"
+                   ng-if="!!a.bounds"
+                   ng-click="$ctrl.printArea(a)">
+                    <span class="fa fa-2x fa-lg fa-print"></span>
+                    <span translate="global.button.print" class="r-account-area-info-text text-primary"></span>
+                </a>
 
                 <button type="button" class="btn btn-primary"
                         ng-click="$ctrl.editMap(a)">

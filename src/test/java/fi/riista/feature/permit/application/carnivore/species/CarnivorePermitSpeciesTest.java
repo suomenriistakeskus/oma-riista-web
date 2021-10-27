@@ -17,6 +17,7 @@ import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIV
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_LYNX;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_LYNX_PORONHOITO;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_WOLF;
+import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_WOLF_PORONHOITO;
 import static org.junit.Assert.assertEquals;
 
 
@@ -80,12 +81,33 @@ public class CarnivorePermitSpeciesTest implements DefaultEntitySupplierProvider
     }
 
     @Test
+    public void testPeriod_wolf() {
+        final LocalDate expectedBegin = new LocalDate(2021, 11, 1);
+        final LocalDate expectedEnd = new LocalDate(2022, 3, 31);
+        final HarvestPermitApplication application = createApplication(LARGE_CARNIVORE_WOLF, 2021);
+        final Range<LocalDate> period = CarnivorePermitSpecies.getPeriod(application);
+        assertEquals(expectedBegin, period.lowerEndpoint());
+        assertEquals(expectedEnd, period.upperEndpoint());
+    }
+
+    @Test
+    public void testPeriod_wolfPoronhoito() {
+        final LocalDate expectedBegin = new LocalDate(2021, 10, 1);
+        final LocalDate expectedEnd = new LocalDate(2022, 3, 31);
+        final HarvestPermitApplication application = createApplication(LARGE_CARNIVORE_WOLF_PORONHOITO, 2021);
+        final Range<LocalDate> period = CarnivorePermitSpecies.getPeriod(application);
+        assertEquals(expectedBegin, period.lowerEndpoint());
+        assertEquals(expectedEnd, period.upperEndpoint());
+    }
+
+    @Test
     public void testSpecies() {
         assertEquals(GameSpecies.OFFICIAL_CODE_BEAR, CarnivorePermitSpecies.getSpecies(LARGE_CARNIVORE_BEAR));
         assertEquals(GameSpecies.OFFICIAL_CODE_LYNX, CarnivorePermitSpecies.getSpecies(LARGE_CARNIVORE_LYNX));
         assertEquals(GameSpecies.OFFICIAL_CODE_LYNX,
                 CarnivorePermitSpecies.getSpecies(LARGE_CARNIVORE_LYNX_PORONHOITO));
         assertEquals(GameSpecies.OFFICIAL_CODE_WOLF, CarnivorePermitSpecies.getSpecies(LARGE_CARNIVORE_WOLF));
+        assertEquals(GameSpecies.OFFICIAL_CODE_WOLF, CarnivorePermitSpecies.getSpecies(LARGE_CARNIVORE_WOLF_PORONHOITO));
     }
 
     @Test
@@ -94,6 +116,7 @@ public class CarnivorePermitSpeciesTest implements DefaultEntitySupplierProvider
         CarnivorePermitSpecies.assertSpecies(LARGE_CARNIVORE_LYNX, GameSpecies.OFFICIAL_CODE_LYNX);
         CarnivorePermitSpecies.assertSpecies(LARGE_CARNIVORE_LYNX_PORONHOITO, GameSpecies.OFFICIAL_CODE_LYNX);
         CarnivorePermitSpecies.assertSpecies(LARGE_CARNIVORE_WOLF, GameSpecies.OFFICIAL_CODE_WOLF);
+        CarnivorePermitSpecies.assertSpecies(LARGE_CARNIVORE_WOLF_PORONHOITO, GameSpecies.OFFICIAL_CODE_WOLF);
     }
 
     @Test
@@ -102,6 +125,7 @@ public class CarnivorePermitSpeciesTest implements DefaultEntitySupplierProvider
         assertAllOtherThrows(LARGE_CARNIVORE_LYNX, GameSpecies.OFFICIAL_CODE_LYNX);
         assertAllOtherThrows(LARGE_CARNIVORE_LYNX_PORONHOITO, GameSpecies.OFFICIAL_CODE_LYNX);
         assertAllOtherThrows(LARGE_CARNIVORE_WOLF, GameSpecies.OFFICIAL_CODE_WOLF);
+        assertAllOtherThrows(LARGE_CARNIVORE_WOLF_PORONHOITO, GameSpecies.OFFICIAL_CODE_WOLF);
     }
 
     private static void assertAllOtherThrows(final HarvestPermitCategory category, final int officialCode) {

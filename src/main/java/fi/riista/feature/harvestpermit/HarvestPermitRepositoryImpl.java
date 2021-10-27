@@ -9,15 +9,18 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.api.pub.PublicCarnivorePermitDTO;
 import fi.riista.feature.common.repository.BaseRepositoryImpl;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.harvestpermit.endofhunting.reminder.EndOfHuntingReminderDTO;
 import fi.riista.feature.harvestpermit.endofhunting.reminder.EndOfHuntingReminderFeature.EndOfHuntingReminderType;
-import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.person.QPerson;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.PermitTypeCode;
+import fi.riista.feature.permit.application.QHarvestPermitApplication;
 import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.feature.permit.decision.species.QPermitDecisionSpeciesAmount;
 import fi.riista.util.DateUtil;
@@ -32,13 +35,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.querydsl.core.group.GroupBy.groupBy;
 import static com.querydsl.core.group.GroupBy.list;
 import static fi.riista.feature.common.decision.DecisionStatus.PUBLISHED;
 import static fi.riista.feature.gamediary.GameSpecies.LARGE_CARNIVORES;
@@ -47,6 +51,9 @@ import static fi.riista.feature.permit.PermitTypeCode.DEROGATION_PERMIT_CODES;
 import static fi.riista.feature.permit.PermitTypeCode.NEST_REMOVAL_BASED;
 import static fi.riista.feature.permit.decision.PermitDecision.DecisionType.HARVEST_PERMIT;
 import static fi.riista.util.DateUtil.beginOfCalendarYear;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 @Repository
@@ -150,6 +157,23 @@ public class HarvestPermitRepositoryImpl implements HarvestPermitRepositoryCusto
         return findMissingEndOfHuntingReports(endDatePredicate, endOfHuntingReminderType, PERMIT_SPECIES_AMOUNT);
     }
 
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public Map<HuntingClubGroup, HarvestPermit> getByHuntingGroup(final Collection<HuntingClubGroup> groups) {
+        QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
+        QHuntingClubGroup GROUP = QHuntingClubGroup.huntingClubGroup;
+
+        if (requireNonNull(groups).isEmpty()) {
+            return emptyMap();
+        }
+
+        return jpqlQueryFactory
+                .from(GROUP)
+                .join(GROUP.harvestPermit, PERMIT)
+                .where(GROUP.in(groups))
+                .transform(groupBy(GROUP).as(PERMIT));
+    }
+
     /**
      * Decisions should be listed the day after publishing clock 23.59 onwards.
      * @return DateTime Decisions must be published before this timestamp to be included in the listing
@@ -210,7 +234,7 @@ public class HarvestPermitRepositoryImpl implements HarvestPermitRepositoryCusto
                 .transform(GroupBy.groupBy(PERMIT.id).as(PERMIT.permitNumber, CONTACT_PERSON.email, list(GAME_SPECIES.nameLocalisation())));
 
         if (missingReports.isEmpty()) {
-            return Collections.emptyList();
+            return emptyList();
         }
 
         final QHarvestPermitContactPerson ADDITIONAL_CONTACT_PERSON = QHarvestPermitContactPerson.harvestPermitContactPerson;
@@ -240,5 +264,32 @@ public class HarvestPermitRepositoryImpl implements HarvestPermitRepositoryCusto
                             group.getList(GAME_SPECIES.nameLocalisation()));
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public List<HarvestPermit> findByHuntingYearAndSpeciesAndCategory(final int huntingYear,
+                                                                      final GameSpecies species,
+                                                                      final HarvestPermitCategory category) {
+        final QHarvestPermitSpeciesAmount SPA = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
+        final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
+        final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
+        final QPermitDecision DECISION = QPermitDecision.permitDecision;
+        final QHarvestPermitApplication APP = QHarvestPermitApplication.harvestPermitApplication;
+
+        final LocalDate huntingYearStart = DateUtil.huntingYearBeginDate(huntingYear);
+        final LocalDate huntingYearEnd = DateUtil.huntingYearEndDate(huntingYear);
+
+        return jpqlQueryFactory
+                .select(PERMIT)
+                .from(SPA)
+                .innerJoin(SPA.harvestPermit, PERMIT)
+                .innerJoin(SPA.gameSpecies, SPECIES)
+                .innerJoin(PERMIT.permitDecision, DECISION)
+                .innerJoin(DECISION.application, APP)
+                .where(SPECIES.eq(species)
+                        .and(SPA.beginDate.between(huntingYearStart, huntingYearEnd))
+                        .and(APP.harvestPermitCategory.eq(category)))
+                .fetch();
     }
 }

@@ -7,11 +7,12 @@ import fi.riista.feature.organization.jht.nomination.OccupationNomination;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationCrudFeature;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationDTO;
 import fi.riista.feature.organization.jht.nomination.OccupationNominationSearchDTO;
+import fi.riista.feature.organization.jht.training.JHTTrainingCrudFeature;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.util.DateUtil;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
-import javax.validation.constraints.NotBlank;
+import org.joda.time.LocalDate;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -26,10 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
+import javax.validation.constraints.NotBlank;
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
@@ -44,6 +48,9 @@ public class OccupationNominationApiResource {
 
     @Resource
     private MessageSource messageSource;
+
+    @Resource
+    private JHTTrainingCrudFeature jhtTrainingCrudFeature;
 
     @RequestMapping(value = "counts", method = RequestMethod.GET, produces = APPLICATION_JSON_VALUE)
     public Map<OccupationNomination.NominationStatus, Long> count(@RequestParam String rhyOfficialCode,
@@ -76,8 +83,16 @@ public class OccupationNominationApiResource {
 
         final OccupationNominationSearchDTO dto = objectMapper.readValue(jsonData, OccupationNominationSearchDTO.class);
         final Page<OccupationNominationDTO> results = occupationNominationFeature.search(dto);
+        final List<Long> persons = results.getContent().stream()
+                .map(OccupationNominationDTO::getPerson)
+                .map(OccupationNominationDTO.PersonDTO::getId)
+                .collect(toList());
 
-        return new ModelAndView(new OccupationNominationExcelView(results.getContent(), dto, messageSource, locale));
+        final Map<Long, LocalDate> lastTrainingsByPersonId = jhtTrainingCrudFeature.lastTrainings(
+                persons, dto.getOccupationType());
+
+        return new ModelAndView(new OccupationNominationExcelView(results.getContent(), lastTrainingsByPersonId, dto,
+                                                                  messageSource, locale));
     }
 
     @ResponseStatus(HttpStatus.CREATED)

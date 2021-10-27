@@ -1,9 +1,10 @@
 package fi.riista.feature.permit.application.create;
 
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.decision.PermitDecisionPaymentAmount;
 import fi.riista.util.DateUtil;
-import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -13,8 +14,8 @@ import static java.util.Objects.requireNonNull;
 
 public class HarvestPermitApplicationTypeDTO {
     private final int huntingYear;
-    private final LocalDate begin;
-    private final LocalDate end;
+    private final LocalDateTime begin;
+    private final LocalDateTime end;
     private final boolean active;
     private final BigDecimal price;
     private final HarvestPermitCategory category;
@@ -23,8 +24,11 @@ public class HarvestPermitApplicationTypeDTO {
         this.category = requireNonNull(builder.category);
         this.huntingYear = requireNonNull(builder.huntingYear);
         this.active = Optional.ofNullable(builder.activeOverride)
-                .orElseGet(() -> DateUtil.overlapsInclusive(builder.begin, builder.end, requireNonNull(builder.today)));
-        this.price = PermitDecisionPaymentAmount.getDefaultPaymentAmount(HARVEST_PERMIT, category);
+                .orElseGet(() -> DateUtil.rangeFrom(builder.begin, builder.end).contains(requireNonNull(builder.now)));
+
+        // Use validity year 1 since it does not affect the price
+        final String permitTypeCode = PermitTypeCode.getPermitTypeCode(category, 1);
+        this.price = PermitDecisionPaymentAmount.getDefaultPaymentAmount(HARVEST_PERMIT, permitTypeCode);
         this.end = builder.end;
         this.begin = builder.begin;
     }
@@ -33,11 +37,11 @@ public class HarvestPermitApplicationTypeDTO {
         return huntingYear;
     }
 
-    public LocalDate getBegin() {
+    public LocalDateTime getBegin() {
         return begin;
     }
 
-    public LocalDate getEnd() {
+    public LocalDateTime getEnd() {
         return end;
     }
 
@@ -57,9 +61,9 @@ public class HarvestPermitApplicationTypeDTO {
         private final HarvestPermitCategory category;
         private Integer huntingYear;
         private Boolean activeOverride;
-        private LocalDate begin;
-        private LocalDate end;
-        private LocalDate today;
+        private LocalDateTime begin;
+        private LocalDateTime end;
+        private LocalDateTime now;
 
         private Builder(final HarvestPermitCategory category) {
             this.category = requireNonNull(category);
@@ -74,18 +78,18 @@ public class HarvestPermitApplicationTypeDTO {
             return this;
         }
 
-        public Builder withBegin(LocalDate begin) {
+        public Builder withBegin(LocalDateTime begin) {
             this.begin = begin;
             return this;
         }
 
-        public Builder withEnd(LocalDate end) {
+        public Builder withEnd(LocalDateTime end) {
             this.end = end;
             return this;
         }
 
-        public Builder withToday(LocalDate today) {
-            this.today = today;
+        public Builder withNow(LocalDateTime now) {
+            this.now = now;
             return this;
         }
 

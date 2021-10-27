@@ -32,35 +32,19 @@ public class ClubHuntingDataExcelViewTest {
     }
 
     @Test
-    public void testExportDataForDeerPilot() {
-        final ExcelViewForTesting view =  new ExcelViewForTesting(enumLocaliser, true);
+    public void testExportData() {
+        final ExcelViewForTesting view =  new ExcelViewForTesting(enumLocaliser);
         view.build(workbook);
 
-        assertEquals("Metsästystapa", getCell(HARVESTS_SHEET, "M1").getStringCellValue());
-        assertEquals("Metsästystavan kuvaus", getCell(HARVESTS_SHEET, "N1").getStringCellValue());
-        assertEquals("Seuruemetsästys koiran kanssa", getCell(HARVESTS_SHEET, "M2").getStringCellValue());
+        assertEquals("Metsästystapa", getCell(HARVESTS_SHEET, "P1").getStringCellValue());
+        assertEquals("Metsästystavan kuvaus", getCell(HARVESTS_SHEET, "Q1").getStringCellValue());
+        assertEquals("Seuruemetsästys koiran kanssa", getCell(HARVESTS_SHEET, "P2").getStringCellValue());
         assertNull(getCell(HARVESTS_SHEET, "N2"));
 
-        assertEquals("Metsästystapa", getCell(OBSERVATIONS_SHEET, "M1").getStringCellValue());
-        assertEquals("Metsästystavan kuvaus", getCell(OBSERVATIONS_SHEET, "N1").getStringCellValue());
-        assertEquals("Muu", getCell(OBSERVATIONS_SHEET, "M2").getStringCellValue());
-        assertEquals("Other hunting type", getCell(OBSERVATIONS_SHEET, "N2").getStringCellValue());
-    }
-
-    @Test
-    public void testExportDataForNonDeerPilot() {
-        final ExcelViewForTesting view =  new ExcelViewForTesting(enumLocaliser, false);
-        view.build(workbook);
-
-        assertEquals("Sukupuoli", getCell(HARVESTS_SHEET, "M1").getStringCellValue());
-        assertEquals("Ikä", getCell(HARVESTS_SHEET, "N1").getStringCellValue());
-        assertEquals("Naaras", getCell(HARVESTS_SHEET, "M2").getStringCellValue());
-        assertEquals("Aikuinen", getCell(HARVESTS_SHEET, "N2").getStringCellValue());
-
-        assertEquals("Havaintotyyppi", getCell(OBSERVATIONS_SHEET, "M1").getStringCellValue());
-        assertEquals("Määrä", getCell(OBSERVATIONS_SHEET, "N1").getStringCellValue());
-        assertEquals("Näkö", getCell(OBSERVATIONS_SHEET, "M2").getStringCellValue());
-        assertEquals(1.0, getCell(OBSERVATIONS_SHEET, "N2").getNumericCellValue(), 0.1);
+        assertEquals("Metsästystapa", getCell(OBSERVATIONS_SHEET, "P1").getStringCellValue());
+        assertEquals("Metsästystavan kuvaus", getCell(OBSERVATIONS_SHEET, "Q1").getStringCellValue());
+        assertEquals("Muu", getCell(OBSERVATIONS_SHEET, "P2").getStringCellValue());
+        assertEquals("Other hunting type", getCell(OBSERVATIONS_SHEET, "Q2").getStringCellValue());
     }
 
     private XSSFCell getCell(final int sheetIndex, final String cell) {

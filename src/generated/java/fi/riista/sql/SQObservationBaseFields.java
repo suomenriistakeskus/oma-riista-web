@@ -45,8 +45,6 @@ public class SQObservationBaseFields extends RelationalPathSpatial<SQObservation
 
     public final com.querydsl.sql.PrimaryKey<SQObservationBaseFields> observationBaseFieldsPkey = createPrimaryKey(id);
 
-    public final com.querydsl.sql.ForeignKey<SQRequiredWithinDeerPilot> observationBaseFieldsWithinDeerHuntingFk = createForeignKey(withinDeerHunting, "name");
-
     public final com.querydsl.sql.ForeignKey<SQGameSpecies> observationBaseFieldsSpeciesFk = createForeignKey(gameSpeciesId, "game_species_id");
 
     public final com.querydsl.sql.ForeignKey<SQRequired> observationBaseFieldsWithinMooseHuntingFk = createForeignKey(withinMooseHunting, "name");

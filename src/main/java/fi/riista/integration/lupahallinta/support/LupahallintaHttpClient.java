@@ -15,12 +15,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Resource;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.URI;
-import java.nio.file.Path;
 
 import static java.util.Collections.singletonList;
 
@@ -36,20 +33,6 @@ public class LupahallintaHttpClient {
 
     @Resource
     private ClientHttpRequestFactory requestFactory;
-
-    public Path downloadClubCSV(final Path outputFile) {
-        LOG.info("Going to fetch clubs using uri:{}", config.getClubUri());
-
-        return createRestTemplate().execute(config.getClubUri(), HttpMethod.GET, null, request -> {
-            try (final FileOutputStream fos = new FileOutputStream(outputFile.toFile());
-                 final BufferedOutputStream bos = new BufferedOutputStream(fos)) {
-                IOUtils.copy(request.getBody(), bos);
-                bos.flush();
-            }
-
-            return outputFile;
-        });
-    }
 
     public Reader getPermits(final DateTime after) {
         final URI uri = getPermitUri(after);

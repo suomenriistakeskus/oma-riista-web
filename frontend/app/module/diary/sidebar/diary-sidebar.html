@@ -2,7 +2,15 @@
 <r-show-observation-entry ng-if="entry.isObservation()" entry="entry"></r-show-observation-entry>
 <r-show-srva-entry ng-if="entry.isSrva()" entry="entry"></r-show-srva-entry>
 
+
 <div class="buttons">
+    <button ng-if="entry.isSrva()"
+            type="button"
+            class="btn btn-default"
+            style="float: left"
+            ng-click="exportReport()"
+            translate="global.button.downloadPdf"></button>
+
     <button type="button"
             class="btn btn-default"
             ng-click="cancel()"

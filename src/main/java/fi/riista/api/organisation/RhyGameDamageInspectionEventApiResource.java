@@ -1,6 +1,8 @@
 package fi.riista.api.organisation;
 
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysDTO;
 import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspectionEventCrudFeature;
 import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspectionEventDTO;
@@ -9,10 +11,13 @@ import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspect
 import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspectionEventExportService;
 import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspectionEventSummaryDTO;
 import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspectionEventSummaryExcelView;
+import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspectorLookupFeature;
 import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
+import org.joda.time.LocalDate;
 import org.springframework.context.MessageSource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
@@ -45,6 +50,9 @@ public class RhyGameDamageInspectionEventApiResource {
 
     @Resource
     private MessageSource messageSource;
+
+    @Resource
+    private GameDamageInspectorLookupFeature gameDamageInspectorLookupFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/gamedamagetypes")
@@ -109,5 +117,15 @@ public class RhyGameDamageInspectionEventApiResource {
         return new ModelAndView(
                 new GameDamageInspectionEventSummaryExcelView(locale, new EnumLocaliser(messageSource, locale),
                         year, gameDamageType, dtos));
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "{rhyId:\\d+}/gamedamageinspectionevents/inspectors/{date}")
+    public List<PersonContactInfoDTO> getInspectors(final @PathVariable Long rhyId,
+                                                    final @PathVariable @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+        return gameDamageInspectorLookupFeature.listActiveOccupations(
+                rhyId,
+                OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA,
+                date);
     }
 }

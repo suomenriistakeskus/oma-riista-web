@@ -246,7 +246,7 @@ public class HarvestFieldValidatorTest {
                                                              final RequiredHarvestField deerHuntingType) {
 
         // bogus constructor fields, because all methods are overridden
-        return new RequiredHarvestFieldsImpl.ReportImpl(2017, 1, HarvestReportingType.BASIC, false) {
+        return new RequiredHarvestFieldsImpl.ReportImpl(2017, 1, HarvestReportingType.BASIC) {
             @Override
             public RequiredHarvestField getPermitNumber() {
                 return defaultValue;

@@ -29,8 +29,6 @@
                 <span><c:out value="${model.contactPerson.address.postalCode}"/></span>
                 <span><c:out value="${model.contactPerson.address.city}"/>,</span>
                 <span><c:out value="${model.contactPerson.address.country}"/></span>
-                <br>
-                <span><c:out value="${model.contactPerson.phoneNumber}"/></span>
             </p>
         </div>
         <div class="col-2">
@@ -156,19 +154,6 @@
             <fmt:message key="carnivore.application.heading.area"/>
         </div>
         <div class="col-2">
-            <table>
-                <tbody>
-                <tr>
-                    <td><fmt:message key="carnivore.application.area.size"/></td>
-                    <td align="right">
-                        <c:out value="${model.derogationPermitApplicationAreaDTO.areaSize}"/>
-                        &nbsp;
-                        <fmt:message key="pdf.application.ha"/>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-
             <c:if test="${model.derogationPermitApplicationAreaDTO.areaDescription != null}">
                 <h2><fmt:message key="carnivore.application.area.areaDescription"/>:</h2>
                 <p>
@@ -218,9 +203,6 @@
                             <c:out value="${vehicle.description}"/>
                         </c:if>
                     </td>
-                    <td align="right">
-                        <c:out value="${vehicle.registerNumber}"/>
-                    </td>
                 </tr>
                 </c:forEach>
                 </tbody>
@@ -257,12 +239,6 @@
                         <c:if test="${weaponInformation.type == 'MUU'}">
                             <c:out value="${weaponInformation.description}"/>
                         </c:if>
-                    </td>
-                    <td>
-                        <c:out value="${weaponInformation.caliber}"/>
-                    </td>
-                    <td align="right">
-                        <c:out value="${weaponInformation.amount}"/>
                     </td>
                 </tr>
                 </c:forEach>
@@ -329,19 +305,6 @@
             </c:if>
 
             <hr/>
-
-            <c:if test="${model.email1 != null || model.email2 != null}">
-                <p><fmt:message key="pdf.application.delivery.extra"/>:</p>
-
-                <ul>
-                    <c:if test="${model.email1 != null}">
-                        <li><c:out value="${model.email1}"/></li>
-                    </c:if>
-                    <c:if test="${model.email2 != null}">
-                        <li><c:out value="${model.email2}"/></li>
-                    </c:if>
-                </ul>
-            </c:if>
 
             <p>
                 <fmt:message key="pdf.application.delivery.language"/>&nbsp;

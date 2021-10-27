@@ -4,19 +4,19 @@
         <tr>
             <th translate="harvestRegistry.item.species"></th>
             <th translate="harvestRegistry.item.amount"></th>
-            <th translate="harvestRegistry.item.shooterName"></th>
-            <th translate="harvestRegistry.item.shooterHunterNumber"></th>
-            <th translate="harvestRegistry.item.shooterAddress"></th>
+            <th ng-if="$ctrl.includedFields !== 'COMMON'" translate="harvestRegistry.item.shooterName"></th>
+            <th ng-if="$ctrl.includedFields !== 'COMMON'" translate="harvestRegistry.item.shooterHunterNumber"></th>
+            <th ng-if="$ctrl.includedFields === 'FULL'" translate="harvestRegistry.item.shooterAddress"></th>
             <th translate="harvestRegistry.item.date"></th>
             <th translate="harvestRegistry.item.timeOfDay"></th>
             <th translate="harvestRegistry.item.age"></th>
             <th translate="harvestRegistry.item.gender"></th>
             <th translate="harvestRegistry.item.weight"></th>
             <th translate="harvestRegistry.item.geoLocation"></th>
-            <th translate="harvestRegistry.item.harvestArea"></th>
+            <th ng-if="$ctrl.includedFields === 'FULL'" translate="harvestRegistry.item.harvestArea"></th>
             <th translate="harvestRegistry.item.municipality"></th>
-            <th translate="harvestRegistry.item.rka"></th>
-            <th translate="harvestRegistry.item.rhy"></th>
+            <th ng-if="$ctrl.includedFields === 'FULL'" translate="harvestRegistry.item.rka"></th>
+            <th ng-if="$ctrl.includedFields === 'FULL'" translate="harvestRegistry.item.rhy"></th>
         </tr>
         </thead>
         <tbody>
@@ -25,11 +25,11 @@
             </td>
             <td ng-bind="::item.amount">
             </td>
-            <td style="width: 100px" ng-bind="::item.shooterName">
+            <td ng-if="$ctrl.includedFields !== 'COMMON'" style="width: 100px" ng-bind="::item.shooterName">
             </td>
-            <td ng-bind="::item.shooterHunterNumber">
+            <td ng-if="$ctrl.includedFields !== 'COMMON'" ng-bind="::item.shooterHunterNumber">
             </td>
-            <td>
+            <td  ng-if="$ctrl.includedFields === 'FULL'">
                 <label ng-if="::item.shooterAddress">
                     <span ng-bind="::item.shooterAddress.streetAddress"></span><br/>
                     <span ng-bind="::item.shooterAddress.postalCode"></span>
@@ -49,20 +49,25 @@
                 <span ng-if="::item.weight">{{::item.weight}} kg</span>
             </td>
             <td>
-                <label ng-if="::item.geoLocation" style="width: 150px"
-                       translate="global.geoLocation.plainCoordinatesText"
-                       translate-values="::item.geoLocation"></label>
+                <div ng-if="::item.geoLocation" class="harvest-registry-table-location-column">
+                    <label translate="global.geoLocation.plainCoordinatesText"
+                            translate-values="::item.geoLocation"></label>
+                    <button type="button" class="btn btn-default pull-right"
+                            ng-click="$ctrl.showLocationDialog(item.geoLocation)">
+                        <span class="fa fa-map-marker"></span>
+                    </button>
+                </div>
             </td>
-            <td>
+            <td ng-if="$ctrl.includedFields === 'FULL'">
                 <span ng-bind="::item.harvestArea| rI18nNameFilter"></span>
             </td>
             <td>
                 <span ng-bind="::item.municipality | rI18nNameFilter"></span>
             </td>
-            <td>
+            <td ng-if="$ctrl.includedFields === 'FULL'">
                 <label style="width: 200px" ng-bind="::item.rka| rI18nNameFilter"></label>
             </td>
-            <td>
+            <td ng-if="$ctrl.includedFields === 'FULL'">
                 <label style="width: 250px" ng-bind="::item.rhy| rI18nNameFilter"></label>
             </td>
         </tr>

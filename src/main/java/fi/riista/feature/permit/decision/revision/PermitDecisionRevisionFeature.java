@@ -215,12 +215,13 @@ public class PermitDecisionRevisionFeature {
     private void createContactPersonReceiver(final PermitDecisionRevision revision, final DateTime scheduledDate) {
         final PermitDecision decision = revision.getPermitDecision();
 
-        // If decision is delivered by mail, do not send email to contact person even if he would have email available
-        final String contactPersonEmail = revision.isPostalByMail()
-                ? null : decision.getContactPerson().getEmail();
+        // If decision is delivered by mail, send the same email to contact person than to other receivers
+        final PermitDecisionRevisionReceiver.ReceiverType receiverType = revision.isPostalByMail()
+                ? PermitDecisionRevisionReceiver.ReceiverType.OTHER
+                : PermitDecisionRevisionReceiver.ReceiverType.CONTACT_PERSON;
 
         permitDecisionRevisionReceiverRepository.save(new PermitDecisionRevisionReceiver(
-                revision, PermitDecisionRevisionReceiver.ReceiverType.CONTACT_PERSON, contactPersonEmail,
+                revision, receiverType, decision.getContactPerson().getEmail(),
                 decision.getContactPerson().getFullName(), scheduledDate));
     }
 

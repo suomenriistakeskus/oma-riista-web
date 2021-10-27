@@ -8,13 +8,25 @@ import java.util.Map;
 
 public interface CalendarEventRepositoryCustom {
 
-    public Map<CalendarEventType, Long> countEventTypes(Organisation organisation,
-                                                        LocalDate beginDate,
-                                                        LocalDate endDate);
+    Map<CalendarEventType, Long> countEventTypes(Organisation organisation,
+                                                 LocalDate beginDate,
+                                                 LocalDate endDate);
 
-    public Map<CalendarEventType, Integer> countEventParticipants(Organisation organisation,
-                                                               LocalDate beginDate,
-                                                               LocalDate endDate);
+    Map<CalendarEventType, Long> countSubsidisedEventTypes(Organisation organisation,
+                                                 LocalDate beginDate,
+                                                 LocalDate endDate);
+
+    Map<CalendarEventType, Long> countNonSubsidisedEventTypes(Organisation organisation,
+                                                 LocalDate beginDate,
+                                                 LocalDate endDate);
+
+    Map<CalendarEventType, Integer> countSubsidisedEventParticipants(Organisation organisation,
+                                                           LocalDate beginDate,
+                                                           LocalDate endDate);
+
+    Map<CalendarEventType, Integer> countNonSubsidisedEventParticipants(Organisation organisation,
+                                                           LocalDate beginDate,
+                                                           LocalDate endDate);
 
     default Map<CalendarEventType, Long> countEventTypes(final Organisation organisation, final int calendarYear) {
         final LocalDate beginDate = new LocalDate(calendarYear, 1, 1);

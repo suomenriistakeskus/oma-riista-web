@@ -107,9 +107,10 @@ public class MoosePermitApiResource {
     public LukeReportParamsDTO getLukeReportParams(final HttpSession httpSession,
                                                    final @RequestParam Long permitId,
                                                    final @RequestParam int species,
-                                                   final @RequestParam(required = false) Long clubId) {
+                                                   final @RequestParam(required = false) Long clubId,
+                                                   final @RequestParam long activeOccupationId) {
         final LukeReportUriBuilder uriBuilder = lukeReportFeature.getUriBuilder(permitId, clubId, httpSession);
-        return lukeReportFeature.getReportParameters(uriBuilder, species);
+        return lukeReportFeature.getReportParameters(uriBuilder, species, activeOccupationId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -172,9 +173,10 @@ public class MoosePermitApiResource {
                                final @RequestParam LukeReportParams.LukeArea org,
                                final @RequestParam LukeReportParams.Presentation presentation,
                                final @RequestParam String fileName,
+                               final @RequestParam long activeOccupationId,
                                final HttpServletResponse httpServletResponse) {
         final LukeReportUriBuilder uriBuilder = lukeReportFeature.getUriBuilder(permitId, clubId, httpSession);
-        lukeReportFeature.getReport(uriBuilder, httpServletResponse, org, presentation, fileName);
+        lukeReportFeature.getReport(uriBuilder, httpServletResponse, org, presentation, fileName, activeOccupationId);
     }
 
     @PostMapping(value = "/unfinished/{huntingYear:\\d+}/excel",

@@ -16,11 +16,13 @@ public class HunterExamTrainingStatisticsDTO {
         } else {
             dto.setHunterExamTrainingEvents(entity.getHunterExamTrainingEvents());
         }
+        dto.setNonSubsidizableHunterExamTrainingEvents(entity.getNonSubsidizableHunterExamTrainingEvents());
 
         dto.setHunterExamTrainingParticipants(entity.getHunterExamTrainingParticipants());
-        dto.setLastModified(entity.getLastModified());
-
+        dto.setNonSubsidizableHunterExamTrainingParticipants(entity.getNonSubsidizableHunterExamTrainingParticipants());
         dto.setHunterExamTrainingParticipantsOverridden(entity.isHunterExamTraininingParticipantsOverridden());
+
+        dto.setLastModified(entity.getLastModified());
 
         return dto;
     }
@@ -30,6 +32,9 @@ public class HunterExamTrainingStatisticsDTO {
     @Min(0)
     private Integer hunterExamTrainingEvents;
 
+    @Min(0)
+    private Integer nonSubsidizableHunterExamTrainingEvents;
+
     // Metsästäjätutkintoon valmistavat koulutustilaisuudet, lkm, moderaattorin ylimäärittelemä
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @Min(0)
@@ -38,6 +43,9 @@ public class HunterExamTrainingStatisticsDTO {
     // Metsästäjätutkintoon valmistavien koulutusten osallistujat, lkm
     @Min(0)
     private Integer hunterExamTrainingParticipants;
+
+    @Min(0)
+    private Integer nonSubsidizableHunterExamTrainingParticipants;
 
     private DateTime lastModified;
 
@@ -58,6 +66,14 @@ public class HunterExamTrainingStatisticsDTO {
         this.hunterExamTrainingEvents = hunterExamTrainingEvents;
     }
 
+    public Integer getNonSubsidizableHunterExamTrainingEvents() {
+        return nonSubsidizableHunterExamTrainingEvents;
+    }
+
+    public void setNonSubsidizableHunterExamTrainingEvents(final Integer nonSubsidizableHunterExamTrainingEvents) {
+        this.nonSubsidizableHunterExamTrainingEvents = nonSubsidizableHunterExamTrainingEvents;
+    }
+
     public Integer getModeratorOverriddenHunterExamTrainingEvents() {
         return moderatorOverriddenHunterExamTrainingEvents;
     }
@@ -72,6 +88,14 @@ public class HunterExamTrainingStatisticsDTO {
 
     public void setHunterExamTrainingParticipants(final Integer hunterExamTrainingParticipants) {
         this.hunterExamTrainingParticipants = hunterExamTrainingParticipants;
+    }
+
+    public Integer getNonSubsidizableHunterExamTrainingParticipants() {
+        return nonSubsidizableHunterExamTrainingParticipants;
+    }
+
+    public void setNonSubsidizableHunterExamTrainingParticipants(final Integer nonSubsidizableHunterExamTrainingParticipants) {
+        this.nonSubsidizableHunterExamTrainingParticipants = nonSubsidizableHunterExamTrainingParticipants;
     }
 
     public DateTime getLastModified() {

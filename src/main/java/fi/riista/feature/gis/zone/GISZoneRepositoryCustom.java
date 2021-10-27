@@ -57,6 +57,8 @@ public interface GISZoneRepositoryCustom {
 
     GISZone copyZone(GISZone from, GISZone to);
 
+    GISZone addAreas(final GISZone orig, final GISZone added);
+
     List<Geometry> loadSplicedGeometries(final Collection<Long> zoneIds);
 
     void removeZonePalstaAndFeatures(GISZone zone);

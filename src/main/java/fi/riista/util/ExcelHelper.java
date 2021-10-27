@@ -121,6 +121,11 @@ public class ExcelHelper {
         return this;
     }
 
+    public ExcelHelper setCurrentRowHeight(final int points) {
+        currentRow.setHeightInPoints(points);
+        return this;
+    }
+
     private void updateMaxLastCellNum() {
         if (currentRow != null) {
             maxLastCellNum = Math.max(maxLastCellNum, currentRow.getLastCellNum());
@@ -169,6 +174,18 @@ public class ExcelHelper {
     public ExcelHelper appendNumberCell(final Number value) {
         if (value != null) {
             final Cell cell = currentRow.createCell(currentColumnIndex);
+            // To prevent problems with Float type the value is always converted to String.
+            // Example: Float.valueOf("1.11").doubleValue() is 1.1100000143051147
+            cell.setCellValue(Double.valueOf(value.toString()));
+        }
+        currentColumnIndex++;
+        return this;
+    }
+
+    public ExcelHelper appendNumberCell(final Number value, final CellStyle style) {
+        final Cell cell = currentRow.createCell(currentColumnIndex);
+        cell.setCellStyle(style);
+        if (value != null) {
             // To prevent problems with Float type the value is always converted to String.
             // Example: Float.valueOf("1.11").doubleValue() is 1.1100000143051147
             cell.setCellValue(Double.valueOf(value.toString()));
@@ -264,6 +281,10 @@ public class ExcelHelper {
         return appendDateCell(value != null ? value.toDate() : null, dateStyle);
     }
 
+    public ExcelHelper appendDateCell(final LocalDate value, final CellStyle style) {
+        return appendDateCell(value != null ? value.toDate() : null, style);
+    }
+
     public ExcelHelper appendTimeCell(final Date value) {
         return appendDateCell(value, timeStyle);
     }
@@ -276,10 +297,14 @@ public class ExcelHelper {
         return appendDateTimeCell(value != null ? value.toDate() : null);
     }
 
+    public ExcelHelper appendDateTimeCell(final LocalDateTime value, final CellStyle style) {
+        return appendDateCell(value != null ? value.toDate() : null, style);
+    }
+
     private ExcelHelper appendDateCell(final Date value, CellStyle cellStyle) {
+        final Cell cell = currentRow.createCell(currentColumnIndex);
+        cell.setCellStyle(cellStyle);
         if (value != null) {
-            final Cell cell = currentRow.createCell(currentColumnIndex);
-            cell.setCellStyle(cellStyle);
             cell.setCellValue(value);
         }
         currentColumnIndex++;
@@ -357,9 +382,15 @@ public class ExcelHelper {
     }
 
     public ExcelHelper appendTextCell(final String value, final CellStyle style) {
-        appendTextCellInternal(value).ifPresent(cell -> {
-            cell.setCellStyle(style);
-        });
+        final Cell cell = currentRow.createCell(currentColumnIndex);
+
+        if (!StringUtils.isEmpty(value)) {
+            cell.setCellValue(value);
+        }
+        cell.setCellStyle(style);
+
+        currentColumnIndex++;
+
         return this;
     }
 
@@ -378,7 +409,7 @@ public class ExcelHelper {
         if (style != null) {
             cell.setCellStyle(style);
         }
-        cell.setCellType(CellType.FORMULA);
+
         cell.setCellFormula(formattedFormula);
 
         return this;
@@ -394,7 +425,7 @@ public class ExcelHelper {
         if (style != null) {
             cell.setCellStyle(style);
         }
-        cell.setCellType(CellType.FORMULA);
+
         cell.setCellFormula(formula);
 
         return this;

@@ -13,10 +13,9 @@ import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount.RestrictionType;
 import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
-import fi.riista.feature.huntingclub.register.RegisterHuntingClubException;
-import fi.riista.feature.huntingclub.register.RegisterHuntingClubService;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonLookupService;
 import fi.riista.feature.organization.rhy.MergedRhyMapping;
@@ -60,7 +59,7 @@ public class PermitCSVImporter {
     private RiistanhoitoyhdistysRepository riistanhoitoyhdistysRepository;
 
     @Resource
-    private RegisterHuntingClubService registerHuntingClubService;
+    private HuntingClubRepository clubRepository;
 
     @Resource
     private HuntingClubGroupRepository huntingClubGroupRepository;
@@ -315,16 +314,13 @@ public class PermitCSVImporter {
 
     private HuntingClub tryFindOrCreateClub(final List<String> errors, final String officialCode, final String errMsgPrefix) {
 
-        try {
-            final HuntingClub club = registerHuntingClubService.findExistingOrCreate(officialCode);
-            if (club == null) {
-                errors.add(errMsgPrefix + officialCode);
-            }
-            return club;
-        } catch (final RegisterHuntingClubException hcre) {
-            errors.add("Lupahallinnassa ei seuralle ole merkitty RHY:tä. Seura:" + officialCode);
-            return null;
+        final HuntingClub club = clubRepository.findByOfficialCode(officialCode);
+
+        if (club == null) {
+            errors.add(errMsgPrefix + officialCode);
         }
+        return club;
+
     }
 
     private GISHirvitalousalue findMooseArea(final PermitCSVLine csvLine, final List<String> errors) {

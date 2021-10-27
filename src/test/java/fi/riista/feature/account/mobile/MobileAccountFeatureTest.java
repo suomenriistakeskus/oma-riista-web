@@ -147,19 +147,8 @@ public class MobileAccountFeatureTest extends EmbeddedDatabaseTest implements Hu
     }
 
     @Test
-    public void testGetMobileAccount_deerPilotUserFlagNotSetForNonDeerPilotUser() {
-        final Person person = model().newPerson();
-
-        onSavedAndAuthenticated(createUser(person), () -> {
-            final MobileAccountDTO dto = feature.getMobileAccount();
-            assertFalse(dto.isDeerPilotUser());
-        });
-    }
-
-    @Test
-    public void testGetMobileAccount_deerPilotUserFlagSetForDeerPilotUser() {
+    public void testGetMobileAccount_deerPilotUserFlagSet() {
         final HuntingGroupFixture fixture = new HuntingGroupFixture(model());
-        model().newDeerPilot(fixture.permit);
 
         onSavedAndAuthenticated(createUser(fixture.groupMember), () -> {
             final MobileAccountDTO dto = feature.getMobileAccount();

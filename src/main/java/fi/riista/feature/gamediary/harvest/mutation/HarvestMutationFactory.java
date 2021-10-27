@@ -31,6 +31,7 @@ import fi.riista.feature.harvestpermit.season.HarvestQuota;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
 import fi.riista.feature.harvestpermit.season.HarvestSeasonService;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayService;
+import fi.riista.feature.huntingclub.hunting.mobile.MobileGroupHarvestDTO;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonLookupService;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
@@ -107,6 +108,13 @@ public class HarvestMutationFactory {
     }
 
     @Transactional
+    public HarvestCommonMutation createCommonMutation(final HarvestMutationRole mutationRole,
+                                                      final MobileGroupHarvestDTO dto) {
+        final GameSpecies species = gameSpeciesService.requireByOfficialCode(dto.getGameSpeciesCode());
+        return new HarvestCommonMutation(dto, species, mutationRole);
+    }
+
+    @Transactional
     public HarvestAuthorActorMutation createAuthorActorMutation(final HarvestMutationRole mutationRole,
                                                                 final Person activePerson,
                                                                 final HarvestDTO dto,
@@ -121,6 +129,16 @@ public class HarvestMutationFactory {
                             .orElseThrow(() -> new IllegalArgumentException("actorInfo is required")));
         }
 
+        final Person actor =
+                personLookupService.findPerson(dto.getActorInfo(), FOREIGN_PERSON_ELIGIBLE_AS_ACTOR).orElse(null);
+
+        return HarvestAuthorActorMutation.createForNormalUser(activePerson, actor, previousState.getPreviousAuthor());
+    }
+
+    @Transactional
+    public HarvestAuthorActorMutation createAuthorActorMutation(final Person activePerson,
+                                                                final MobileGroupHarvestDTO dto,
+                                                                final HarvestPreviousState previousState) {
         final Person actor =
                 personLookupService.findPerson(dto.getActorInfo(), FOREIGN_PERSON_ELIGIBLE_AS_ACTOR).orElse(null);
 
@@ -199,9 +217,9 @@ public class HarvestMutationFactory {
 
     @Nonnull
     @Transactional
-    public HarvestForHuntingDayMutation createHuntingDayMutation(@Nonnull final HarvestDTO dto,
+    public HarvestForHuntingDayMutation createHuntingDayMutation(final long groupHuntingDayId,
                                                                  final Person activePerson) {
-        return new HarvestForHuntingDayMutation(dto, activePerson, groupHuntingDayService);
+        return new HarvestForHuntingDayMutation(groupHuntingDayId, activePerson, groupHuntingDayService);
     }
 
     @Nonnull

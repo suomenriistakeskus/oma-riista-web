@@ -7,20 +7,30 @@
         <div class="table-responsive">
             <table class="table table-condensed">
                 <tbody>
-                    <tr ng-repeat-start="type in $ctrl.trainingTypes">
-                        <td class="col-xs-8" ng-switch="::($ctrl.jhtTraining[type + 'TrainingEventsOverridden'])">
-                            <span ng-switch-when="true" translate="{{::('rhy.annualStats.trainings.jht.' + type + 'TrainingEvents')}}"></span>
-                            <div ng-switch-when="false" computed-marker-title="{{::('rhy.annualStats.trainings.jht.' + type + 'TrainingEvents')}}"></div>
-                        </td>
-                        <td num-pieces="::($ctrl.jhtTraining[type + 'TrainingEvents'])"></td>
-                    </tr>
-                    <tr  class="indented-row" ng-repeat-end>
-                        <td class="col-xs-8" ng-switch="::($ctrl.jhtTraining[type + 'TrainingParticipantsOverridden'])">
-                            <span ng-switch-when="true" translate="{{::('rhy.annualStats.trainings.jht.' + type + 'TrainingParticipants')}}"></span>
-                            <div ng-switch-when="false" computed-marker-title="{{::('rhy.annualStats.trainings.jht.' + type + 'TrainingParticipants')}}"></div>
-                        </td>
-                        <td num-persons="::($ctrl.jhtTraining[type + 'TrainingParticipants'])"></td>
-                    </tr>
+                <tr ng-repeat-start="type in $ctrl.trainingTypes">
+                    <td class="col-xs-8" ng-switch="($ctrl.jhtTraining[type + 'TrainingEventsOverridden'])">
+                        <span ng-switch-when="true"
+                              translate="{{('rhy.annualStats.trainings.jht.' + type + 'TrainingEvents')}}"></span>
+                        <div ng-switch-when="false"
+                             computed-marker-title="{{('rhy.annualStats.trainings.jht.' + type + 'TrainingEvents')}}"></div>
+                    </td>
+                    <td class="text-right">
+                        <span ng-bind="$ctrl.getEventCount(type)"></span>&nbsp
+                        <span class="unit-suffix" translate="global.pcs"></span>
+                    </td>
+                </tr>
+                <tr class="indented-row" ng-repeat-end>
+                    <td class="col-xs-8" ng-switch="($ctrl.jhtTraining[type + 'TrainingParticipantsOverridden'])">
+                        <span ng-switch-when="true"
+                              translate="{{('rhy.annualStats.trainings.jht.' + type + 'TrainingParticipants')}}"></span>
+                        <div ng-switch-when="false"
+                             computed-marker-title="{{('rhy.annualStats.trainings.jht.' + type + 'TrainingParticipants')}}"></div>
+                    </td>
+                    <td class="text-right">
+                        <span ng-bind="$ctrl.getParticipantCount(type)"></span>&nbsp
+                        <span class="unit-suffix" translate="global.personUnit"></span>
+                    </td>
+                </tr>
                 </tbody>
             </table>
         </div>

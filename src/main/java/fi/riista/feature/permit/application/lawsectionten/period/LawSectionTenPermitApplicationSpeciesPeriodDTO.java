@@ -10,6 +10,8 @@ import javax.annotation.Nonnull;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 
+import static fi.riista.feature.permit.application.lawsectionten.period.LawSectionTenPermitApplicationSpeciesPeriodSeasons.getPermitSeasons;
+
 public class LawSectionTenPermitApplicationSpeciesPeriodDTO implements HasBeginAndEndDate {
 
     public LawSectionTenPermitApplicationSpeciesPeriodDTO() {}
@@ -18,8 +20,7 @@ public class LawSectionTenPermitApplicationSpeciesPeriodDTO implements HasBeginA
         this.gameSpeciesCode = speciesAmount.getGameSpecies().getOfficialCode();
         this.beginDate = speciesAmount.getBeginDate();
         this.endDate = speciesAmount.getEndDate();
-        this.seasons =
-                LawSectionTenPermitApplicationSpeciesPeriodValidator.getPermitSeasons(speciesAmount.getGameSpecies().getOfficialCode());
+        this.seasons = getPermitSeasons(speciesAmount.getGameSpecies().getOfficialCode());
     }
 
     private int gameSpeciesCode;

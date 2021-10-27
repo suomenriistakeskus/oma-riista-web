@@ -149,6 +149,7 @@ public class HarvestPermitApplicationValidationService {
                 BirdPermitApplicationValidator.validateContent(application, birdApplication);
                 break;
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_BEAR:
@@ -270,6 +271,7 @@ public class HarvestPermitApplicationValidationService {
                 BirdPermitApplicationValidator.validateForSending(application, birdApplication);
                 break;
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_BEAR:
@@ -392,6 +394,7 @@ public class HarvestPermitApplicationValidationService {
                 BirdPermitApplicationValidator.validateForAmend(application, birdApplication);
                 break;
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_BEAR:

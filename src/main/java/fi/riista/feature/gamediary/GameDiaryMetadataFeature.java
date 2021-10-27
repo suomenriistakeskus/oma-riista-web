@@ -1,7 +1,6 @@
 package fi.riista.feature.gamediary;
 
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
@@ -60,13 +59,7 @@ public class GameDiaryMetadataFeature {
     private GISQueryService gisQueryService;
 
     @Resource
-    private ActiveUserService activeUserService;
-
-    @Resource
     private RequireEntityService requireEntityService;
-
-    @Resource
-    private DeerPilotService deerPilotService;
 
     @Resource
     private MunicipalityRepository municipalityRepository;
@@ -133,16 +126,8 @@ public class GameDiaryMetadataFeature {
                                                                      @Nonnull final HarvestSpecVersion specVersion) {
         requireNonNull(specVersion);
 
-        // TODO `overrideSpecVersion` will be removed when deer pilot 2020 is over.
-        final SystemUser activeUser = activeUserService.requireActiveUser();
-        final Long personId = activeUser.isModeratorOrAdmin()
-                ? dto.getPersonId()
-                : F.getId(activeUser.requirePerson());
-        final boolean isDeerPilotEnabled = personId != null && deerPilotService.isPilotUser(personId);
-        final HarvestSpecVersion overrideSpecVersion = specVersion.revertIfNotOnDeerPilot(isDeerPilotEnabled);
-
         final RequiredHarvestFieldsResponseDTO.Builder builder =
-                RequiredHarvestFieldsResponseDTO.builder(dto, overrideSpecVersion, isDeerPilotEnabled);
+                RequiredHarvestFieldsResponseDTO.builder(dto, specVersion);
 
         final LocalDate date = dto.getHarvestDate();
         final GeoLocation location = dto.getLocation();
@@ -197,18 +182,15 @@ public class GameDiaryMetadataFeature {
                 harvest.getSpecies().getOfficialCode(),
                 harvest.getPointOfTimeAsLocalDate(),
                 harvest.getGeoLocation(),
-                harvest.getHarvestPermit() != null,
-                harvest.getAuthor().getId());
+                harvest.getHarvestPermit() != null);
 
         final Municipality municipality = Optional.ofNullable(harvest.getMunicipalityCode())
                 .flatMap(municipalityRepository::findById)
                 .orElse(null);
 
-        // TODO `overrideSpecVersion` will be removed when deer pilot 2020 is over.
-        final boolean isDeerPilotEnabled = deerPilotService.isPilotUser(harvest.getAuthor());
-        final HarvestSpecVersion overrideSpecVersion = specVersion.revertIfNotOnDeerPilot(isDeerPilotEnabled);
+        final HarvestSpecVersion overrideSpecVersion = specVersion;
 
-        return RequiredHarvestFieldsResponseDTO.builder(request, overrideSpecVersion, isDeerPilotEnabled)
+        return RequiredHarvestFieldsResponseDTO.builder(request, overrideSpecVersion)
                 .withReportingType(harvest.resolveReportingType())
                 .withSeason(harvest.getHarvestSeason())
                 .withQuota(harvest.getHarvestQuota())
@@ -230,16 +212,13 @@ public class GameDiaryMetadataFeature {
         final int huntingYear = group.getHuntingYear();
         final int gameSpeciesCode = group.getSpecies().getOfficialCode();
 
-        // TODO `overrideSpecVersion` will be removed when deer pilot 2020 is over.
-        final boolean isDeerPilotEnabled = deerPilotService.isPilotGroup(group);
-        final HarvestSpecVersion overrideSpecVersion = specVersion.revertIfNotOnDeerPilot(isDeerPilotEnabled);
 
         final RequiredHarvestFields.Report reportFields = RequiredHarvestFields.getFormFields(
-                huntingYear, gameSpeciesCode, HarvestReportingType.HUNTING_DAY, onlyLegallyMandatory, isDeerPilotEnabled);
+                huntingYear, gameSpeciesCode, HarvestReportingType.HUNTING_DAY, onlyLegallyMandatory);
 
         final RequiredHarvestFields.Specimen specimenFields = RequiredHarvestFields.getSpecimenFields(
                 huntingYear, gameSpeciesCode, null, HarvestReportingType.HUNTING_DAY, onlyLegallyMandatory,
-                overrideSpecVersion);
+                specVersion);
 
         final RequiredHarvestReportFieldsDTO reportFieldsDTO = RequiredHarvestReportFieldsDTO.create(reportFields);
         final RequiredHarvestSpecimenFieldsDTO specimenFieldsDTO =

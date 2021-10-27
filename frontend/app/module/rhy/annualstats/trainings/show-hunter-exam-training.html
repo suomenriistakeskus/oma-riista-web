@@ -8,13 +8,13 @@
             <table class="table table-condensed">
                 <tbody>
                     <tr>
-                        <td class="col-xs-9" ng-switch="$ctrl.hunterExamTrainingEventsOverridden">
+                        <td class="col-xs-9" ng-switch="!!$ctrl.hunterExamTraining.hunterExamTrainingEventsLastOverridden">
                             <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunterExam.hunterExamEvents"></span>
                             <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunterExam.hunterExamEvents"></div>
                         </td>
-                        <td ng-switch="$ctrl.hunterExamTrainingEventsOverridden">
-                            <span ng-switch-when="true" num-pieces="::$ctrl.hunterExamTraining.moderatorOverriddenHunterExamTrainingEvents"></span>
-                            <span ng-switch-when="false" num-pieces="::$ctrl.hunterExamTraining.hunterExamTrainingEvents"></span>
+                        <td class="text-right">
+                            <span ng-bind="$ctrl.getEventCount()"></span>&nbsp
+                            <span class="unit-suffix" translate="global.pcs"></span>
                         </td>
                     </tr>
 
@@ -23,7 +23,10 @@
                             <span ng-switch-when="true" translate="rhy.annualStats.trainings.hunterExam.hunterExamParticipants"></span>
                             <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.hunterExam.hunterExamParticipants"></div>
                         </td>
-                        <td num-persons="::$ctrl.hunterExamTraining.hunterExamTrainingParticipants"></td>
+                        <td class="text-right">
+                            <span ng-bind="$ctrl.getParticipantCount()"></span>&nbsp
+                            <span class="unit-suffix" translate="global.personUnit"></span>
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -31,7 +34,7 @@
 
         <div ng-if="$ctrl.editable" class="text-right">
             <button class="btn btn-primary"
-                    ng-click="$ctrl.openEditDialog()"
+                    ng-click="$ctrl.editHunterExamTraining()"
                     translate="global.button.edit"></button>
         </div>
     </div>

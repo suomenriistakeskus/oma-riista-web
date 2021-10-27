@@ -83,11 +83,6 @@ public class HarvestLockedCondition {
             if (season != null && !harvestSpecVersion.supportsHarvestReport()) {
                 return false;
             }
-
-            // no version currently has support for group hunting day
-            if (huntingGroup != null) {
-                return false;
-            }
         }
 
         if (huntingGroup != null && isGroupHuntingLockedTester.test(harvest)) {

@@ -3,10 +3,12 @@ package fi.riista.api.harvestpermit;
 import fi.riista.feature.harvestpermit.endofhunting.EndOfHuntingHarvestReportDTO;
 import fi.riista.feature.harvestpermit.endofhunting.EndOfHuntingHarvestReportFeature;
 import fi.riista.feature.harvestpermit.endofhunting.EndOfHuntingHarvestReportStateChangeDTO;
-import fi.riista.feature.harvestpermit.endofhunting.EndOfMooselikePermitHuntingFeature;
-import fi.riista.feature.harvestpermit.endofhunting.EndOfHuntingReportModeratorCommentsDTO;
-import fi.riista.feature.harvestpermit.endofhunting.EndOfHuntingNestRemovalReportFeature;
 import fi.riista.feature.harvestpermit.endofhunting.EndOfHuntingNestRemovalReportDTO;
+import fi.riista.feature.harvestpermit.endofhunting.EndOfHuntingNestRemovalReportFeature;
+import fi.riista.feature.harvestpermit.endofhunting.EndOfHuntingReportModeratorCommentsDTO;
+import fi.riista.feature.harvestpermit.endofhunting.EndOfMooselikePermitHuntingFeature;
+import fi.riista.feature.harvestpermit.endofhunting.EndOfPermitPeriodReportDTO;
+import fi.riista.feature.harvestpermit.endofhunting.EndOfPermitPeriodReportFeature;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,6 +37,9 @@ public class EndOfHuntingReportApiResource {
     @Resource
     private EndOfHuntingNestRemovalReportFeature endOfHuntingNestRemovalReportFeature;
 
+    @Resource
+    private EndOfPermitPeriodReportFeature endOfPermitPeriodReportFeature;
+
     // Normal permit
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -53,6 +58,11 @@ public class EndOfHuntingReportApiResource {
     @GetMapping("/permit/nestremoval/{permitId:\\d+}")
     public EndOfHuntingNestRemovalReportDTO getNestRemovalEndOfHuntingReport(final @PathVariable long permitId) {
         return endOfHuntingNestRemovalReportFeature.getEndOfNestRemovalPermitReport(permitId);
+    }
+
+    @GetMapping("/endofpermitperiod/permit/{permitId:\\d+}")
+    public EndOfPermitPeriodReportDTO getEndOfPermitPeriodReport(final @PathVariable long permitId) {
+        return endOfPermitPeriodReportFeature.getEndOfPermitPeriodReport(permitId);
     }
 
     @PostMapping("/permit/{permitId:\\d+}")
@@ -75,6 +85,17 @@ public class EndOfHuntingReportApiResource {
     public EndOfHuntingNestRemovalReportDTO moderatorCreateNestRemovalEndOfHuntingReport(final @PathVariable long permitId,
                                                                                          final @RequestBody @Valid EndOfHuntingReportModeratorCommentsDTO endOfHuntingReportComments) {
         return endOfHuntingNestRemovalReportFeature.createEndOfHuntingReport(permitId, endOfHuntingReportComments);
+    }
+
+    @PostMapping("/endofpermitperiod/permit/{permitId:\\d+}")
+    public EndOfPermitPeriodReportDTO createEndOfPermitPeriodReport(final @PathVariable long permitId) {
+        return endOfPermitPeriodReportFeature.createEndOfPermitPeriodReport(permitId, null);
+    }
+
+    @PostMapping("/endofpermitperiod/permit/{permitId:\\d+}/moderator")
+    public EndOfPermitPeriodReportDTO moderatorCreateEndOfPermitPeriodReport(final @PathVariable long permitId,
+                                                                             final @RequestBody @Valid EndOfHuntingReportModeratorCommentsDTO endOfHuntingReportComments) {
+        return endOfPermitPeriodReportFeature.createEndOfPermitPeriodReport(permitId, endOfHuntingReportComments);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

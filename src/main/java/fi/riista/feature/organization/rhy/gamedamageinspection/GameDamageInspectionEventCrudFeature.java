@@ -1,8 +1,14 @@
 package fi.riista.feature.organization.rhy.gamedamageinspection;
 
+import com.google.common.base.Preconditions;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gamediary.GameSpeciesService;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonLookupService;
 import fi.riista.feature.organization.rhy.RhyEventTimeException;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysRepository;
@@ -17,6 +23,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission;
 
@@ -46,6 +53,12 @@ public class GameDamageInspectionEventCrudFeature extends AbstractCrudFeature<Lo
 
     @Resource
     private GameDamageInspectionKmExpensesService gameDamageInspectionKmExpensesService;
+
+    @Resource
+    private PersonLookupService personLookupService;
+
+    @Resource
+    private OccupationRepository occupationRepository;
 
     @Override
     protected JpaRepository<GameDamageInspectionEvent, Long> getRepository() {
@@ -81,6 +94,18 @@ public class GameDamageInspectionEventCrudFeature extends AbstractCrudFeature<Lo
 
         entity.setHourlyExpensesUnit(dto.getHourlyExpensesUnit());
         entity.setDailyAllowance(dto.getDailyAllowance());
+
+        entity.setExpensesIncluded(dto.isExpensesIncluded());
+
+        if (dto.getInspector() != null) {
+            final Optional<Person> inspectorOpt = personLookupService.findById(dto.getInspector().getId(), true);
+            Preconditions.checkState(inspectorOpt.isPresent(), "Unknown person for game damage inspector");
+
+            final Person inspector = inspectorOpt.get();
+            assertActiveOccupation(inspector, dto.getDate());
+
+            entity.setInspector(inspector);
+        }
     }
 
     @Override
@@ -90,7 +115,9 @@ public class GameDamageInspectionEventCrudFeature extends AbstractCrudFeature<Lo
 
     @Override
     protected void afterCreate(final GameDamageInspectionEvent entity, final GameDamageInspectionEventDTO dto) {
-        gameDamageInspectionKmExpensesService.addGameDamageInspectionKmExpenses(entity, dto.getGameDamageInspectionKmExpenses());
+        if (entity.getExpensesIncluded()) {
+            gameDamageInspectionKmExpensesService.addGameDamageInspectionKmExpenses(entity, dto.getGameDamageInspectionKmExpenses());
+        }
     }
 
     @Transactional(readOnly = true)
@@ -109,4 +136,12 @@ public class GameDamageInspectionEventCrudFeature extends AbstractCrudFeature<Lo
         super.delete(entity);
     }
 
+    private void assertActiveOccupation(final Person inspector, final LocalDate date) {
+        final List<Occupation> occupations =
+                occupationRepository.findActiveByPersonAndOccupationTypeAndDate(
+                        inspector,
+                        OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA,
+                        date);
+        Preconditions.checkState(!occupations.isEmpty(), "Invalid occupation for game damage inspector");
+    }
 }

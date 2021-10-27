@@ -13,10 +13,12 @@ import fi.riista.feature.permit.application.amendment.AmendmentApplicationDataRe
 import fi.riista.feature.permit.application.mooselike.MooselikePermitApplicationAreaDTO;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.area.HarvestPermitAreaEventRepository;
+import fi.riista.feature.permit.area.HarvestPermitAreaRepository;
 import fi.riista.feature.permit.area.hta.HarvestPermitAreaHtaDTO;
 import fi.riista.feature.permit.area.hta.HarvestPermitAreaHtaRepository;
 import fi.riista.feature.permit.area.mml.HarvestPermitAreaMmlRepository;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerDTO;
+import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerRepository;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerService;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhyDTO;
 import fi.riista.feature.permit.area.rhy.HarvestPermitAreaRhyRepository;
@@ -27,6 +29,7 @@ import fi.riista.util.F;
 import fi.riista.util.GISUtils;
 import org.geojson.FeatureCollection;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -34,6 +37,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Collections.emptySet;
 
 @Component
@@ -47,6 +51,9 @@ public class HarvestPermitApplicationGeometryFeature {
 
     @Resource
     private RequireEntityService requireEntityService;
+
+    @Resource
+    private HarvestPermitAreaRepository harvestPermitAreaRepository;
 
     @Resource
     private GISZoneRepository gisZoneRepository;
@@ -68,6 +75,9 @@ public class HarvestPermitApplicationGeometryFeature {
 
     @Resource
     private AmendmentApplicationDataRepository amendmentApplicationDataRepository;
+
+    @Resource
+    private HarvestPermitAreaPartnerRepository harvestPermitAreaPartnerRepository;
 
     @Resource
     private HarvestPermitAreaPartnerService harvestPermitAreaPartnerService;
@@ -173,5 +183,23 @@ public class HarvestPermitApplicationGeometryFeature {
         final HarvestPermitArea permitArea = requirePermitArea(applicationId, EntityPermission.READ);
 
         return harvestPermitApplicationGeoJsonService.getPermitAreaCombined(permitArea);
+    }
+
+    // No authorization mechanism for harvest permit area, called after deletion of a draft application
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public void deleteArea(final HarvestPermitArea harvestPermitArea) {
+        checkState(harvestPermitArea.getStatus() != HarvestPermitArea.StatusCode.LOCKED,
+                "Cannot delete locked area");
+
+        harvestPermitAreaRhyRepository.deleteByHarvestPermitArea(harvestPermitArea);
+        harvestPermitAreaHtaRepository.deleteByHarvestPermitArea(harvestPermitArea);
+        harvestPermitAreaMmlRepository.deleteByHarvestPermitArea(harvestPermitArea);
+        harvestPermitAreaVerotusLohkoRepository.deleteByHarvestPermitArea(harvestPermitArea);
+        harvestPermitAreaPartnerRepository.deleteByHarvestPermitArea(harvestPermitArea);
+
+        final GISZone zone = harvestPermitArea.getZone();
+
+        harvestPermitAreaRepository.delete(harvestPermitArea);
+        gisZoneRepository.delete(zone);
     }
 }

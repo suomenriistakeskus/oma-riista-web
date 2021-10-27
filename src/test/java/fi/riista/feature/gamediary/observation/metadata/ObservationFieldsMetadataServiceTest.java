@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import fi.riista.feature.common.entity.Required;
-import fi.riista.feature.common.entity.RequiredWithinDeerPilot;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
@@ -58,7 +57,7 @@ public class ObservationFieldsMetadataServiceTest extends EmbeddedDatabaseTest {
         assertTrue(Objects.equal(species.getId(), metadata.getGameSpeciesId()));
         assertEquals(species.getOfficialCode(), metadata.getGameSpeciesCode());
         assertEquals(
-                RequiredWithinDeerPilot.NO,
+                NO,
                 metadata.getBaseFields().get(ObservationFieldRequirements.FIELD_WITHIN_MOOSE_HUNTING));
     }
 
@@ -122,7 +121,7 @@ public class ObservationFieldsMetadataServiceTest extends EmbeddedDatabaseTest {
                                     final GameSpeciesObservationFieldRequirementsDTO actual) {
 
         assertEquals(expected.getGameSpeciesCode(), actual.getGameSpeciesCode());
-        assertEquals(Maps.filterValues(expected.getBaseFields(), val -> val != RequiredWithinDeerPilot.NO), actual.getBaseFields());
+        assertEquals(Maps.filterValues(expected.getBaseFields(), val -> val != NO), actual.getBaseFields());
         assertEquals(expected.getSpecimenFields(), actual.getSpecimenFields());
 
         final int numExpectedCtxFieldsets = expected.getContextSensitiveFieldSets().size();
@@ -137,7 +136,7 @@ public class ObservationFieldsMetadataServiceTest extends EmbeddedDatabaseTest {
                                     final ContextSensitiveFieldSetDTO actual) {
 
         final Predicate<Enum<?>> filter =
-                required -> required != Required.NO && required != DynamicObservationFieldPresence.NO;
+                required -> required != NO && required != DynamicObservationFieldPresence.NO;
 
         assertEquals(expected.isWithinMooseHunting(), actual.isWithinMooseHunting());
         assertEquals(expected.getType(), actual.getType());

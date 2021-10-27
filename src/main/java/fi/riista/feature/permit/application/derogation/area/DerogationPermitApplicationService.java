@@ -90,6 +90,7 @@ public class DerogationPermitApplicationService {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
                 return carnivorePermitApplicationRepository.findByHarvestPermitApplication(application);
             case MAMMAL:
                 return mammalPermitApplicationRepository.findByHarvestPermitApplication(application);
@@ -133,7 +134,8 @@ public class DerogationPermitApplicationService {
             case LARGE_CARNIVORE_BEAR:
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
-            case LARGE_CARNIVORE_WOLF: {
+            case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO: {
                 final CarnivorePermitApplication existing =
                         carnivorePermitApplicationRepository.findByHarvestPermitApplication(application);
                 Preconditions.checkState(existing != null, "Carnivore application not found.");

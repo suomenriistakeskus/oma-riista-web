@@ -1,6 +1,15 @@
 
 package fi.riista.integration.common.export.srva;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import fi.riista.integration.support.LocalDateTimeAdapter;
 import org.joda.time.LocalDateTime;
 import org.jvnet.jaxb2_commons.lang.Equals2;
@@ -14,16 +23,6 @@ import org.jvnet.jaxb2_commons.lang.ToString2;
 import org.jvnet.jaxb2_commons.lang.ToStringStrategy2;
 import org.jvnet.jaxb2_commons.locator.ObjectLocator;
 import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 
 /**
@@ -56,8 +55,8 @@ import java.util.List;
  *   &lt;/complexContent&gt;
  * &lt;/complexType&gt;
  * </pre>
- *
- *
+ * 
+ * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "SRVAEvent", propOrder = {
@@ -543,7 +542,7 @@ public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
     }
 
     public String toString() {
-        final ToStringStrategy2 strategy = JAXBToStringStrategy.INSTANCE;
+        final ToStringStrategy2 strategy = JAXBToStringStrategy.INSTANCE2;
         final StringBuilder buffer = new StringBuilder();
         append(null, buffer, strategy);
         return buffer.toString();
@@ -782,7 +781,7 @@ public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
     }
 
     public boolean equals(Object object) {
-        final EqualsStrategy2 strategy = JAXBEqualsStrategy.INSTANCE;
+        final EqualsStrategy2 strategy = JAXBEqualsStrategy.INSTANCE2;
         return equals(null, null, object, strategy);
     }
 
@@ -867,7 +866,7 @@ public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
     }
 
     public int hashCode() {
-        final HashCodeStrategy2 strategy = JAXBHashCodeStrategy.INSTANCE;
+        final HashCodeStrategy2 strategy = JAXBHashCodeStrategy.INSTANCE2;
         return this.hashCode(null, strategy);
     }
 

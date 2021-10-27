@@ -49,19 +49,19 @@ public class RegisterAccountEmailService {
     private MessageSource messageSource;
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public String sendEmail(final RegisterAccountDTO dto, final HttpServletRequest request) {
+    public String sendEmail(final String email, final String lang, final HttpServletRequest request) {
         // Forbid using internal Riistakeskus email addresses
-        if (dto.getEmail().endsWith("@riista.fi") ||dto.getEmail().endsWith(".riista.fi")) {
+        if (email.endsWith("@riista.fi") || email.endsWith(".riista.fi")) {
             throw new IllegalArgumentException("Invalid email domain");
         }
 
         final String token = emailTokenService.allocateToken(
-                EmailTokenType.VERIFY_EMAIL, null, dto.getEmail(), request);
+                EmailTokenType.VERIFY_EMAIL, null, email, request);
 
         final URI emailLink = UriComponentsBuilder.fromUri(runtimeEnvironmentUtil.getBackendBaseUri())
                 .path("/")
                 .fragment("/register/from-email/{token}?lang={lang}")
-                .buildAndExpand(token, dto.getLang())
+                .buildAndExpand(token, lang)
                 .toUri();
 
         // Unregistered user does not have locale preference set in the system
@@ -74,7 +74,7 @@ public class RegisterAccountEmailService {
 
         mailService.send(MailMessageDTO.builder()
                 .withFrom(mailService.getDefaultFromAddress())
-                .addRecipient(dto.getEmail())
+                .addRecipient(email)
                 .withSubject(subject)
                 .appendHandlebarsBody(handlebars, selectTemplate(), params)
                 .build());

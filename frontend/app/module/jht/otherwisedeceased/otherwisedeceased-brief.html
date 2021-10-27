@@ -1,0 +1,14 @@
+<div class="row">
+    <div class="col-xs-2" ng-bind="$ctrl.item.pointOfTime | date:'d.M.yyyy HH:mm'"></div>
+    <div class="col-xs-2" ng-bind="$ctrl.item.gameSpeciesCode | translateSpeciesCode"></div>
+    <div class="col-xs-3">
+        {{ $ctrl.item.municipality | rI18nNameFilter }} <br>
+        {{ $ctrl.item.rhy | rI18nNameFilter }}
+    </div>
+    <div class="col-xs-2">
+        <span translate="jht.otherwiseDeceased.sources.{{$ctrl.item.source}}"></span>
+    </div>
+    <div class="col-xs-3">
+        <span translate="jht.otherwiseDeceased.causes.{{$ctrl.item.cause}}"></span>
+    </div>
+</div>

@@ -13,8 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static org.springframework.util.StringUtils.hasText;
 
@@ -38,6 +41,28 @@ public class PersonSearchFeature {
                 .findByHunterNumber(hunterNumber, isForeignPersonEligible)
                 .map(PersonContactInfoDTO::create)
                 .orElseThrow(() -> PersonNotFoundException.byHunterNumber(hunterNumber));
+    }
+
+    @Nonnull
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR,ROLE_COORDINATOR')")
+    public List<PersonContactInfoDTO> findPersonContactInfoByHunterNumbers(final List<String> hunterNumbers,
+                                                                           final boolean isForeignPersonEligible) {
+        checkArgument(!hunterNumbers.isEmpty(), "empty hunterNumbers");
+
+        final Map<String, Person> personsByHunterNumber =
+                F.index(personLookupService.findByHunterNumberIn(hunterNumbers, isForeignPersonEligible), Person::getHunterNumber);
+
+        return hunterNumbers.stream()
+                .map(number ->
+                        ofNullable(personsByHunterNumber.get(number))
+                                .map(PersonContactInfoDTO::create)
+                                .orElseGet(() -> {
+                                    final PersonContactInfoDTO dto = new PersonContactInfoDTO();
+                                    dto.setHunterNumber(number);
+                                    return dto;
+                                }))
+                .collect(Collectors.toList());
     }
 
     @Nonnull

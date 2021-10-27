@@ -1,6 +1,7 @@
 package fi.riista.feature.permit.invoice.pdf;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import fi.riista.common.AcroFormPdfBuilder;
 import fi.riista.feature.common.money.FinnishBankAccount;
 import fi.riista.util.PdfWriter;
@@ -18,11 +19,10 @@ import org.springframework.util.StringUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Objects;
 
-import static com.google.common.base.Preconditions.checkState;
-import static fi.riista.feature.common.money.FinnishBankAccount.MOOSELIKE_HARVEST_FEE_OP_POHJOLA;
-import static fi.riista.feature.permit.invoice.pdf.PermitHarvestInvoicePdfModel.HARVEST_FEE_ACCOUNTS;
+import static fi.riista.feature.permit.invoice.harvest.PermitHarvestInvoiceAccounts.HARVEST_FEE_ACCOUNTS;
 import static java.util.stream.Collectors.joining;
 
 class PermitHarvestInvoicePdfBuilder extends AcroFormPdfBuilder {
@@ -40,6 +40,7 @@ class PermitHarvestInvoicePdfBuilder extends AcroFormPdfBuilder {
     private final PDPage pdfPage;
     private final PDAcroForm acroForm;
     private final PermitHarvestInvoicePdfModel model;
+    private final List<FinnishBankAccount> bankAccounts;
 
     private PermitHarvestInvoicePdfBuilder(final PDDocument pdfDocument, final PermitHarvestInvoicePdfModel model) {
         super(pdfDocument);
@@ -47,6 +48,11 @@ class PermitHarvestInvoicePdfBuilder extends AcroFormPdfBuilder {
         this.pdfPage = Objects.requireNonNull(pdfDocument.getPage(0));
         this.acroForm = Objects.requireNonNull(pdfDocument.getDocumentCatalog().getAcroForm());
         this.model = Objects.requireNonNull(model);
+
+        final FinnishBankAccount accountDetails = model.getInvoiceAccountDetails();
+        this.bankAccounts = HARVEST_FEE_ACCOUNTS.contains(accountDetails)
+                ? HARVEST_FEE_ACCOUNTS
+                : ImmutableList.<FinnishBankAccount>builder().add(accountDetails).addAll(HARVEST_FEE_ACCOUNTS).build();
     }
 
     private String i18n(final String finnish, final String swedish) {
@@ -232,7 +238,7 @@ class PermitHarvestInvoicePdfBuilder extends AcroFormPdfBuilder {
 
         textField("bic", writeBics());
         textField("saaja", model.getPaymentRecipient());
-        textField("maksaja", Joiner.on('\n').join(model.getInvoiceRecipient().formatAsLines()));
+        textField("maksaja", Joiner.on('\n').join(model.getInvoiceRecipient().formatAsLinesWithPermitHolder()));
         textField("erapaiva", model.getDueDateString());
         textField("summa", model.getInvoiceAmountText());
         textField("viitenumero", model.getInvoiceReferenceForHuman());
@@ -251,26 +257,15 @@ class PermitHarvestInvoicePdfBuilder extends AcroFormPdfBuilder {
 
     private void writeIbans(final PdfWriter writer) throws IOException {
         // Write ibans separately in order to be able to justify account numbers
+        writer.font(PDType1Font.TIMES_ROMAN, 8f).topOffsetMm(192).marginLeftMm(32);
+        for (FinnishBankAccount account : bankAccounts) {
+            writer.writeLine(account.getBankName());
+        }
 
-        // TODO: Remove hard coded validity periods once OP account is no longer used
-        final FinnishBankAccount op = MOOSELIKE_HARVEST_FEE_OP_POHJOLA;
-        checkState(HARVEST_FEE_ACCOUNTS.size() == 3);
-        checkState(HARVEST_FEE_ACCOUNTS.get(0).equals(op));
-
-        writer.font(PDType1Font.TIMES_ROMAN, 8f).topOffsetMm(192).marginLeftMm(32)
-                .writeLine(HARVEST_FEE_ACCOUNTS.get(0).getBankName())
-                .writeLine(HARVEST_FEE_ACCOUNTS.get(1).getBankName())
-                .writeLine(HARVEST_FEE_ACCOUNTS.get(2).getBankName());
-
-        writer.topOffsetMm(192).marginLeftMm(45)
-                .writeLine(iban(HARVEST_FEE_ACCOUNTS.get(0)))
-                .writeLine(iban(HARVEST_FEE_ACCOUNTS.get(1)))
-                .writeLine(iban(HARVEST_FEE_ACCOUNTS.get(2)));
-
-        writer.topOffsetMm(192).marginLeftMm(80)
-                .writeLine(i18n("(30.11.2020 asti)", "(till 30.11.2020)"))
-                .writeLine(i18n("(1.12.2020 lähtien)", "(från 1.12.2020)"))
-                .writeLine(i18n("(1.12.2020 lähtien)", "(från 1.12.2020)"));
+        writer.topOffsetMm(192).marginLeftMm(45);
+        for (FinnishBankAccount account : bankAccounts) {
+            writer.writeLine(iban(account));
+        }
     }
 
     private String iban(final FinnishBankAccount account) {
@@ -278,7 +273,7 @@ class PermitHarvestInvoicePdfBuilder extends AcroFormPdfBuilder {
     }
 
     private String writeBics() {
-        return HARVEST_FEE_ACCOUNTS.stream()
+        return bankAccounts.stream()
                 .map(FinnishBankAccount::getBic)
                 .map(Bic::toString)
                 .collect(joining("\n"));

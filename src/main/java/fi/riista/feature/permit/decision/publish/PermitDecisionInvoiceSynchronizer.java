@@ -1,11 +1,10 @@
 package fi.riista.feature.permit.decision.publish;
 
-import fi.riista.feature.common.money.FinnishBankAccount;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.address.AddressRepository;
 import fi.riista.feature.permit.application.DeliveryAddress;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
-import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.invoice.CreditorReferenceCalculator;
 import fi.riista.feature.permit.invoice.Invoice;
@@ -34,6 +33,7 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
 
+import static fi.riista.feature.common.money.FinnishBankAccount.PERMIT_DECISION_FEE_NORDEA;
 import static java.util.Objects.requireNonNull;
 
 @Component
@@ -125,7 +125,7 @@ public class PermitDecisionInvoiceSynchronizer {
         invoice.setAmount(decision.getPaymentAmount());
         invoice.updateInvoiceAndDueDate(invoiceDate);
         invoice.setInvoiceNumber(invoiceNumberService.getNextInvoiceNumber());
-        invoice.setIbanAndBic(FinnishBankAccount.PERMIT_DECISION_FEE_NORDEA);
+        invoice.setIbanAndBic(PERMIT_DECISION_FEE_NORDEA);
         invoice.setRecipientName(deliveryAddress.getRecipient());
         invoice.setRecipientAddress(invoiceAddress);
         invoice.setCreditorReference(CreditorReferenceCalculator.computeReferenceForPermitDecisionProcessingInvoice(

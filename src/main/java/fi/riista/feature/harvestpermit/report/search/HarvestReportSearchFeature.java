@@ -40,9 +40,6 @@ public class HarvestReportSearchFeature {
     private EnumLocaliser enumLocaliser;
 
     @Resource
-    private UserAuthorizationHelper userAuthorizationHelper;
-
-    @Resource
     private HarvestDTOTransformer harvestTransformer;
 
     @Resource
@@ -100,27 +97,4 @@ public class HarvestReportSearchFeature {
         }
     }
 
-    // Coordinator
-
-    @Transactional(readOnly = true)
-    public List<HarvestDTO> searchCoordinator(final HarvestReportSearchDTO params) {
-        return F.mapNonNullsToList(harvestTransformer.apply(listCoordinator(params), HarvestSpecVersion.CURRENTLY_SUPPORTED),
-                dto -> {
-                    dto.setActorInfo(null);
-                    dto.setAuthorInfo(null);
-                    return dto;
-                });
-    }
-
-    @Transactional(readOnly = true)
-    public List<HarvestReportExcelDTO> searchCoordinatorExcel(final HarvestReportSearchDTO params) {
-        return exportExcel(listCoordinator(params), false);
-    }
-
-    private List<Harvest> listCoordinator(final HarvestReportSearchDTO dto) {
-        userAuthorizationHelper.assertCoordinatorOrModerator(
-                Objects.requireNonNull(dto.getRhyId(), "rhyId is required"));
-
-        return harvestReportSearchQueryFactory.queryForList(dto);
-    }
 }

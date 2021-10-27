@@ -1,6 +1,8 @@
 package fi.riista.feature.common.decision;
 
-public enum DecisionStatus {
+import fi.riista.util.LocalisedEnum;
+
+public enum DecisionStatus implements LocalisedEnum {
     // Kesken
     DRAFT,
 

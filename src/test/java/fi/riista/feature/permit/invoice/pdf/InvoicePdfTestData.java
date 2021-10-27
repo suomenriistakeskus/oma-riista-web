@@ -21,6 +21,7 @@ import java.util.Locale;
 
 import static fi.riista.feature.permit.invoice.CreditorReferenceCalculator.computeReferenceForPermitDecisionProcessingInvoice;
 import static fi.riista.feature.permit.invoice.CreditorReferenceCalculator.computeReferenceForPermitHarvestInvoice;
+import static fi.riista.feature.permit.invoice.harvest.PermitHarvestInvoiceAccounts.PRIMARY_HARVEST_FEE_ACCOUNT;
 import static fi.riista.util.DateUtil.now;
 import static fi.riista.util.DateUtil.today;
 import static java.util.Objects.requireNonNull;
@@ -146,7 +147,7 @@ public final class InvoicePdfTestData {
         invoice.setInvoiceNumber(200_000);
         // Should not use current date for testing purposes.
         invoice.updateInvoiceAndDueDate(today().minusDays(2));
-        invoice.setIbanAndBic(FinnishBankAccount.MOOSELIKE_HARVEST_FEE_OP_POHJOLA);
+        invoice.setIbanAndBic(PRIMARY_HARVEST_FEE_ACCOUNT);
         invoice.setAmount(new BigDecimal("120.00"));
 
         final HarvestPermitApplication application = requireNonNull(decision.getApplication(), "application is null");

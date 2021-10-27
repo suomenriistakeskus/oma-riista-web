@@ -2,27 +2,29 @@
      ng-repeat="a in $ctrl.areaList">
     <div class="panel-heading">
         <div class="row">
-            <div class="col-xs-8">
-                <a ng-click="$ctrl.toggle(a)" style="padding-right: 10px;">
+            <div class="col-xs-6">
+                <a class="r-jht-area-panel-toggle" ng-click="$ctrl.toggle(a)">
                     <span class="fa fa-fw fa-lg fa-chevron-right" ng-show="a.isCollapsed"></span>
                     <span class="fa fa-fw fa-lg fa-chevron-down" ng-hide="a.isCollapsed"></span>
                 </a>
 
-                <a class="panel-title"
-                   style="line-height: 42px"
+                <a class="panel-title r-jht-area-panel-title"
                    ng-click="$ctrl.toggle(a)"
                    ng-bind="a.name"></a>
 
-                <a ng-click="$ctrl.edit(a)" style="padding-left: 15px;">
-                    <span class="fa fa-pencil" style="font-size: 24px"></span>
+                <a class="r-jht-area-edit-link" ng-click="$ctrl.edit(a)">
+                    <span class="fa fa-pencil r-jht-area-edit-icon"></span>
+                    <span translate="account.areas.editInfo" class="r-jht-area-info-text"></span>
                 </a>
             </div>
 
-            <div class="col-xs-4 text-right">
-                <button type="button" class="btn btn-link" ng-show="$ctrl.canPrintArea(a)"
+            <div class="col-xs-6 text-right">
+                <a class="r-jht-area-print-link"
+                   ng-show="$ctrl.canPrintArea(a)"
                    ng-click="$ctrl.printArea(a)">
-                    <span class="fa fa-2x fa-lg fa-print text-primary"></span>
-                </button>
+                    <span class="fa fa-2x fa-lg fa-print"></span>
+                    <span translate="global.button.print" class="r-jht-area-info-text"></span>
+                </a>
 
                 <button type="button" class="btn btn-primary"
                         ng-click="$ctrl.editMap(a)">

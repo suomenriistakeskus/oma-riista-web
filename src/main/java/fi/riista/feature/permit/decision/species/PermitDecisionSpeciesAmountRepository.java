@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface PermitDecisionSpeciesAmountRepository extends JpaRepository<PermitDecisionSpeciesAmount, Long> {
@@ -18,4 +19,6 @@ public interface PermitDecisionSpeciesAmountRepository extends JpaRepository<Per
     @Modifying
     @Query("UPDATE PermitDecisionSpeciesAmount spa SET spa.forbiddenMethodComplete = TRUE WHERE spa.permitDecision = ?1 AND spa.gameSpecies = ?2")
     void setForbiddenMethodComplete(PermitDecision permitDecision, GameSpecies species);
+
+    List<PermitDecisionSpeciesAmount> findByPermitDecisionIn(final Collection<PermitDecision> decisions);
 }

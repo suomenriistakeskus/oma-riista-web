@@ -28,8 +28,6 @@ import fi.riista.feature.huntingclub.moosedatacard.converter.MooseDataCardHuntin
 import fi.riista.feature.huntingclub.moosedatacard.validation.MooseDataCardPage1Validation;
 import fi.riista.feature.huntingclub.permit.endofhunting.basicsummary.BasicClubHuntingSummaryRepository;
 import fi.riista.feature.organization.Organisation_;
-import fi.riista.feature.organization.lupahallinta.LHOrganisation;
-import fi.riista.feature.organization.lupahallinta.LHOrganisationRepository;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -123,9 +121,6 @@ public class MooseDataCardImportHelper {
     private HuntingClubRepository clubRepo;
 
     @Resource
-    private LHOrganisationRepository lhOrgRepo;
-
-    @Resource
     private HuntingClubGroupRepository groupRepo;
 
     @Resource
@@ -161,25 +156,25 @@ public class MooseDataCardImportHelper {
         final Validation<String, HarvestPermitSpeciesAmount> hpsaValidation =
                 findHarvestPermit(input.permitNumber).flatMap(this::findMoosePermitAmount);
 
-        Validation<String, Either<LHOrganisation, HuntingClub>> clubValidation =
-                findHuntingClubOrLHOrganisation(input.clubCode);
+
+        Validation<String, HuntingClub> clubValidation = findHuntingClub(input.clubCode);
 
         if (hpsaValidation.isValid()) {
-            clubValidation = clubValidation.flatMap(clubEither -> {
-                final Optional<HuntingClub> moderatedClub = F.toOptional(clubEither)
-                        .filter(club -> isClubHuntingFinishedByModeratorOverride(club, hpsaValidation.get()));
+            clubValidation = clubValidation.flatMap(club -> {
+                final boolean moderatedClub =
+                        isClubHuntingFinishedByModeratorOverride(club, hpsaValidation.get());
 
-                return moderatedClub.isPresent()
+                return moderatedClub
                         ? invalid(clubHuntingFinishedByModeratorOverride(input.clubCode))
-                        : valid(clubEither);
+                        : valid(club);
             });
         }
 
         return clubValidation
                 .combine(hpsaValidation)
                 .combine(resolveContactPersonId(input))
-                .ap((clubEither, moosePermitAmount, personId) -> new MooseDataCardEntitySearchResult(
-                        clubEither, moosePermitAmount, moosePermitAmount.resolveHuntingYear(), personId))
+                .ap((club, moosePermitAmount, personId) -> new MooseDataCardEntitySearchResult(
+                        club, moosePermitAmount, moosePermitAmount.resolveHuntingYear(), personId))
                 .mapError(Value::toJavaList);
     }
 
@@ -219,21 +214,15 @@ public class MooseDataCardImportHelper {
                 : invalid(huntingYearForHarvestPermitCouldNotBeUnambiguouslyResolved(permit.getPermitNumber()));
     }
 
-    private Validation<String, Either<LHOrganisation, HuntingClub>> findHuntingClubOrLHOrganisation(
+    private Validation<String, HuntingClub> findHuntingClub(
             final String clubOfficialCode) {
 
         Objects.requireNonNull(clubOfficialCode);
 
-        final Either<LHOrganisation, HuntingClub> eitherClubOrLhOrg =
-                Optional.ofNullable(clubRepo.findByOfficialCode(clubOfficialCode))
-                        .map(club -> Either.<LHOrganisation, HuntingClub> right(club))
-                        .orElseGet(() -> Optional.ofNullable(lhOrgRepo.findByOfficialCode(clubOfficialCode))
-                                .map(lhOrgList -> lhOrgList.isEmpty() ? null : lhOrgList.get(0))
-                                .map(lhOrg -> Either.<LHOrganisation, HuntingClub> left(lhOrg))
-                                .orElse(null));
+        final HuntingClub club = clubRepo.findByOfficialCode(clubOfficialCode);
 
-        return eitherClubOrLhOrg != null
-                ? valid(eitherClubOrLhOrg)
+        return club != null
+                ? valid(club)
                 : invalid(huntingClubNotFoundByCustomerNumber(clubOfficialCode));
     }
 

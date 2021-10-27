@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import static fi.riista.feature.permit.invoice.CreditorReferenceCalculator.computeReferenceForPermitHarvestInvoice;
+import static fi.riista.feature.permit.invoice.harvest.PermitHarvestInvoiceAccounts.PRIMARY_HARVEST_FEE_ACCOUNT;
 import static fi.riista.feature.permit.invoice.pdf.PermitHarvestInvoicePdfModel.DUE_DATE_PATTERN;
 import static fi.riista.feature.permit.invoice.pdf.PermitHarvestInvoicePdfModel.INVOICE_DATE_PATTERN;
 import static fi.riista.util.DateUtil.today;
@@ -32,18 +33,23 @@ public class PermitHarvestInvoicePdfModelTest {
 
     @Test
     public void testCreateBlankInvoice_fi() {
-        testCreateBlankInvoice(Locales.FI);
+        testCreateBlankInvoice(Locales.FI, PRIMARY_HARVEST_FEE_ACCOUNT);
     }
 
     @Test
     public void testCreateBlankInvoice_sv() {
-        testCreateBlankInvoice(Locales.SV);
+        testCreateBlankInvoice(Locales.SV, PRIMARY_HARVEST_FEE_ACCOUNT);
     }
 
-    private static void testCreateBlankInvoice(final Locale locale) {
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreateBlankInvoice_failsWithOldAccount() {
+        testCreateBlankInvoice(Locales.SV, FinnishBankAccount.MOOSELIKE_HARVEST_FEE_OP_POHJOLA);
+    }
+
+    private static void testCreateBlankInvoice(final Locale locale, final FinnishBankAccount bankAccount) {
         final GameSpecies moose = InvoicePdfTestData.createMoose();
         final PermitDecision decision = InvoicePdfTestData.createDecision(locale);
-        final FinnishBankAccount invoiceAccount = FinnishBankAccount.MOOSELIKE_HARVEST_FEE_OP_POHJOLA;
+        final FinnishBankAccount invoiceAccount = bankAccount;
 
         final PermitHarvestInvoicePdfModel model =
                 PermitHarvestInvoicePdfModel.createBlank(decision, invoiceAccount, moose);
@@ -167,55 +173,62 @@ public class PermitHarvestInvoicePdfModelTest {
 
     @Test
     public void testCreateReceipt_whenAccountStatementForPaytrailPaymentNotYetReceived_fi() {
-        testCreateReceipt(Locales.FI, true, null, 120);
+        testCreateReceipt(Locales.FI, true, null, 120, PRIMARY_HARVEST_FEE_ACCOUNT);
     }
 
     @Test
     public void testCreateReceipt_whenAccountStatementForPaytrailPaymentNotYetReceived_sv() {
-        testCreateReceipt(Locales.SV, true, null, 120);
+        testCreateReceipt(Locales.SV, true, null, 120, PRIMARY_HARVEST_FEE_ACCOUNT);
     }
 
     @Test
     public void testCreateReceipt_whenAccountStatementForPaytrailPaymentReceived() {
-        testCreateReceipt(Locales.FI, true, 120, 120);
+        testCreateReceipt(Locales.FI, true, 120, 120, PRIMARY_HARVEST_FEE_ACCOUNT);
     }
 
     @Test
     public void testCreateReceipt_whenAccountStatementForFullOfflinePaymentReceived() {
-        testCreateReceipt(Locales.FI, false, 120, 120);
+        testCreateReceipt(Locales.FI, false, 120, 120, PRIMARY_HARVEST_FEE_ACCOUNT);
     }
 
     @Test
     public void testCreateReceipt_whenAccountStatementForPartialOfflinePaymentReceived() {
-        testCreateReceipt(Locales.FI, false, 50, 50);
+        testCreateReceipt(Locales.FI, false, 50, 50, PRIMARY_HARVEST_FEE_ACCOUNT);
     }
 
     @Test
     public void testCreateReceipt_whenAccountStatementForOfflinePaymentNotYetReceived() {
-        testCreateReceipt(Locales.FI, false, null, 0);
+        testCreateReceipt(Locales.FI, false, null, 0, PRIMARY_HARVEST_FEE_ACCOUNT);
     }
 
     // When permit holder made offline payment in addition to having done payment via Paytrail.
     @Test
     public void testCreateReceipt_whenPaymentGreaterThanInvoicedAmount() {
-        testCreateReceipt(Locales.FI, true, 240, 240);
+        testCreateReceipt(Locales.FI, true, 240, 240, PRIMARY_HARVEST_FEE_ACCOUNT);
     }
 
     @Test
     public void testCreateReceipt_whenSumOfOfflinePaymentsGreaterThanInvoicedAmount() {
-        testCreateReceipt(Locales.FI, false, 240, 240);
+        testCreateReceipt(Locales.FI, false, 240, 240, PRIMARY_HARVEST_FEE_ACCOUNT);
+    }
+
+    @Test
+    public void testCreateReceipt_whenAccountStatementForPaytrailPaymentReceived_oldAccount() {
+        testCreateReceipt(Locales.FI, true, 120, 120, FinnishBankAccount.MOOSELIKE_HARVEST_FEE_OP_POHJOLA);
     }
 
     private static void testCreateReceipt(final Locale locale,
                                           final boolean paymentMadeViaPaytrail,
                                           final Integer receivedAmount,
-                                          final int expectedResultAmount) {
+                                          final int expectedResultAmount,
+                                          final FinnishBankAccount bankAccount) {
 
         final GameSpecies moose = InvoicePdfTestData.createMoose();
         final PermitDecision decision = InvoicePdfTestData.createDecision(locale);
         final HarvestPermitSpeciesAmount speciesAmount = InvoicePdfTestData.createSpeciesAmount(decision, moose);
 
         final Invoice invoice = InvoicePdfTestData.createHarvestInvoice(speciesAmount);
+        invoice.setIbanAndBic(bankAccount);
         final LocalDate paymentDate = today().minusDays(1);
         invoice.setPaid(paymentDate);
 

@@ -2,7 +2,6 @@ package fi.riista.feature.gamediary.fixture;
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Required;
-import fi.riista.feature.common.entity.RequiredWithinDeerPilot;
 import fi.riista.feature.common.fixture.FixtureMixin;
 import fi.riista.feature.common.support.EntitySupplier;
 import fi.riista.feature.gamediary.DeerHuntingType;
@@ -17,6 +16,7 @@ import fi.riista.feature.gamediary.observation.metadata.ObservationContextSensit
 import fi.riista.feature.gamediary.observation.metadata.ObservationMetadata;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
+import fi.riista.feature.huntingclub.hunting.mobile.MobileGroupObservationDTOBuilderForTests;
 import fi.riista.feature.organization.person.Person;
 
 import javax.annotation.Nonnull;
@@ -121,8 +121,8 @@ public interface ObservationFixtureMixin extends FixtureMixin {
                                                                   @Nonnull final ObservationType observationType,
                                                                   @Nonnull final Required mooseHuntingReq) {
 
-        final RequiredWithinDeerPilot deerHuntingReq =
-                observationCategory.isWithinDeerHunting() ? RequiredWithinDeerPilot.YES : RequiredWithinDeerPilot.NO;
+        final Required deerHuntingReq =
+                observationCategory.isWithinDeerHunting() ? Required.YES : Required.NO;
 
         final EntitySupplier entitySupplier = getEntitySupplier();
 
@@ -264,6 +264,11 @@ public interface ObservationFixtureMixin extends FixtureMixin {
                         metadata, entitySupplier, duplicateMetadataForMostRecentVersionAsSideEffect);
             }
 
+            public MobileGroupObservationMetaFixture.Builder forMobileGroupHunting() {
+                return new MobileGroupObservationMetaFixture.Builder(
+                        metadata, entitySupplier, false);
+            }
+
             @Override
             public ObservationMetaFixture build() {
                 return new ObservationMetaFixture(metadata, entitySupplier);
@@ -350,6 +355,89 @@ public interface ObservationFixtureMixin extends FixtureMixin {
                 }
 
                 return new MobileObservationMetaFixture(metadata, entitySupplier);
+            }
+
+            @Override
+            protected Builder self() {
+                return this;
+            }
+        }
+    }
+
+    class MobileGroupObservationMetaFixture extends MetaFixtureBase {
+
+        private final ObservationMetadata mostRecentMetadata;
+
+        MobileGroupObservationMetaFixture(@Nonnull final ObservationMetadata metadataUnderTest,
+                                          @Nonnull final EntitySupplier entitySupplier) {
+
+            this(metadataUnderTest, metadataUnderTest, entitySupplier);
+        }
+
+        MobileGroupObservationMetaFixture(@Nonnull final ObservationMetadata metadataUnderTest,
+                                          @Nonnull final ObservationMetadata mostRecentMetadata,
+                                          @Nonnull final EntitySupplier entitySupplier) {
+
+            super(metadataUnderTest, entitySupplier);
+            this.mostRecentMetadata = mostRecentMetadata;
+        }
+
+        public ObservationMetadata getMostRecentMetadata() {
+            return mostRecentMetadata;
+        }
+
+        public MobileGroupObservationDTOBuilderForTests dtoBuilder() {
+            return MobileGroupObservationDTOBuilderForTests.create(this);
+        }
+
+        public static class Builder extends MetaFixtureBase.Builder<MobileGroupObservationMetaFixture, Builder> {
+
+            private final boolean duplicateMetadataForMostRecentVersionAsSideEffect;
+            private Required commonPresenseForAllMooselikeAmountsFields;
+
+            public Builder(@Nonnull final ObservationMetadata metadata,
+                           @Nonnull final EntitySupplier es,
+                           final boolean duplicateMetadataForMostRecentVersionAsSideEffect) {
+
+                super(metadata, es, true);
+                this.duplicateMetadataForMostRecentVersionAsSideEffect =
+                        duplicateMetadataForMostRecentVersionAsSideEffect;
+            }
+
+            @Override
+            public Builder withMooselikeAmountFieldsAs(@Nonnull final Required presence) {
+                this.commonPresenseForAllMooselikeAmountsFields = presence;
+                return super.withMooselikeAmountFieldsAs(presence);
+            }
+
+            @Override
+            public MobileGroupObservationMetaFixture build() {
+                if (duplicateMetadataForMostRecentVersionAsSideEffect && !metadata.getSpecVersion().isMostRecent()) {
+                    final ObservationBaseFields mostRecentBaseFields =
+                            entitySupplier.newObservationBaseFields(metadata.getSpecies(), MOST_RECENT);
+                    mostRecentBaseFields.setWithinMooseHunting(metadata.getBaseFields().getWithinMooseHunting());
+
+                    final ObservationContextSensitiveFields mostRecentCtxFields =
+                            entitySupplier.newObservationContextSensitiveFields(
+                                    metadata.getSpecies(),
+                                    metadata.getContextSensitiveFields().getObservationCategory(),
+                                    metadata.getObservationType(),
+                                    MOST_RECENT);
+
+                    metadata.getContextSensitiveFields().copyRequirementsTo(mostRecentCtxFields);
+
+                    // mooselike-calf-amount from old metadata cannot be relied upon as it may not
+                    // be supported by it.
+                    if (commonPresenseForAllMooselikeAmountsFields != null) {
+                        mostRecentCtxFields.setMooselikeCalfAmount(commonPresenseForAllMooselikeAmountsFields);
+                    }
+
+                    final ObservationMetadata mostRecentMetadata =
+                            new ObservationMetadata(mostRecentBaseFields, mostRecentCtxFields);
+                    return new MobileGroupObservationMetaFixture(metadata, mostRecentMetadata, entitySupplier);
+                }
+
+                return new MobileGroupObservationMetaFixture(metadata, entitySupplier);
             }
 
             @Override

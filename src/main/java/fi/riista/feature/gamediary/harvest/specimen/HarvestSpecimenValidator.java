@@ -20,24 +20,20 @@ public class HarvestSpecimenValidator implements HasGameSpeciesCode {
     private final HarvestSpecimenBusinessFields specimenFields;
     private final int gameSpeciesCode;
     private final boolean associatedWithHuntingDay;
-    private final boolean legallyMandatoryFieldsOnly;
 
     private final EnumSet<HarvestSpecimenFieldName> missingFields = EnumSet.noneOf(HarvestSpecimenFieldName.class);
     private final EnumSet<HarvestSpecimenFieldName> illegalFields = EnumSet.noneOf(HarvestSpecimenFieldName.class);
     private final Map<HarvestSpecimenFieldName, String> illegalValues = new HashMap<>();
-    private boolean missingMooseWeight;
 
     public HarvestSpecimenValidator(@Nonnull final RequiredHarvestFields.Specimen requirements,
                                     @Nonnull final HarvestSpecimenBusinessFields specimenFields,
                                     final int gameSpeciesCode,
-                                    final boolean associatedWithHuntingDay,
-                                    final boolean legallyMandatoryFieldsOnly) {
+                                    final boolean associatedWithHuntingDay) {
 
         this.requirements = requirements;
         this.specimenFields = requireNonNull(specimenFields);
         this.gameSpeciesCode = gameSpeciesCode;
         this.associatedWithHuntingDay = associatedWithHuntingDay;
-        this.legallyMandatoryFieldsOnly = legallyMandatoryFieldsOnly;
     }
 
     @Override
@@ -156,12 +152,6 @@ public class HarvestSpecimenValidator implements HasGameSpeciesCode {
         final Double weightEstimated = specimenFields.getWeightEstimated();
         final Double weightMeasured = specimenFields.getWeightMeasured();
 
-        if (!legallyMandatoryFieldsOnly) {
-            if (isMoose() && associatedWithHuntingDay && F.allNull(weightEstimated, weightMeasured)) {
-                missingMooseWeight = true;
-            }
-        }
-
         validateField(HarvestSpecimenFieldName.WEIGHT_MEASURED, requirements.getWeightMeasured(), weightMeasured);
         validateField(HarvestSpecimenFieldName.WEIGHT_ESTIMATED, requirements.getWeightEstimated(), weightEstimated);
 
@@ -259,13 +249,13 @@ public class HarvestSpecimenValidator implements HasGameSpeciesCode {
     }
 
     public boolean hasErrors() {
-        return !illegalFields.isEmpty() || !missingFields.isEmpty() || !illegalValues.isEmpty() || missingMooseWeight;
+        return !illegalFields.isEmpty() || !missingFields.isEmpty() || !illegalValues.isEmpty();
     }
 
     public void throwOnErrors() {
         if (hasErrors()) {
             throw new HarvestSpecimenValidationException(
-                    gameSpeciesCode, missingFields, illegalFields, illegalValues, missingMooseWeight);
+                    gameSpeciesCode, missingFields, illegalFields, illegalValues);
         }
     }
 
@@ -299,9 +289,5 @@ public class HarvestSpecimenValidator implements HasGameSpeciesCode {
 
     public Map<HarvestSpecimenFieldName, String> getIllegalValues() {
         return illegalValues;
-    }
-
-    public boolean isMissingMooseWeight() {
-        return missingMooseWeight;
     }
 }

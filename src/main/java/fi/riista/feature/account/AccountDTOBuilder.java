@@ -141,9 +141,4 @@ public class AccountDTOBuilder {
         dto.setAccountRoles(roles);
         return this;
     }
-
-    public AccountDTOBuilder withDeerPilot(final boolean isDeerPilotUser) {
-        dto.setDeerPilotUser(isDeerPilotUser);
-        return this;
-    }
 }

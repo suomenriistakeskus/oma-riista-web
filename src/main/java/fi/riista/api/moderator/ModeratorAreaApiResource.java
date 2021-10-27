@@ -4,9 +4,11 @@ import fi.riista.feature.moderatorarea.ModeratorAreaCopyFeature;
 import fi.riista.feature.moderatorarea.ModeratorAreaCrudFeature;
 import fi.riista.feature.moderatorarea.ModeratorAreaDTO;
 import fi.riista.feature.moderatorarea.ModeratorAreaExcelFeature;
+import fi.riista.feature.moderatorarea.ModeratorAreaImportDTO;
 import fi.riista.feature.moderatorarea.ModeratorAreaListFeature;
 import fi.riista.feature.moderatorarea.ModeratorAreaListRequestDTO;
 import fi.riista.feature.moderatorarea.ModeratorAreaPrintFeature;
+import fi.riista.feature.moderatorarea.ModeratorAreaZipFeature;
 import fi.riista.feature.moderatorarea.ModeratorAreaZoneFeature;
 import fi.riista.integration.mapexport.MapPdfParameters;
 import fi.riista.integration.mapexport.MapPdfRemoteService;
@@ -34,6 +36,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 
 @RestController
@@ -62,8 +66,10 @@ public class ModeratorAreaApiResource {
     @Resource
     private MapPdfRemoteService mapPdfRemoteService;
 
+    @Resource
+    private ModeratorAreaZipFeature moderatorAreaZipFeature;
+
     @PostMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
-    @CacheControl(policy = CachePolicy.NO_CACHE)
     public Slice<ModeratorAreaDTO> listPage(final @RequestBody @Validated ModeratorAreaListRequestDTO dto) {
         return moderatorAreaListFeature.slice(dto);
     }
@@ -139,4 +145,37 @@ public class ModeratorAreaApiResource {
                 locale));
     }
 
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(value = "/{id:\\d+}/import",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ModeratorAreaDTO importArea(@PathVariable Long id,
+                                       @RequestBody @Validated ModeratorAreaImportDTO dto) {
+        return copyFeature.importArea(id, dto);
+    }
+
+    @GetMapping(value = "/by-external-id/{externalId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    public ModeratorAreaImportDTO findByExternalId(@PathVariable final String externalId) {
+        return copyFeature.findByExternalId(externalId);
+    }
+
+    @PostMapping(value = "/{id:\\d+}/zip", produces = MediaTypeExtras.APPLICATION_ZIP_VALUE)
+    public ResponseEntity<byte[]> exportZip(@PathVariable final long id) throws IOException {
+        return moderatorAreaZipFeature.exportZip(id);
+    }
+
+    @PostMapping(value = "/by-external-ids", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<ModeratorAreaImportDTO> findByExternalIds(@RequestBody final List<String> externalIds) {
+        return copyFeature.findByExternalIds(externalIds);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(value = "/{id:\\d+}/add-areas",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public ModeratorAreaDTO addAreas(@PathVariable Long id,
+                                     @RequestBody @Validated List<ModeratorAreaImportDTO> areaList) {
+        return copyFeature.addAreas(id, areaList);
+    }
 }

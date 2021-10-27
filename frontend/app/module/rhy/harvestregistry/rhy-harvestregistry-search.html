@@ -1,0 +1,146 @@
+<form name="harvestRegistrySearchFilterForm" class="rhy-harvestregistry-search">
+    <div class="alert alert-info">
+        <span class="fa fa-info-circle"></span>
+
+        <div class="alert-content">
+            <p class="alert-title" translate="rhy.harvestregistry.instructionsTitle"></p>
+
+            <p translate="rhy.harvestregistry.instruction"></p>
+        </div>
+    </div>
+
+    <div class="row harvest-registry-search-reason-selection">
+        <div class="col-xs-12">
+            <h4 class="control-label" translate="rhy.harvestregistry.searchReason.title"></h4>
+            <div class="form-group">
+                <label class="col-xs-12">
+                    <input type="radio" ng-model="$ctrl.searchReason" ng-value="'POPULATION'"/>
+                    <span translate="rhy.harvestregistry.searchReason.POPULATION"></span>
+                </label>
+                <label class="col-xs-12">
+                    <input type="radio" ng-model="$ctrl.searchReason" ng-value="'HUNTING_CONTROL'"/>
+                    <span translate="rhy.harvestregistry.searchReason.HUNTING_CONTROL"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="form-group col-xs-3">
+            <label class="control-label" for="selectedSpeciesCode"
+                   translate="harvestRegistry.item.species"></label>
+            <select class="form-control"
+                    name="selectedSpeciesCode"
+                    id="selectedSpeciesCode"
+                    required
+                    ng-model="$ctrl.filters.selectedSpeciesCode"
+                    ng-options="s.code as s.name group by s.category for s in $ctrl.speciesOptions | orderBy:'sortOrder'">
+            </select>
+        </div>
+
+        <div class="form-group col-xs-3" show-errors>
+            <label class="control-label" for="beginDate"
+                   translate="global.beginDate"></label>
+
+            <div class="input-group r-dropdown-align-right"
+                 ng-controller="DatePickerController">
+
+                <input type="text" name="beginDate"
+                       id="beginDate"
+                       class="form-control"
+                       uib-datepicker-popup is-open="isDatePickerOpen"
+                       datepicker-append-to-body="true"
+                       ng-model="$ctrl.filters.beginDate"
+                       ng-change="$ctrl.filtersChanged(harvestRegistrySearchFilterForm)"
+                       required
+                       date-between-min-max
+                       max-date="$ctrl.filters.endDate">
+
+                <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+            </div>
+            <p class="help-block has-error col-xs-12"
+               ng-show="harvestRegistrySearchFilterForm.beginDate.$invalid"
+               ng-messages="harvestRegistrySearchFilterForm.beginDate.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+
+        <div class="form-group col-xs-3" show-errors>
+            <label class="control-label" for="endDate"
+                   translate="global.endDate"></label>
+
+            <div class="input-group r-dropdown-align-right"
+                 ng-controller="DatePickerController">
+
+                <input type="text" name="endDate"
+                       id="endDate"
+                       ng-change="$ctrl.filtersChanged(harvestRegistrySearchFilterForm)"
+                       class="form-control"
+                       uib-datepicker-popup is-open="isDatePickerOpen"
+                       datepicker-append-to-body="true"
+                       ng-model="$ctrl.filters.endDate"
+                       required
+                       date-between-min-max
+                       min-date="$ctrl.filters.beginDate">
+
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+            </div>
+            <p class="help-block has-error col-xs-12"
+               ng-show="harvestRegistrySearchFilterForm.endDate.$invalid"
+               ng-messages="harvestRegistrySearchFilterForm.endDate.$error">
+                <span ng-messages-include="common/errorMessages.html"></span>
+            </p>
+        </div>
+
+        <div class="form-group col-xs-3" ng-if="$ctrl.searchReason === 'HUNTING_CONTROL'">
+            <label class="control-label" for="shooterNumber"
+                   translate="harvestRegistry.item.shooterHunterNumber"></label>
+
+            <input type="text" id="shooterNumber" name="shooterNumber"
+                   class="form-control col-xs-11"
+                   valid-hunter-number
+                   ng-model="$ctrl.filters.shooterHunterNumber">
+        </div>
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-xs-3 ">
+        <button type="button" class="btn btn-default btn-block"
+                ng-disabled="harvestRegistrySearchFilterForm.$invalid"
+                ng-click="$ctrl.exportExcel()">
+            <span class="glyphicon glyphicon-file"></span>
+            <span translate="harvestRegistry.toExcel"></span>
+        </button>
+    </div>
+    <div class="col-xs-3 col-xs-offset-6">
+        <button type="button" class="btn btn-primary btn-block"
+                ng-disabled="harvestRegistrySearchFilterForm.$invalid"
+                ng-click="$ctrl.doSearch(0)">
+            <span class="glyphicon glyphicon-search"></span>
+            <span translate="global.button.search"></span>
+        </button>
+    </div>
+</div>
+
+<hr class="invisible"/>
+<div ng-if="$ctrl.slice">
+
+    <div ng-if="!$ctrl.slice.content.length" class="harvest-registry-empty-result-info well">
+        <span translate="search.formatNoMatches"></span>
+    </div>
+
+    <slice-pager slice="$ctrl.slice" load-page="$ctrl.doSearch(page)"></slice-pager>
+    <jht-harvest-registry-table ng-if="$ctrl.slice.content.length > 0"
+                                items="$ctrl.slice.content" included-fields="$ctrl.includedFields"></jht-harvest-registry-table>
+</div>

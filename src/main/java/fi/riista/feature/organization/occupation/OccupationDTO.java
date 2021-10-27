@@ -76,6 +76,11 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
         dto.setEndDate(occupation.getEndDate());
         dto.setCallOrder(occupation.getCallOrder());
         dto.setBoardRepresentation(occupation.getBoardRepresentation());
+
+        dto.setNameVisibility(occupation.isNameVisibility());
+        dto.setPhoneNumberVisibility(occupation.isPhoneNumberVisibility());
+        dto.setEmailVisibility(occupation.isEmailVisibility());
+
         return dto;
     }
 
@@ -104,6 +109,10 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
 
     @Valid
     private PersonContactInfoDTO substitute;
+
+    private boolean nameVisibility;
+    private boolean phoneNumberVisibility;
+    private boolean emailVisibility;
 
     @Override
     public Long getId() {
@@ -221,5 +230,29 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
 
     public void setSubstitute(final PersonContactInfoDTO substitute) {
         this.substitute = substitute;
+    }
+
+    public boolean isNameVisibility() {
+        return nameVisibility;
+    }
+
+    public void setNameVisibility(final boolean nameVisibility) {
+        this.nameVisibility = nameVisibility;
+    }
+
+    public boolean isPhoneNumberVisibility() {
+        return phoneNumberVisibility;
+    }
+
+    public void setPhoneNumberVisibility(final boolean phoneNumberVisibility) {
+        this.phoneNumberVisibility = phoneNumberVisibility;
+    }
+
+    public boolean isEmailVisibility() {
+        return emailVisibility;
+    }
+
+    public void setEmailVisibility(final boolean emailVisibility) {
+        this.emailVisibility = emailVisibility;
     }
 }

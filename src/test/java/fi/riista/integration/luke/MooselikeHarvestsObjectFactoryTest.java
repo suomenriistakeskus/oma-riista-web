@@ -46,8 +46,8 @@ public class MooselikeHarvestsObjectFactoryTest {
     @Test
     public void testConvertGroupHuntingMethodValues() {
         for (GroupHuntingMethod m : GroupHuntingMethod.values()) {
-            final LEM_HuntingMethod e = MooselikeHarvestsObjectFactory.convertByEnumName(LEM_HuntingMethod.class, m.getExplicitName());
-            assertEquals(m.getExplicitName(), e.name());
+            final LEM_HuntingMethod e = MooselikeHarvestsObjectFactory.convertByEnumName(LEM_HuntingMethod.class, m.name());
+            assertEquals(m.name(), e.name());
         }
     }
 

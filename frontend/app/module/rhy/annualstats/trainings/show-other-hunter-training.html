@@ -12,14 +12,20 @@
                             <span ng-switch-when="true" translate="{{::('rhy.annualStats.trainings.otherHunter.' + type + 'TrainingEvents')}}"></span>
                             <div ng-switch-when="false" computed-marker-title="{{::('rhy.annualStats.trainings.otherHunter.' + type + 'TrainingEvents')}}"></div>
                         </td>
-                        <td num-pieces="::($ctrl.otherHunterTraining[type + 'TrainingEvents'])"></td>
+                        <td class="text-right">
+                            <span ng-bind="$ctrl.getEventCount(type)"></span>&nbsp
+                            <span class="unit-suffix" translate="global.pcs"></span>
+                        </td>
                     </tr>
                     <tr  class="indented-row" ng-repeat-end>
                         <td class="col-xs-8" ng-switch="::($ctrl.otherHunterTraining[type + 'TrainingParticipantsOverridden'])">
                             <span ng-switch-when="true" translate="{{::('rhy.annualStats.trainings.otherHunter.' + type + 'TrainingParticipants')}}"></span>
                             <div ng-switch-when="false" computed-marker-title="{{::('rhy.annualStats.trainings.otherHunter.' + type + 'TrainingParticipants')}}"></div>
                         </td>
-                        <td num-persons="::($ctrl.otherHunterTraining[type + 'TrainingParticipants'])"></td>
+                        <td class="text-right">
+                            <span ng-bind="$ctrl.getParticipantCount(type)"></span>&nbsp
+                            <span class="unit-suffix" translate="global.personUnit"></span>
+                        </td>
                     </tr>
                 </tbody>
             </table>

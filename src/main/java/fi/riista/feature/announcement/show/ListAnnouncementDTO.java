@@ -1,5 +1,6 @@
 package fi.riista.feature.announcement.show;
 
+import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.announcement.AnnouncementSenderType;
@@ -65,6 +66,7 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
     public static ListAnnouncementDTO create(final Announcement announcement,
                                              final List<AnnouncementSubscriber> subscribers,
                                              final Organisation fromOrganisation,
+                                             final Organisation rhyMemberSubscriber,
                                              final SystemUser fromUser) {
         Objects.requireNonNull(announcement, "announcement must not be null");
 
@@ -95,6 +97,8 @@ public class ListAnnouncementDTO extends BaseEntityDTO<Long> {
                     .distinct()
                     .map(OrganisationDTO::create)
                     .collect(toSet()));
+        } else if (rhyMemberSubscriber != null) {
+            dto.setSubscriberOrganisations(ImmutableSet.of(OrganisationDTO.create(rhyMemberSubscriber)));
         }
 
         return dto;

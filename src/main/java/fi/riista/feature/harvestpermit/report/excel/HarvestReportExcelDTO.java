@@ -9,6 +9,7 @@ import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.util.F;
 import fi.riista.util.LocalisedEnum;
 import org.joda.time.LocalDateTime;
 
@@ -108,7 +109,8 @@ public class HarvestReportExcelDTO {
 
         dto.genderName = commaList(sortedSpecimens, HarvestSpecimen::getGender, i18n);
         dto.ageName = commaList(sortedSpecimens, HarvestSpecimen::getAge, i18n);
-        dto.weight = commaList(sortedSpecimens, HarvestSpecimen::getWeight);
+        dto.weightEstimated = commaList(sortedSpecimens, s -> F.firstNonNull(s.getWeightEstimated(), s.getWeight()));
+        dto.weightMeasured = commaList(sortedSpecimens, HarvestSpecimen::getWeightMeasured);
 
         dto.huntingAreaType = i18n.getTranslation(harvest.getHuntingAreaType());
         dto.huntingGroupName = harvest.getHuntingParty();
@@ -255,7 +257,8 @@ public class HarvestReportExcelDTO {
     private String ageName;
 
     // (integer) Weight of the animal, in kg
-    private String weight;
+    private String weightEstimated;
+    private String weightMeasured;
 
     private String huntingMethodName;
 
@@ -406,8 +409,12 @@ public class HarvestReportExcelDTO {
         return ageName;
     }
 
-    public String getWeight() {
-        return weight;
+    public String getWeightEstimated() {
+        return weightEstimated;
+    }
+
+    public String getWeightMeasured() {
+        return weightMeasured;
     }
 
     public String getHuntingMethodName() {

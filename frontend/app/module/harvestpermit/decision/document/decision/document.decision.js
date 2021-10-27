@@ -24,8 +24,8 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                 }
             },
             controllerAs: '$ctrl',
-            controller: function (PermitDecisionUtils, PermitDecisionSection, PermitTypeCode,
-                                  HarvestPermitCategoryType,
+            controller: function (PermitDecision, PermitDecisionUtils, PermitDecisionSection, PermitTypeCode,
+                                  PermitTypes, HarvestPermitCategoryType, RefreshDecisionStateService,
                                   decision, reference, speciesAmounts, derogationLawSections,
                                   protectedAreaTypes, legalFields) {
                 var $ctrl = this;
@@ -45,10 +45,11 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                     $ctrl.incompleteData = $ctrl.decision.decisionType === 'HARVEST_PERMIT' &&
                         $ctrl.decision.grantStatus !== 'REJECTED' &&
                         ($ctrl.showDerogationReasons && someSectionHasNothingSelected() ||
-                        $ctrl.showProtectedAreaTypes && _.isEmpty($ctrl.protectedAreaTypes));
+                            $ctrl.showProtectedAreaTypes && _.isEmpty($ctrl.protectedAreaTypes));
                     $ctrl.showLegalFields = HarvestPermitCategoryType.isDamageBasedDerogation(decision.harvestPermitCategory) ||
                         HarvestPermitCategoryType.isOtherDerogation(decision.harvestPermitCategory);
                     $ctrl.showGrantStatusHeader = !$ctrl.showSpeciesAmounts;
+                    $ctrl.alternatePermitTypeCode = deduceAlternatePermitTypeCode(decision.permitTypeCode);
                 };
 
                 $ctrl.canEditContent = function () {
@@ -67,6 +68,39 @@ angular.module('app.harvestpermit.decision.document.decision', [])
 
                 function getSelectedItems(items) {
                     return _.filter(items, 'checked');
+                }
+
+                $ctrl.canChangePermitTypeCode = function () {
+                    return $ctrl.canEditContent() && !!$ctrl.alternatePermitTypeCode;
+                };
+
+                $ctrl.changePermitTypeCode = function () {
+                    if ($ctrl.canChangePermitTypeCode()) {
+                        var forbiddenMethods = $ctrl.alternatePermitTypeCode === 'FORBIDDEN_METHOD'
+                            ? true
+                            : false;
+
+                        PermitDecision.setForbiddenMethods({id: decision.id, forbiddenMethodsOnly: forbiddenMethods})
+                            .$promise.then(function () {
+                            RefreshDecisionStateService.refresh();
+                            $ctrl.alternatePermitTypeCode = deduceAlternatePermitTypeCode(decision.permitTypeCode);
+                        });
+                    }
+                };
+
+                function deduceAlternatePermitTypeCode(permitTypeCode) {
+                    return permitTypeCode === PermitTypes.FORBIDDEN_METHOD
+                        ? 'ORIGINAL'
+                        : isEligibleForForbiddenMethod(permitTypeCode)
+                            ? 'FORBIDDEN_METHOD'
+                            : null;
+                }
+
+                function isEligibleForForbiddenMethod(permitTypeCode) {
+                    // Permit type can be forbidden methods if permit is applied on hunting season
+                    // for the species, applicable for damage based bird/mammal derogation.
+                    return permitTypeCode === PermitTypes.FOWL_AND_UNPROTECTED_BIRD
+                        || permitTypeCode === PermitTypes.MAMMAL_DAMAGE_BASED;
                 }
             }
         });
@@ -112,6 +146,11 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                 $ctrl.showForbiddenMethods = HarvestPermitCategoryType.isDamageBasedDerogation($ctrl.harvestPermitCategory) ||
                     HarvestPermitCategoryType.isOtherDerogation($ctrl.harvestPermitCategory);
 
+
+            };
+
+            $ctrl.getAmountByCode = function (speciesCode) {
+                return _.filter($ctrl.speciesAmounts, ['gameSpeciesCode', speciesCode]);
             };
 
             $ctrl.editSpeciesAmounts = function (gameSpeciesCode) {
@@ -130,6 +169,24 @@ angular.module('app.harvestpermit.decision.document.decision', [])
                 NotificationService.handleModalPromise(modalPromise).then(function () {
                     RefreshDecisionStateService.refresh();
                 });
+            };
+        }
+    })
+
+    .component('permitDecisionSpeciesAmountDetails', {
+        bindings: {
+            getAmounts: '&'
+        },
+        templateUrl: 'harvestpermit/decision/document/decision/species-amount-details.html',
+        controller: function () {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.amounts = $ctrl.getAmounts();
+                $ctrl.specimenPresent = !_.isEmpty(_.reject($ctrl.amounts, ['specimenAmount', null]));
+                $ctrl.eggPresent = !_.isEmpty(_.reject($ctrl.amounts, ['eggAmount', null]));
+                $ctrl.nestPresent = !_.isEmpty(_.reject($ctrl.amounts, ['nestAmount', null]));
+                $ctrl.constructionPresent = !_.isEmpty(_.reject($ctrl.amounts, ['constructionAmount', null]));
             };
         }
     })

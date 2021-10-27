@@ -7,10 +7,15 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
+import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static fi.riista.feature.organization.jht.training.JHTTraining.TrainingType.LAHI;
 import static fi.riista.feature.organization.jht.training.JHTTrainingSearchDTO.SearchType.HOME_RHY;
@@ -19,7 +24,9 @@ import static fi.riista.feature.organization.jht.training.JHTTrainingSearchDTO.S
 import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.util.DateUtil.today;
+import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -144,6 +151,85 @@ public class JHTTrainingCrudFeatureTest extends EmbeddedDatabaseTest {
 
                 final Page<JHTTrainingDTO> dtos = jhtTrainingCrudFeature.search(searchDTO);
                 assertThat(dtos.getContent(), hasSize(1));
+            });
+        });
+    }
+
+    @Test
+    public void lastTrainingsShowsTheLatestDate() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            final Person trainingPerson = model().newPerson();
+            final OccupationType occupationType = AMPUMAKOKEEN_VASTAANOTTAJA;
+
+            final JHTTraining last = model().newJHTTraining(occupationType, trainingPerson);
+            last.setTrainingDate(today().minusDays(1));
+            final JHTTraining first = model().newJHTTraining(occupationType, trainingPerson);
+            first.setTrainingDate(last.getTrainingDate().minusDays(1)); // Before last training
+            final JHTTraining other = model().newJHTTraining(METSASTYKSENVALVOJA, trainingPerson);
+            other.setTrainingDate(last.getTrainingDate().plusDays(1)); // After last training
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+                final List<Long> personIds = Arrays.asList(trainingPerson.getId());
+
+                final Map<Long, LocalDate> trainingDates = jhtTrainingCrudFeature.lastTrainings(personIds, occupationType);
+
+                assertThat(trainingDates.size(), equalTo(1));
+                assertThat(trainingDates.get(trainingPerson.getId()), equalTo(last.getTrainingDate()));
+            });
+        });
+    }
+
+    @Test
+    public void lastTrainingsShowsCorrectTrainingType() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            final Person trainingPerson = model().newPerson();
+            model().newJHTTraining(AMPUMAKOKEEN_VASTAANOTTAJA, trainingPerson);
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+                final List<Long> personIds = Arrays.asList(trainingPerson.getId());
+                final Map<Long, LocalDate> trainingDates = jhtTrainingCrudFeature.lastTrainings(personIds, METSASTYKSENVALVOJA);
+                assertThat(trainingDates.size(), equalTo(0));
+            });
+        });
+    }
+
+    @Test
+    public void lastTrainingsShowsCorrectPerson() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            final Person nonTrainingPerson = model().newPerson();
+            model().newJHTTraining(AMPUMAKOKEEN_VASTAANOTTAJA, model().newPerson());
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+                final List<Long> personIds = Arrays.asList(nonTrainingPerson.getId());
+                final Map<Long, LocalDate> trainingDates = jhtTrainingCrudFeature.lastTrainings(personIds, AMPUMAKOKEEN_VASTAANOTTAJA);
+                assertThat(trainingDates.size(), equalTo(0));
+            });
+        });
+    }
+
+    @Test
+    public void coordinatorCanSearchLastTrainings() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+                jhtTrainingCrudFeature.lastTrainings(emptyList(), AMPUMAKOKEEN_VASTAANOTTAJA);
+            });
+        });
+    }
+
+    @Test
+    public void moderatorCanSearchLastTrainings() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            onSavedAndAuthenticated(createNewModerator(), () -> {
+                jhtTrainingCrudFeature.lastTrainings(emptyList(), AMPUMAKOKEEN_VASTAANOTTAJA);
+            });
+        });
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void userCanNotSearchLastTrainings() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            onSavedAndAuthenticated(createNewUser(), () -> {
+                jhtTrainingCrudFeature.lastTrainings(emptyList(), AMPUMAKOKEEN_VASTAANOTTAJA);
             });
         });
     }

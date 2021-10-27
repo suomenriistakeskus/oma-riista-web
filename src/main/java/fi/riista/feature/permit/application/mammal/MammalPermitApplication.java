@@ -4,6 +4,7 @@ import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HasParentApplication;
 import fi.riista.feature.permit.application.derogation.area.DerogationPermitApplicationAreaInfo;
 import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -32,7 +33,7 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(AccessType.FIELD)
-public class MammalPermitApplication extends LifecycleEntity<Long> implements DerogationPermitApplicationAreaInfo {
+public class MammalPermitApplication extends HasParentApplication implements DerogationPermitApplicationAreaInfo {
 
     public enum ExtendedPeriodGrounds {
 
@@ -56,11 +57,6 @@ public class MammalPermitApplication extends LifecycleEntity<Long> implements De
     }
 
     private Long id;
-
-    @NotNull
-    @JoinColumn(unique = true, nullable = false)
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    private HarvestPermitApplication harvestPermitApplication;
 
     @Column
     @Min(0)
@@ -110,14 +106,6 @@ public class MammalPermitApplication extends LifecycleEntity<Long> implements De
     @Override
     public void setId(final Long id) {
         this.id = id;
-    }
-
-    public HarvestPermitApplication getHarvestPermitApplication() {
-        return harvestPermitApplication;
-    }
-
-    public void setHarvestPermitApplication(final HarvestPermitApplication harvestPermitApplication) {
-        this.harvestPermitApplication = harvestPermitApplication;
     }
 
     @Override

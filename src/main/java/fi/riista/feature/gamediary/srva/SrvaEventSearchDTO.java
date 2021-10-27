@@ -4,8 +4,15 @@ import fi.riista.feature.common.entity.HasBeginAndEndDate;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
+import java.util.EnumSet;
 import java.util.List;
+
+import static fi.riista.feature.gamediary.srva.SrvaEventNameEnum.ACCIDENT;
+import static fi.riista.feature.gamediary.srva.SrvaEventTypeEnum.OTHER;
+import static fi.riista.feature.gamediary.srva.SrvaEventTypeEnum.RAILWAY_ACCIDENT;
+import static fi.riista.feature.gamediary.srva.SrvaEventTypeEnum.TRAFFIC_ACCIDENT;
 
 public class SrvaEventSearchDTO implements HasBeginAndEndDate {
 
@@ -28,6 +35,8 @@ public class SrvaEventSearchDTO implements HasBeginAndEndDate {
     @NotNull
     private List<SrvaEventNameEnum> eventNames;
 
+    private List<SrvaEventTypeEnum> eventTypes;
+
     private Integer gameSpeciesCode;
 
     // RhyId based on selected role in UI. If selected role is for example SRVA-contact person of
@@ -36,6 +45,23 @@ public class SrvaEventSearchDTO implements HasBeginAndEndDate {
 
     // set to true from views only for moderator
     private boolean moderatorView;
+
+    @AssertTrue
+    public boolean isAccidentCriteriaValid() {
+        if (eventNames.contains(ACCIDENT)) {
+            return eventTypes.containsAll(EnumSet.of(TRAFFIC_ACCIDENT, RAILWAY_ACCIDENT, OTHER));
+        }
+
+        return true;
+    }
+
+    // Only accident subtypes allowed in search
+    @AssertTrue
+    public boolean isEventTypesValid() {
+        final EnumSet<SrvaEventTypeEnum> unSupportedTypes =
+                EnumSet.complementOf(EnumSet.of(TRAFFIC_ACCIDENT, RAILWAY_ACCIDENT, OTHER));
+        return !eventTypes.contains(unSupportedTypes);
+    }
 
     @Override
     public LocalDate getBeginDate() {
@@ -93,6 +119,14 @@ public class SrvaEventSearchDTO implements HasBeginAndEndDate {
 
     public void setEventNames(List<SrvaEventNameEnum> eventNames) {
         this.eventNames = eventNames;
+    }
+
+    public List<SrvaEventTypeEnum> getEventTypes() {
+        return eventTypes;
+    }
+
+    public void setEventTypes(final List<SrvaEventTypeEnum> eventTypes) {
+        this.eventTypes = eventTypes;
     }
 
     public Integer getGameSpeciesCode() {

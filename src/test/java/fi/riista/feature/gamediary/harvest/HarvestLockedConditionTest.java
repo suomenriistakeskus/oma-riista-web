@@ -4,25 +4,37 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
+import fi.riista.feature.huntingclub.hunting.ClubHuntingStatusService;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.MockTimeProvider;
 import fi.riista.util.NumberGenerator;
 import fi.riista.util.NumberSequence;
 import fi.riista.util.ValueGeneratorMixin;
+import org.joda.time.LocalDate;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
+import javax.annotation.Resource;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Predicates.alwaysFalse;
 import static com.google.common.base.Predicates.alwaysTrue;
+import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Theories.class)
-public class HarvestLockedConditionTest implements ValueGeneratorMixin {
+public class HarvestLockedConditionTest extends EmbeddedDatabaseTest implements ValueGeneratorMixin, HuntingGroupFixtureMixin {
+
+    @Resource
+    private ClubHuntingStatusService clubHuntingStatusService;
 
     @Override
     public NumberGenerator getNumberGenerator() {
@@ -37,6 +49,11 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin {
         activePerson = new Person();
         activePerson.setId(nextLong());
         contactPersonTester = HarvestLockedCondition.createContactPersonTester(activePerson);
+    }
+
+    @After
+    public void tearDown() {
+        MockTimeProvider.resetMock();
     }
 
     private void assertMobileCanEdit(final boolean expectedResult,
@@ -104,10 +121,55 @@ public class HarvestLockedConditionTest implements ValueGeneratorMixin {
         assertFalse(HarvestLockedCondition
                 .canEditFromMobile(activePerson, harvest, specVersion, alwaysTrue(), alwaysFalse()));
 
-        assertFalse(HarvestLockedCondition
-                .canEditFromMobile(activePerson, harvest, specVersion, alwaysFalse(), alwaysFalse()));
+        assertTrue(HarvestLockedCondition
+                .canEditFromMobile(activePerson, harvest, specVersion, alwaysFalse(), contactPersonTester));
 
         assertModeratorCanEdit(true, harvest);
+    }
+
+    @Theory
+    public void testHarvest_withHuntingDayMobile(final HarvestSpecVersion specVersion) {
+        final LocalDate today = new LocalDate(2021, 3, 31);
+        MockTimeProvider.mockTime(today.toDate().getTime());
+
+        withMooseHuntingGroupFixture(f -> {
+
+            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, today());
+            final Person hunter = f.groupMember;
+
+            final Harvest harvest = model().newHarvest();
+            harvest.setAuthor(hunter);
+            harvest.setActor(hunter);
+            harvest.updateHuntingDayOfGroup(huntingDay, null);
+
+            onSavedAndAuthenticated(createUser(hunter), () -> {
+                runInTransaction(() -> {
+                    Predicate<Harvest> groupHuntingLockedTester = h -> clubHuntingStatusService.isHarvestLocked(h);
+
+                    // Hunter cannot edit harvest after linked to hunting day
+                    assertFalse(HarvestLockedCondition.canEditFromMobile(
+                            hunter,
+                            harvest,
+                            specVersion,
+                            groupHuntingLockedTester,
+                            HarvestLockedCondition.createContactPersonTester(hunter)));
+                });
+            });
+
+            onSavedAndAuthenticated(createUser(f.groupLeader), () -> {
+                runInTransaction(() -> {
+                    Predicate<Harvest> groupHuntingLockedTester = h -> clubHuntingStatusService.isHarvestLocked(h);
+
+                    // Group leader can edit harvest after linked to hunting day
+                    assertTrue(HarvestLockedCondition.canEditFromMobile(
+                            f.groupLeader,
+                            harvest,
+                            specVersion,
+                            groupHuntingLockedTester,
+                            HarvestLockedCondition.createContactPersonTester(f.groupLeader)));
+                });
+            });
+        });
     }
 
     // SEASON

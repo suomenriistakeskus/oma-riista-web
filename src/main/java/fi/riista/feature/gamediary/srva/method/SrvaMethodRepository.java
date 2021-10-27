@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface SrvaMethodRepository extends BaseRepository<SrvaMethod, Long> {
     List<SrvaMethod> findByEvent(SrvaEvent event);
+    List<SrvaMethod> findByEventAndIsChecked(SrvaEvent event, boolean isChecked);
 }

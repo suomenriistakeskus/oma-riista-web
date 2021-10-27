@@ -1,9 +1,9 @@
 package fi.riista.feature.permit.application.deportation;
 
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HasParentApplication;
 import fi.riista.feature.permit.application.derogation.area.DerogationPermitApplicationAreaInfo;
 import fi.riista.feature.permit.application.derogation.forbidden.DerogationPermitApplicationForbiddenMethods;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -14,31 +14,22 @@ import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
 @Entity
 @Access(AccessType.FIELD)
-public class DeportationPermitApplication extends LifecycleEntity<Long> implements DerogationPermitApplicationAreaInfo {
+public class DeportationPermitApplication extends HasParentApplication implements DerogationPermitApplicationAreaInfo {
 
     public static final String ID_COLUMN_NAME = "deportation_permit_application_id";
 
     private Long id;
-
-    @NotNull
-    @JoinColumn(unique = true, nullable = false)
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    private HarvestPermitApplication harvestPermitApplication;
 
     @Column
     @Min(0)
@@ -60,7 +51,7 @@ public class DeportationPermitApplication extends LifecycleEntity<Long> implemen
         requireNonNull(application);
         checkArgument(application.getHarvestPermitCategory() == HarvestPermitCategory.DEPORTATION,
                 "Application category must be deportation");
-        this.harvestPermitApplication = application;
+        setHarvestPermitApplication(application);
     }
 
     public DeportationPermitApplication() {}
@@ -79,10 +70,6 @@ public class DeportationPermitApplication extends LifecycleEntity<Long> implemen
     @Override
     public void setId(final Long id) {
         this.id = id;
-    }
-
-    public HarvestPermitApplication getHarvestPermitApplication() {
-        return harvestPermitApplication;
     }
 
     @Override

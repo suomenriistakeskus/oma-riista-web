@@ -91,19 +91,10 @@ public class HarvestRegistryHarvest2020MapperTest implements DefaultEntitySuppli
         municipality = new Municipality("123", "fi", "sv");
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testTooOldHarvest() {
-        createHarvest(OFFICIAL_CODE_BEAR);
-        harvest.setPointOfTime(new LocalDate(2020, 7, 31).toDateTime(
-                new LocalTime(12, 0, 0), Constants.DEFAULT_TIMEZONE));
-        transform();
-        fail("Should throw an exception");
-    }
-
     @Test
     public void testDoesNotTransformOtherSpecies() {
         createHarvest(OFFICIAL_CODE_CANADIAN_BEAVER);
-        final List<HarvestRegistryItem> itemList = HarvestRegistryHarvest2020Mapper.transform(
+        final List<HarvestRegistryItem> itemList = HarvestRegistryHarvest2020Mapper.INSTANCE.transform(
                 harvest,
                 shooter,
                 ImmutableSet.of(specimen),
@@ -206,7 +197,7 @@ public class HarvestRegistryHarvest2020MapperTest implements DefaultEntitySuppli
         harvest.setAmount(5);
         final HarvestSpecimen specimen1 = model.newHarvestSpecimen(harvest, ADULT_MALE);
         final HarvestSpecimen specimen2 = model.newHarvestSpecimen(harvest, YOUNG_FEMALE);
-        final List<HarvestRegistryItem> items = HarvestRegistryHarvest2020Mapper.transform(
+        final List<HarvestRegistryItem> items = HarvestRegistryHarvest2020Mapper.INSTANCE.transform(
                 harvest,
                 shooter,
                 ImmutableSet.of(specimen1, specimen2),
@@ -239,7 +230,7 @@ public class HarvestRegistryHarvest2020MapperTest implements DefaultEntitySuppli
     }
 
     private void transform() {
-        final List<HarvestRegistryItem> itemList = HarvestRegistryHarvest2020Mapper.transform(
+        final List<HarvestRegistryItem> itemList = HarvestRegistryHarvest2020Mapper.INSTANCE.transform(
                 harvest,
                 shooter,
                 ImmutableSet.of(specimen),

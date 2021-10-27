@@ -29,12 +29,18 @@ INSERT INTO occupation (
   occupation_type,
   call_order,
   organisation_id,
-  person_id
+  person_id,
+  name_visibility,
+  phone_number_visibility,
+  email_visibility
 ) SELECT
     'RYHMAN_METSASTYKSENJOHTAJA',
     1,
     clubgroup.organisation_id,
-    club_occ.person_id
+    club_occ.person_id,
+    true,
+    true,
+    true
   FROM
     organisation clubgroup
     JOIN occupation club_occ ON (club_occ.organisation_id = clubgroup.parent_organisation_id)

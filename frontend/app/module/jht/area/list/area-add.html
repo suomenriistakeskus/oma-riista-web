@@ -1,0 +1,82 @@
+<form name="addAreaForm" role="form"
+      class="form form-horizontal" autocomplete="off"
+      ng-submit="$ctrl.doAdd()">
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="moderator.area.addArea.modalTitle"></h3>
+    </div>
+
+    <div class="modal-body">
+        <p translate="moderator.area.addArea.instructions"></p>
+
+        <div ng-switch="!!$ctrl.areaList.length">
+            <div ng-switch-when="false">
+                <div class="form-group" show-errors="{ trigger: 'keypress' }">
+                    <label for="externalAreaIdList" class="control-label col-xs-4">
+                        <span translate="moderator.area.addArea.areaIds"></span>
+                    </label>
+                    <div class="col-xs-8">
+                        <textarea type="text" class="form-control" name="externalAreaIdList" id="externalAreaIdList"
+                                  rows="6"
+                                  ng-model="$ctrl.externalAreaIdList" minlength="8" required></textarea>
+
+                        <p class="help-block has-error"
+                           ng-show="addAreaForm.externalId.$invalid"
+                           ng-messages="addAreaForm.externalId.$error">
+                            <span ng-messages-include="common/errorMessages.html"></span>
+                        </p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary"
+                        ng-click="$ctrl.findAreas()"
+                        ng-disabled="addAreaForm.$invalid"
+                        translate="moderator.area.addArea.search"></button>
+            </div>
+
+            <div ng-switch-when="true">
+                <div class="r-jht-external-area-list">
+                    <div class="r-jht-external-area-invalid" ng-if="$ctrl.invalidNumberCount > 0">
+                        <span class="text-danger">
+                            {{'moderator.area.addArea.invalidNumberCount' | translate:{count:$ctrl.invalidNumberCount} }}
+                        </span>
+                    </div>
+                    <table>
+                        <tbody>
+                        <tr ng-repeat="area in $ctrl.areaList track by area.key">
+                            <td class="col-xs-3">
+                                <span ng-if="area.areaId" class="fa fa-check text-primary"></span>
+                                <span ng-if="!area.areaId" class="fa fa-remove text-danger"></span>
+                                <span ng-class="area.areaId ? 'text' : 'text-danger'" ng-bind="area.externalId"></span>
+                            </td>
+                            <td class="col-xs-4">
+                                <span ng-bind="area | rI18nNameFilter"></span>
+                            </td>
+                            <td class="col-xs-3">
+                                <span ng-if="area.areaId" translate="moderator.area.type.{{area.type}}"></span>
+                            </td>
+                            <td class="col-xs-2">
+                                <button type="button" class="btn btn-danger" ng-click="$ctrl.remove(area.key)">
+                                    <span translate="global.button.delete"></span>
+                                </button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <hr>
+                <button type="button" class="btn btn-primary"
+                        ng-click="$ctrl.edit()"
+                        translate="moderator.area.addArea.clearNumbers"></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.close()"
+                translate="global.button.close"></button>
+        <button type="submit" class="btn btn-primary"
+                translate="moderator.area.addArea.add"
+                ng-disabled="$ctrl.areaList.length === 0 || $ctrl.invalidNumberCount > 0"></button>
+    </div>
+</form>

@@ -156,7 +156,7 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
                 huntingYear, gameSpeciesCode, null, reportingType, isClientSupportFor2020Fields);
 
         final HarvestSpecimenValidator builder = new HarvestSpecimenValidator(
-                specimenRequirements, specimen, gameSpeciesCode, linkedToHuntingDay, false);
+                specimenRequirements, specimen, gameSpeciesCode, linkedToHuntingDay);
 
         consumer.accept(builder);
         builder.throwOnErrors();
@@ -208,10 +208,6 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
 
     @Test
     public void testValidateWeight_whenEstimatedAndMeasuredWeightAreMissing() {
-        if (isMoose() && linkedToHuntingDay) {
-            thrown.expectMessage("missing both estimated and measured weight");
-        }
-
         test(HarvestSpecimenValidator::validateMooselikeWeight);
     }
 
@@ -274,10 +270,6 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
 
     @Test
     public void testValidateFitnessClass_whenMissing() {
-        if (isMoose() && linkedToHuntingDay) {
-            expectMissing(HarvestSpecimenFieldName.FITNESS_CLASS);
-        }
-
         test(HarvestSpecimenValidator::validateFitnessClass);
     }
 
@@ -320,10 +312,6 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
 
     @Test
     public void testValidateAntlersType_whenMissing() {
-        if (isMoose() && specimenType.isAdultMaleAndAntlersPresent() && linkedToHuntingDay) {
-            expectMissing(HarvestSpecimenFieldName.ANTLERS_TYPE);
-        }
-
         test(HarvestSpecimenValidator::validateAntlersType);
     }
 
@@ -342,10 +330,6 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
 
     @Test
     public void testValidateAntlersWidth_whenMissing() {
-        if (isMoose() && specimenType.isAdultMaleAndAntlersPresent() && linkedToHuntingDay) {
-            expectMissing(HarvestSpecimenFieldName.ANTLERS_WIDTH);
-        }
-
         test(HarvestSpecimenValidator::validateAntlersWidth);
     }
 
@@ -364,10 +348,6 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
 
     @Test
     public void testValidateAntlerPointsLeft_whenMissing() {
-        if (isMoose() && specimenType.isAdultMaleAndAntlersPresent() && linkedToHuntingDay) {
-            expectMissing(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT);
-        }
-
         test(HarvestSpecimenValidator::validateAntlerPointsLeft);
     }
 
@@ -386,10 +366,6 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
 
     @Test
     public void testValidateAntlerPointsRight_whenMissing() {
-        if (isMoose() && specimenType.isAdultMaleAndAntlersPresent() && linkedToHuntingDay) {
-            expectMissing(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT);
-        }
-
         test(HarvestSpecimenValidator::validateAntlerPointsRight);
     }
 
@@ -409,15 +385,6 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
 
     @Test
     public void testValidateAntlersGirth_whenMissing() {
-        if (isClientSupportFor2020Fields
-                && huntingYear >= 2020
-                && isMoose()
-                && specimenType.isAdultMaleAndAntlersPresent()
-                && linkedToHuntingDay) {
-
-            expectMissing(HarvestSpecimenFieldName.ANTLERS_GIRTH);
-        }
-
         test(HarvestSpecimenValidator::validateAntlersGirth);
     }
 
@@ -490,10 +457,6 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
 
     @Test
     public void testValidateAlone_whenMissing() {
-        if (isMoose() && specimenType.isYoung() && linkedToHuntingDay) {
-            expectMissing(HarvestSpecimenFieldName.ALONE);
-        }
-
         test(HarvestSpecimenValidator::validateAlone);
     }
 

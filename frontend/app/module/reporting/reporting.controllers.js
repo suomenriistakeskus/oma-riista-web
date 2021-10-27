@@ -27,6 +27,8 @@ angular.module('app.reporting.controllers', [])
                 templateUrl: 'reporting/announcements.html',
                 controller: function () {
                     this.rk = {
+                        nameFI: "Suomen riistakeskus",
+                        nameSV: "Finlands viltcentral",
                         organisationType: 'RK',
                         officialCode: '850'
                     };

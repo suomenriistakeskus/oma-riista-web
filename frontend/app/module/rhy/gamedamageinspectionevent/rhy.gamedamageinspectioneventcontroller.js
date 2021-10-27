@@ -143,6 +143,10 @@
                         controllerAs: '$ctrl'
                     }).result.then($ctrl.onSuccess, $ctrl.onFailure);
                 };
+
+                $ctrl.getInspectorName = function (inspector) {
+                    return inspector.firstName + " " + inspector.lastName;
+                };
         })
         .controller('GameDamageInspectionEventFormController',
             function ($scope, $uibModalInstance, Helpers,
@@ -163,6 +167,9 @@
                     $ctrl.mooselike = Species.getMooselikeSpecies();
                     if ($ctrl.event.id) {
                         $ctrl.gameDamageType = GameDamageType.getGameDamageType($ctrl.event);
+                        $ctrl.event.gameDamageInspectionKmExpenses =  $ctrl.event.gameDamageInspectionKmExpenses || [{expenseType: null}];
+
+                        $ctrl.onDateChange();
 
                         $ctrl.onGameDamageTypeChanged();
 
@@ -171,7 +178,8 @@
                     } else {
                         $ctrl.speciesList = [];
                         $ctrl.event = {
-                            gameDamageInspectionKmExpenses: [{expenseType: null}]
+                            gameDamageInspectionKmExpenses: [{expenseType: null}],
+                            expensesIncluded: true
                         };
 
                         $ctrl.duration = 0;
@@ -348,6 +356,16 @@
                 };
 
                 $ctrl.save = function () {
+                    if (!$ctrl.event.expensesIncluded) {
+                        $ctrl.event.dailyAllowance = null;
+                        $ctrl.event.hourlyExpensesUnit = null;
+                        $ctrl.event.gameDamageInspectionKmExpenses = null;
+                    }
+
+                    if ($ctrl.event.inspector) {
+                        $ctrl.event.inspectorName = null;
+                    }
+
                     var saveOrUpdate = !$ctrl.event.id ? GameDamageInspectionEvents.save : GameDamageInspectionEvents.update;
                     saveOrUpdate({rhyId: $ctrl.rhy.id, id: $ctrl.event.id}, $ctrl.event).$promise
                         .then(function() {
@@ -365,6 +383,28 @@
                         $ctrl.inRhyArea = rhyData.data.id === $ctrl.rhy.id;
                     });
                 });
+
+                $ctrl.onDateChange = function () {
+                    if (!$ctrl.event.date) {
+                        $ctrl.event.inspector = null;
+                        return;
+                    }
+
+                    GameDamageInspectionEvents.listAvailableInspectors({rhyId: $ctrl.rhy.id, date: $ctrl.event.date}).$promise
+                        .then(function (inspectors) {
+                            $ctrl.availableInspectors = inspectors;
+
+                            if ($ctrl.event.inspector) {
+                                $ctrl.event.inspector = _.find($ctrl.availableInspectors, function (inspector) {
+                                    return $ctrl.event.inspector.id === inspector.id;
+                                });
+                            }
+                        });
+                };
+
+                $ctrl.getInspectorName = function (person) {
+                    return person.firstName + " " + person.lastName;
+                };
         })
         .controller('GameDamageInspectionEventRemoveController',
             function (event, $uibModalInstance, GameDamageInspectionEvents) {
@@ -412,6 +452,12 @@
                     method: 'DELETE',
                     params: {id: '@id'},
                     url: 'api/v1/riistanhoitoyhdistys/gamedamageinspectionevents/:id'
+                },
+                'listAvailableInspectors': {
+                    method: 'GET',
+                    params: {rhyId: '@rhyId', date: '@date'},
+                    url: 'api/v1/riistanhoitoyhdistys/:rhyId/gamedamageinspectionevents/inspectors/:date',
+                    isArray: true
                 }
             });
         })

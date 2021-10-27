@@ -109,17 +109,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static fi.riista.feature.common.decision.GrantStatus.UNCHANGED;
-import static fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment.Type.PROTECTED_AREA;
+import static fi.riista.feature.permit.PermitTypeCode.FORBIDDEN_METHODS;
+import static fi.riista.feature.permit.PermitTypeCode.GAME_MANAGEMENT;
+import static fi.riista.feature.permit.PermitTypeCode.IMPORTING;
+import static fi.riista.feature.permit.PermitTypeCode.NEST_REMOVAL_BASED;
 import static fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment.Type.OTHER;
+import static fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment.Type.PROTECTED_AREA;
 import static fi.riista.feature.permit.application.dogevent.DogEventType.DOG_TEST;
 import static fi.riista.feature.permit.application.dogevent.DogEventType.DOG_TRAINING;
 import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41A;
 import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41B;
 import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41C;
 import static fi.riista.feature.permit.decision.document.PermitDecisionTextUtils.escape;
-import static fi.riista.feature.permit.PermitTypeCode.GAME_MANAGEMENT;
-import static fi.riista.feature.permit.PermitTypeCode.IMPORTING;
-import static fi.riista.feature.permit.PermitTypeCode.NEST_REMOVAL_BASED;
 import static fi.riista.util.DateUtil.DATE_FORMAT_FINNISH;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
@@ -311,6 +312,7 @@ public class PermitDecisionTextService {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
                 return createCarnivoreApplicationSummaryGenerator(application, locale).generateApplicationMain();
             case MAMMAL:
                 return createMammalApplicationSummaryGenerator(application, locale).generateApplicationMain();
@@ -561,6 +563,7 @@ public class PermitDecisionTextService {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
                 return createCarnivoreApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
             case MAMMAL:
                 return createMammalApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
@@ -628,6 +631,7 @@ public class PermitDecisionTextService {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
                 return COMPARATOR_CARNIVORE;
             case NEST_REMOVAL:
                 return COMPARATOR_NEST_REMOVAL;
@@ -712,9 +716,6 @@ public class PermitDecisionTextService {
                 if (type == WeaponTransportationVehicleType.MUU) {
                     sb.append(" - ").append(escape(vehicle.getDescription()));
                 }
-                if (!StringUtils.isBlank(vehicle.getRegisterNumber())) {
-                    sb.append(" ").append(escape(vehicle.getRegisterNumber()));
-                }
                 sb.append("\n");
             });
 
@@ -731,12 +732,6 @@ public class PermitDecisionTextService {
                 sb.append("- ").append(localiser.getTranslation(weaponType));
                 if (weaponType == TransportedWeaponType.MUU) {
                     sb.append(" - ").append(escape(transportedWeapon.getDescription()));
-                }
-                sb.append(": ").append(transportedWeapon.getAmount())
-                        .append(" ").append(i18nKey(decision, "pdf.application.pcs"));
-                if (!StringUtils.isBlank(transportedWeapon.getCaliber())) {
-                    sb.append(", ").append(i18n(decision, "Kaliiberi: ", "Kaliber: "))
-                            .append(escape(transportedWeapon.getCaliber()));
                 }
                 sb.append("\n");
             });
@@ -842,8 +837,15 @@ public class PermitDecisionTextService {
         sb.append("\n\n");
         sb.append(i18n(decision, "Poikkeusedellytys", "Förutsättning för undantag"));
         sb.append("\n");
+
         if (decision.getPermitTypeCode().equals(NEST_REMOVAL_BASED)) {
             sb.append(i18n(decision, "Metsästyslain 41 d§.", "Jaktlagen 41 d §."));
+            sb.append("\n");
+        }
+
+        if (decision.getPermitTypeCode().equals(FORBIDDEN_METHODS)) {
+            sb.append("\n");
+            sb.append(i18n(decision, "Metsästyslain 41 §:n 3 momentti.", "Jaktlagen 41 § 3 moment."));
             sb.append("\n");
         }
 
@@ -1177,6 +1179,7 @@ public class PermitDecisionTextService {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
             case MAMMAL:
             case NEST_REMOVAL:
             case DEPORTATION:
@@ -1206,7 +1209,7 @@ public class PermitDecisionTextService {
             case IMPORTING: {
                 return i18n(decision,
                         "Suomen riistakeskus on päättänyt myöntää luvan maahantuontiin seuraavasti:",
-                        "Suomen riistakeskus on päättänyt myöntää luvan maahantuontiin seuraavasti:");
+                        "Finlands viltcentral har beslutat att bevilja tillstånd för import enligt följande:");
             }
             default:
                 throw new IllegalArgumentException("Unsupported application category:" +

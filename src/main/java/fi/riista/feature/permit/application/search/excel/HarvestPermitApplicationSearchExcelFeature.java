@@ -10,7 +10,6 @@ import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
-import fi.riista.feature.gamediary.GameSpeciesRepository;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.organization.QRiistakeskuksenAlue;
 import fi.riista.feature.organization.person.QPerson;
@@ -76,9 +75,6 @@ public class HarvestPermitApplicationSearchExcelFeature {
     private HarvestPermitApplicationRepository harvestPermitApplicationRepository;
 
     @Resource
-    private GameSpeciesRepository gameSpeciesRepository;
-
-    @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
 
     @Resource
@@ -137,7 +133,8 @@ public class HarvestPermitApplicationSearchExcelFeature {
 
             // Fields from decision
             Optional.ofNullable(decisionMap.get(application.getId())).ifPresent(decision -> {
-                builder.withDecisionStatus(decision.getStatus())
+                builder.withPermitTypeCode(decision.getPermitTypeCode())
+                        .withDecisionStatus(decision.getStatus())
                         .withDecisionPublishDate(DateUtil.toLocalDateTimeNullSafe(decision.getPublishDate()))
                         .withDecisionType(decision.getDecisionType())
                         .withGrantStatus(decision.getGrantStatus())

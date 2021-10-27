@@ -81,10 +81,6 @@ public class WeaponTransportationPermitApplicationValidator {
     }
 
     private static void assertAreaInformationValid(final WeaponTransportationPermitApplication transportApplication) {
-        if (transportApplication.getAreaSize() == null || transportApplication.getAreaSize() <= 0) {
-            failValidation("Area size must be given as positive integer");
-        }
-
         if (transportApplication.getGeoLocation() == null) {
             failValidation("Geolocation missing");
         }

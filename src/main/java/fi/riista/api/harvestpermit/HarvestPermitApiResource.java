@@ -16,6 +16,9 @@ import fi.riista.feature.harvestpermit.list.HarvestPermitListFeature;
 import fi.riista.feature.harvestpermit.list.ListHarvestPermitDTO;
 import fi.riista.feature.harvestpermit.report.excel.HarvestReportExcelDTO;
 import fi.riista.feature.harvestpermit.report.excel.HarvestReportListExcelView;
+import fi.riista.feature.harvestpermit.report.jhtarchive.JhtArchiveExcelDTO;
+import fi.riista.feature.harvestpermit.report.jhtarchive.JhtArchiveExcelView;
+import fi.riista.feature.harvestpermit.report.jhtarchive.JhtArchiveFeature;
 import fi.riista.feature.harvestpermit.report.search.HarvestReportSearchFeature;
 import fi.riista.feature.harvestpermit.search.HarvestPermitExistsDTO;
 import fi.riista.feature.harvestpermit.search.HarvestPermitSearchDTO;
@@ -37,6 +40,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,6 +56,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.validation.constraints.Pattern;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -59,6 +64,7 @@ import java.util.Locale;
 
 @RestController
 @RequestMapping(value = "/api/v1/harvestpermit", produces = MediaType.APPLICATION_JSON_VALUE)
+@Validated
 public class HarvestPermitApiResource {
 
     @Resource
@@ -92,12 +98,21 @@ public class HarvestPermitApiResource {
     private MetsahallitusPermitListFeature metsahallitusPermitListFeature;
 
     @Resource
+    private JhtArchiveFeature jhtArchiveFeature;
+
+    @Resource
     private MessageSource messageSource;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping("/permittypes")
     public List<HarvestPermitTypeDTO> listPermitTypes() {
         return harvestPermitSearchFeature.listPermitTypes();
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping("/omariistapermittypes")
+    public List<HarvestPermitTypeDTO> listAllOmaRiistaPermitTypes() {
+        return harvestPermitSearchFeature.listAllOmaRiistaPermitTypes();
     }
 
     @PostMapping("/checkPermitNumber")
@@ -165,6 +180,19 @@ public class HarvestPermitApiResource {
         final List<HarvestReportExcelDTO> data = harvestReportSearchFeature.listByPermitForExcel(id);
 
         return new ModelAndView(HarvestReportListExcelView.create(localiser, data, true));
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @PostMapping("/export-jhtarchive")
+    public ModelAndView exportJhtArchive(@RequestParam(required = false) @Pattern(regexp = "\\d{3}") String permitTypeCode,
+                                         @RequestParam(required = false) Integer speciesCode,
+                                         @RequestParam int calendarYear) {
+        final EnumLocaliser localiser = new EnumLocaliser(messageSource, LocaleContextHolder.getLocale());
+        final List<JhtArchiveExcelDTO> data = jhtArchiveFeature.permitDataForExcel(permitTypeCode, speciesCode, calendarYear);
+        final List<JhtArchiveExcelDTO> immaterialData = jhtArchiveFeature.immaterialPermitDataForExcel(permitTypeCode, calendarYear);
+        final String filenameDetails = jhtArchiveFeature.searchParametersAsString(localiser, permitTypeCode, speciesCode, calendarYear);
+
+        return new ModelAndView(JhtArchiveExcelView.create(localiser, data, immaterialData, filenameDetails));
     }
 
     @GetMapping("/{id:\\d+}/contactpersons")

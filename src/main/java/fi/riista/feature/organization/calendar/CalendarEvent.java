@@ -71,6 +71,9 @@ public class CalendarEvent extends LifecycleEntity<Long> {
     @Column(nullable = false)
     private boolean excludedFromStatistics;
 
+    @Column(nullable = false)
+    private boolean nonSubsidizable;
+
     @Column
     @Min(0)
     private Integer participants;
@@ -92,6 +95,7 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         this.calendarEventType = calendarEventType;
         this.venue = venue;
         this.description = description;
+        this.nonSubsidizable = false;
     }
 
     @Transient
@@ -212,6 +216,14 @@ public class CalendarEvent extends LifecycleEntity<Long> {
 
     public void setExcludedFromStatistics(final boolean excludedFromStatistics) {
         this.excludedFromStatistics = excludedFromStatistics;
+    }
+
+    public boolean isNonSubsidizable() {
+        return nonSubsidizable;
+    }
+
+    public void setNonSubsidizable(final boolean nonSubsidizable) {
+        this.nonSubsidizable = nonSubsidizable;
     }
 
     public Integer getParticipants() {

@@ -110,9 +110,7 @@ angular.module('app.harvestpermit.application.weapontransportation.justification
                 if (weapon.type !== 'MUU') {
                     weapon.description = null;
                 }
-                if (weapon.type === 'METSASTYSJOUSI') {
-                    weapon.caliber = null;
-                }
+
                 delete weapon.key;
             });
 

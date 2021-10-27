@@ -28,6 +28,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static fi.riista.feature.organization.OrganisationType.RHY;
+import static fi.riista.feature.organization.OrganisationType.RK;
+import static fi.riista.util.F.firstNonNull;
+import static java.util.Arrays.asList;
+
 @Component
 public class AnnouncementCrudFeature {
 
@@ -57,10 +62,10 @@ public class AnnouncementCrudFeature {
         final HashMap<OrganisationType, Set<OccupationType>> result = new HashMap<>();
 
         final boolean canSendToRhyOccupation = EnumSet.of(
-                OrganisationType.RHY, OrganisationType.RK).contains(fromOrganisationType);
+                RHY, RK).contains(fromOrganisationType);
 
         if (canSendToRhyOccupation) {
-            result.put(OrganisationType.RHY, OccupationType.rhyValues());
+            result.put(RHY, OccupationType.rhyValues());
         }
 
         result.put(OrganisationType.CLUB, EnumSet.of(
@@ -96,7 +101,12 @@ public class AnnouncementCrudFeature {
 
         final Announcement announcement = new Announcement(dto.getSubject(), dto.getBody(), activeUser, fromOrganisation, senderType);
         announcement.setVisibleToAll(dto.isVisibleToAll());
-        announcement.setRhyMembershipSubscriber(dto.isVisibleToRhyMembers() ? fromOrganisation : null);
+
+        announcement.setRhyMembershipSubscriber(dto.isVisibleToRhyMembers()
+                ? firstNonNull(
+                    announcementSenderRoleService.resolveRhySubscriberOrganisation(dto, userInfo),
+                    announcement.getFromOrganisation())
+                : null);
 
         announcementRepository.save(announcement);
         announcementSubscriberService.create(announcement, dto);
@@ -113,8 +123,6 @@ public class AnnouncementCrudFeature {
 
         announcement.setSubject(dto.getSubject());
         announcement.setBody(dto.getBody());
-        announcement.setVisibleToAll(dto.isVisibleToAll());
-        announcement.setRhyMembershipSubscriber(dto.isVisibleToRhyMembers() ? announcement.getFromOrganisation() : null);
 
         announcementSubscriberService.update(announcement, dto);
         commitHookService.runInTransactionAfterCommit(
@@ -130,7 +138,7 @@ public class AnnouncementCrudFeature {
 
         final OrganisationType fromOrganisationType = fromOrganisation.getOrganisationType();
 
-        if (fromOrganisationType == OrganisationType.RK) {
+        if (fromOrganisationType == RK) {
             Preconditions.checkArgument(activeUser.isAdminOrModerator(),
                     "Only moderator can send from RK");
         }
@@ -142,11 +150,11 @@ public class AnnouncementCrudFeature {
         }
 
         if (dto.isVisibleToRhyMembers()) {
-            Preconditions.checkArgument(fromOrganisationType == OrganisationType.RHY,
-                    "Only RHY can send message to members");
+            Preconditions.checkArgument(asList(RHY, RK).contains(fromOrganisationType),
+                    "Only RHY od RK can send message to members");
         }
 
-        if (!F.isNullOrEmpty(dto.getSubscriberOrganisations())) {
+        if (!dto.isSubscriberEmptyOrMatchesSender()) {
             Preconditions.checkArgument(activeUser.isAdminOrModerator(),
                     "Only moderator can select target organisations freely");
         }

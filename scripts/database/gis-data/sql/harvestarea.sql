@@ -37,3 +37,16 @@ UPDATE harvest_area ha SET geom = (
 
 -- rhy are stored in SRID 3047, update to 3067
 UPDATE harvest_area SET geom = st_setsrid(geom, '3067') WHERE type = 'HALLIALUE';
+
+-- Use same geometries for norppaalue than with hallialue
+UPDATE harvest_area SET geom = (SELECT geom from harvest_area WHERE type = 'HALLIALUE' AND official_code = '1')
+WHERE type = 'NORPPAALUE'
+AND official_code = '1';
+
+UPDATE harvest_area SET geom = (SELECT geom from harvest_area WHERE type = 'HALLIALUE' AND official_code = '2')
+WHERE type = 'NORPPAALUE'
+  AND official_code = '2';
+
+UPDATE harvest_area SET geom = (SELECT geom from harvest_area WHERE type = 'HALLIALUE' AND official_code = '3')
+WHERE type = 'NORPPAALUE'
+  AND official_code = '3';

@@ -70,6 +70,94 @@
             templateUrl: 'account/profile/profile_occupations.html',
             bindings: {
                 occupations: '<'
+            },
+            controller: function ($state, $uibModal, Account, NotificationService, OccupationContactInfoVisibilityRules) {
+                var $ctrl = this;
+
+                $ctrl.editContactInfoSettings = function () {
+                    var modalPromise = $uibModal.open({
+                        size: 'lg',
+                        templateUrl: 'account/edit_contact_info_settings.html',
+                        controller: ModalController,
+                        controllerAs: '$ctrl',
+                        bindToController: true,
+                        resolve: {
+                            occupations: _.constant($ctrl.occupations),
+                            occupationContactInfoVisibilityRules: OccupationContactInfoVisibilityRules.get().$promise
+                        }
+                    }).result.then(function () {
+                        var contactInfoVisibility = _.map($ctrl.occupations, function (occupation) {
+                            return _.pick(occupation,
+                                ['id', 'nameVisibility', 'phoneNumberVisibility', 'emailVisibility']);
+                        });
+                        return Account.contactInfoVisibility(contactInfoVisibility).$promise;
+                    });
+
+                    NotificationService.handleModalPromise(modalPromise)
+                        .then(function () {
+                            NotificationService.flashMessage('account.edit.messages.success', 'success');
+                        })
+                        .finally(function () {
+                            $state.reload();
+                        });
+                };
+
+                function ModalController($uibModalInstance, occupations, occupationContactInfoVisibilityRules) {
+                    var $modalCtrl = this;
+                    $modalCtrl.occupations = occupations;
+                    $modalCtrl.occupationContactInfoVisibilityRules = occupationContactInfoVisibilityRules;
+
+                    $modalCtrl.save = function () {
+                        $uibModalInstance.close();
+                    };
+
+                    $modalCtrl.cancel = function () {
+                        $uibModalInstance.dismiss('cancel');
+                    };
+
+                    $modalCtrl.getVisibilityRule = function (occupation) {
+                        return $modalCtrl.occupationContactInfoVisibilityRules[occupation.organisation.organisationType][occupation.occupationType];
+                    };
+
+                    $modalCtrl.isAnyEditable = function (occupation) {
+                        var rule = $modalCtrl.getVisibilityRule(occupation);
+                        return rule.nameVisibility === 'OPTIONAL' ||
+                            rule.phoneNumberVisibility === 'OPTIONAL' ||
+                            rule.emailVisibility === 'OPTIONAL';
+                    };
+
+                    $modalCtrl.isAnyEditableFalse = function (occupation) {
+                        var rule = $modalCtrl.getVisibilityRule(occupation);
+                        return rule.nameVisibility === 'OPTIONAL' && occupation.nameVisibility === false ||
+                            rule.phoneNumberVisibility === 'OPTIONAL' && occupation.phoneNumberVisibility === false ||
+                            rule.emailVisibility === 'OPTIONAL' && occupation.emailVisibility === false;
+                    };
+
+                    $modalCtrl.toggleSelection = function (occupation) {
+                        var anyFalse = $modalCtrl.isAnyEditableFalse(occupation);
+                        setAllEditableVisibilities(occupation, anyFalse);
+                    };
+
+                    $modalCtrl.onNameVisibilityChange = function (occupation) {
+                        if (!occupation.nameVisibility) {
+                            setAllEditableVisibilities(occupation, false);
+                        }
+                    };
+
+                    function setAllEditableVisibilities(occupation, visibility) {
+                        var rule = $modalCtrl.getVisibilityRule(occupation);
+
+                        if (rule.nameVisibility === 'OPTIONAL') {
+                            occupation.nameVisibility = visibility;
+                        }
+                        if (rule.phoneNumberVisibility === 'OPTIONAL') {
+                            occupation.phoneNumberVisibility = visibility;
+                        }
+                        if (rule.emailVisibility === 'OPTIONAL') {
+                            occupation.emailVisibility = visibility;
+                        }
+                    }
+                }
             }
         })
         .component('accountProfileJht', {
@@ -352,21 +440,6 @@
                         });
                     }
                 }
-
-                $ctrl.registerClub = function () {
-                    $uibModal.open({
-                        size: 'lg',
-                        templateUrl: 'account/club_register.html',
-                        controller: 'AccountClubRegisterController',
-                        controllerAs: 'modalCtrl',
-                        bindToController: true,
-                        resolve: {
-                            personId: _.constant($ctrl.isUserOwnProfile ? null : $ctrl.personId)
-                        }
-                    }).result.then(function (data) {
-                        ok(data.clubId);
-                    });
-                };
 
                 $ctrl.createClub = function () {
                     $uibModal.open({

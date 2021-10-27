@@ -28,6 +28,7 @@ public class HarvestPermitApplicationExcelResultDTO {
 
     private final int applicationYear;
     private final HarvestPermitCategory harvestPermitCategory;
+    private final String permitTypeCode;
     private final Integer applicationNumber;
     private final LocalisedString rkaName;
     private final LocalisedString rhyName;
@@ -55,6 +56,10 @@ public class HarvestPermitApplicationExcelResultDTO {
 
     public HarvestPermitCategory getHarvestPermitCategory() {
         return harvestPermitCategory;
+    }
+
+    public String getPermitTypeCode() {
+        return permitTypeCode;
     }
 
     public Integer getApplicationNumber() {
@@ -139,6 +144,7 @@ public class HarvestPermitApplicationExcelResultDTO {
 
     private HarvestPermitApplicationExcelResultDTO(final int applicationYear,
                                                    final HarvestPermitCategory harvestPermitCategory,
+                                                   final String permitTypeCode,
                                                    final Integer applicationNumber, final LocalisedString rkaName,
                                                    final LocalisedString rhyName, final LocalDateTime submitDate,
                                                    final String contactPerson, final PermitHolderDTO permitHolder,
@@ -157,6 +163,7 @@ public class HarvestPermitApplicationExcelResultDTO {
                                                    final Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>> decisionSpeciesAmountsBySpecies) {
         this.applicationYear = applicationYear;
         this.harvestPermitCategory = harvestPermitCategory;
+        this.permitTypeCode = permitTypeCode;
         this.applicationNumber = applicationNumber;
         this.rkaName = rkaName;
         this.rhyName = rhyName;
@@ -182,6 +189,7 @@ public class HarvestPermitApplicationExcelResultDTO {
     public static final class Builder {
         private int applicationYear;
         private HarvestPermitCategory harvestPermitCategory;
+        private String permitTypeCode;
         private Integer applicationNumber;
         private LocalisedString rkaName;
         private LocalisedString rhyName;
@@ -213,6 +221,11 @@ public class HarvestPermitApplicationExcelResultDTO {
 
         public Builder withHarvestPermitCategory(final HarvestPermitCategory harvestPermitCategory) {
             this.harvestPermitCategory = harvestPermitCategory;
+            return this;
+        }
+
+        public Builder withPermitTypeCode(final String permitTypeCode) {
+            this.permitTypeCode = permitTypeCode;
             return this;
         }
 
@@ -317,7 +330,7 @@ public class HarvestPermitApplicationExcelResultDTO {
         }
 
         public HarvestPermitApplicationExcelResultDTO build() {
-            return new HarvestPermitApplicationExcelResultDTO(applicationYear, harvestPermitCategory,
+            return new HarvestPermitApplicationExcelResultDTO(applicationYear, harvestPermitCategory, permitTypeCode,
                     applicationNumber, rkaName, rhyName, submitDate, contactPerson, permitHolder, handler, status,
                     gameSpecies, decisionStatus, decisionPublishDate, decisionType, grantStatus, appealStatus,
                     protectedAreaTypes, forbiddenMethodTypes, decisionDerogationReasonTypes, rhy, appliedSpeciesAmountsBySpecies,

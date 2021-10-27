@@ -322,8 +322,7 @@ angular.module('app.diary.harvest.model', [])
                         withPermit: params.withPermit,
                         harvestDate: params.harvestDate,
                         longitude: geoLocation.longitude,
-                        latitude: geoLocation.latitude,
-                        personId: params.personId
+                        latitude: geoLocation.latitude
                     }
                 })
                 .then(function (response) {

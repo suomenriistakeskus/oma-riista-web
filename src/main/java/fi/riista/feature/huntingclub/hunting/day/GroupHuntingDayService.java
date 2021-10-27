@@ -46,9 +46,6 @@ public class GroupHuntingDayService {
     private GroupHuntingDayRepository huntingDayRepository;
 
     @Resource
-    private GroupHuntingDayDTOTransformer dtoTransformer;
-
-    @Resource
     private RequireEntityService requireEntityService;
 
     @Resource
@@ -110,12 +107,18 @@ public class GroupHuntingDayService {
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void updateGroupHuntingDayForDeerObservation(final Observation observation) {
         final List<HuntingClubGroup> groups = observationRepository.findGroupCandidatesForDeerObservation(observation);
+
         if (groups.size() == 1) {
-            // Only one hunting group is found, linking can be done
-            linkDeerObservationToHuntingDayOfGroup(observation, groups.get(0), observation.getAuthor());
+            final HuntingClubGroup group = groups.get(0);
+            if (!huntingFinishingService.hasPermitPartnerFinishedHunting(group)) {
+                // Only one hunting group is found, linking can be done
+                linkDeerObservationToHuntingDayOfGroup(observation, group, observation.getAuthor());
+            }
         } else {
             // Hunting group cannot be determined automatically, unlink it if set
-            observation.getHuntingClubGroup().ifPresent(group -> unlinkDiaryEntryFromHuntingDay(observation, group));
+            observation.getHuntingClubGroup()
+                    .filter(group -> !huntingFinishingService.hasPermitPartnerFinishedHunting(group))
+                    .ifPresent(group -> unlinkDiaryEntryFromHuntingDay(observation, group));
         }
     }
 
@@ -128,7 +131,7 @@ public class GroupHuntingDayService {
         Objects.requireNonNull(currentPerson, "currentPerson is null");
 
         Preconditions.checkArgument(deerObservation.getObservationCategory().isWithinDeerHunting(),
-                                    "observation is not done within deer hunting");
+                "observation is not done within deer hunting");
 
         activeUserService.assertHasPermission(
                 group,
@@ -230,7 +233,7 @@ public class GroupHuntingDayService {
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public List<GroupHuntingDayDTO> findByClubGroup(HuntingClubGroup group) {
+    public List<GroupHuntingDay> findByClubGroup(HuntingClubGroup group) {
         final QGroupHuntingDay groupHuntingDay = QGroupHuntingDay.groupHuntingDay;
         BooleanExpression predicate = groupHuntingDay.group.eq(group);
         if (!group.getSpecies().isMoose()) {
@@ -246,6 +249,6 @@ public class GroupHuntingDayService {
         }
 
         final JpaSort sort = JpaSort.of(Sort.Direction.DESC, GroupHuntingDay_.startTime);
-        return dtoTransformer.apply(huntingDayRepository.findAllAsList(predicate, sort));
+        return huntingDayRepository.findAllAsList(predicate, sort);
     }
 }

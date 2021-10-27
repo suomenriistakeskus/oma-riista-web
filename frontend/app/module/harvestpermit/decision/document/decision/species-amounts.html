@@ -7,10 +7,10 @@
     <tbody>
     <tr ng-repeat="s in $ctrl.speciesList track by s.code">
         <td>
-            <span ng-bind="::(s.code | translateSpeciesCode)"></span>
+            <span class="r-decision-table-species-name" ng-bind="::(s.code | translateSpeciesCode)"></span>
         </td>
-        <td>
-            <span ng-bind="s.category"></span>
+        <td class="r-permit-decision-table-amount-column">
+           <permit-decision-species-amount-details get-amounts="$ctrl.getAmountByCode(s.code)">
         </td>
         <td>
             <a class="edit-link"
@@ -30,7 +30,7 @@
         </td>
         <td>
             <a class="edit-link"
-               ng-if="$ctrl.canEditContent && $ctrl.showForbiddenMethods"
+
                ng-click="$ctrl.editForbiddenMethods(s.code)">
                 <div class="logo">
                     <span ng-hide="s.forbiddenMethodComplete" class="fa fa-fw fa-2x fa-edit"></span>

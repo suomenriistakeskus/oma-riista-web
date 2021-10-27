@@ -20,6 +20,8 @@ import fi.riista.feature.huntingclub.members.club.ContactInfoShareUpdateDTO;
 import fi.riista.feature.huntingclub.members.club.HuntingClubMemberCrudFeature;
 import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitationDTO;
 import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitationFeature;
+import fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityDTO;
+import fi.riista.feature.organization.occupation.OccupationCrudFeature;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +31,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -77,6 +80,9 @@ public class AccountApiResource {
 
     @Resource
     private AccountShootingTestFeature accountShootingTestFeature;
+
+    @Resource
+    private OccupationCrudFeature occupationCrudFeature;
 
     @CacheControl(policy = {CachePolicy.NO_CACHE, CachePolicy.NO_STORE, CachePolicy.MUST_REVALIDATE})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -212,4 +218,10 @@ public class AccountApiResource {
     public List<AccountShootingTestDTO> myShootingTests(@RequestParam(required = false) final Long personId) {
         return accountShootingTestFeature.listMyShootingTests(personId);
     }
+
+    @PutMapping(value = "/occupation-contact-info-visibility")
+    public void updateOccupationContactInfoVisibility(@RequestBody @Validated final List<OccupationContactInfoVisibilityDTO> dtoList) {
+        occupationCrudFeature.updateContactInfoVisibility(dtoList);
+    }
+
 }

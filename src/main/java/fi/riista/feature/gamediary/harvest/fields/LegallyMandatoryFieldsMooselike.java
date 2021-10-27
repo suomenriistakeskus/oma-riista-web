@@ -7,8 +7,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 public class LegallyMandatoryFieldsMooselike {
 
-    public static Report getFormFields(final int gameSpeciesCode, final boolean isDeerPilotEnabled) {
-        return new Report(gameSpeciesCode, isDeerPilotEnabled);
+    public static Report getFormFields(final int gameSpeciesCode) {
+        return new Report(gameSpeciesCode);
     }
 
     public static Specimen getSpecimenFields(final int huntingYear,
@@ -18,13 +18,13 @@ public class LegallyMandatoryFieldsMooselike {
         return new Specimen(huntingYear, gameSpeciesCode, isClientSupportFor2020Fields);
     }
 
-    public static class Report implements RequiredHarvestFields.Report {
+    public static class Report implements RequiredHarvestFields.Report, HasGameSpeciesCode {
 
-        private final boolean isDeerPilotEnabled;
+        private int gameSpeciesCode;
 
-        protected Report(final int gameSpeciesCode, final boolean isDeerPilotEnabled) {
+        protected Report(final int gameSpeciesCode) {
+            this.gameSpeciesCode = gameSpeciesCode;
             checkArgument(GameSpecies.isMooseOrDeerRequiringPermitForHunting(gameSpeciesCode));
-            this.isDeerPilotEnabled = isDeerPilotEnabled;
         }
 
         @Override
@@ -59,7 +59,9 @@ public class LegallyMandatoryFieldsMooselike {
 
         @Override
         public RequiredHarvestField getDeerHuntingType() {
-            return isDeerPilotEnabled ? RequiredHarvestField.VOLUNTARY : RequiredHarvestField.NO;
+            return isWhiteTailedDeer()
+                    ? RequiredHarvestField.VOLUNTARY
+                    : RequiredHarvestField.NO;
         }
 
         // legacy for metsäkauris, was mandatory for season before 2017
@@ -88,6 +90,11 @@ public class LegallyMandatoryFieldsMooselike {
         @Deprecated
         public RequiredHarvestField getReportedWithPhoneCall() {
             return RequiredHarvestField.NO;
+        }
+
+        @Override
+        public int getGameSpeciesCode() {
+            return gameSpeciesCode;
         }
     }
 

@@ -54,6 +54,10 @@ angular.module('app.account.services', ['ngResource'])
                 url: 'api/v1/account/shootingtests',
                 params: {personId: '@personId'},
                 isArray: true
+            },
+            contactInfoVisibility: {
+                method: 'PUT',
+                url: 'api/v1/account/occupation-contact-info-visibility'
             }
         });
     })

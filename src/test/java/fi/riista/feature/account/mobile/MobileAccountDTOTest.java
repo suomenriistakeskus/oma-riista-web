@@ -42,7 +42,6 @@ public class MobileAccountDTOTest {
                 observationYears,
                 Collections.<MobileOccupationDTO> emptyList(),
                 false,
-                false,
                 null,
                 Collections.<AccountShootingTestDTO> emptyList());
 
@@ -67,7 +66,6 @@ public class MobileAccountDTOTest {
                 harvestYears,
                 observationYears,
                 Collections.<MobileOccupationDTO> emptyList(),
-                false,
                 false,
                 null,
                 Collections.<AccountShootingTestDTO> emptyList());

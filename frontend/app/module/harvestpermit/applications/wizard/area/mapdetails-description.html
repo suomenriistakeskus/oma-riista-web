@@ -1,0 +1,21 @@
+<table ng-if="!!$ctrl.areaInfo.areaDescription" class="table table-condensed">
+    <thead>
+    <tr>
+        <th translate="harvestpermit.wizard.common.map.areaDescription"></th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>
+            <span ng-bind="$ctrl.areaInfo.areaDescription"></span>
+        </td>
+        <td class="col-xs-1 text-right vcenter">
+            <a ng-click="$ctrl.clearAreaDescription()">
+                <span class="fa fa-2x fa-remove text-danger"></span>
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+

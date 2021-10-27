@@ -10,6 +10,8 @@ import org.springframework.data.domain.Pageable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 public interface JHTTrainingRepositoryCustom {
     Page<JHTTraining> searchPage(
@@ -23,4 +25,9 @@ public interface JHTTrainingRepositoryCustom {
             @Nullable Person person,
             @Nullable LocalDate beginDate,
             @Nullable LocalDate endDate);
+
+    Map<Long, LocalDate> findLatestTrainingDatesForOccupation(
+            @Nonnull List<Long> personIds,
+            @Nonnull OccupationType occupationType);
+
 }

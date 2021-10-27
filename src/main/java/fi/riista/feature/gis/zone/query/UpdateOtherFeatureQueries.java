@@ -5,6 +5,7 @@ import fi.riista.util.GISUtils;
 import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKBWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +14,12 @@ import org.springframework.jdbc.core.JdbcOperations;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.Collections.singletonList;
 
 public class UpdateOtherFeatureQueries {
     private static final Logger LOG = LoggerFactory.getLogger(UpdateOtherFeatureQueries.class);
@@ -59,11 +64,16 @@ public class UpdateOtherFeatureQueries {
                 .map(f -> PolygonConversionUtil.geoJsonToJava(f.getGeometry(), srid))
                 .map(geometry -> {
                     if (geometry instanceof org.locationtech.jts.geom.MultiPolygon && geometry.getNumGeometries() > 1) {
-                        LOG.warn("Converting multi-polygon to single polygon geometry");
-                        return geometry.getGeometryN(0);
+                        LOG.warn("Converting multi-polygon to single polygon geometries");
+                        final List<Geometry> geometries = new ArrayList<>();
+                        for (int i = 0; i < geometry.getNumGeometries(); i++) {
+                            geometries.add(geometry.getGeometryN(i));
+                        }
+                        return geometries;
                     }
-                    return geometry;
+                    return singletonList(geometry);
                 })
+                .flatMap(Collection::stream)
                 .map(wkbWriter::write)
                 .collect(Collectors.toList());
     }

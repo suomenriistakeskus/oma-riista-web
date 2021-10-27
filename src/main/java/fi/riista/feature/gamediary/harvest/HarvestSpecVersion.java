@@ -83,14 +83,4 @@ public enum HarvestSpecVersion implements GameDiaryEntitySpecVersion {
     public boolean supportsExtendedWeightFieldsForRoeDeerAndWildBoar() {
         return greaterThanOrEqualTo(LOWEST_VERSION_SUPPORTING_EXTENDED_WEIGHT_FIELDS_FOR_ROE_DEER_WILD_BOAR);
     }
-
-    // TODO To be removed when deer pilot 2020 is over.
-    public HarvestSpecVersion revertIfNotOnDeerPilot(final boolean isDeerPilotActive) {
-        if (!isDeerPilotActive && supportsAntlerFields2020()) {
-            // SpecVersion 7 will effectively disable changes introduced in HarvestSpecVersion 8 e.g. new antler fields.
-            return _7;
-        }
-
-        return this;
-    }
 }

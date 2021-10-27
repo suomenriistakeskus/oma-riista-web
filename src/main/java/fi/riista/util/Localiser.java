@@ -6,6 +6,7 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -102,6 +103,13 @@ public class Localiser {
     @Nonnull
     public String[] translate(final String prefix, final String[] messages) {
         return Arrays.stream(messages)
+                .map(key -> getTranslation(prefix + key))
+                .toArray(String[]::new);
+    }
+
+    @Nonnull
+    public String[] translateWithPrefix(final String prefix, final List<String> messages) {
+        return messages.stream()
                 .map(key -> getTranslation(prefix + key))
                 .toArray(String[]::new);
     }

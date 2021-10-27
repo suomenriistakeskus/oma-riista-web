@@ -27,6 +27,7 @@ import fi.riista.feature.permit.decision.legal.PermitDecisionLegalFieldsDTO;
 import fi.riista.feature.permit.decision.legal.PermitDecisionLegalFieldsFeature;
 import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethodDTO;
 import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethodFeature;
+import fi.riista.feature.permit.decision.publish.AdminPermitDecisionInvoiceCreateFeature;
 import fi.riista.feature.permit.decision.reference.PermitDecisionReferenceDTO;
 import fi.riista.feature.permit.decision.reference.PermitDecisionReferenceFeature;
 import fi.riista.feature.permit.decision.reference.UpdatePermitDecisionReferenceDTO;
@@ -54,6 +55,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -117,6 +119,9 @@ public class PermitDecisionApiResource {
     @Resource
     private PermitHarvestInvoicePdfFeature permitHarvestInvoicePdfFeature;
 
+    @Resource
+    private AdminPermitDecisionInvoiceCreateFeature adminPermitDecisionInvoiceCreateFeature;
+
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "{decisionId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public PermitDecisionDTO getDecision(final @PathVariable long decisionId) {
@@ -160,6 +165,12 @@ public class PermitDecisionApiResource {
     public ResponseEntity<byte[]> getHarvestInvoice(final @PathVariable long decisionId,
                                                     final @PathVariable int gameSpeciesCode) throws IOException {
         return permitHarvestInvoicePdfFeature.getHarvestInvoicePdfFile(decisionId, gameSpeciesCode);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "admin/invoice/processing/create", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void adminCreateProcessingInvoicePdf(final @RequestParam List<Long> ids) throws IOException{
+        adminPermitDecisionInvoiceCreateFeature.createInvoicePdfs(ids);
     }
 
     // SPECIES
@@ -357,6 +368,12 @@ public class PermitDecisionApiResource {
     @PostMapping(value = "{decisionId:\\d+}/unassign")
     public void unassignDecision(final @PathVariable long decisionId) {
         permitDecisionFeature.unassignApplication(decisionId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping(value = "{decisionId:\\d+}/set-forbidden-methods")
+    public void setForbiddenMethods(final @PathVariable long decisionId, final @RequestParam boolean forbiddenMethodsOnly) {
+        permitDecisionFeature.updatePermitType(decisionId, forbiddenMethodsOnly);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

@@ -1,6 +1,5 @@
 package fi.riista.feature.gamediary.search;
 
-import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.gamediary.GameDiaryEntryDTO;
 import fi.riista.feature.gamediary.GameDiaryEntry_;
@@ -52,9 +51,6 @@ public class GameDiarySearchFeature {
     private ActiveUserService activeUserService;
 
     @Resource
-    private DeerPilotService deerPilotService;
-
-    @Resource
     private HarvestDTOTransformer harvestDtoTransformer;
 
     @Resource
@@ -81,9 +77,7 @@ public class GameDiarySearchFeature {
                 ? srvaEventRepository.findAll(srvaSpecification(dto, activePerson))
                 : emptyList();
 
-        final HarvestSpecVersion harvestSpecVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED
-                // TODO Remove this when deer pilot 2020 is over.
-                .revertIfNotOnDeerPilot(deerPilotService.isPilotUser(activePerson));
+        final HarvestSpecVersion harvestSpecVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED;
 
         return F.concat(
                 harvestDtoTransformer.apply(harvests, harvestSpecVersion),

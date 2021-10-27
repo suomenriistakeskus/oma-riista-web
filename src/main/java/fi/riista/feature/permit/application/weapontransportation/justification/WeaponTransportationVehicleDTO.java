@@ -15,23 +15,17 @@ public class WeaponTransportationVehicleDTO {
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Size(max = 255)
-    private String registerNumber;
-
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    @Size(max = 255)
     private String description;
 
     public WeaponTransportationVehicleDTO() {}
 
     public WeaponTransportationVehicleDTO(final WeaponTransportationVehicle weaponTransportationVehicle) {
-        this(weaponTransportationVehicle.getType(), weaponTransportationVehicle.getRegisterNumber(), weaponTransportationVehicle.getDescription());
+        this(weaponTransportationVehicle.getType(), weaponTransportationVehicle.getDescription());
     }
 
     public WeaponTransportationVehicleDTO(final @Nonnull WeaponTransportationVehicleType type,
-                                          final String registerNumber,
                                           final String description) {
         this.type = type;
-        this.registerNumber = registerNumber;
         this.description = description;
     }
 
@@ -47,14 +41,6 @@ public class WeaponTransportationVehicleDTO {
 
     public void setType(final WeaponTransportationVehicleType type) {
         this.type = type;
-    }
-
-    public String getRegisterNumber() {
-        return registerNumber;
-    }
-
-    public void setRegisterNumber(final String registerNumber) {
-        this.registerNumber = registerNumber;
     }
 
     public String getDescription() {

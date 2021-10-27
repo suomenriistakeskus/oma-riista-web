@@ -88,7 +88,7 @@ public class PermitDecisionImportingApplicationSummaryGenerator {
 
         sb.append(i18n(
                 "Hakija on hakenut maahantuontilupaa seuraavasti:",
-                "Hakija on hakenut maahantuontilupaa seuraavasti:"));
+                "Sökande har ansökt om importtillstånd enligt följande:"));
 
     }
 
@@ -166,23 +166,23 @@ public class PermitDecisionImportingApplicationSummaryGenerator {
     }
 
     private void createJustification(final StringBuilder sb) {
-        sb.append(i18n("Perustelut", "Perustelut"));
+        sb.append(i18n("Perustelut", "Motiveringar"));
         sb.append(":\n\n");
 
         final ImportingPermitApplicationJustificationDTO justification = model.getJustification();
-        sb.append(i18n("Valtio, josta eläimet tuodaan", "Valtio, josta eläimet tuodaan"))
+        sb.append(i18n("Valtio, josta eläimet tuodaan", "Stat, från vilken djuren importeras"))
                 .append(":\n")
                 .append(escape(justification.getCountryOfOrigin()))
                 .append("\n\n");
-        sb.append(i18n("Tuotavien yksilöiden tarkempi kuvaus", "Tuotavien yksilöiden tarkempi kuvaus"))
+        sb.append(i18n("Tuotavien yksilöiden tarkempi kuvaus", "Närmare beskrivning av individerna som importeras"))
                 .append(":\n")
                 .append(escape(justification.getDetails()))
                 .append("\n\n");
-        sb.append(i18n("Tuonnin tarkoitus", "Tuonnin tarkoitus"))
+        sb.append(i18n("Tuonnin tarkoitus", "Avsikten med införseln"))
                 .append(":\n\n")
                 .append(escape(justification.getPurpose()))
                 .append("\n\n");
-        sb.append(i18n("Luontoon laskeminen", "Luontoon laskeminen"))
+        sb.append(i18n("Luontoon laskeminen", "Utsättande i miljön"))
                 .append(":\n\n")
                 .append(escape(justification.getRelease()))
                 .append("\n\n");

@@ -109,16 +109,14 @@ public class GameDiaryApiResource {
             @RequestParam final boolean withPermit,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate harvestDate,
             @RequestParam final int longitude,
-            @RequestParam final int latitude,
-            @RequestParam(required = false) final Long personId) {
+            @RequestParam final int latitude) {
 
         return gameDiaryMetadataFeature.getRequiredHarvestFields(
                 new RequiredHarvestFieldsRequestDTO(
                         gameSpeciesCode,
                         harvestDate,
                         new GeoLocation(latitude, longitude),
-                        withPermit,
-                        personId),
+                        withPermit),
                 HarvestSpecVersion.CURRENTLY_SUPPORTED);
     }
 

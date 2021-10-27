@@ -2,12 +2,14 @@ package fi.riista.api.moderator;
 
 import com.google.common.base.Preconditions;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
+import fi.riista.feature.common.decision.DecisionHandlerDTO;
+import fi.riista.feature.gamediary.GameSpeciesDTO;
 import fi.riista.feature.permit.application.AmendApplicationFeature;
 import fi.riista.feature.permit.application.HarvestPermitApplicationAmendDTO;
-import fi.riista.feature.common.decision.DecisionHandlerDTO;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchDTO;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchFeature;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchResultDTO;
+import fi.riista.feature.permit.application.search.ListSpeciesParamsDTO;
 import fi.riista.feature.permit.application.search.excel.HarvestPermitApplicationSearchExcelFeature;
 import fi.riista.feature.permit.application.statistics.HarvestPermitApplicationStatisticsExcelFeature;
 import fi.riista.feature.permit.application.statistics.HarvestPermitApplicationStatisticsFeature;
@@ -15,7 +17,6 @@ import fi.riista.feature.permit.application.statistics.HarvestPermitApplicationS
 import fi.riista.util.MediaTypeExtras;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
-import javax.validation.constraints.NotBlank;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,6 +32,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Locale;
 
@@ -102,6 +104,10 @@ public class ModeratorApplicationApiResource {
         return harvestPermitApplicationSearchFeature.listHandlers();
     }
 
+    @PostMapping(value = "/species", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<GameSpeciesDTO> listSpecies(@Valid @RequestBody final ListSpeciesParamsDTO dto) {
+        return harvestPermitApplicationSearchFeature.listSpecies(dto.getPermitCategory());
+    }
 
     // AMEND
 

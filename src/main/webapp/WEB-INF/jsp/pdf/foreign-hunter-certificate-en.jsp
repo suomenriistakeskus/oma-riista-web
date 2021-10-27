@@ -121,7 +121,6 @@
     <div style="font-size:10pt; line-height: 12pt">
         <div style="float:left;">
             Insurer<br/>
-            Policy number<br/>
             Policyholder<br/>
             Policy period<br/>
             Insured<br/>
@@ -130,11 +129,10 @@
 
         <div style="padding-left:136pt">
             LocalTapiola General Mutual Insurance Company, Finland<br/>
-            312-0042105-H<br/>
             Suomen riistakeskus (Finlands viltcentral), Finnish Wildlife Agency<br/>
-            1<sup>st</sup>, August <joda:format value="${model.huntingCardStart}" pattern="yyyy" />
+            August 1<sup>st</sup> <joda:format value="${model.huntingCardStart}" pattern="yyyy" />
             –
-            31<sup>st</sup>, July <joda:format value="${model.huntingCardEnd}" pattern="yyyy" /><br/>
+            July 31<sup>st</sup> <joda:format value="${model.huntingCardEnd}" pattern="yyyy" /><br/>
             Certified hunters who hold a valid hunting card<br/>
             Nordic Countries, EU member states and Switzerland up to 60 days hunting trips<br/>
         </div>
@@ -142,12 +140,14 @@
 
     <div style="padding-left:136pt; padding-top:40pt;font-size: 10pt">
         <div style="float:left;">
+            Policy number<br/>
             Type of insurance<br/>
             Limit of liability<br/>
             Main exclusions<br/>
         </div>
 
         <div style="padding-left:110pt;">
+            312-0042105-H<br/>
             Hunter’s Third Party Liability Insurance<br/>
             EUR 1,200,000 in personal injury<br/>
             Property damages
@@ -156,41 +156,45 @@
 
     <div style="padding-left:136pt; padding-top:20pt;font-size: 10pt">
         <div style="float:left;">
+            Policy number<br/>
             Type of insurance<br/>
             Limit of liability
         </div>
 
         <div style="padding-left:110pt;">
+            353-4344930-S<br/>
             Hunter’s Personal Accident Insurance<br/>
             EUR 10,000 in personal injury<br/>
-            EUR 50.000 in permanent total disability<br/>
-            EUR 30.000 in death
+            EUR 50,000 in permanent total disability<br/>
+            EUR 30,000 in death
         </div>
     </div>
 
     <div style="padding-left:136pt; padding-top:20pt;font-size: 10pt">
         <div style="float:left;">
+            Policy number<br/>
             Type of insurance<br/>
             Limit of liability
         </div>
 
         <div style="padding-left:110pt">
+            353-4344930-S<br/>
             Official’s Personal Accident Insurance<br/>
             EUR 10,000 in personal injury<br/>
-            EUR 50.000 in permanent total disability<br/>
-            EUR 30.000 in death
+            EUR 50,000 in permanent total disability<br/>
+            EUR 30,000 in death
         </div>
     </div>
 
     <p style="padding-left: 136pt;padding-top:40pt;font-size: 10pt;line-height: 10pt">
         LOCALTAPIOLA GENERAL MUTUAL INSURANCE COMPANY<br/>
-        Corporate Property and Business Insurance Services
+        Major Clients
     </p>
 
-    <p style="padding-left: 136pt;font-style: italic;font-size: 10pt;line-height: 10pt">
+    <p style="padding-left: 136pt;font-style: italic;font-size: 10pt;line-height: 10pt;margin-top: 20px">
         This certificate is issued as a matter of information only and confers no rights upon the certificate holder. This
-        is an extract of the original insurance policy between policyholder and LocalTapiola General Mutual Insurance
-        Company which take precedence should there be any differences between the policy and the extract.
+        is an extract of the original insurance policy between policyholder and LocalTapiola which take precedence should
+        there be any differences between the policy and the extract.
     </p>
 
     <div class="footer" style="margin-top: 320pt">

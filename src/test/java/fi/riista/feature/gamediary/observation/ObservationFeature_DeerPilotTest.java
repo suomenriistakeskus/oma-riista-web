@@ -14,8 +14,8 @@ import org.junit.Test;
 import static fi.riista.feature.gamediary.DeerHuntingType.OTHER;
 import static fi.riista.feature.gamediary.observation.ObservationCategory.DEER_HUNTING;
 import static fi.riista.feature.gamediary.observation.ObservationType.NAKO;
-import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.VOLUNTARY_DEER_PILOT;
-import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.YES_DEER_PILOT;
+import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.VOLUNTARY;
+import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.YES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -32,30 +32,18 @@ public class ObservationFeature_DeerPilotTest extends ObservationFeatureTestBase
     }
 
     @Test
-    public void testCreateDeerPilotObservationWithPilotUser() {
-        activateDeerPilotUser();
-        testCreateDeerPilotObservation(OTHER, "Description");
-    }
-
-    @Test(expected = ProhibitedFieldFound.class)
-    public void testCreateDeerPilotObservationWithNonPilotUser() {
+    public void testCreateObservationWithPilotUser() {
         testCreateDeerPilotObservation(OTHER, "Description");
     }
 
     @Test
-    public void testCreateDeerPilotObservationWithoutVoluntaryField() {
-        activateDeerPilotUser();
+    public void testCreateObservationWithoutVoluntaryField() {
         testCreateDeerPilotObservation(OTHER, null);
     }
 
     @Test(expected = RequiredFieldMissing.class)
-    public void testCreateDeerPilotObservationWithoutRequiredField() {
-        activateDeerPilotUser();
+    public void testCreateObservationWithoutRequiredField() {
         testCreateDeerPilotObservation(null, "Description");
-    }
-
-    private void activateDeerPilotUser() {
-        model().newDeerPilot(huntingFixture.permit);
     }
 
     private void testCreateDeerPilotObservation(final DeerHuntingType type, final String description) {
@@ -63,7 +51,7 @@ public class ObservationFeature_DeerPilotTest extends ObservationFeatureTestBase
         final Person author = huntingFixture.groupLeader;
 
         createObservationMetaF(whileTailedDeer, DEER_HUNTING, NAKO)
-                .withDeerHuntingTypeFieldsAs(YES_DEER_PILOT, VOLUNTARY_DEER_PILOT)
+                .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
                 .withMooselikeAmountFieldsAs(Required.YES)
                 .consumeBy(obsMeta -> {
 

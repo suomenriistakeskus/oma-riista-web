@@ -26,6 +26,7 @@ import fi.riista.feature.gamediary.harvest.mutation.report.HarvestForPermitMutat
 import fi.riista.feature.gamediary.harvest.mutation.report.HarvestMutationForReportType;
 import fi.riista.feature.gamediary.harvest.mutation.report.HarvestUpdateReportMutation;
 import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
+import fi.riista.feature.huntingclub.hunting.mobile.MobileGroupHarvestDTO;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import org.springframework.util.StringUtils;
@@ -42,14 +43,13 @@ public class HarvestUpdater {
 
     public static HarvestUpdater create(@Nonnull final HarvestMutationFactory harvestMutationFactory,
                                         @Nonnull final Harvest harvestBeforeUpdate,
-                                        @Nonnull final SystemUser activeUser,
-                                        final boolean isDeerPilotActive) {
+                                        @Nonnull final SystemUser activeUser) {
 
         final HarvestPreviousState previousState = new HarvestPreviousState(harvestBeforeUpdate);
         final HarvestMutationRole mutationRole =
                 HarvestMutationRole.getMutationRoleForHarvest(harvestBeforeUpdate, activeUser);
 
-        return new HarvestUpdater(harvestMutationFactory, previousState, mutationRole, activeUser, isDeerPilotActive);
+        return new HarvestUpdater(harvestMutationFactory, previousState, mutationRole, activeUser);
     }
 
     private final HarvestMutationFactory harvestMutationFactory;
@@ -58,21 +58,18 @@ public class HarvestUpdater {
     private final Person activePerson;
     private final Long activeUserId;
     private final HarvestMutationRole mutationRole;
-    private final boolean deerPilotActive;
     private final List<HarvestMutation> mutators = new LinkedList<>();
 
     private HarvestUpdater(@Nonnull final HarvestMutationFactory harvestMutationFactory,
                            @Nonnull final HarvestPreviousState previousState,
                            @Nonnull final HarvestMutationRole mutationRole,
-                           @Nonnull final SystemUser activeUser,
-                           final boolean isDeerPilotActive) {
+                           @Nonnull final SystemUser activeUser) {
 
         this.harvestMutationFactory = requireNonNull(harvestMutationFactory);
         this.previousState = requireNonNull(previousState);
         this.activePerson = requireNonNull(activeUser).getPerson();
         this.activeUserId = activeUser.getId();
         this.mutationRole = mutationRole;
-        this.deerPilotActive = isDeerPilotActive;
     }
 
     private void clearMutations() {
@@ -85,17 +82,25 @@ public class HarvestUpdater {
 
     public HarvestReportingType execute(final Harvest harvest, final HarvestDTO dto) {
         final HarvestReportingType reportingType = prepare(dto);
-        checkPreConditions(reportingType, dto.getHarvestSpecVersion(), false);
+        checkPreConditions(reportingType, dto.getHarvestSpecVersion());
         executeUpdate(harvest);
-        checkPostConditions(reportingType, harvest, deerPilotActive);
+        checkPostConditions(reportingType, harvest);
         return reportingType;
     }
 
     public HarvestReportingType execute(final Harvest harvest, final MobileHarvestDTO dto) {
         final HarvestReportingType reportingType = prepare(dto);
-        checkPreConditions(reportingType, dto.getHarvestSpecVersion(), true);
+        checkPreConditions(reportingType, dto.getHarvestSpecVersion());
         executeUpdate(harvest);
-        checkPostConditions(reportingType, harvest, deerPilotActive);
+        checkPostConditions(reportingType, harvest);
+        return reportingType;
+    }
+
+    public HarvestReportingType execute(final Harvest harvest, final MobileGroupHarvestDTO dto) {
+        final HarvestReportingType reportingType = prepare(dto);
+        checkPreConditions(reportingType, dto.getHarvestSpecVersion());
+        executeUpdate(harvest);
+        checkPostConditions(reportingType, harvest);
         return reportingType;
     }
 
@@ -150,7 +155,7 @@ public class HarvestUpdater {
         final HarvestDeerHuntingMutation deerHuntingMutation = harvestMutationFactory.createDeerHuntingMutation(dto);
 
         final HarvestMutationForReportType reportingTypeMutation = dto.getHuntingDayId() != null
-                ? harvestMutationFactory.createHuntingDayMutation(dto, activePerson)
+                ? harvestMutationFactory.createHuntingDayMutation(dto.getHuntingDayId(), activePerson)
                 : createMutationForReportingType(dto, true, dto.getPermittedMethod(), dto.getHuntingMethod(), commonMutation, locationMutation, gisMutation);
 
 
@@ -188,18 +193,41 @@ public class HarvestUpdater {
         return reportingTypeMutation.getReportingType();
     }
 
-    private void checkPreConditions(final HarvestReportingType reportingType,
-                                    final HarvestSpecVersion specVersion,
-                                    final boolean mobileClient) {
+    private HarvestReportingType prepare(final MobileGroupHarvestDTO dto) {
+        final HarvestLocationMutation locationMutation =
+                HarvestLocationMutation.createForMobile(dto, previousState.getPreviousLocation());
+        final HarvestGISMutation gisMutation = harvestMutationFactory.createGISMutation(locationMutation);
+        final HarvestCommonMutation commonMutation = harvestMutationFactory.createCommonMutation(mutationRole, dto);
+        final HarvestAuthorActorMutation authorActorMutation =
+                harvestMutationFactory.createAuthorActorMutation(activePerson, dto, previousState);
+        final HarvestDeerHuntingMutation deerHuntingMutation = harvestMutationFactory.createDeerHuntingMutation(dto);
 
-        assertSupport(reportingType, specVersion, mobileClient);
+        final HarvestMutationForReportType reportingTypeMutation =
+                harvestMutationFactory.createHuntingDayMutation(dto.getHuntingDayId(), activePerson);
+
+        clearMutations();
+        addMutation(locationMutation);
+        addMutation(gisMutation);
+        addMutation(commonMutation);
+        addMutation(authorActorMutation);
+        addMutation(reportingTypeMutation);
+        addMutation(deerHuntingMutation);
+        addHarvestReportMutation(reportingTypeMutation);
+
+        return reportingTypeMutation.getReportingType();
+    }
+
+    private void checkPreConditions(final HarvestReportingType reportingType,
+                                    final HarvestSpecVersion specVersion) {
+
+        assertSupport(reportingType, specVersion);
 
         final HarvestReportingType previousReportingType = previousState.getPreviousReportingType();
 
         reportingType.assertValidReportingType(previousReportingType, mutationRole);
 
         if (previousReportingType != null) {
-            assertSupport(previousReportingType, specVersion, mobileClient);
+            assertSupport(previousReportingType, specVersion);
 
             new HarvestReportingTypeTransition(previousReportingType, reportingType, mutationRole)
                     .assertValidTransition();
@@ -207,13 +235,7 @@ public class HarvestUpdater {
     }
 
     private static void assertSupport(@Nullable final HarvestReportingType reportingType,
-                                      final HarvestSpecVersion specVersion,
-                                      final boolean mobileClient) {
-
-        if (reportingType == HarvestReportingType.HUNTING_DAY && mobileClient) {
-            throw HarvestSpecVersionNotSupportedException.groupHuntingNotSupported(specVersion);
-        }
-
+                                      final HarvestSpecVersion specVersion) {
         if (reportingType == HarvestReportingType.SEASON && !specVersion.supportsHarvestReport()) {
             throw HarvestSpecVersionNotSupportedException.seasonNotSupported(specVersion);
         }
@@ -227,12 +249,11 @@ public class HarvestUpdater {
     }
 
     private static void checkPostConditions(final HarvestReportingType reportingType,
-                                            final Harvest harvest,
-                                            final boolean isDeerPilotEnabled) {
+                                            final Harvest harvest) {
         // Validate updated fields
         final RequiredHarvestFields.Report reportRequirements = RequiredHarvestFields.getFormFields(
                 DateUtil.huntingYearContaining(harvest.getPointOfTimeAsLocalDate()),
-                harvest.getSpecies().getOfficialCode(), reportingType, false, isDeerPilotEnabled);
+                harvest.getSpecies().getOfficialCode(), reportingType, false);
 
         new HarvestFieldValidator(reportRequirements, harvest).validateAll().throwOnErrors();
     }

@@ -1,10 +1,13 @@
 package fi.riista.api.organisation;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import fi.riista.feature.organization.OrganisationCrudFeature;
 import fi.riista.feature.organization.OrganisationDTO;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRuleMapping;
+import fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRule;
 import fi.riista.feature.organization.occupation.OccupationCrudFeature;
 import fi.riista.feature.organization.occupation.OccupationDTO;
 import fi.riista.feature.organization.occupation.OccupationExcelView;
@@ -64,6 +67,12 @@ public class OccupationApiResource {
     public PersonContactInfoDTO findByHunterNumber(@RequestParam final String hunterNumber) {
         return personSearchFeature
                 .findPersonContactInfoByHunterNumber(hunterNumber, Occupation.FOREIGN_PERSON_ELIGIBLE_FOR_OCCUPATION);
+    }
+
+    @PostMapping(value = "/findperson/hunternumbers")
+    public List<PersonContactInfoDTO> findByHunterNumbers(@RequestParam final List<String> hunterNumbers) {
+        return personSearchFeature
+                .findPersonContactInfoByHunterNumbers(hunterNumbers, Occupation.FOREIGN_PERSON_ELIGIBLE_FOR_OCCUPATION);
     }
 
     @PostMapping(value = "/findperson/ssn")
@@ -131,13 +140,22 @@ public class OccupationApiResource {
     // EXCEL
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @PostMapping(value = "/excel/occupations", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ModelAndView searchExcel(@RequestParam(value = "orgId") final long orgId) {
-        final List<OccupationDTO> occupations = occupationCrudFeature.listOccupations(orgId);
+    public ModelAndView searchExcel(@RequestParam(value = "orgId") final long orgId,
+                                    @RequestParam(required = false, value = "occupationType") final OccupationType occupationType) {
+        final List<OccupationDTO> occupations = occupationType == null ?
+                occupationCrudFeature.listOccupations(orgId) :
+                occupationCrudFeature.listOccupationsByType(orgId, occupationType);
         final OrganisationDTO organisation = organisationCrudFeature.read(orgId);
         final Locale locale = LocaleContextHolder.getLocale();
         final String organisationName = Localiser.select(organisation.getNameFI(), organisation.getNameSV());
 
         return new ModelAndView(new OccupationExcelView(locale, messageSource, organisationName,
                 organisation.getOrganisationType(), occupations));
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/occupation/contact-info-visibility-rules")
+    public ImmutableMap<OrganisationType, ImmutableMap<OccupationType, OccupationContactInfoVisibilityRule>> listContactInfoVisibilityRules() {
+        return OccupationContactInfoVisibilityRuleMapping.listAll();
     }
 }

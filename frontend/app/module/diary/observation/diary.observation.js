@@ -165,7 +165,6 @@ angular.module('app.diary.observation', [])
                 transformResponse: appendTransform($http.defaults.transformResponse, function (data, headersGetter, status) {
                     if (status === 200 && _.isObject(data)) {
                         data.isCarnivoreAuthority = AuthenticationService.isCarnivoreAuthority();
-                        data.isDeerPilotUser = AuthenticationService.isDeerPilotUser();
                         return data;
                     } else {
                         return data || {};
@@ -228,8 +227,7 @@ angular.module('app.diary.observation', [])
             var requirements = {
                 fields: angular.copy(this.baseFields || {}),
                 specimenFields: angular.copy(this.specimenFields || {}),
-                isCarnivoreAuthority: !!this.isCarnivoreAuthority,
-                isDeerPilotUser: !!this.isDeerPilotUser
+                isCarnivoreAuthority: !!this.isCarnivoreAuthority
             };
 
             if (observationType) {
@@ -369,18 +367,14 @@ angular.module('app.diary.observation', [])
 
         ObservationFieldRequirements.prototype.isFieldRequired = function (fieldName) {
             var requirement = this.fields[fieldName] || this.specimenFields[fieldName];
-            return requirement === 'YES'
-                || requirement === 'YES_DEER_PILOT' && !!this.isDeerPilotUser;
+            return requirement === 'YES';
         };
 
         ObservationFieldRequirements.prototype.isFieldLegal = function (fieldName) {
             var requirement = this.fields[fieldName] || this.specimenFields[fieldName];
             return requirement === 'YES'
                 || requirement === 'VOLUNTARY'
-                || requirement === 'VOLUNTARY_CARNIVORE_AUTHORITY' && !!this.isCarnivoreAuthority
-                || requirement === 'DEER_PILOT' && !!this.isDeerPilotUser
-                || requirement === 'YES_DEER_PILOT' && !!this.isDeerPilotUser
-                || requirement === 'VOLUNTARY_DEER_PILOT' && !!this.isDeerPilotUser;
+                || requirement === 'VOLUNTARY_CARNIVORE_AUTHORITY' && !!this.isCarnivoreAuthority;
         };
 
         ObservationFieldRequirements.prototype.getAmountFields = function () {
@@ -539,10 +533,6 @@ angular.module('app.diary.observation', [])
 
         $scope.isFieldVisible = function (fieldName) {
             return $scope.fieldRequirements && $scope.fieldRequirements.isFieldLegal(fieldName);
-        };
-
-        $scope.isDeerPilotUser = function () {
-            return $scope.fieldRequirements && $scope.fieldRequirements.isDeerPilotUser;
         };
 
         $scope.getAvailableGameGenders = function () {

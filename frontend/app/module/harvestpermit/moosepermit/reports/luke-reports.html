@@ -58,9 +58,6 @@
                                 </a>
                                 <div ng-if="$ctrl.isReportTypeSelected(reportType)">
                                 <ul ng-repeat="presentation in reportType.presentations" class="file-selection">
-                                        <li ng-if="$ctrl.addForPilotOnlySeparator(presentation)" class="file-group-title">
-                                            Pilottiraportit
-                                        </li>
                                         <li ng-repeat="file in presentation.files">
                                             <a ng-class="{ active: $ctrl.isFileSelected(presentation, file)}"
                                                ng-click="$ctrl.selectFile(presentation, file)">{{ $ctrl.tocText(presentation, file) }}</a>

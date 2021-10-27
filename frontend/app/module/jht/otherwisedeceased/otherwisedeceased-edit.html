@@ -1,0 +1,341 @@
+<ng-form name="otherwiseDeceasedForm" class="r-otherwise-deceased" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 ng-if="!$ctrl.item.id" class="modal-title" translate="jht.otherwiseDeceased.modalTitleNew"></h3>
+        <h3 ng-if="$ctrl.item.id" class="modal-title" translate="jht.otherwiseDeceased.modalTitleEdit"></h3>
+    </div>
+
+    <div class="modal-body">
+
+        <!-- 1st row: species info -->
+
+        <div class="row">
+
+            <!-- species -->
+
+            <div class="col-xs-3 form-group" show-errors>
+                <label class="mandatory-field" for="gameSpeciesCode"
+                       translate="jht.otherwiseDeceased.fields.species">
+                </label>
+
+                <select required class="form-control"
+                        name="gameSpeciesCode" id="gameSpeciesCode"
+                        ng-model="$ctrl.species"
+                        ie10-optgroup-fix>
+                    <option value=""></option>
+                    <option ng-repeat="o in ::$ctrl.speciesOptions"
+                            value="{{o}}">
+                        {{ o | translateSpeciesCode }}
+                    </option>
+                </select>
+
+                <div class="help-block has-error"
+                     ng-messages="otherwiseDeceasedForm.gameSpeciesCode.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+
+            <!-- gender -->
+
+            <div class="col-xs-3 form-group" show-errors>
+                <label class="mandatory-field" for="gender"
+                       translate="jht.otherwiseDeceased.fields.gender">
+                </label>
+
+                <select required class="form-control"
+                        name="gender" id="gender"
+                        ng-model="$ctrl.item.gender"
+                        ie10-optgroup-fix>
+                    <option value=""></option>
+                    <option ng-repeat="o in ::$ctrl.genderOptions"
+                            value="{{o}}"
+                            translate="global.gameGender.{{o}}">
+                    </option>
+                </select>
+
+                <div class="help-block has-error"
+                     ng-messages="otherwiseDeceasedForm.gender.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+
+            <!-- age -->
+
+            <div class="col-xs-3 form-group" show-errors>
+                <label class="mandatory-field" for="age"
+                       translate="jht.otherwiseDeceased.fields.age">
+                </label>
+
+                <select required class="form-control"
+                        name="age" id="age"
+                        ng-model="$ctrl.item.age"
+                        ie10-optgroup-fix>
+                    <option value=""></option>
+                    <option ng-repeat="o in ::$ctrl.ageOptions"
+                            value="{{o}}"
+                            translate="global.gameAge.{{o}}">
+                    </option>
+                </select>
+
+                <div class="help-block has-error"
+                     ng-messages="otherwiseDeceasedForm.age.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+
+            <!-- weight -->
+
+            <div class="col-xs-3 form-group" show-errors>
+                <label for="weight"
+                       translate="jht.otherwiseDeceased.fields.weight">
+                </label>
+
+                <input type="number" min="1" max="9999"
+                       name="weight" id="weight"
+                       class="form-control has-feedback"
+                       ng-model="$ctrl.item.weight">
+
+                <div class="help-block has-error"
+                     ng-messages="otherwiseDeceasedForm.weight.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2nd row: event info -->
+
+        <div class="row">
+
+            <!-- event date -->
+
+            <div class="col-xs-3 form-group" show-errors>
+                <label class="mandatory-field" for="date"
+                       translate="jht.otherwiseDeceased.fields.date">
+                </label>
+
+                <div class="input-group r-dropdown-align-right" id="date" ng-controller="DatePickerController">
+                    <input type="text" required class="form-control"
+                           name="date" id="dateInput"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           ng-model="$ctrl.date">
+
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="help-block has-error"
+                     ng-messages="otherwiseDeceasedForm.date.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+
+            <!-- event time -->
+
+            <div class="col-xs-3 form-group" show-errors>
+                <label for="time" class="mandatory-field"
+                       translate="jht.otherwiseDeceased.fields.time">
+                </label>
+
+                <input type="text" required class="form-control"
+                       name="time" id="time"
+                       ng-model="$ctrl.time">
+
+                <div class="help-block has-error"
+                     ng-messages="otherwiseDeceasedForm.time.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+
+            <!-- cause -->
+
+            <div class="col-xs-3 form-group" show-errors>
+                <label class="mandatory-field" for="cause"
+                       translate="jht.otherwiseDeceased.fields.cause">
+                </label>
+
+                <select required class="form-control"
+                        name="cause" id="cause"
+                        ng-model="$ctrl.item.cause"
+                        ie10-optgroup-fix>
+                    <option value=""></option>
+                    <option ng-repeat="o in ::$ctrl.causeOptions"
+                            value="{{o}}"
+                            translate="jht.otherwiseDeceased.causes.{{o}}">
+                    </option>
+                </select>
+
+                <div class="help-block" ng-show="$ctrl.item.cause === 'OTHER'">
+                    <input type="text"
+                           name="causeOther" id="causeOther"
+                           class="form-control"
+                           ng-model="$ctrl.item.causeOther">
+                </div>
+
+                <div class="help-block has-error"
+                     ng-messages="otherwiseDeceasedForm.cause.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+
+            <!-- source -->
+
+            <div class="col-xs-3 form-group" show-errors>
+                <label class="mandatory-field" for="source"
+                       translate="jht.otherwiseDeceased.fields.source">
+                </label>
+
+                <select required class="form-control"
+                        name="source" id="source"
+                        ng-model="$ctrl.item.source"
+                        ie10-optgroup-fix>
+                    <option value=""></option>
+                    <option ng-repeat="o in ::$ctrl.sourceOptions"
+                            value="{{o}}"
+                            translate="jht.otherwiseDeceased.sources.{{o}}">
+                    </option>
+                </select>
+
+                <div class="help-block" ng-show="$ctrl.item.source === 'OTHER'">
+                    <input type="text"
+                           name="sourceOther" id="sourceOther"
+                           class="form-control has-feedback"
+                           ng-model="$ctrl.item.sourceOther">
+                </div>
+
+                <div class="help-block has-error"
+                     ng-messages="otherwiseDeceasedForm.source.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3rd row: location / map -->
+
+        <div class="row">
+
+            <!-- noExactLocation -->
+
+            <div class="col-xs-12 form-group">
+                <label for="noExactLocation" translate="jht.otherwiseDeceased.fields.pointOfLocation"></label>
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" ng-model="$ctrl.item.noExactLocation" id="noExactLocation">
+                        <span translate="jht.otherwiseDeceased.fields.noExactLocation"></span>
+                    </label>
+                </div>
+
+                <!-- map -->
+
+                <label for="geoLocation" class="mandatory-field"
+                       translate="jht.otherwiseDeceased.fields.pointOfLocationCoordinates">
+                </label>
+
+                <leaflet class="r-cursor-pointer"
+                         name="geoLocation" id="geoLocation"
+                         defaults="$ctrl.mapDefaults"
+                         layers="$ctrl.mapDefaults.mmlLayers"
+                         controls="$ctrl.mapDefaults.controls"
+                         event-broadcast="$ctrl.mapEvents"
+                         lf-center="$ctrl.mapState.center"
+                         r-geolocation-marker="$ctrl.item.geoLocation"
+                         r-geolocation-editable="true"
+                         r-geolocation-marker-force-finland="true"
+                         height="300px"
+                         style="text-align: center; padding: 10px;">
+                </leaflet>
+
+                <!-- enter coordinates -->
+
+                <div r-geolocation-input="$ctrl.item.geoLocation"
+                     name="geoLocation"
+                     overridden-template="jht/otherwisedeceased/geolocation_input.html"></div>
+
+                <!-- municipality / rhy -->
+
+                <div>
+                        <span ng-bind="$ctrl.item.municipality | rI18nNameFilter"></span>,
+                        <span ng-bind="$ctrl.item.rhy | rI18nNameFilter"></span>
+                </div>
+
+                <div ng-class="{ 'has-error': !$ctrl.isValidLocation() }"
+                     ng-show="!$ctrl.isValidLocation()">
+                    <div class="help-block has-error" translate="global.geoLocation.required"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4th row: more info -->
+
+        <div class="row">
+
+            <!-- description -->
+
+            <div class="col-xs-6 form-group">
+                <label for="description" translate="jht.otherwiseDeceased.fields.description"></label>
+
+                <textarea class="form-control" rows="6"
+                          name="description" id="description"
+                          ng-model="$ctrl.item.description">
+                </textarea>
+            </div>
+
+            <!-- additional info --->
+
+            <div class="col-xs-6 form-group">
+                <label for="additionalInfo" translate="jht.otherwiseDeceased.fields.additionalInfo"></label>
+
+                <textarea class="form-control" rows="6"
+                          name="additionalInfo" id="additionalInfo"
+                          ng-model="$ctrl.item.additionalInfo">
+                </textarea>
+            </div>
+        </div>
+
+        <!-- 5th row: attachments -->
+
+        <div class="row">
+            <div class="col-xs-12 form-group">
+                <label for="attachments" translate="jht.otherwiseDeceased.fields.attachments"></label>
+                <r-modal-attachments id="attachments" editable="true"
+                                     url="/api/v1/deceased/savewithattachments"
+                                     attachments="$ctrl.item.attachments"
+                                     dropzone="$ctrl.dropzone">
+                </r-modal-attachments>
+            </div>
+        </div>
+
+        <!-- 5th row: reason of change (only when editing) -->
+
+        <div class="row" ng-if="$ctrl.item.id">
+            <div class="col-xs-12 form-group" show-errors>
+                <label class="mandatory-field" for="reasonForChange" translate="jht.otherwiseDeceased.fields.reasonForChange"></label>
+                <textarea required class="form-control" rows="2"
+                          name="reasonForChange" id="reasonForChange"
+                          ng-model="$ctrl.item.reasonForChange">
+                </textarea>
+                <div class="help-block has-error"
+                     ng-messages="otherwiseDeceasedForm.reasonForChange.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- button row -->
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="!$ctrl.isValidLocation() || otherwiseDeceasedForm.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</ng-form>

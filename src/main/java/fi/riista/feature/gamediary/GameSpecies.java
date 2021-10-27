@@ -163,6 +163,9 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
     // Nokikana
     public static final int OFFICIAL_CODE_COOT = 27381;
 
+    // Merihanhi
+    public static final int OFFICIAL_CODE_GREYLAG_GOOSE = 26291;
+
     public static final int[] ALL_GAME_SPECIES_CODES = new int[] {
             26366, 27152, 27381, 27649, 27911, 37178, 37166, 37122, 27750, 27759, 200535, 33117, 27048, 26921, 26922,
             26931, 26926, 26928, 200555, 47305, 47282, 26298, 26291, 26373, 26360, 26382, 26388, 26394, 26407, 26415,
@@ -193,7 +196,8 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
             OFFICIAL_CODE_WIGEON, OFFICIAL_CODE_WILD_BOAR, OFFICIAL_CODE_EUROPEAN_POLECAT, OFFICIAL_CODE_BEAN_GOOSE,
             OFFICIAL_CODE_PINTAIL, OFFICIAL_CODE_GARGANEY, OFFICIAL_CODE_SHOVELER, OFFICIAL_CODE_POCHARD,
             OFFICIAL_CODE_TUFTED_DUCK, OFFICIAL_CODE_COMMON_EIDER, OFFICIAL_CODE_LONG_TAILED_DUCK,
-            OFFICIAL_CODE_RED_BREASTED_MERGANSER, OFFICIAL_CODE_GOOSANDER, OFFICIAL_CODE_COOT);
+            OFFICIAL_CODE_RED_BREASTED_MERGANSER, OFFICIAL_CODE_GOOSANDER, OFFICIAL_CODE_COOT,
+            OFFICIAL_CODE_GREYLAG_GOOSE);
 
     public static final ImmutableSet<Integer> LARGE_CARNIVORES =
             ImmutableSet.of(OFFICIAL_CODE_BEAR, OFFICIAL_CODE_LYNX, OFFICIAL_CODE_WOLF, OFFICIAL_CODE_WOLVERINE);
@@ -235,11 +239,6 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
             OFFICIAL_CODE_MOOSE,
             OFFICIAL_CODE_WHITE_TAILED_DEER,
             OFFICIAL_CODE_MUFFLON,
-            OFFICIAL_CODE_RACCOON_DOG,
-            OFFICIAL_CODE_AMERICAN_MINK,
-            OFFICIAL_CODE_RACCOON,
-            OFFICIAL_CODE_MUSKRAT,
-            OFFICIAL_CODE_NUTRIA,
 
             OFFICIAL_CODE_WILD_FOREST_REINDEER);
 
@@ -284,7 +283,6 @@ public class GameSpecies extends LifecycleEntity<Long> implements HasOfficialCod
 
     public static final ImmutableSet<Integer> LAW_SECTION_TEN_PERMIT_SPECIES = ImmutableSet.of(
             OFFICIAL_CODE_EUROPEAN_BEAVER,
-            OFFICIAL_CODE_RINGED_SEAL,
             OFFICIAL_CODE_PARTRIDGE
     );
 

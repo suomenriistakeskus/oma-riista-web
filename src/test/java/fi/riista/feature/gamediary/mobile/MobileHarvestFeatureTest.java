@@ -282,10 +282,10 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
     // Test integration to HarvestSpecimenOps and deer pilot status handling.
     @Theory
-    public void testCreateHarvest_newMooseAntlerFields_startingFrom2020_whenDeerPilotActive(final HarvestSpecVersion specVersion) {
+    public void testCreateHarvest_newMooseAntlerFields_startingFrom2020(final HarvestSpecVersion specVersion) {
         assumeTrue(specVersion.greaterThanOrEqualTo(LOWEST_VERSION_SUPPORTING_ANTLER_FIELDS_2020));
 
-        testCreateHarvest_mooseAntlerFields(2020, specVersion, true, (entity, dto) -> {
+        testCreateHarvest_mooseAntlerFields(2020, specVersion,  (entity, dto) -> {
 
             HarvestSpecimenAssertionBuilder.builder()
                     .mooseAdultMaleFields2020Present()
@@ -296,10 +296,10 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
     // Test integration to HarvestSpecimenOps and deer pilot status handling.
     @Theory
-    public void testCreateHarvest_mooseAntlerFields_before2020_whenDeerPilotActive(final HarvestSpecVersion specVersion) {
+    public void testCreateHarvest_mooseAntlerFields_before2020(final HarvestSpecVersion specVersion) {
         assumeTrue(specVersion.greaterThanOrEqualTo(LOWEST_VERSION_SUPPORTING_ANTLER_FIELDS_2020));
 
-        testCreateHarvest_mooseAntlerFields(2019, specVersion, true, (entity, dto) -> {
+        testCreateHarvest_mooseAntlerFields(2019, specVersion, (entity, dto) -> {
 
             HarvestSpecimenAssertionBuilder.builder()
                     .mooseAdultMaleFields2015Present()
@@ -308,22 +308,13 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
         });
     }
 
-    // Test integration to HarvestSpecimenOps and deer pilot status handling.
-    @Theory
-    public void testCreateHarvest_newMooseAntlerFields_startingFrom2020_whenDeerPilotNotActive(final HarvestSpecVersion specVersion) {
-        assumeTrue(specVersion.greaterThanOrEqualTo(LOWEST_VERSION_SUPPORTING_ANTLER_FIELDS_2020));
-
-        assertThrows(HarvestSpecimenValidationException.class, () -> {
-            testCreateHarvest_mooseAntlerFields(2020, specVersion, false, (entity, dto) -> {/*no-op*/});
-        });
-    }
 
     // Test integration to HarvestSpecimenOps and deer pilot status handling.
     @Theory
-    public void testCreateHarvest_mooseAntlerFields_startingFrom2020_whenDeerPilotActive_preSpecVersion8(final HarvestSpecVersion specVersion) {
+    public void testCreateHarvest_mooseAntlerFields_startingFrom2020_preSpecVersion8(final HarvestSpecVersion specVersion) {
         assumeTrue(specVersion.lessThan(LOWEST_VERSION_SUPPORTING_ANTLER_FIELDS_2020));
 
-        testCreateHarvest_mooseAntlerFields(2020, specVersion, true, (entity, dto) -> {
+        testCreateHarvest_mooseAntlerFields(2020, specVersion, (entity, dto) -> {
 
             HarvestSpecimenAssertionBuilder.builder()
                     .mooseAdultMaleFields2015Present()
@@ -334,16 +325,11 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
     private void testCreateHarvest_mooseAntlerFields(final int huntingYear,
                                                      final HarvestSpecVersion specVersion,
-                                                     final boolean activateDeerPilot,
                                                      final BiConsumer<HarvestSpecimen, HarvestSpecimenDTO> consumer) {
 
         final GameSpecies species = model().newGameSpeciesMoose();
 
         withHuntingGroupFixture(species, fixture -> {
-
-            if (activateDeerPilot) {
-                model().newDeerPilot(fixture.permit);
-            }
 
             final Person author = fixture.groupMember;
 

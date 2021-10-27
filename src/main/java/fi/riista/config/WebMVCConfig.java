@@ -5,6 +5,7 @@ import fi.riista.config.web.ApplicationRevisionHandlerInterceptor;
 import fi.riista.config.web.CSVMessageConverter;
 import fi.riista.config.web.ControllerExceptionAdvice;
 import fi.riista.feature.RuntimeEnvironmentUtil;
+import fi.riista.util.Locales;
 import net.rossillo.spring.web.mvc.CacheControlHandlerInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -19,16 +20,19 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
+import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import org.springframework.web.multipart.MultipartResolver;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.multipart.support.MultipartFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 import org.springframework.web.servlet.view.JstlView;
@@ -166,5 +170,20 @@ public class WebMVCConfig implements WebMvcConfigurer {
     @Bean
     public ControllerExceptionAdvice globalControllerExceptionAdvice() {
         return new ControllerExceptionAdvice();
+    }
+
+    @Bean
+    public LocaleResolver localeResolver() {
+        final SessionLocaleResolver localeResolver = new SessionLocaleResolver();
+
+        // This should force to use browser language when not available
+        localeResolver.setDefaultLocale(Locales.FI);
+
+        return localeResolver;
+    }
+
+    @Bean
+    public MethodValidationPostProcessor methodValidationPostProcessor() {
+        return new MethodValidationPostProcessor();
     }
 }

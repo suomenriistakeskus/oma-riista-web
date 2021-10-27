@@ -1,10 +1,26 @@
-<div class="row">
-    <div class="col-xs-3">
-        <button type="button" class="btn btn-primary btn-block"
-                ng-click="$ctrl.createDecision()"
-                translate="jht.nomination.decision.createNominationDecision"></button>
-        <hr class="invisible"/>
+<ul class="nav nav-pills search-view-nav-pills">
+    <li ng-class="{'active': $ctrl.tab === 'filter'}">
+        <a ng-click="$ctrl.showTab('filter')" translate="jht.nomination.decision.tab.filter"></a>
+    </li>
+    <li ng-class="{'active': $ctrl.tab === 'statusTable'}">
+        <a ng-click="$ctrl.showTab('statusTable')" translate="jht.nomination.decision.tab.statusTable"></a>
+    </li>
+</ul>
+
+<div ng-switch="$ctrl.tab">
+    <div ng-switch-when="filter">
+        <div class="row">
+            <div class="col-xs-3">
+                <button type="button" class="decision-view-primary-button btn-block"
+                        ng-click="$ctrl.createDecision()"
+                        translate="jht.nomination.decision.createNominationDecision"></button>
+            </div>
+        </div>
+
+        <moderator-nominationdecision-search tab="$ctrl.tab"
+                                             handlers="::$ctrl.handlers"></moderator-nominationdecision-search>
+    </div>
+    <div ng-switch-when="statusTable">
+        <moderator-nomination-decision-status-table></moderator-nomination-decision-status-table>
     </div>
 </div>
-
-<moderator-nominationdecision-search tab="$ctrl.tab" handlers="::$ctrl.handlers"></moderator-nominationdecision-search>

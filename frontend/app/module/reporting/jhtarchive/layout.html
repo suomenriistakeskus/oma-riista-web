@@ -1,0 +1,37 @@
+<form class="form">
+    <h4 translate="reporting.menu.jhtArchive"></h4>
+
+    <div class="form-group">
+        <div class="row">
+            <div class="col-xs-6 col-md-6">
+                <label translate="reporting.jhtArchive.permitType"></label>
+                <select class="form-control"
+                        ng-options="p.permitTypeName for p in $ctrl.permitTypes track by p.permitTypeCode"
+                        ng-model="$ctrl.selected.permitType"
+                        ng-change="$ctrl.onPermitTypeChange()">
+                </select>
+            </div>
+            <div class="col-xs-6 col-md-3">
+                <label translate="reporting.jhtArchive.species"></label>
+                <select class="form-control"
+                        ng-options="s.speciesName for s in $ctrl.selected.permitType.species track by s.speciesCode"
+                        ng-model="$ctrl.selected.species"
+                        ng-disabled="$ctrl.selected.permitType.species.length === 0">
+                    <option translate="reporting.jhtArchive.option.all" value=""></option>
+                </select>
+            </div>
+            <div class="col-xs-6 col-md-3">
+                <label translate="reporting.jhtArchive.calendarYear"></label>
+                <select class="form-control"
+                        ng-options="year for year in $ctrl.years track by year"
+                        ng-model="$ctrl.selected.calendarYear">
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" class="btn btn-default" ng-click="$ctrl.exportToExcel()">
+        <span class="fa fa-file-excel-o"></span>&nbsp;
+        <span translate="global.button.exportToExcel"></span>
+    </button>
+</form>

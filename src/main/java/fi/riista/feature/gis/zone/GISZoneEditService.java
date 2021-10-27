@@ -70,7 +70,7 @@ public class GISZoneEditService {
     }
 
     // Open new transaction in order to be able to mark calculation failed in case of failure
-    @Transactional(timeout = 900, propagation = Propagation.REQUIRES_NEW)
+    @Transactional(timeout = 1200, propagation = Propagation.REQUIRES_NEW)
     public void updateAreaSize(final long zoneId) {
         final boolean onlyStateLand = onlyStateAreaService.shouldContainOnlyStateLand(singletonList(zoneId));
         zoneRepository.calculateAreaSize(zoneId, onlyStateLand);

@@ -22,7 +22,8 @@ public class CarnivorePermitSpecies {
             HarvestPermitCategory.LARGE_CARNIVORE_BEAR, GameSpecies.OFFICIAL_CODE_BEAR,
             HarvestPermitCategory.LARGE_CARNIVORE_LYNX, GameSpecies.OFFICIAL_CODE_LYNX,
             HarvestPermitCategory.LARGE_CARNIVORE_LYNX_PORONHOITO, GameSpecies.OFFICIAL_CODE_LYNX,
-            HarvestPermitCategory.LARGE_CARNIVORE_WOLF, GameSpecies.OFFICIAL_CODE_WOLF
+            HarvestPermitCategory.LARGE_CARNIVORE_WOLF, GameSpecies.OFFICIAL_CODE_WOLF,
+            HarvestPermitCategory.LARGE_CARNIVORE_WOLF_PORONHOITO, GameSpecies.OFFICIAL_CODE_WOLF
     );
 
     public static final Range<LocalDate> getPeriod(@Nonnull final HarvestPermitApplication application) {
@@ -40,6 +41,9 @@ public class CarnivorePermitSpecies {
                         endDateForLynx(application.getApplicationYear() + 1));
             case LARGE_CARNIVORE_WOLF:
                 return Range.closed(new LocalDate(application.getApplicationYear(), 11, 1),
+                        new LocalDate(application.getApplicationYear() + 1, 3, 31));
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
+                return Range.closed(new LocalDate(application.getApplicationYear(), 10, 1),
                         new LocalDate(application.getApplicationYear() + 1, 3, 31));
             default:
                 throw new IllegalArgumentException("Invalid category");

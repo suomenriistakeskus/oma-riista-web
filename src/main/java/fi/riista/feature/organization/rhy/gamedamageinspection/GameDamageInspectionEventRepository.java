@@ -11,7 +11,12 @@ public interface GameDamageInspectionEventRepository extends BaseRepository<Game
     List<GameDamageInspectionEvent> findByRhyIdAndDateBetweenOrderByDateDesc(final Long orgId, final Date startDate, final Date endDate);
     List<GameDamageInspectionEvent> findByRhyAndDateBetweenOrderByDateDesc(final Organisation rhy, final Date startDate, final Date endDate);
 
-    List<GameDamageInspectionEvent> findByRhyIdAndDateBetweenAndGameSpeciesOfficialCodeIn(final Long rhyId, final Date startDate, final Date endDate, final Set<Integer> officialCodes);
+    List<GameDamageInspectionEvent> findByRhyIdAndDateBetweenAndGameSpeciesOfficialCodeInAndExpensesIncludedTrue(final Long rhyId,
+                                                                                                                 final Date startDate,
+                                                                                                                 final Date endDate,
+                                                                                                                 final Set<Integer> officialCodes);
 
-    List<GameDamageInspectionEvent> findByDateBetweenAndGameSpeciesOfficialCodeIn(final Date startDate, final Date endDate, final Set<Integer> officialCodes);
+    List<GameDamageInspectionEvent> findByDateBetweenAndGameSpeciesOfficialCodeInAndExpensesIncludedTrue(final Date startDate,
+                                                                                                         final Date endDate,
+                                                                                                         final Set<Integer> officialCodes);
 }

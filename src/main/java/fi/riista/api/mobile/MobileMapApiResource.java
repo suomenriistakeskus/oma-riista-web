@@ -68,7 +68,7 @@ public class MobileMapApiResource {
 
     @GetMapping("/code/{externalId}")
     public ResponseEntity<MobileAreaDTO> findByExternalId(@PathVariable String externalId) {
-        final MobileAreaDTO dto = mobileMapFeature.findByExternalId(externalId);
+        final MobileAreaDTO dto = mobileMapFeature.findByExternalId(externalId.toUpperCase());
 
         if (dto == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();

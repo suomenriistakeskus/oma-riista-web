@@ -333,4 +333,84 @@ angular.module('app.harvestpermit.management.endofhunting', [])
                 });
             }
         }
+    })
+
+    .factory('EndOfPermitPeriodReport', function ($resource) {
+        var prefix = 'api/v1/harvestreport/endofpermitperiod/permit/:id';
+        return $resource(prefix, {id: '@id'}, {
+            moderatorCreate: {
+                method: 'POST',
+                url: prefix + '/moderator'
+            }
+        });
+    })
+
+    .service('EndOfPermitPeriodReportModal', function ($uibModal) {
+        this.openModal = function (permitId) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/management/endofhunting/end-of-permit-period-report.html',
+                resolve: {
+                    report: function (EndOfPermitPeriodReport) {
+                        return EndOfPermitPeriodReport.get({id: permitId}).$promise;
+                    }
+                },
+                controller: ModalController,
+                controllerAs: '$ctrl',
+                bindToController: true,
+                size: 'lg'
+            }).result;
+        };
+
+        function ModalController($uibModalInstance, NotificationService, PermitEndOfHuntingReport,
+                                 EndOfPermitPeriodReport, ActiveRoleService, report) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.report = report;
+                $ctrl.hasUsages = $ctrl.report.usages && $ctrl.report.usages.length;
+                $ctrl.isModerator = ActiveRoleService.isModerator();
+                $ctrl.showAdditionalComments = $ctrl.isModerator ||
+                    ($ctrl.report.harvestReportState === 'APPROVED' &&
+                        $ctrl.report.endOfHuntingReportComments);
+            };
+
+            $ctrl.create = function () {
+                var promise;
+                if (ActiveRoleService.isModerator()) {
+                    promise = EndOfPermitPeriodReport
+                        .moderatorCreate({id: report.permitId}, {endOfHuntingReportComments: $ctrl.report.endOfHuntingReportComments})
+                        .$promise;
+                } else {
+                    promise = EndOfPermitPeriodReport.save({id: report.permitId}).$promise;
+                }
+                handleActionResultPromise(promise);
+            };
+
+            $ctrl.remove = function () {
+                var promise = PermitEndOfHuntingReport.delete({id: report.permitId}).$promise;
+                handleActionResultPromise(promise);
+            };
+
+            $ctrl.accept = function () {
+                var bodyParams = {
+                    to: 'APPROVED',
+                    id: report.permitId,
+                    rev: report.permitRev,
+                    endOfHuntingReportComments: {
+                        endOfHuntingReportComments: $ctrl.report.endOfHuntingReportComments
+                    }
+                };
+                var promise = PermitEndOfHuntingReport.changeState({id: report.permitId}, bodyParams).$promise;
+                handleActionResultPromise(promise);
+            };
+
+            function handleActionResultPromise($promise) {
+                $promise.then(function () {
+                    NotificationService.showDefaultSuccess();
+                    $uibModalInstance.close();
+                }, function () {
+                    NotificationService.showDefaultFailure();
+                });
+            }
+        }
     });

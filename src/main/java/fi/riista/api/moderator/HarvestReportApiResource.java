@@ -86,12 +86,6 @@ public class HarvestReportApiResource {
 
     // Search
 
-    @PostMapping("/rhy/search")
-    public List<HarvestDTO> searchRhy(@RequestBody @Valid HarvestReportSearchDTO dto) {
-        dto.setSearchType(HarvestReportSearchDTO.SearchType.COORDINATOR);
-        return harvestReportSearchFeature.searchCoordinator(dto);
-    }
-
     @PostMapping("/admin/search")
     public Slice<HarvestDTO> search(@RequestBody @Valid HarvestReportSearchDTO dto, Pageable pageRequest) {
         dto.setSearchType(HarvestReportSearchDTO.SearchType.MODERATOR);
@@ -99,18 +93,6 @@ public class HarvestReportApiResource {
     }
 
     // Excel export
-
-    @PostMapping("/rhy/search/excel")
-    public ModelAndView searchRhyExcel(
-            @RequestParam(value = "json") @NotBlank final String jsonData) throws IOException {
-        final HarvestReportSearchDTO dto = objectMapper.readValue(jsonData, HarvestReportSearchDTO.class);
-        dto.setSearchType(HarvestReportSearchDTO.SearchType.COORDINATOR);
-
-        final EnumLocaliser localiser = new EnumLocaliser(messageSource, LocaleContextHolder.getLocale());
-        final List<HarvestReportExcelDTO> data = harvestReportSearchFeature.searchCoordinatorExcel(dto);
-
-        return new ModelAndView(HarvestReportListExcelView.create(localiser, data, false));
-    }
 
     @PostMapping("/admin/search/excel")
     public ModelAndView searchExcel(

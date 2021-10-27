@@ -95,6 +95,7 @@ public class AnnualStatisticsResolver {
     private final Supplier<Long> rhyLandAreaSizeSupplier;
     private final Supplier<Map<OccupationType, Long>> occupationTypeCountsSupplier;
     private final Supplier<Map<CalendarEventType, Long>> eventTypeCountsSupplier;
+    private final Supplier<Map<CalendarEventType, Long>> nonSubsidisedEventTypeCountsSupplier;
     private final Supplier<Map<ShootingTestType, Tuple2<Integer, Integer>>> shootingTestCountsSupplier;
     private final Supplier<Tuple2<Integer, Integer>> srvaContributionSupplier;
     private final Supplier<Map<SrvaEventNameEnum, Map<Integer, Integer>>> srvaEventsCountsSupplier;
@@ -102,6 +103,7 @@ public class AnnualStatisticsResolver {
     private final Supplier<Integer> harvestPermitApplicationCountSupplier;
     private final Supplier<Integer> announcementCountSupplier;
     private final Supplier<Map<CalendarEventType, Integer>> eventParticipantCountSupplier;
+    private final Supplier<Map<CalendarEventType, Integer>> nonSubsidisedEventParticipantCountSupplier;
     private final Supplier<Map<GameDamageType, Long>> gameDamageCountSupplier;
     private final Supplier<Tuple3<Integer, Integer, Integer>> huntingControlCountSupplier;
 
@@ -143,8 +145,14 @@ public class AnnualStatisticsResolver {
 
         this.eventTypeCountsSupplier = Lazy.of(() -> {
             final LocalDate lastDate = today.isBefore(lastDayOfYear) ? today : lastDayOfYear;
-            return eventRepository.countEventTypes(rhy, firstDayOfYear, lastDate);
+            return eventRepository.countSubsidisedEventTypes(rhy, firstDayOfYear, lastDate);
         });
+
+        this.nonSubsidisedEventTypeCountsSupplier = Lazy.of(() -> {
+            final LocalDate lastDate = today.isBefore(lastDayOfYear) ? today : lastDayOfYear;
+            return eventRepository.countNonSubsidisedEventTypes(rhy, firstDayOfYear, lastDate);
+        });
+
         this.shootingTestCountsSupplier = Lazy.of(() -> countShootingTestAttempts(rhy, calendarYear, jpaQueryFactory));
 
         this.srvaContributionSupplier = Lazy.of(() -> countSrvaContribution(rhy, calendarYear, jpaQueryFactory));
@@ -165,7 +173,12 @@ public class AnnualStatisticsResolver {
 
         this.eventParticipantCountSupplier = Lazy.of(() -> {
             final LocalDate lastDate = today.isBefore(lastDayOfYear) ? today : lastDayOfYear;
-            return eventRepository.countEventParticipants(rhy, firstDayOfYear, lastDate);
+            return eventRepository.countSubsidisedEventParticipants(rhy, firstDayOfYear, lastDate);
+        });
+
+        this.nonSubsidisedEventParticipantCountSupplier = Lazy.of(() -> {
+            final LocalDate lastDate = today.isBefore(lastDayOfYear) ? today : lastDayOfYear;
+            return eventRepository.countNonSubsidisedEventParticipants(rhy, firstDayOfYear, lastDate);
         });
 
         this.gameDamageCountSupplier = Lazy.of(() -> {
@@ -208,8 +221,16 @@ public class AnnualStatisticsResolver {
         return eventTypeCountsSupplier.get().getOrDefault(eventType, 0L).intValue();
     }
 
+    public int getNonSubsidizableEventTypeCount(final CalendarEventType eventType) {
+        return nonSubsidisedEventTypeCountsSupplier.get().getOrDefault(eventType, 0L).intValue();
+    }
+
     public int getEventParticipantsCount(final CalendarEventType eventType) {
         return eventParticipantCountSupplier.get().getOrDefault(eventType, 0).intValue();
+    }
+
+    public int getNonSubsidizableEventParticipantsCount(final CalendarEventType eventType) {
+        return nonSubsidisedEventParticipantCountSupplier.get().getOrDefault(eventType, 0).intValue();
     }
 
     public int getShootingTestTotalCount(final ShootingTestType testType) {

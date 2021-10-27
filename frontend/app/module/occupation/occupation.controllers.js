@@ -83,7 +83,8 @@ angular.module('app.occupation.controllers', [])
 
             $ctrl.exportToExcel = function (params) {
                 FormPostService.submitFormUsingBlankTarget('/api/v1/organisation/excel/occupations', {
-                    'orgId': $ctrl.orgId
+                    'orgId': $ctrl.orgId,
+                    'occupationType': $ctrl.occupationTypeFilter
                 });
             };
         })
@@ -157,7 +158,8 @@ angular.module('app.occupation.controllers', [])
             };
 
             $scope.isSubstituteRequired = function () {
-                return $scope.isBoardType() && $scope.occupation.occupationType !== 'HALLITUKSEN_VARAJASEN';
+                return $scope.isBoardType() && $scope.occupation.occupationType !== 'HALLITUKSEN_VARAJASEN'
+                    || $scope.occupation.occupationType === 'ALUEKOKOUKSEN_EDUSTAJA';
             };
 
             function canEditAddress(person) {

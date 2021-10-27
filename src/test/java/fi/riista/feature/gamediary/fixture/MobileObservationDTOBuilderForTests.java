@@ -20,7 +20,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 
 public class MobileObservationDTOBuilderForTests
-        extends MobileObservationDTO.Builder<MobileObservationDTOBuilderForTests> implements ValueGeneratorMixin {
+        extends MobileObservationDTO.Builder<MobileObservationDTO, MobileObservationDTOBuilderForTests> implements ValueGeneratorMixin {
 
     public static MobileObservationDTOBuilderForTests create(@Nonnull final ObservationMetadata metadata) {
         return new MobileObservationDTOBuilderForTests(metadata)
@@ -33,7 +33,6 @@ public class MobileObservationDTOBuilderForTests
     private final ObservationMetadata metadata;
 
     private boolean isCarnivoreAuthority = false;
-    private boolean isDeerPilotEnabled = false;
 
     public MobileObservationDTOBuilderForTests(@Nonnull final ObservationMetadata metadata) {
         super(requireNonNull(metadata, "metadata is null").getBaseFields());
@@ -41,6 +40,11 @@ public class MobileObservationDTOBuilderForTests
         this.metadata = metadata;
 
         applyMetadata();
+    }
+
+    @Override
+    protected MobileObservationDTO createDTO() {
+        return new MobileObservationDTO();
     }
 
     @Override
@@ -53,11 +57,6 @@ public class MobileObservationDTOBuilderForTests
         return self();
     }
 
-    public MobileObservationDTOBuilderForTests withDeerPilotEnabled() {
-        this.isDeerPilotEnabled = true;
-        return self();
-    }
-
     public MobileObservationDTOBuilderForTests populateWith(@Nonnull final Observation observation) {
 
         dto.setLinkedToGroupHuntingDay(observation.getHuntingDayOfGroup() != null);
@@ -65,10 +64,10 @@ public class MobileObservationDTOBuilderForTests
         final ObservationContextSensitiveFields contextSensitiveFields = metadata.getContextSensitiveFields();
 
         if (metadata.getSpecVersion().supportsDeerHuntingType()) {
-            if (contextSensitiveFields.getDeerHuntingType().isDeerHuntingFieldAllowed(isDeerPilotEnabled)) {
+            if (contextSensitiveFields.getDeerHuntingType().isDeerHuntingFieldAllowed()) {
                 dto.setDeerHuntingType(observation.getDeerHuntingType());
             }
-            if (contextSensitiveFields.getDeerHuntingTypeDescription().isDeerHuntingFieldAllowed(isDeerPilotEnabled)) {
+            if (contextSensitiveFields.getDeerHuntingTypeDescription().isDeerHuntingFieldAllowed()) {
                 dto.setDeerHuntingTypeDescription(observation.getDeerHuntingTypeDescription());
             }
         }

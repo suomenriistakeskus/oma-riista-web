@@ -4,7 +4,6 @@ import fi.riista.feature.account.AccountShootingTestDTO;
 import fi.riista.feature.account.AccountShootingTestFeature;
 import fi.riista.feature.account.certificate.HuntingCardQRCodeGenerator;
 import fi.riista.feature.account.certificate.HuntingCardQRCodeKeyHolder;
-import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
@@ -45,9 +44,6 @@ public class MobileAccountFeature {
     private ActiveUserService activeUserService;
 
     @Resource
-    private DeerPilotService deerPilotService;
-
-    @Resource
     private AccountShootingTestFeature accountShootingTestFeature;
 
     @Resource
@@ -86,7 +82,6 @@ public class MobileAccountFeature {
                 observationYears,
                 mobileOccupationDTOFactory.create(occupations),
                 shootingTestsEnabled,
-                deerPilotService.isPilotUser(),
                 qrCode,
                 shootingTests);
     }

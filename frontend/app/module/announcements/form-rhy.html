@@ -1,0 +1,35 @@
+<div class="announcement-modal">
+    <div class="modal-header">
+        <h3 class="modal-title" ng-hide="$ctrl.announcement.id"
+            translate="announcements.form.createTitleRhyMembers"></h3>
+        <h3 class="modal-title" ng-show="$ctrl.announcement.id" translate="announcements.form.editTitleRhyMembers"></h3>
+    </div>
+
+    <div class="modal-body">
+        <announcement-sender-info from-organisation="$ctrl.fromOrganisation"></announcement-sender-info>
+
+        <form name="selectionForm" ng-if="$ctrl.showOrganisationSelection">
+            <organisation-selection disable-selection="$ctrl.disableOrganisationSelection" show-rk="false"
+                                    show-rka="false"
+                                    show-inactive-rhys="false"
+                                    area-code="$ctrl.rkaCode" rhy-code="$ctrl.rhyCode"></organisation-selection>
+
+            <hr>
+        </form>
+
+        <ng-form name="announcementForm" role="form" autocomplete="off" r-force-show-errors-check-validity>
+            <announcement-message-form announcement="$ctrl.announcement"></announcement-message-form>
+        </ng-form>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-primary"
+                ng-click="$ctrl.submit()"
+                ng-disabled="$ctrl.canNotSubmit(announcementForm)"
+                translate="global.button.submit"></button>
+    </div>
+</div>

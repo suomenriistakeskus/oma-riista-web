@@ -25,6 +25,9 @@
             <li ng-if="::$ctrl.isAuthorizedForHabides" active-if-state-includes="reporting.habides">
                 <a ui-sref="reporting.habides" translate="reporting.menu.habides"></a>
             </li>
+            <li active-if-state-includes="reporting.jhtarchive">
+                <a ui-sref="reporting.jhtarchive" translate="reporting.menu.jhtArchive"></a>
+            </li>
         </ul>
     </div>
 </nav>

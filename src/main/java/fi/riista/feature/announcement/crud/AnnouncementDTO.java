@@ -8,7 +8,9 @@ import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
+
 import javax.validation.constraints.NotBlank;
+
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.Valid;
@@ -18,6 +20,8 @@ import javax.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import static fi.riista.util.F.mapNullable;
 
 public class AnnouncementDTO extends BaseEntityDTO<Long> {
 
@@ -66,8 +70,12 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
 
         @Override
         public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (!(o instanceof OrganisationDTO)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof OrganisationDTO)) {
+                return false;
+            }
             final OrganisationDTO that = (OrganisationDTO) o;
             return organisationType == that.organisationType &&
                     Objects.equals(officialCode, that.officialCode);
@@ -91,6 +99,10 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
         dto.setSubject(announcement.getSubject());
         dto.setVisibleToAll(announcement.isVisibleToAll());
 
+        final Organisation rhyMembershipSubscriber = announcement.getRhyMembershipSubscriber();
+        dto.setVisibleToRhyMembers(rhyMembershipSubscriber != null);
+        dto.setRhyMembershipSubscriber(mapNullable(rhyMembershipSubscriber, AnnouncementDTO.OrganisationDTO::create));
+
         if (announcement.getFromOrganisation() != null) {
             dto.setFromOrganisation(AnnouncementDTO.OrganisationDTO.create(announcement.getFromOrganisation()));
         }
@@ -112,6 +124,9 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
     @Valid
     @NotNull
     private OrganisationDTO fromOrganisation;
+
+    @Valid
+    private OrganisationDTO rhyMembershipSubscriber;
 
     private Set<OccupationType> occupationTypes;
 
@@ -144,8 +159,19 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
     }
 
     @AssertTrue
+    public boolean isRhySubscriberValid() {
+
+        // Allowed only for moderators on behalf of RK
+        return rhyMembershipSubscriber == null ||
+                (visibleToRhyMembers && fromOrganisation.getOrganisationType() == OrganisationType.RK);
+    }
+
+    @AssertTrue
     public boolean isVisibleToRhyMembersAllowed() {
-        return !visibleToRhyMembers || fromOrganisation != null && fromOrganisation.getOrganisationType() == OrganisationType.RHY;
+        return !visibleToRhyMembers ||
+                (fromOrganisation != null &&
+                        (fromOrganisation.getOrganisationType() == OrganisationType.RHY ||
+                                fromOrganisation.getOrganisationType() == OrganisationType.RK));
     }
 
     @AssertTrue
@@ -174,7 +200,7 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
             return false;
         }
 
-        if (!F.isNullOrEmpty(subscriberOrganisations)) {
+        if (!isSubscriberEmptyOrMatchesSender()) {
             return false;
         }
 
@@ -183,7 +209,7 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
     }
 
     private boolean isValidRecipientsForRhy() {
-        if (visibleToAll || !F.isNullOrEmpty(subscriberOrganisations)) {
+        if (visibleToAll || !isSubscriberEmptyOrMatchesSender()) {
             return false;
         }
 
@@ -195,16 +221,34 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
                 occupationTypes.stream().allMatch(t -> t.isRhyOccupation() || t.isClubOrGroupOccupation());
     }
 
-    private boolean isValidRecipientsForRiistakeskus() {
-        if (visibleToRhyMembers) {
+    public boolean isSubscriberEmptyOrMatchesSender() {
+        if (F.isNullOrEmpty(subscriberOrganisations)) {
+            return true;
+        }
+
+        if (subscriberOrganisations.size() != 1) {
             return false;
         }
 
-        if (visibleToAll) {
-            return F.isNullOrEmpty(occupationTypes) && F.isNullOrEmpty(subscriberOrganisations);
+        final OrganisationDTO subscriber = subscriberOrganisations.iterator().next();
+        return subscriber.getOrganisationType() == fromOrganisation.getOrganisationType() &&
+                Objects.equals(subscriber.getOfficialCode(), fromOrganisation.getOfficialCode());
+    }
+
+    private boolean isValidRecipientsForRiistakeskus() {
+        final boolean subscriberOccupationsEmpty = F.isNullOrEmpty(occupationTypes);
+        final boolean subscriberOrganisationsEmpty = F.isNullOrEmpty(subscriberOrganisations);
+
+        if (visibleToRhyMembers) {
+            return subscriberOccupationsEmpty && subscriberOrganisationsEmpty &&
+                    rhyMembershipSubscriber != null;
         }
 
-        return !F.isNullOrEmpty(occupationTypes) && !F.isNullOrEmpty(subscriberOrganisations);
+        if (visibleToAll) {
+            return subscriberOccupationsEmpty && subscriberOrganisationsEmpty;
+        }
+
+        return !subscriberOccupationsEmpty && !subscriberOrganisationsEmpty;
     }
 
     @Override
@@ -289,5 +333,13 @@ public class AnnouncementDTO extends BaseEntityDTO<Long> {
 
     public void setVisibleToRhyMembers(final boolean visibleToRhyMembers) {
         this.visibleToRhyMembers = visibleToRhyMembers;
+    }
+
+    public OrganisationDTO getRhyMembershipSubscriber() {
+        return rhyMembershipSubscriber;
+    }
+
+    public void setRhyMembershipSubscriber(final OrganisationDTO rhyMembershipSubscriber) {
+        this.rhyMembershipSubscriber = rhyMembershipSubscriber;
     }
 }

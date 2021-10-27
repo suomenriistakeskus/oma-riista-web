@@ -67,6 +67,7 @@ angular.module('app.srva.controllers', [])
                                                     DiaryListService, DiaryEntryRepositoryFactory,
                                                     DiaryListMarkerService,
                                                     SrvaEventMapSearchService, SrvaEventMapSearchParametersService,
+                                                    SrvaEventName,
                                                     parameters, moderatorView, initialRhy, tabs) {
         var $ctrl = this;
 
@@ -146,12 +147,28 @@ angular.module('app.srva.controllers', [])
             return SrvaEventMapSearchParametersService.createRequest(
                 $ctrl.searchParams, moderatorView, _.get(initialRhy, 'id'));
         }
+
+        $ctrl.onEventTypeChanged = function (event) {
+            var allChecked = _.filter($ctrl.searchParams.eventTypes, function (eventType) {
+                return !eventType.isChecked;
+            }).length === 0;
+
+            event.isChecked = allChecked;
+        };
+
+        $ctrl.onEventChanged = function (event) {
+            if (event.name === SrvaEventName.accident) {
+                _.forEach($ctrl.searchParams.eventTypes, function (eventType) {
+                    eventType.isChecked = event.isChecked;
+                });
+            }
+        };
     })
 
     .controller('SrvaEventListController', function ($state, SrvaEventChangeStateService, SrvaEventListSearchService,
                                                      SrvaEventListSearchParametersService, MapDefaults, DiaryImageService,
                                                      Helpers, SrvaEventState, NotificationService, FormPostService,
-                                                     parameters, initialRhy) {
+                                                     FetchAndSaveBlob, SrvaEventName, parameters, initialRhy) {
         var $ctrl = this;
 
         $ctrl.searchParams = {};
@@ -204,6 +221,10 @@ angular.module('app.srva.controllers', [])
             $state.go('profile.diary.editSrva', {id: 'me', entryId: entry.id});
         };
 
+        $ctrl.exportReport = function (entry) {
+            FetchAndSaveBlob.post('/api/v1/srva/' + entry.id + '/report/pdf');
+        };
+
         function createRequest() {
             return SrvaEventListSearchParametersService.createRequest($ctrl.searchParams, _.get(initialRhy, 'id'));
         }
@@ -224,5 +245,21 @@ angular.module('app.srva.controllers', [])
                 $state.reload();
             });
         }
+
+        $ctrl.onEventTypeChanged = function (event) {
+            var allChecked = _.filter($ctrl.searchParams.eventTypes, function (eventType) {
+                return !eventType.isChecked;
+            }).length === 0;
+
+            event.isChecked = allChecked;
+        };
+
+        $ctrl.onEventChanged = function (event) {
+            if (event.name === SrvaEventName.accident) {
+                _.forEach($ctrl.searchParams.eventTypes, function (eventType) {
+                    eventType.isChecked = event.isChecked;
+                });
+            }
+        };
     });
 

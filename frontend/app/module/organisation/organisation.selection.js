@@ -47,7 +47,8 @@
                         areaCode: '=',
                         showRk: '<',
                         showRka: '<',
-                        showInactiveRhys: '<'
+                        showInactiveRhys: '<',
+                        disableSelection: '<'
                     },
                     controllerAs: '$ctrl',
                     bindToController: true,

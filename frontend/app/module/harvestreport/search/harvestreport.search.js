@@ -22,33 +22,6 @@ angular.module('app.harvestreport.search', [])
                         return HarvestReportLocalityResolver.get();
                     }
                 }
-            })
-
-            .state('rhy.harvestreports', {
-                url: '/harvestreports',
-                templateUrl: 'harvestreport/search/harvestreport-rhy-search.html',
-                controller: 'RhyHarvestReportListController',
-                controllerAs: '$ctrl',
-                bindToController: true,
-                resolve: {
-                    reportCategories: function (HarvestReportFieldsAndSeasons) {
-                        return HarvestReportFieldsAndSeasons.valids(true);
-                    },
-                    rhy: function (Rhys, orgId) {
-                        return Rhys.get({id: orgId}).$promise;
-                    },
-                    rhyBounds: function (rhy, MapBounds) {
-                        return MapBounds.getRhyBounds(rhy.officialCode);
-                    },
-                    rhyGeoJSON: function (rhy, GIS) {
-                        return GIS.getInvertedRhyGeoJSON(rhy.officialCode, rhy.id, {
-                            name: rhy.nameFI
-                        });
-                    },
-                    harvestReportLocalityResolver: function (HarvestReportLocalityResolver) {
-                        return HarvestReportLocalityResolver.get();
-                    }
-                }
             });
     })
 
@@ -64,10 +37,6 @@ angular.module('app.harvestreport.search', [])
 
         this.findPageForAdmin = function (searchParams, pager) {
             return _findPage('api/v1/harvestreport/admin/search', searchParams, pager);
-        };
-
-        this.findAllForRhy = function (searchParams) {
-            return _findPage('api/v1/harvestreport/rhy/search', searchParams, {});
         };
     })
 
@@ -163,138 +132,6 @@ angular.module('app.harvestreport.search', [])
                     }
                 });
             });
-        };
-    })
-
-    .controller('RhyHarvestReportListController', function (MapDefaults, MapBounds,
-                                                            Helpers, FormPostService,
-                                                            HuntingYearService, HarvestReportSearchSidebar, Harvest,
-                                                            HarvestReportSearch, HarvestReportSearchMarkers,
-                                                            rhyBounds, rhyGeoJSON, reportCategories, orgId,
-                                                            harvestReportLocalityResolver) {
-        var $ctrl = this;
-
-        $ctrl.getHarvestAreaName = harvestReportLocalityResolver.getHarvestAreaName;
-        $ctrl.getAreaName = harvestReportLocalityResolver.getAreaName;
-        $ctrl.getRhyName = harvestReportLocalityResolver.getRhyName;
-        $ctrl.showSidebar = HarvestReportSearchSidebar.createSidebar();
-
-        $ctrl.$onInit = function () {
-            $ctrl.reportCategories = reportCategories;
-            $ctrl.harvestReports = [];
-
-            $ctrl.searchData = {
-                states: {
-                    'SENT_FOR_APPROVAL': false,
-                    'APPROVED': true
-                },
-                beginDate: HuntingYearService.getBeginDateStr(),
-                endDate: HuntingYearService.getEndDateStr(),
-                selectedReportCategory: null,
-                permitNumber: null
-            };
-
-            $ctrl.mapEvents = MapDefaults.getMapBroadcastEvents();
-            $ctrl.mapDefaults = MapDefaults.create({
-                dragging: true,
-                minZoom: 5,
-                scrollWheelZoom: false,
-            });
-            $ctrl.markers = [];
-            $ctrl.bounds = $ctrl.rhyBounds = rhyBounds;
-            $ctrl.rhyGeometry = {
-                data: rhyGeoJSON,
-                style: {
-                    fillColor: "#A080B0",
-                    weight: 2,
-                    opacity: 0,
-                    color: 'none',
-                    fillOpacity: 0.45
-                }
-            };
-        };
-
-        function getSelectedStates() {
-            return _.chain($ctrl.searchData.states).map(function (value, key) {
-                return value === true ? key : null;
-            }).filter().value();
-        }
-
-        $ctrl.canSearch = function () {
-            return getSelectedStates().length > 0;
-        };
-
-        function createSearchParams() {
-            if (!$ctrl.canSearch()) {
-                return null;
-            }
-
-            var selectedReportCategory = $ctrl.searchData.selectedReportCategory || {};
-
-            return {
-                rhyId: orgId,
-                states: getSelectedStates(),
-                permitNumber: $ctrl.searchData.permitNumber,
-                beginDate: Helpers.dateToString($ctrl.searchData.beginDate),
-                endDate: Helpers.dateToString($ctrl.searchData.endDate),
-                seasonId: selectedReportCategory.season ? selectedReportCategory.season.id : null,
-                gameSpeciesCode: selectedReportCategory.species ? selectedReportCategory.species.code : null
-            };
-        }
-
-        $ctrl.search = function () {
-            var params = createSearchParams();
-
-            if (!params) {
-                return;
-            }
-
-            HarvestReportSearch.findAllForRhy(params).then(function (response) {
-                $ctrl.harvestReports = _.map(response.data, function (harvest) {
-                    harvest.canEdit = false;
-
-                    return new Harvest(harvest);
-                });
-
-                $ctrl.markers = HarvestReportSearchMarkers.createMarkers($ctrl.harvestReports, markerClickHandler, harvestToState);
-                $ctrl.bounds = MapBounds.getBounds($ctrl.markers, _.identity, $ctrl.rhyBounds);
-            });
-        };
-
-        function markerClickHandler(markerId) {
-            $ctrl.show(_.find($ctrl.harvestReports, {id: markerId}));
-        }
-
-        function harvestToState(harvest) {
-            return _.get(harvest, 'harvestReportState');
-        }
-
-        $ctrl.show = function (harvest) {
-            $ctrl.showSidebar(harvest);
-        };
-
-        $ctrl.export = function () {
-            var params = createSearchParams();
-
-            if (params) {
-                FormPostService.submitFormUsingBlankTarget('/api/v1/harvestreport/rhy/search/excel', {
-                    json: angular.toJson(params)
-                });
-            }
-        };
-
-        $ctrl.onReportCategoryChanged = function () {
-            var selectedReportCategory = $ctrl.searchData.selectedReportCategory;
-
-            if (selectedReportCategory && selectedReportCategory.season) {
-                var season = selectedReportCategory.season;
-
-                $ctrl.searchData.beginDate = season.beginDate;
-                $ctrl.searchData.endDate = season.endDate2 ? season.endDate2 : season.endDate;
-            } else {
-                $ctrl.searchData.beginDate = HuntingYearService.getBeginDateStr();
-                $ctrl.searchData.endDate = HuntingYearService.getEndDateStr();
-            }
         };
     })
 

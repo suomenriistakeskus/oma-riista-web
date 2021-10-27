@@ -1,31 +1,51 @@
 package fi.riista.feature.organization.occupation;
 
+import fi.riista.feature.account.mobile.MobileOccupationDTO;
 import fi.riista.feature.huntingclub.HuntingClub;
-import fi.riista.feature.organization.person.PersonContactInfoDTO;
+import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonContactInfoDTO;
+import fi.riista.feature.organization.person.PersonIsDeceasedException;
 import fi.riista.feature.organization.person.PersonRepository;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.feature.organization.person.PersonIsDeceasedException;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
 import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static fi.riista.feature.organization.OrganisationType.ARN;
+import static fi.riista.feature.organization.OrganisationType.RHY;
+import static fi.riista.feature.organization.OrganisationType.RK;
+import static fi.riista.feature.organization.OrganisationType.VRN;
 import static fi.riista.feature.organization.occupation.OccupationType.HALLITUKSEN_JASEN;
+import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.PETOYHDYSHENKILO;
 import static fi.riista.feature.organization.occupation.OccupationType.PUHEENJOHTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.SRVA_YHTEYSHENKILO;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.VARAPUHEENJOHTAJA;
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
+@RunWith(Theories.class)
 public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
@@ -33,6 +53,9 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
     private PersonRepository personRepository;
+
+    @Resource
+    private OccupationRepository occupationRepository;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -219,6 +242,18 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
         return dto;
     }
 
+    private static OccupationDTO createOccupationDTO(final Organisation org, final Person person, final OccupationType type) {
+        final OccupationDTO dto = new OccupationDTO();
+        dto.setOrganisationId(org.getId());
+
+        final PersonContactInfoDTO personDTO = new PersonContactInfoDTO();
+        personDTO.setId(person.getId());
+        dto.setPerson(personDTO);
+        dto.setOccupationType(type);
+
+        return dto;
+    }
+
     @Test
     public void testClubMemberCannotListOccupations() {
         final HuntingClub club = model().newHuntingClub();
@@ -272,7 +307,7 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test
-    public void testCreateBoardMemberOccupation() {
+    public void testCreateOccupation_rhyCoordinator() {
         withRhyAndCoordinator((rhy, coordinator) -> {
             Person person = model().newPerson();
             Person substitute = model().newPerson();
@@ -288,6 +323,43 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
                     assertNotNull(created);
                     assertEquals(substitute.getSsn(), created.getSsn());
                 });
+            });
+        });
+    }
+
+    @Theory
+    public void testCreateOccupation_boardMember(final OrganisationType organisationType) {
+        assumeTrue(asList(RK, VRN, ARN, RHY).contains(organisationType));
+
+        Organisation org = null;
+        switch (organisationType) {
+            case RK:
+                org = model().getRiistakeskus();
+                break;
+            case VRN:
+                org = model().newValtakunnallinenRiistaneuvosto();
+                break;
+            case ARN:
+                org = model().newAlueellinenRiistaneuvosto();
+                break;
+            case RHY:
+                org = model().newRiistanhoitoyhdistys();
+                break;
+        }
+        final Person person = model().newPerson();
+        final Person substitute = model().newPerson();
+
+        final Organisation finalOrg = org;
+        onSavedAndAuthenticated(createNewModerator(), () -> {
+            final OccupationDTO boardMemberDTO = createOccupationDTO(finalOrg, person, PUHEENJOHTAJA);
+            final PersonContactInfoDTO substituteDTO = PersonContactInfoDTO.create(substitute);
+            boardMemberDTO.setSubstitute(substituteDTO);
+
+            final OccupationDTO outputDTO = occupationCrudFeature.create(boardMemberDTO);
+            runInTransaction(() -> {
+                final Person created = personRepository.getOne(outputDTO.getSubstitute().getId());
+                assertThat(created, is(notNullValue()));
+                assertThat(created.getSsn(), is(equalTo(substitute.getSsn())));
             });
         });
     }
@@ -329,6 +401,23 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
+    @Test
+    public void testListOccupationsByType() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            final Person person = model().newPerson();
+            final Occupation carnivoreContact = model().newOccupation(rhy, person, PETOYHDYSHENKILO);
+            model().newOccupation(rhy, person, METSASTYKSENVALVOJA);
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+                final List<OccupationDTO> occupationList = occupationCrudFeature.listOccupationsByType(rhy.getId(), PETOYHDYSHENKILO);
+                assertThat(occupationList, is(notNullValue()));
+                assertThat(occupationList, hasSize(1));
+                assertThat(occupationList.get(0).getOccupationType(), is(equalTo(carnivoreContact.getOccupationType())));
+            });
+
+        });
+    }
+
     private static List<OccupationDTO> getAndAssertType(final List<OccupationDTO> occupations,
                                                         final OccupationType type,
                                                         final long expected) {
@@ -339,4 +428,66 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
 
         return occupationsByType;
     }
+
+    @Test
+    public void testUpdateContactInfoVisibility() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            final Person person = model().newPerson();
+            final Occupation occupation = model().newOccupation(rhy, person, METSASTYKSENVALVOJA);
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final OccupationContactInfoVisibilityDTO visibility =
+                        new OccupationContactInfoVisibilityDTO(
+                                occupation.getId(),
+                                occupation.isNameVisibility(),
+                                occupation.isPhoneNumberVisibility(),
+                                false);
+                occupationCrudFeature.updateContactInfoVisibility(Collections.singletonList(visibility));
+
+                runInTransaction(() -> {
+                    final Occupation updated = occupationRepository.getOne(occupation.getId());
+                    assertThat(updated, is(notNullValue()));
+
+                    assertThat(updated.isNameVisibility(), is(equalTo(occupation.isNameVisibility())));
+                    assertThat(updated.isPhoneNumberVisibility(), is(equalTo(occupation.isPhoneNumberVisibility())));
+                    assertThat(updated.isEmailVisibility(), is(equalTo(false)));
+                });
+            });
+        });
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUpdateContactInfoVisibility_illegalSetting() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            final Person person = model().newPerson();
+            final Occupation occupation = model().newOccupation(rhy, person, METSASTYKSENVALVOJA);
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final OccupationContactInfoVisibilityDTO visibility =
+                        new OccupationContactInfoVisibilityDTO(
+                                occupation.getId(),
+                                false,
+                                occupation.isPhoneNumberVisibility(),
+                                false);
+                occupationCrudFeature.updateContactInfoVisibility(Collections.singletonList(visibility));
+            });
+        });
+    }
+
+    @Test
+    public void testListMyClubMemberships() {
+        final HuntingClub club = model().newHuntingClub();
+        final Person person = model().newPerson();
+        model().newOccupation(club, person, OccupationType.SEURAN_JASEN);
+        final HuntingClub club2 = model().newHuntingClub();
+        model().newOccupation(club2, person, OccupationType.SEURAN_JASEN);
+        final Person person2 = model().newPerson();
+        model().newOccupation(club, person2, OccupationType.SEURAN_JASEN);
+
+        onSavedAndAuthenticated(createUser(person), () -> {
+            final List<MobileOccupationDTO> occupations = occupationCrudFeature.listMyClubMemberships();
+            assertThat(occupations, hasSize(2));
+        });
+    }
+
 }

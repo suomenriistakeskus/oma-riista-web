@@ -10,10 +10,17 @@ import fi.riista.feature.permit.PermitClientUriFactory;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachment;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachmentRepository;
+import fi.riista.feature.permit.zip.OmaRiistaDecisionAttachmentsZip;
+import fi.riista.feature.permit.zip.OmaRiistaDecisionAttachmentsZipBuilder;
 import fi.riista.feature.storage.FileDownloadService;
+import fi.riista.feature.storage.FileStorageService;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.security.EntityPermission;
+import fi.riista.util.ContentDispositionUtil;
 import fi.riista.validation.FinnishHuntingPermitNumberValidator;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,10 +46,16 @@ public class PermitDecisionRevisionDownloadFeature {
     private FileDownloadService fileDownloadService;
 
     @Resource
+    private FileStorageService fileStorageService;
+
+    @Resource
     private PermitDecisionRevisionRepository decisionRevisionRepository;
 
     @Resource
     private PermitDecisionAttachmentRepository permitDecisionAttachmentRepository;
+
+    @Resource
+    private PermitDecisionRevisionAttachmentRepository permitDecisionRevisionAttachmentRepository;
 
     @Resource
     private PermitClientUriFactory permitClientUriFactory;
@@ -58,7 +71,7 @@ public class PermitDecisionRevisionDownloadFeature {
                             final long revisionId,
                             final HttpServletResponse response) throws IOException {
         final PermitDecision permitDecision = requireEntityService.requirePermitDecision(decisionId,
-                                                                                         EntityPermission.READ);
+                EntityPermission.READ);
         final PermitDecisionRevision revision = decisionRevisionRepository.getOne(revisionId);
 
         download(response, permitDecision, revision);
@@ -92,7 +105,7 @@ public class PermitDecisionRevisionDownloadFeature {
         final PermitDecisionAttachment attachment = permitDecisionAttachmentRepository.getOne(attachmentId);
 
         // Only allow downloading of attachments actually listed on the decision
-        if (attachment.getOrderingNumber() == null){
+        if (attachment.getOrderingNumber() == null) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
@@ -104,8 +117,8 @@ public class PermitDecisionRevisionDownloadFeature {
                                     final PermitDecisionAttachment attachment) throws IOException {
         checkArgument(attachment.getPermitDecision().equals(permitDecision));
         fileDownloadService.downloadUsingTemporaryFile(attachment.getAttachmentMetadata(),
-                                                       attachment.getAttachmentMetadata().getOriginalFilename(),
-                                                       response);
+                attachment.getAttachmentMetadata().getOriginalFilename(),
+                response);
     }
 
     @Transactional(readOnly = true)
@@ -116,7 +129,7 @@ public class PermitDecisionRevisionDownloadFeature {
                 permitDecisionAttachmentRepository.findListedAttachmentsByPermitDecisionRevision(revision);
         final PermitDecisionDownloadDTO.Builder builder = PermitDecisionDownloadDTO.Builder.builder()
                 .withDecisionLink(permitClientUriFactory.getAbsoluteAnonymousDecisionPdfDownloadUri(uuid).toString(),
-                                  decision.createPermitNumber());
+                        decision.createPermitNumber());
 
         attachments.forEach(a -> builder.withAttachment(
                 permitClientUriFactory.getAbsoluteAnonymousDecisionAttachmentUri(uuid, a.getId()).toString(),
@@ -151,9 +164,39 @@ public class PermitDecisionRevisionDownloadFeature {
 
     }
 
+    @Transactional(readOnly = true, rollbackFor = IOException.class)
+    public ResponseEntity<byte[]> downloadPublicCarnivoreDecisionAttachmentsNoAuthentication(final HttpServletResponse response,
+                                                                                             final String documentNumber,
+                                                                                             final Locale locale) throws IOException {
+        if (!FinnishHuntingPermitNumberValidator.validate(documentNumber, true)) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return null;
+        }
+
+        if (!harvestPermitRepository.isCarnivorePermitAvailable(documentNumber).isPresent()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return null;
+        }
+
+        final int decisionNumber = DocumentNumberUtil.extractOrderNumber(documentNumber);
+        final OmaRiistaDecisionAttachmentsZip attachmentsZip = new OmaRiistaDecisionAttachmentsZipBuilder(fileStorageService, locale)
+                .withAttachments(permitDecisionRevisionAttachmentRepository.findLatestPublicDecisionAttachmentsPdf(decisionNumber))
+                .withDecisionNumber(documentNumber)
+                .build();
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        HttpHeaders headers = ContentDispositionUtil.header(attachmentsZip.getFilename());
+        response.setHeader(ContentDispositionUtil.CONTENT_DISPOSITION, headers.getContentDisposition().toString());
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .headers(headers)
+                .body(attachmentsZip.getData());
+    }
+
     @Async
     @Transactional
-    public void decisionDownloaded(final long decisionId){
+    public void decisionDownloaded(final long decisionId) {
         downloadRepository.insertDownload(decisionId);
     }
 

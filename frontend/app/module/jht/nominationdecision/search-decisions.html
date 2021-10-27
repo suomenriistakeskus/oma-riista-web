@@ -9,6 +9,11 @@
     </div>
 
     <div class="col-xs-9">
+        <button type="button" class="decision-view-primary-button" ng-click="$ctrl.exportResultsToExcel()">
+            <span class="glyphicon glyphicon-search"></span> &nbsp;
+            <span translate="global.button.exportToExcel"></span>
+        </button>
+
         <slice-pager slice="$ctrl.results" load-page="$ctrl.loadPage(page)"></slice-pager>
 
         <moderator-nominationdecision-results-list results="$ctrl.results.content"></moderator-nominationdecision-results-list>

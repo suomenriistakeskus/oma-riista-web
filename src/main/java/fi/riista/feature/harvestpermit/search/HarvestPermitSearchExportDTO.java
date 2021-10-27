@@ -1,5 +1,6 @@
 package fi.riista.feature.harvestpermit.search;
 
+import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitContactPerson;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
@@ -80,17 +81,19 @@ public class HarvestPermitSearchExportDTO {
                                                             @Nonnull final Map<Long, List<HarvestPermitContactPerson>> contactPersonsByPermitId,
                                                             @Nonnull final Map<Long, Person> personsById,
                                                             @Nonnull final Map<Long, List<HarvestPermitSpeciesAmount>> speciesAmountsByPermitId,
-                                                            @Nonnull final Map<Long, LocalisedString> rkaNameByRhyId) {
+                                                            @Nonnull final Map<Long, LocalisedString> rkaNameByRhyId,
+                                                            @Nonnull final Map<Long, GeoLocation> locationByPermitId) {
 
         Objects.requireNonNull(permits, "permits must not be null");
         Objects.requireNonNull(contactPersonsByPermitId, "contactPersonsByPermitId must not be null");
         Objects.requireNonNull(personsById, "personsById must not be null");
         Objects.requireNonNull(speciesAmountsByPermitId, "speciesAmountsByPermitId must not be null");
-        Objects.requireNonNull(rkaNameByRhyId, "speciesAmounts must not be null");
+        Objects.requireNonNull(rkaNameByRhyId, "rkaNameByRhyId must not be null");
+        Objects.requireNonNull(locationByPermitId, "locationByPermitId must not be null");
 
         return permits.stream()
                 .map(permit -> HarvestPermitSearchExportDTO.create(permit, contactPersonsByPermitId, personsById,
-                                                                   speciesAmountsByPermitId, rkaNameByRhyId))
+                                                                   speciesAmountsByPermitId, rkaNameByRhyId, locationByPermitId))
                 .collect(toList());
     }
 
@@ -98,13 +101,15 @@ public class HarvestPermitSearchExportDTO {
                                                       @Nonnull final Map<Long, List<HarvestPermitContactPerson>> contactPersonsByPermitId,
                                                       @Nonnull final Map<Long, Person> personsById,
                                                       @Nonnull final Map<Long, List<HarvestPermitSpeciesAmount>> speciesAmountsByPermitId,
-                                                      @Nonnull final Map<Long, LocalisedString> rkaNameByRhyId) {
+                                                      @Nonnull final Map<Long, LocalisedString> rkaNameByRhyId,
+                                                      @Nonnull final Map<Long, GeoLocation> locationByPermitId) {
 
         Objects.requireNonNull(permit, "permit must not be null");
         Objects.requireNonNull(contactPersonsByPermitId, "contactPersonsByPermitId must not be null");
         Objects.requireNonNull(personsById, "personsById must not be null");
         Objects.requireNonNull(speciesAmountsByPermitId, "speciesAmountsByPermitId must not be null");
-        Objects.requireNonNull(rkaNameByRhyId, "speciesAmounts must not be null");
+        Objects.requireNonNull(rkaNameByRhyId, "rkaNameByRhyId must not be null");
+        Objects.requireNonNull(locationByPermitId, "locationByPermitId must not be null");
 
         final HarvestPermitSearchExportDTO dto = new HarvestPermitSearchExportDTO();
         dto.setPermitNumber(permit.getPermitNumber());
@@ -133,6 +138,9 @@ public class HarvestPermitSearchExportDTO {
         dto.setRka(rkaNameByRhyId.get(permit.getRhy().getId()));
 
         updateValidity(dto);
+
+        dto.setLatitude(F.mapNullable(locationByPermitId.get(permit.getId()), GeoLocation::getLatitude));
+        dto.setLongitude(F.mapNullable(locationByPermitId.get(permit.getId()), GeoLocation::getLongitude));
 
         return dto;
     }
@@ -183,6 +191,9 @@ public class HarvestPermitSearchExportDTO {
     private HarvestPermitValidity validity;
 
     private LocalisedString rka;
+
+    private Integer latitude;
+    private Integer longitude;
 
     // Constructor
 
@@ -261,5 +272,21 @@ public class HarvestPermitSearchExportDTO {
 
     public void setRka(final LocalisedString rka) {
         this.rka = rka;
+    }
+
+    public Integer getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(final Integer latitude) {
+        this.latitude = latitude;
+    }
+
+    public Integer getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(final Integer longitude) {
+        this.longitude = longitude;
     }
 }

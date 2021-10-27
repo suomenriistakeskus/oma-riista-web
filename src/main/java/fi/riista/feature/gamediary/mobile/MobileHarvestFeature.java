@@ -1,23 +1,19 @@
 package fi.riista.feature.gamediary.mobile;
 
 import fi.riista.feature.RequireEntityService;
-import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.error.MessageExposableValidationException;
 import fi.riista.feature.gamediary.HarvestChangeHistory;
 import fi.riista.feature.gamediary.HarvestChangeHistoryRepository;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
 import fi.riista.feature.gamediary.harvest.HarvestService;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenService;
 import fi.riista.feature.gamediary.image.GameDiaryImageService;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DtoUtil;
-import fi.riista.util.F;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Optional;
 
 import static fi.riista.feature.gamediary.GameDiarySpecs.harvestsByHuntingYear;
 import static fi.riista.feature.gamediary.GameDiarySpecs.shooter;
@@ -58,10 +53,10 @@ public class MobileHarvestFeature {
     private RequireEntityService requireEntityService;
 
     @Resource
-    private DeerPilotService deerPilotService;
+    private MobileHarvestDTOTransformer dtoTransformer;
 
     @Resource
-    private MobileHarvestDTOTransformer dtoTransformer;
+    private MobileHarvestService mobileHarvestService;
 
     @Transactional(readOnly = true)
     public List<MobileHarvestDTO> getHarvests(final int firstCalendarYearOfHuntingYear,
@@ -76,17 +71,13 @@ public class MobileHarvestFeature {
                         .and(harvestsByHuntingYear(firstCalendarYearOfHuntingYear)),
                 temporalSort(Direction.ASC));
 
-        // TODO overriding HarvestSpecVersion will be removed when deer pilot 2020 is over.
-        final HarvestSpecVersion overrideSpecVersion =
-                specVersion.revertIfNotOnDeerPilot(deerPilotService.isPilotUser(person));
-
-        return dtoTransformer.apply(harvests, overrideSpecVersion);
+        return dtoTransformer.apply(harvests, specVersion);
     }
 
     @Transactional(readOnly = true)
     public MobileHarvestDTO getExistingByMobileClientRefId(final MobileHarvestDTO dto,
                                                            final Person authenticatedPerson) {
-        assertHarvestDTOIsValid(dto);
+        mobileHarvestService.assertHarvestDTOIsValid(dto);
 
         if (dto.getMobileClientRefId() != null) {
             final Harvest harvest =
@@ -102,17 +93,13 @@ public class MobileHarvestFeature {
 
     @Transactional
     public MobileHarvestDTO createHarvest(final MobileHarvestDTO dto) {
-        fixNonNullAntlerFieldsIfNotAdultMale(dto);
-        assertHarvestDTOIsValid(dto);
+        mobileHarvestService.fixNonNullAntlerFieldsIfNotAdultMale(dto);
+        mobileHarvestService.assertHarvestDTOIsValid(dto);
 
         final SystemUser activeUser = activeUserService.requireActiveUser();
         final Person currentPerson = activeUser.requirePerson();
 
         final HarvestSpecVersion specVersion = dto.getHarvestSpecVersion();
-
-        // TODO `overrideSpecVersion` will be removed when deer pilot 2020 is over.
-        final boolean isDeerPilotUser = deerPilotService.isPilotUser(currentPerson);
-        final HarvestSpecVersion overrideSpecVersion = specVersion.revertIfNotOnDeerPilot(isDeerPilotUser);
 
         // Duplicate prevention check
         final MobileHarvestDTO existing = getExistingByMobileClientRefId(dto, currentPerson);
@@ -130,50 +117,46 @@ public class MobileHarvestFeature {
         harvest.setMobileClientRefId(dto.getMobileClientRefId());
 
         final HarvestChangeHistory historyEvent =
-                harvestService.updateMutableFields(harvest, dto, activeUser, true, isDeerPilotUser);
+                harvestService.updateMutableFields(harvest, dto, activeUser, true);
 
         harvestRepository.saveAndFlush(harvest);
 
         if (dto.getSpecimens() != null) {
             // Do not disable input validation unless really needed.
             harvestSpecimenService
-                    .addSpecimens(harvest, dto.getAmount(), dto.getSpecimens(), overrideSpecVersion, false);
+                    .addSpecimens(harvest, dto.getAmount(), dto.getSpecimens(), specVersion, false);
         }
 
         if (historyEvent != null) {
             harvestChangeHistoryRepository.save(historyEvent);
         }
 
-        return dtoTransformer.apply(harvest, overrideSpecVersion);
+        return dtoTransformer.apply(harvest, specVersion);
     }
 
     @Transactional
     public MobileHarvestDTO updateHarvest(final MobileHarvestDTO dto) {
-        fixNonNullAntlerFieldsIfNotAdultMale(dto);
-        assertHarvestDTOIsValid(dto);
+        mobileHarvestService.fixNonNullAntlerFieldsIfNotAdultMale(dto);
+        mobileHarvestService.assertHarvestDTOIsValid(dto);
 
         final HarvestSpecVersion specVersion = dto.getHarvestSpecVersion();
 
         final SystemUser activeUser = activeUserService.requireActiveUser();
         final Person currentPerson = activeUser.requirePerson();
 
-        // TODO `overrideSpecVersion` will be removed when deer pilot 2020 is over.
-        final boolean isDeerPilotUser = deerPilotService.isPilotUser(currentPerson);
-        final HarvestSpecVersion overrideSpecVersion = specVersion.revertIfNotOnDeerPilot(isDeerPilotUser);
-
         final Harvest harvest = requireEntityService.requireHarvest(dto.getId(), EntityPermission.UPDATE);
         DtoUtil.assertNoVersionConflict(harvest, dto);
 
         final boolean businessFieldsCanBeUpdated =
-                harvestService.canBusinessFieldsBeUpdatedFromMobile(currentPerson, harvest, overrideSpecVersion);
+                harvestService.canBusinessFieldsBeUpdatedFromMobile(currentPerson, harvest, specVersion, false);
 
         final HarvestChangeHistory historyEvent = harvestService
-                .updateMutableFields(harvest, dto, activeUser, businessFieldsCanBeUpdated, isDeerPilotUser);
+                .updateMutableFields(harvest, dto, activeUser, businessFieldsCanBeUpdated);
 
         if (businessFieldsCanBeUpdated) {
             final boolean anyChangesDetected = harvestSpecimenService
                     // Do not disable input validation unless really needed.
-                    .setSpecimens(harvest, dto.getAmount(), dto.getSpecimens(), overrideSpecVersion, false)
+                    .setSpecimens(harvest, dto.getAmount(), dto.getSpecimens(), specVersion, false)
                     .apply((specimens, changesDetected) -> changesDetected);
 
             if (anyChangesDetected) {
@@ -186,7 +169,7 @@ public class MobileHarvestFeature {
         }
 
         // flush is mandatory! because mobile will use the returned revision, and revision is updated on save
-        return dtoTransformer.apply(harvestRepository.saveAndFlush(harvest), overrideSpecVersion);
+        return dtoTransformer.apply(harvestRepository.saveAndFlush(harvest), specVersion);
     }
 
     @Transactional
@@ -197,29 +180,5 @@ public class MobileHarvestFeature {
         harvestSpecimenService.deleteAllSpecimens(harvest);
         gameDiaryImageService.deleteGameDiaryImages(harvest);
         harvestService.deleteHarvest(harvest, activeUser);
-    }
-
-    private static void assertHarvestDTOIsValid(final MobileHarvestDTO dto) {
-        if (dto.getGeoLocation().getSource() == null) {
-            throw new MessageExposableValidationException("geoLocation.source is null");
-        }
-
-        if (dto.getId() == null && dto.getMobileClientRefId() == null) {
-            throw new MessageExposableValidationException("mobileClientRefId must not be null");
-        }
-
-        // Specimens are allowed to be null on creation.
-        if (F.hasId(dto) && dto.getSpecimens() == null) {
-            throw new MessageExposableValidationException("specimens must not be null");
-        }
-    }
-
-    private static void fixNonNullAntlerFieldsIfNotAdultMale(final MobileHarvestDTO dto) {
-        Optional.ofNullable(dto.getSpecimens())
-                .ifPresent(specimens -> specimens.forEach(specimen -> {
-                    if (!specimen.isAdultMale()) {
-                        specimen.clearAllAntlerFields();
-                    }
-                }));
     }
 }

@@ -3,9 +3,9 @@
 angular.module('app.harvestpermit.services', ['ngResource'])
 
     .constant('PermitCategories', ['MOOSELIKE', 'MOOSELIKE_NEW', 'BIRD',
-        'LARGE_CARNIVORE_BEAR', 'LARGE_CARNIVORE_LYNX', 'LARGE_CARNIVORE_LYNX_PORONHOITO', 'MAMMAL', 'NEST_REMOVAL',
-        'LAW_SECTION_TEN', 'WEAPON_TRANSPORTATION', 'DISABILITY', 'DOG_DISTURBANCE', 'DOG_UNLEASH', 'DEPORTATION',
-        'RESEARCH', 'IMPORTING', 'GAME_MANAGEMENT'])
+        'LARGE_CARNIVORE_BEAR', 'LARGE_CARNIVORE_LYNX', 'LARGE_CARNIVORE_LYNX_PORONHOITO', 'LARGE_CARNIVORE_WOLF',
+        'MAMMAL', 'NEST_REMOVAL', 'LAW_SECTION_TEN', 'WEAPON_TRANSPORTATION',
+        'DISABILITY', 'DOG_DISTURBANCE', 'DOG_UNLEASH', 'DEPORTATION', 'RESEARCH', 'IMPORTING', 'GAME_MANAGEMENT'])
     .constant('DecisionTypes', ['HARVEST_PERMIT', 'CANCEL_APPLICATION', 'IGNORE_APPLICATION', 'CANCEL_ANNUAL_RENEWAL'])
     .constant('DecisionGrantStatus', ['UNCHANGED', 'RESTRICTED', 'REJECTED'])
     .constant('AppealStatus', ['INITIATED', 'IGNORED', 'UNCHANGED', 'REPEALED', 'PARTIALLY_REPEALED', 'RETREATMENT'])
@@ -102,6 +102,12 @@ angular.module('app.harvestpermit.services', ['ngResource'])
                 isArray: true,
                 url: 'api/v1/harvestpermit/permittypes',
                 cache: CacheFactory.get('harvestPermitPermitTypesCache')
+            },
+            omaRiistaPermitTypes: {
+                method: 'GET',
+                isArray: true,
+                url: 'api/v1/harvestpermit/omariistapermittypes',
+                cache: CacheFactory.get('harvestPermitOmaRiistaPermitTypesCache')
             },
             query: {
                 method: 'GET',
@@ -251,7 +257,8 @@ angular.module('app.harvestpermit.services', ['ngResource'])
         function (ActiveRoleService, ModeratorPrivileges) {
             var otherHarvestPermitTypes = ['LAW_SECTION_TEN'];
             var damageBasedDerogations = ['BIRD', 'MAMMAL', 'NEST_REMOVAL'];
-            var otherDerogations = ['LARGE_CARNIVORE_BEAR', 'LARGE_CARNIVORE_LYNX', 'LARGE_CARNIVORE_LYNX_PORONHOITO'];
+            var otherDerogations = ['LARGE_CARNIVORE_BEAR', 'LARGE_CARNIVORE_LYNX', 'LARGE_CARNIVORE_LYNX_PORONHOITO',
+                'LARGE_CARNIVORE_WOLF'];
             var otherPermitTypes = ['WEAPON_TRANSPORTATION', 'DISABILITY', 'DEPORTATION', 'RESEARCH', 'IMPORTING', 'GAME_MANAGEMENT'];
             var dogEventPermitTypes = ['DOG_UNLEASH', 'DOG_DISTURBANCE'];
 
@@ -327,7 +334,8 @@ angular.module('app.harvestpermit.services', ['ngResource'])
         DEPORTATION: "395",
         RESEARCH: "396",
         IMPORTING: "360",
-        GAME_MANAGEMENT: "512"
+        GAME_MANAGEMENT: "512",
+        FORBIDDEN_METHOD: "370"
     })
 
     .service('PermitTypeCode',

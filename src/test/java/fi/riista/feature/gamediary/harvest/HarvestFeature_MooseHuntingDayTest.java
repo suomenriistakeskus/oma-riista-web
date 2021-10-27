@@ -41,10 +41,9 @@ import static org.junit.Assert.fail;
 public class HarvestFeature_MooseHuntingDayTest extends HarvestFeatureTestBase
         implements HarvestDTOBuilderFactory, HuntingGroupFixtureMixin {
 
-    // TODO Add ANTLERS_LOST back when deer pilot 2020 is over.
     @DataPoints("specimenTypes")
     public static final HarvestSpecimenType[] SPECIMEN_TYPES = {
-            ADULT_MALE, ADULT_FEMALE,/* ANTLERS_LOST,*/ YOUNG_MALE, YOUNG_FEMALE
+            ADULT_MALE, ADULT_FEMALE, ANTLERS_LOST, YOUNG_MALE, YOUNG_FEMALE
     };
 
     @Theory

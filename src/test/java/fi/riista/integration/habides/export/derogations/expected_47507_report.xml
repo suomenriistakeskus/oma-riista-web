@@ -60,4 +60,65 @@
         <supervisoryMeasure>Testikeskus Yksi</supervisoryMeasure>
         <comments>2020-08-01 - 2020-08-31, 2020-10-01 - 2020-10-31</comments>
     </derogation>
+    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/268" derogation_reference="FIMMM-H-1-2020-1-000-00636-2-47507" user_derogation_ref="2020-1-000-00636-2" userIdentity="FIMMM" status="complete">
+        <species>Mammalia normalis</species>
+        <speciesGroup></speciesGroup>
+        <coversAllSpecies></coversAllSpecies>
+        <sensitive>false</sensitive>
+        <licenseValidFrom>2020-08-01</licenseValidFrom>
+        <licenseValidUntil>2020-08-30</licenseValidUntil>
+        <licensingAuthority>Testikeskus Kaksi</licensingAuthority>
+        <regions>
+            <region>T002</region>
+        </regions>
+        <location>Mammal Capture Area</location>
+        <derogationJustifications>
+            <derogationJustification>2</derogationJustification>
+            <derogationJustification>3</derogationJustification>
+        </derogationJustifications>
+        <reasons>
+            <reason>52</reason>
+        </reasons>
+        <derogationJustificationDetails></derogationJustificationDetails>
+        <strictlySupervisedConditions></strictlySupervisedConditions>
+        <selectiveBasis></selectiveBasis>
+        <smallNumberIndividuals></smallNumberIndividuals>
+        <activities>
+            <activity>20</activity>
+        </activities>
+        <additionalActivities/>
+        <activitiesFurtherDetails></activitiesFurtherDetails>
+        <methods>
+            <method>12</method>
+        </methods>
+        <furtherDetails>artificial light, automatic weapon, blowpipe, concealed weapon, crossbows, electrical device, explosives, gassing, hooks, illumination device, leghold trap, limes, live animal decoy, mirrors, nets, night shooting device, other non selective, other selective, poison, snares, spear, tape recorders, traps</furtherDetails>
+        <modesOfTransport>
+            <modeOfTransport>2</modeOfTransport>
+        </modesOfTransport>
+        <licensed>
+            <individuals>10</individuals>
+            <eggs></eggs>
+            <nests></nests>
+            <breeding></breeding>
+            <otherType></otherType>
+            <noFigureProvided>false</noFigureProvided>
+            <licensedJustification></licensedJustification>
+        </licensed>
+        <actuallyTaken>
+            <individuals>9</individuals>
+            <eggs></eggs>
+            <nests></nests>
+            <breeding></breeding>
+            <otherType></otherType>
+            <noFigureProvided>false</noFigureProvided>
+            <licensedJustification></licensedJustification>
+        </actuallyTaken>
+        <allMeasuresTaken>true</allMeasuresTaken>
+        <EUAllMeasuresTaken>true</EUAllMeasuresTaken>
+        <detrimentalToPopulation></detrimentalToPopulation>
+        <alternativeToDerogation>true</alternativeToDerogation>
+        <alternativesAssessed></alternativesAssessed>
+        <supervisoryMeasure>Testikeskus Kaksi</supervisoryMeasure>
+        <comments>2020-08-01 - 2020-08-30</comments>
+    </derogation>
 </derogations>

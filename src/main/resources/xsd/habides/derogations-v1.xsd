@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-    <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="http://www.w3.org/2001/xml.xsd" />
+    <xs:import namespace="http://www.w3.org/XML/1998/namespace" schemaLocation="xml.xsd" />
     <!--
 
         XML Schema for HABIDES+ data (the first reporting year 2015)

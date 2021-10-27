@@ -80,7 +80,7 @@ function notify_sentry {
 
     local GIT_HASH="$1"
 
-    curl "${SENTRY_URL}" \
+    curl -k "${SENTRY_URL}" \
         -X POST \
         -H 'Content-Type: application/json' \
         -d "{\"version\": \"$GIT_HASH\"}"   &&

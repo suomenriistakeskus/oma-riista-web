@@ -1,0 +1,22 @@
+<div class="col-md-6 col-xs-12  fa-border" style="margin-bottom: 20px">
+    <img ng-src="/static/elainlajikuvat/512x512/46615.jpg" width="192"
+         height="192"/>
+</div>
+
+<div class="col-md-6 col-xs-12" style="margin-bottom: 20px">
+    <p>
+        <strong translate="harvestpermit.mine.applications.permitCategory.LARGE_CARNIVORE_LYNX"></strong>
+    </p>
+        <div>
+            <span translate="harvestpermit.new.applicationPeriod"></span><br/>
+            <!-- Hard coded info for lynx, although appications are accepted until 10th October -->
+            <span>14.9. - 4.10.</span>
+        </div>
+    <hr class="invisible"/>
+    <button ng-if="$ctrl.isActive()"
+            class="btn btn-primary"
+            ng-click="$ctrl.onSelectType()"
+            translate="harvestpermit.new.selectTypeButton">
+    </button>
+
+</div>

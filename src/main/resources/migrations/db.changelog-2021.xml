@@ -47,4 +47,765 @@
             </column>
         </addColumn>
     </changeSet>
+
+    <changeSet id="2021-02-05-drop-not-null-constraints-in-expenses-in-game_damage_inspection_event"
+               author="vincit-mikkori">
+        <dropNotNullConstraint tableName="game_damage_inspection_event" columnName="hourly_expenses_unit"/>
+        <dropNotNullConstraint tableName="game_damage_inspection_event" columnName="daily_allowance"/>
+    </changeSet>
+
+    <changeSet id="2021-02-05-add-expenses_included-to-game_damage_inspection_event" author="vincit-mikkori">
+        <addColumn tableName="game_damage_inspection_event">
+            <column name="expenses_included" type="BOOLEAN" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <sql><![CDATA[
+            ALTER TABLE game_damage_inspection_event ADD CONSTRAINT ck_game_damage_inspection_event_expenses_included
+            CHECK ((expenses_included = FALSE AND hourly_expenses_unit IS NULL AND daily_allowance IS NULL) OR
+            (expenses_included = TRUE AND hourly_expenses_unit IS NOT NULL AND daily_allowance IS NOT NULL));
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2021-02-09-drop-not-null-constraint-in-game_damage_inspection_event"
+               author="vincit-mikkori">
+        <dropNotNullConstraint tableName="game_damage_inspection_event" columnName="inspector_name"/>
+    </changeSet>
+
+    <changeSet id="2021-02-09-add-inspector_id-to-game_damage_inspection_event" author="vincit-mikkori">
+        <addColumn tableName="game_damage_inspection_event">
+            <column name="inspector_id" type="BIGINT">
+                <constraints foreignKeyName="fk_game_damage_inspector"
+                             referencedTableName="person"
+                             referencedColumnNames="person_id"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2021-02-10-add-check-constraint-for-inspector-in-game_damage_inspection_event"
+               author="vincit-mikkori">
+        <sql><![CDATA[
+            ALTER TABLE game_damage_inspection_event ADD CONSTRAINT ck_game_damage_inspection_event_inspector
+            CHECK ((inspector_name IS NULL AND inspector_id IS NOT NULL) OR
+            (inspector_name IS NOT NULL AND inspector_id IS NULL));
+        ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2021-03-15-regional-meeting-representatives" author="vincit-terole">
+        <insert tableName="occupation_type">
+            <column name="name" value="ALUEKOKOUKSEN_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_type">
+            <column name="name" value="ALUEKOKOUKSEN_VARAEDUSTAJA"/>
+        </insert>
+    </changeSet>
+
+
+    <changeSet id="2021-03-22-add-contact_info_visibility-to-occupation" author="vincit-mikkori">
+        <addColumn tableName="occupation">
+            <column name="name_visibility" type="BOOLEAN"/>
+        </addColumn>
+
+        <addColumn tableName="occupation">
+            <column name="phone_number_visibility" type="BOOLEAN"/>
+        </addColumn>
+
+        <addColumn tableName="occupation">
+            <column name="email_visibility" type="BOOLEAN"/>
+        </addColumn>
+
+        <sql><![CDATA[
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'TOIMINNANOHJAAJA';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = false
+            WHERE occupation_type = 'SRVA_YHTEYSHENKILO';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'PETOYHDYSHENKILO';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'METSASTYKSENVALVOJA';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = false, email_visibility = false
+            WHERE occupation_type = 'METSASTAJATUTKINNON_VASTAANOTTAJA';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = false, email_visibility = false
+            WHERE occupation_type = 'AMPUMAKOKEEN_VASTAANOTTAJA';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = false, email_visibility = false
+            WHERE occupation_type = 'RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = false, email_visibility = false
+            WHERE occupation_type = 'METSASTAJATUTKINTOON_VALMENTAVAN_KOULUTUKSEN_KOULUTTAJA';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'PUHEENJOHTAJA';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'VARAPUHEENJOHTAJA';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'HALLITUKSEN_JASEN';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'HALLITUKSEN_VARAJASEN';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'JASEN';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'VARAJASEN';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'JALJESTYSKOIRAN_OHJAAJA_HIRVI';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET';
+
+            UPDATE occupation
+            SET name_visibility = true, phone_number_visibility = true, email_visibility = true
+            WHERE occupation_type = 'JALJESTYSKOIRAN_OHJAAJA_SUURPEDOT';
+
+            UPDATE occupation
+            SET name_visibility = false, phone_number_visibility = false, email_visibility = false
+            WHERE occupation_type = 'SEURAN_YHDYSHENKILO';
+
+            UPDATE occupation
+            SET name_visibility = false, phone_number_visibility = false, email_visibility = false
+            WHERE occupation_type = 'SEURAN_JASEN';
+
+            UPDATE occupation
+            SET name_visibility = false, phone_number_visibility = false, email_visibility = false
+            WHERE occupation_type = 'RYHMAN_METSASTYKSENJOHTAJA';
+
+            UPDATE occupation
+            SET name_visibility = false, phone_number_visibility = false, email_visibility = false
+            WHERE occupation_type = 'RYHMAN_JASEN';
+
+            UPDATE occupation
+            SET name_visibility = false, phone_number_visibility = false, email_visibility = false
+            WHERE occupation_type = 'ALUEKOKOUKSEN_EDUSTAJA';
+
+            UPDATE occupation
+            SET name_visibility = false, phone_number_visibility = false, email_visibility = false
+            WHERE occupation_type = 'ALUEKOKOUKSEN_VARAEDUSTAJA';
+        ]]>
+        </sql>
+
+        <addNotNullConstraint tableName="occupation" columnName="name_visibility"/>
+        <addNotNullConstraint tableName="occupation" columnName="phone_number_visibility"/>
+        <addNotNullConstraint tableName="occupation" columnName="email_visibility"/>
+    </changeSet>
+
+    <changeSet id="2021-04-19-ringedseal-harvest-area-type" author="vincit-terole">
+        <insert tableName="harvest_area_type">
+            <column name="name" value="NORPPAALUE"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2021-03-09-calendar-event-non-subsidizable" author="vincit-terole">
+        <addColumn tableName="calendar_event">
+            <column name="non_subsidizable" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"></constraints>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2021-03-24-non-subsidy-training-fields" author="vincit-terole">
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="non_subsidizable_jht_shooting_test_training_events" type="INT"/>
+            <column name="non_subsidizable_jht_shooting_test_training_participants" type="INT"/>
+            <column name="non_subsidizable_jht_hunter_exam_training_events" type="INT"/>
+            <column name="non_subsidizable_jht_hunter_exam_training_participants" type="INT"/>
+            <column name="non_subsidizable_jht_game_damage_training_events" type="INT"/>
+            <column name="non_subsidizable_jht_game_damage_training_participants" type="INT"/>
+            <column name="non_subsidizable_jht_hunting_control_training_events" type="INT"/>
+            <column name="non_subsidizable_jht_hunting_control_training_participants" type="INT"/>
+
+            <column name="non_subsidizable_mooselike_hunting_training_events" type="INT"/>
+            <column name="non_subsidizable_mooselike_hunting_training_participants" type="INT"/>
+            <column name="non_subsidizable_mooselike_hunting_leader_training_events" type="INT"/>
+            <column name="non_subsidizable_mooselike_hunting_leader_training_participants" type="INT"/>
+            <column name="non_subsidizable_carnivore_hunting_training_events" type="INT"/>
+            <column name="non_subsidizable_carnivore_hunting_training_participants" type="INT"/>
+            <column name="non_subsidizable_carnivore_hunting_leader_training_events" type="INT"/>
+            <column name="non_subsidizable_carnivore_hunting_leader_training_participants" type="INT"/>
+            <column name="non_subsidizable_srva_training_events" type="INT"/>
+            <column name="non_subsidizable_srva_training_participants" type="INT"/>
+            <column name="non_subsidizable_carnivore_contact_person_training_events" type="INT"/>
+            <column name="non_subsidizable_carnivore_contact_person_training_participants" type="INT"/>
+            <column name="non_subsidizable_accident_prevention_training_events" type="INT"/>
+            <column name="non_subsidizable_accident_prevention_training_participants" type="INT"/>
+
+            <column name="non_subsidizable_small_carnivore_hunting_training_events" type="INT"/>
+            <column name="non_subsidizable_small_carnivore_hunting_training_participants" type="INT"/>
+            <column name="non_subsidizable_game_counting_training_events" type="INT"/>
+            <column name="non_subsidizable_game_counting_training_participants" type="INT"/>
+            <column name="non_subsidizable_game_population_management_training_events" type="INT"/>
+            <column name="non_subsidizable_game_population_management_training_participants" type="INT"/>
+            <column name="non_subsidizable_game_environmental_care_training_events" type="INT"/>
+            <column name="non_subsidizable_game_environmental_care_training_participants" type="INT"/>
+            <column name="non_subsidizable_other_gamekeeping_training_events" type="INT"/>
+            <column name="non_subsidizable_other_gamekeeping_training_participants" type="INT"/>
+            <column name="non_subsidizable_shooting_training_events" type="INT"/>
+            <column name="non_subsidizable_shooting_training_participants" type="INT"/>
+            <column name="non_subsidizable_tracker_training_events" type="INT"/>
+            <column name="non_subsidizable_tracker_training_participants" type="INT"/>
+
+            <column name="non_subsidizable_hunter_exam_training_events" type="INT"/>
+            <column name="non_subsidizable_hunter_exam_training_participants" type="INT"/>
+
+            <column name="non_subsidizable_school_training_events" type="INT"/>
+            <column name="non_subsidizable_school_training_participants" type="INT"/>
+            <column name="non_subsidizable_college_training_events" type="INT"/>
+            <column name="non_subsidizable_college_training_participants" type="INT"/>
+            <column name="non_subsidizable_other_youth_targeted_training_events" type="INT"/>
+            <column name="non_subsidizable_other_youth_targeted_training_participants" type="INT"/>
+
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2021-04-16-add-overridden-field-for-hunter-exam-training" author="vincit-terole">
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="non_subsidizable_hunter_exam_training_events_overridden" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2021-04-21-drop-deer-pilot-from-observation-base-fields" author="vincit-terole">
+        <sql>
+            <comment>Use normal required field after deer pilot removal.</comment>
+            <![CDATA[
+            ALTER TABLE observation_base_fields DROP CONSTRAINT fk_observation_base_fields_within_deer_hunting;
+
+            UPDATE observation_base_fields
+            SET within_deer_hunting = 'YES'
+            WHERE within_deer_hunting = 'DEER_PILOT';
+        ]]></sql>
+
+        <addForeignKeyConstraint baseTableName="observation_base_fields"
+                                 baseColumnNames="within_deer_hunting"
+                                 constraintName="fk_observation_base_fields_within_deer_hunting"
+                                 referencedTableName="required"
+                                 referencedColumnNames="name"/>
+
+        <dropTable tableName="required_within_deer_pilot"></dropTable>
+    </changeSet>
+
+    <changeSet id="2021-05-18-remove-deer-pilot-values" author="vincit-terole">
+        <sql>
+            <comment>Pilot functionality in use for all users, remove pilot spesific values.</comment>
+            <![CDATA[
+            UPDATE observation_context_sensitive_fields
+            SET deer_hunting_type = 'YES'
+            WHERE deer_hunting_type = 'YES_DEER_PILOT';
+
+            UPDATE observation_context_sensitive_fields
+            SET deer_hunting_type_description = 'VOLUNTARY'
+            WHERE deer_hunting_type_description = 'VOLUNTARY_DEER_PILOT';
+
+            DELETE FROM dynamic_observation_field_presence WHERE name = 'YES_DEER_PILOT';
+            DELETE FROM dynamic_observation_field_presence WHERE name = 'VOLUNTARY_DEER_PILOT';
+        ]]></sql>
+    </changeSet>
+    <!--
+
+    Otherwise deceased, enum tables
+
+    -->
+    <changeSet id="2021-04-06-create-table-otherwise_deceased_cause" author="vincit-nikooj">
+        <createTable tableName="otherwise_deceased_cause">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="otherwise_deceased_cause_pkey"/>
+            </column>
+        </createTable>
+
+        <insert tableName="otherwise_deceased_cause">
+            <column name="name">HIGHWAY_ACCIDENT</column>
+        </insert>
+        <insert tableName="otherwise_deceased_cause">
+            <column name="name">RAILWAY_ACCIDENT</column>
+        </insert>
+        <insert tableName="otherwise_deceased_cause">
+            <column name="name">SICKNESS_OR_STARVATION</column>
+        </insert>
+        <insert tableName="otherwise_deceased_cause">
+            <column name="name">KILLED_BY_POLICES_ORDER</column>
+        </insert>
+        <insert tableName="otherwise_deceased_cause">
+            <column name="name">NECESSITY</column>
+        </insert>
+        <insert tableName="otherwise_deceased_cause">
+            <column name="name">ILLEGAL_KILLING</column>
+        </insert>
+        <insert tableName="otherwise_deceased_cause">
+            <column name="name">UNDER_INVESTIGATION</column>
+        </insert>
+        <insert tableName="otherwise_deceased_cause">
+            <column name="name">OTHER</column>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2021-04-06-create-table-otherwise_deceased_change_type" author="vincit-nikooj">
+        <createTable tableName="otherwise_deceased_change_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="otherwise_deceased_change_type_pkey"/>
+            </column>
+        </createTable>
+
+        <insert tableName="otherwise_deceased_change_type">
+            <column name="name">CREATE</column>
+        </insert>
+        <insert tableName="otherwise_deceased_change_type">
+            <column name="name">MODIFY</column>
+        </insert>
+        <insert tableName="otherwise_deceased_change_type">
+            <column name="name">DELETE</column>
+        </insert>
+        <insert tableName="otherwise_deceased_change_type">
+            <column name="name">RESTORE</column>
+        </insert>
+        <insert tableName="otherwise_deceased_change_type">
+            <column name="name">DELETE_ATTACHMENT</column>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2021-04-06-create-table-otherwise_deceased_source" author="vincit-nikooj">
+        <createTable tableName="otherwise_deceased_source">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="otherwise_deceased_source_pkey"/>
+            </column>
+        </createTable>
+
+        <insert tableName="otherwise_deceased_source">
+            <column name="name">RK</column>
+        </insert>
+        <insert tableName="otherwise_deceased_source">
+            <column name="name">RHY</column>
+        </insert>
+        <insert tableName="otherwise_deceased_source">
+            <column name="name">RVR</column>
+        </insert>
+        <insert tableName="otherwise_deceased_source">
+            <column name="name">POLICE</column>
+        </insert>
+        <insert tableName="otherwise_deceased_source">
+            <column name="name">RVL</column>
+        </insert>
+        <insert tableName="otherwise_deceased_source">
+            <column name="name">MH</column>
+        </insert>
+        <insert tableName="otherwise_deceased_source">
+            <column name="name">LUKE</column>
+        </insert>
+        <insert tableName="otherwise_deceased_source">
+            <column name="name">CITIZEN</column>
+        </insert>
+        <insert tableName="otherwise_deceased_source">
+            <column name="name">MEDIA</column>
+        </insert>
+        <insert tableName="otherwise_deceased_source">
+            <column name="name">OTHER</column>
+        </insert>
+    </changeSet>
+
+    <!--
+
+    Otherwise deceased, attachment and change history
+
+    -->
+
+    <changeSet id="2021-04-12-create-table-otherwise_deceased" author="vincit-nikooj">
+        <comment>
+            Create table otherwise_deceased:
+            - id
+            - consistency version
+            - lifecycle and audit fields
+                - creation time
+                - modification time
+                - deletion time
+                - created by
+                - modified by
+                - deleted by
+            - geolocation
+                - latitude
+                - longitude
+                - (geolocation) source
+                - accuracy
+                - altitude
+                - altitude accuracy
+            - species info
+                - species
+                - age
+                - gender
+                - weight
+            - description
+            - more information
+            - has rejected or not
+
+            Has one-to-many relationship with
+            - otherwise_deceased_attachment
+            - otherwise_deceased_change
+        </comment>
+
+        <createTable tableName="otherwise_deceased">
+            <column autoIncrement="true" name="otherwise_deceased_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="otherwise_deceased_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- lifecycle fields -->
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <!-- audit fields -->
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <!-- geolocation fields -->
+
+            <column name="latitude" type="INT"/>
+            <column name="longitude" type="INT"/>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)">
+                <constraints references="geolocation_source(name)"
+                             foreignKeyName="fk_otherwise_deceased_geolocation_source"/>
+            </column>
+
+            <!-- species info -->
+
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false" references="game_species(game_species_id)"
+                             foreignKeyName="fk_otherwise_deceased_game_species_id"/>
+            </column>
+            <column name="age" type="VARCHAR(255)" defaultValueComputed="'UNKNOWN'">
+                <constraints nullable="false" references="game_age(name)"
+                             foreignKeyName="fk_otherwise_deceased_age"/>
+            </column>
+            <column name="gender" type="VARCHAR(255)" defaultValueComputed="'UNKNOWN'">
+                <constraints nullable="false" references="game_gender(name)"
+                             foreignKeyName="fk_otherwise_deceased_gender"/>
+            </column>
+            <column name="weight" type="DECIMAL(6,2)"/>
+
+            <!-- time -->
+
+            <column name="point_of_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- other location related info -->
+
+            <column name="no_exact_location" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="municipality_official_code" type="CHAR(3)">
+                <constraints nullable="false" references="municipality(official_code)"
+                             foreignKeyName="fk_otherwise_deceased_municipality_official_code"/>
+            </column>
+
+            <column name="rhy_id" type="BIGINT">
+                <constraints nullable="false" references="organisation(organisation_id)"
+                             foreignKeyName="fk_otherwise_deceased_rhy_id"/>
+            </column>
+
+            <column name="rka_id" type="BIGINT">
+                <constraints nullable="false" references="organisation(organisation_id)"
+                             foreignKeyName="fk_otherwise_deceased_rka_id"/>
+            </column>
+
+            <!-- reasons -->
+
+            <column name="cause" type="VARCHAR(255)">
+                <constraints nullable="false" references="otherwise_deceased_cause(name)"
+                             foreignKeyName="fk_otherwise_deceased_cause"/>
+            </column>
+
+            <column name="cause_other" type="VARCHAR(255)"/>
+
+            <column name="source" type="VARCHAR(255)">
+                <constraints nullable="false" references="otherwise_deceased_source(name)"
+                             foreignKeyName="fk_otherwise_deceased_source"/>
+            </column>
+
+            <column name="source_other" type="VARCHAR(255)"/>
+
+            <!-- descriptions -->
+
+            <column name="description" type="TEXT"/>
+
+            <column name="additional_info" type="TEXT"/>
+
+            <!-- rejected -->
+
+            <column name="rejected" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2021-04-12-create-table-otherwise_deceased_attachment" author="vincit-nikooj">
+        <comment>
+            Create table otherwise_deceased_attachment:
+            - id
+            - consistency version
+            - lifecycle and audit fields
+              - creation time
+              - modification time
+              - deletion time
+              - created by
+              - modified by
+              - deleted by
+            - attachment metadata
+            - otherwise deceased id
+
+            Index also by otherwise deceased id.
+        </comment>
+        <createTable tableName="otherwise_deceased_attachment">
+            <column autoIncrement="true" name="otherwise_deceased_attachment_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="otherwise_deceased_attachment_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- lifecycle fields -->
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <!-- audit fields -->
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <!-- otherwise deceased -->
+
+            <column name="otherwise_deceased_id" type="BIGINT">
+                <constraints nullable="false" references="otherwise_deceased(otherwise_deceased_id)"
+                             foreignKeyName="fk_otherwise_deceased_attachment_otherwise_deceased_id"/>
+            </column>
+
+            <!-- attachment metadata -->
+
+            <column name="attachment_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             unique="true"
+                             references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_otherwise_deceased_attachment_attachment_metadata_id"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="otherwise_deceased_attachment"
+                     indexName="ndx_otherwise_deceased_attachment_otherwise_deceased_id">
+            <column name="otherwise_deceased_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2021-04-12-create-table-otherwise_deceased_change" author="vincit-nikooj">
+        <comment>
+            Create table otherwise_deceased_change:
+            - id
+            - consistency version
+            - otherwise deceased id
+            - point of time
+            - user id
+            - change type
+            - reason for change
+
+            Index also by otherwise deceased id.
+        </comment>
+
+        <createTable tableName="otherwise_deceased_change">
+            <column autoIncrement="true" name="otherwise_deceased_change_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="otherwise_deceased_change_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="otherwise_deceased_id" type="BIGINT">
+                <constraints nullable="false" references="otherwise_deceased(otherwise_deceased_id)"
+                             foreignKeyName="fk_otherwise_deceased_cause_otherwise_deceased_id"/>
+            </column>
+
+            <column name="point_of_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_id" type="BIGINT"/>
+
+            <column name="change_type" type="VARCHAR(255)">
+                <constraints nullable="false" references="otherwise_deceased_change_type(name)"
+                             foreignKeyName="fk_otherwise_deceased_change_otherwise_deceased_change_type"/>
+            </column>
+
+            <column name="reason_for_change" type="TEXT"/>
+        </createTable>
+
+        <createIndex tableName="otherwise_deceased_change"
+                     indexName="ndx_otherwise_deceased_change_otherwise_decease_id">
+            <column name="otherwise_deceased_id"/>
+        </createIndex>
+    </changeSet>
+
+
+    <changeSet id="2021-05-24-add-table-for-harvest-registry-audit" author="vincit-terole">
+        <createTable tableName="harvest_registry_coordinator_search_reason">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="harvest_registry_coordinator_search_reason">
+            <column name="name">POPULATION</column>
+        </insert>
+        <insert tableName="harvest_registry_coordinator_search_reason">
+            <column name="name">HUNTING_CONTROL</column>
+        </insert>
+
+        <createTable tableName="harvest_registry_coordinator_search">
+            <column autoIncrement="true" name="harvest_registry_coordinator_search_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_registry_coordinator_search_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="search_reason" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="harvest_registry_coordinator_search_reason(name)"
+                             foreignKeyName="fk_harvest_registry_coordinator_search_reason"></constraints>
+            </column>
+            <column name="rhy_code" type="VARCHAR(255)">
+                <constraints nullable="false"></constraints>
+            </column>
+            <column name="game_species_code" type="INT"/>
+            <column name="hunter_number" type="VARCHAR(255)"/>
+            <column name="begin_date" type="DATE">
+                <constraints nullable="false"></constraints>
+            </column>
+            <column name="end_date" type="DATE">
+                <constraints nullable="false"></constraints>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2021-08-18-update-simple-geom-trigger" author="vincit-terole" dbms="postgresql">
+        <comment>
+            Dropped snap to grid use from simple geom calculation. Snapping to lower precision
+            caused detahced geometries to overlap causing invalid multipolygons.
+        </comment>
+        <createProcedure><![CDATA[
+            CREATE OR REPLACE FUNCTION update_zone_simple_geom()
+            RETURNS TRIGGER AS $$
+            BEGIN
+              NEW.simple_geom = ST_Multi(ST_Transform(ST_SimplifyPreserveTopology(NEW.geom, 1), 4326));
+              RETURN NEW;
+            END
+            $$ LANGUAGE 'plpgsql';
+        ]]></createProcedure>
+    </changeSet>
+
+    <changeSet id="2021-08-26-dummy-calculate_zone_changes" author="vincit-nikooj" dbms="postgresql"  failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT count(*) FROM pg_proc WHERE proname='calculate_zone_changes';
+            </sqlCheck>
+        </preConditions>
+        <comment>
+            Dummy function for TEST environments. Create function if it does not already exist.
+        </comment>
+        <createProcedure><![CDATA[
+            CREATE FUNCTION calculate_zone_changes(input_zone_id BIGINT)
+            RETURNS VOID AS $$
+            BEGIN
+            END;
+            $$ LANGUAGE plpgsql;
+        ]]></createProcedure>
+    </changeSet>
+
+    <changeSet id="2021-08-26-dummy-calculate_zone_changes-for-unit-tests" author="vincit-nikooj" dbms="h2">
+        <comment>
+            Dummy function for UNIT TESTING (H2 database).
+        </comment>
+        <createProcedure><![CDATA[
+            CREATE ALIAS calculate_zone_changes AS $$
+            void dummyCalculateZoneChanges(long id) {
+                return;
+            }
+            $$;
+        ]]></createProcedure>
+    </changeSet>
+
+
+    <changeSet id="2021-09-02-weapon-transportation-drop-obsolete-columns" author="vincit-terole">
+        <dropColumn tableName="weapon_transportation_vehicle">
+            <column name="register_number" type="VARCHAR(255)"></column>
+        </dropColumn>
+
+        <dropColumn tableName="transported_weapon">
+            <column name="amount" type="INT"></column>
+            <column name="caliber" type="TEXT"></column>
+        </dropColumn>
+
+    </changeSet>
+
+    <changeSet id="2021-10-14-add-large_carnivore_wolf_poronhoito-to-harvest-permit-application-category"
+               author="vincit-mikkori">
+        <insert tableName="harvest_permit_category">
+            <column name="name" value="LARGE_CARNIVORE_WOLF_PORONHOITO"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

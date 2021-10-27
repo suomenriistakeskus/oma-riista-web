@@ -7,49 +7,29 @@
         <div class="table-responsive">
             <table class="table table-condensed">
                 <tbody>
-                <tr>
-                    <td class="col-xs-8" ng-switch="$ctrl.youthTraining.schoolTrainingEventsOverridden">
-                        <span ng-switch-when="true" translate="rhy.annualStats.trainings.youth.schoolTrainingEvents"></span>
-                        <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.youth.schoolTrainingEvents"></div>
+                <tr ng-repeat-start="type in $ctrl.trainingTypes">
+                    <td class="col-xs-8" ng-switch="($ctrl.youthTraining[type + 'TrainingEventsOverridden'])">
+                        <span ng-switch-when="true"
+                              translate="{{('rhy.annualStats.trainings.youth.' + type + 'TrainingEvents')}}"></span>
+                        <div ng-switch-when="false"
+                             computed-marker-title="{{('rhy.annualStats.trainings.youth.' + type + 'TrainingEvents')}}"></div>
                     </td>
-                    <td num-pieces="::$ctrl.youthTraining.schoolTrainingEvents"></td>
+                    <td class="text-right">
+                        <span ng-bind="$ctrl.getEventCount(type)"></span>&nbsp
+                        <span class="unit-suffix" translate="global.pcs"></span>
+                    </td>
                 </tr>
-                <tr class="indented-row">
-                    <td class="col-xs-8" ng-switch="$ctrl.youthTraining.schoolTrainingParticipantsOverridden">
-                        <span ng-switch-when="true" translate="rhy.annualStats.trainings.youth.schoolTrainingParticipants"></span>
-                        <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.youth.schoolTrainingParticipants"></div>
+                <tr class="indented-row" ng-repeat-end>
+                    <td class="col-xs-8" ng-switch="($ctrl.youthTraining[type + 'TrainingParticipantsOverridden'])">
+                        <span ng-switch-when="true"
+                              translate="{{('rhy.annualStats.trainings.youth.' + type + 'TrainingParticipants')}}"></span>
+                        <div ng-switch-when="false"
+                             computed-marker-title="{{('rhy.annualStats.trainings.youth.' + type + 'TrainingParticipants')}}"></div>
                     </td>
-                    <td num-persons="::$ctrl.youthTraining.schoolTrainingParticipants"></td>
-                </tr>
-
-                <tr>
-                    <td class="col-xs-8" ng-switch="$ctrl.youthTraining.collegeTrainingEventsOverridden">
-                        <span ng-switch-when="true" translate="rhy.annualStats.trainings.youth.collegeTrainingEvents"></span>
-                        <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.youth.collegeTrainingEvents"></div>
+                    <td class="text-right">
+                        <span ng-bind="$ctrl.getParticipantCount(type)"></span>&nbsp
+                        <span class="unit-suffix" translate="global.personUnit"></span>
                     </td>
-                    <td num-pieces="::$ctrl.youthTraining.collegeTrainingEvents"></td>
-                </tr>
-                <tr class="indented-row">
-                    <td class="col-xs-8" ng-switch="$ctrl.youthTraining.collegeTrainingParticipantsOverridden">
-                        <span ng-switch-when="true" translate="rhy.annualStats.trainings.youth.collegeTrainingParticipants"></span>
-                        <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.youth.collegeTrainingParticipants"></div>
-                    </td>
-                    <td num-persons="::$ctrl.youthTraining.collegeTrainingParticipants"></td>
-                </tr>
-
-                <tr>
-                    <td class="col-xs-8" ng-switch="$ctrl.youthTraining.otherYouthTargetedTrainingEventsOverridden">
-                        <span ng-switch-when="true" translate="rhy.annualStats.trainings.youth.otherYouthTargetedTrainingEvents"></span>
-                        <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.youth.otherYouthTargetedTrainingEvents"></div>
-                    </td>
-                    <td num-pieces="::$ctrl.youthTraining.otherYouthTargetedTrainingEvents"></td>
-                </tr>
-                <tr class="indented-row">
-                    <td class="col-xs-8" ng-switch="$ctrl.youthTraining.otherYouthTargetedTrainingParticipantsOverridden">
-                        <span ng-switch-when="true" translate="rhy.annualStats.trainings.youth.otherYouthTargetedTrainingParticipants"></span>
-                        <div ng-switch-when="false" computed-marker-title="rhy.annualStats.trainings.youth.otherYouthTargetedTrainingParticipants"></div>
-                    </td>
-                    <td num-persons="::$ctrl.youthTraining.otherYouthTargetedTrainingParticipants"></td>
                 </tr>
                 </tbody>
             </table>

@@ -1,0 +1,103 @@
+<div class="row">
+    <div class="col-md-8">
+        <ul class="nav nav-pills">
+            <li ng-class="{'active': $ctrl.filter.species === ''}">
+                <a ng-click="$ctrl.setSpecies('')" translate="jht.otherwiseDeceased.buttons.filterAll"></a>
+            </li>
+            <li ng-repeat="species in $ctrl.speciesFilters" ng-class="{'active': $ctrl.filter.species === species}">
+                <a ng-click="$ctrl.setSpecies(species)">{{ species | translateSpeciesCode }}</a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="col-md-4 text-right">
+        <button type="button" class="btn btn-primary" ng-click="$ctrl.exportToExcel()" translate="global.button.exportToExcel"></button>
+        <button type="button" class="btn btn-primary" ng-click="$ctrl.add()" translate="jht.otherwiseDeceased.buttons.add"></button>
+    </div>
+</div>
+
+<hr class="invisible"/>
+
+<div class="row">
+
+    <!-- filters -->
+
+    <div class="col-xs-3">
+
+        <r-otherwise-deceased-filters filter="$ctrl.filter"
+                                      on-filter-change="$ctrl.onFilterChange()"
+                                      on-year-change="$ctrl.onYearChange()"></r-otherwise-deceased-filters>
+
+    </div>
+
+    <!-- results -->
+
+    <div class="col-xs-9">
+        <slice-pager slice="$ctrl.pageInfo" load-page="$ctrl.selectPage(page)"></slice-pager>
+        <div>
+            <div ng-if="!$ctrl.hasResults()" class="alert alert-info" translate="search.formatNoMatches"></div>
+            <table ng-if="$ctrl.hasResults()" class="table">
+                <thead>
+                <tr>
+                    <th>
+                        <div class="row">
+                            <div class="col-xs-11">
+                                <div class="row">
+                                    <div class="col-xs-2" ng-click="$ctrl.toggleSort('pointOfTime', 'desc')">
+                                        <span translate="jht.otherwiseDeceased.fields.pointOfTime"></span>
+                                        <span class="fa fa-caret-up" ng-if="$ctrl.isSortedBy('pointOfTime', 'asc')"></span>
+                                        <span class="fa fa-caret-down" ng-if="$ctrl.isSortedBy('pointOfTime', 'desc')"></span>
+                                    </div>
+                                    <div class="col-xs-2" ng-click="$ctrl.toggleSort('gameSpeciesCode', 'asc', 'translateSpeciesCode')">
+                                        <span translate="jht.otherwiseDeceased.fields.species"></span>
+                                        <span class="fa fa-caret-up" ng-if="$ctrl.isSortedBy('gameSpeciesCode', 'asc')"></span>
+                                        <span class="fa fa-caret-down" ng-if="$ctrl.isSortedBy('gameSpeciesCode', 'desc')"></span>
+                                    </div>
+                                    <div class="col-xs-3" ng-click="$ctrl.toggleSort('municipality', 'asc', 'rI18nNameFilter')">
+                                        <span translate="jht.otherwiseDeceased.fields.location"></span>
+                                        <span class="fa fa-caret-up" ng-if="$ctrl.isSortedBy('municipality', 'asc')"></span>
+                                        <span class="fa fa-caret-down" ng-if="$ctrl.isSortedBy('municipality', 'desc')"></span>
+                                    </div>
+                                    <div class="col-xs-2" ng-click="$ctrl.toggleSort('source', 'asc', 'translate', 'jht.otherwiseDeceased.sources.')">
+                                        <span translate="jht.otherwiseDeceased.fields.source"></span>
+                                        <span class="fa fa-caret-up" ng-if="$ctrl.isSortedBy('source', 'asc')"></span>
+                                        <span class="fa fa-caret-down" ng-if="$ctrl.isSortedBy('source', 'desc')"></span>
+                                    </div>
+                                    <div class="col-xs-3" ng-click="$ctrl.toggleSort('cause', 'asc', 'translate', 'jht.otherwiseDeceased.causes.')">
+                                        <span translate="jht.otherwiseDeceased.fields.cause"></span>
+                                        <span class="fa fa-caret-up" ng-if="$ctrl.isSortedBy('cause', 'asc')"></span>
+                                        <span class="fa fa-caret-down" ng-if="$ctrl.isSortedBy('cause', 'desc')"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xs-1"></div>
+                        </div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr ng-init="collapsed = true" ng-repeat="item in $ctrl.pagedResults track by item.id">
+                        <td>
+                            <div class="row">
+                                <div class="col-xs-11" ng-switch="collapsed">
+                                    <div ng-switch-when="true">
+                                        <r-otherwise-deceased-brief item="::item"></r-otherwise-deceased-brief>
+                                    </div>
+                                    <div ng-switch-when="false">
+                                        <r-otherwise-deceased-details item-id="::item.id" on-update="$ctrl.updateResults()">
+                                        </r-otherwise-deceased-details>
+                                    </div>
+                                </div>
+                                <div class="col-xs-1 text-right" ng-click="collapsed = !collapsed" ng-switch="collapsed">
+                                    <span ng-switch-when="true" class="fa fa-2x fa-chevron-right"></span>
+                                    <span ng-switch-when="false" class="fa fa-2x fa-chevron-down"></span>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <slice-pager slice="$ctrl.pageInfo" load-page="$ctrl.selectPage(page)"></slice-pager>
+    </div>
+</div>

@@ -69,7 +69,8 @@ public class GameDamageInspectionEventExportService {
                         .add(OFFICIAL_CODE_ROE_DEER).build();
 
         final Map<Riistanhoitoyhdistys, List<GameDamageInspectionEvent>> rhyToEvent =
-                eventRepository.findByDateBetweenAndGameSpeciesOfficialCodeIn(startDate, endDate, speciesCodes).stream()
+                eventRepository.findByDateBetweenAndGameSpeciesOfficialCodeInAndExpensesIncludedTrue(startDate, endDate, speciesCodes)
+                        .stream()
                         .collect(groupingBy(event -> event.getRhy()));
 
         final Map<Long, RhyAnnualStatistics> rhyIdToStatistics = statisticsRepository
@@ -146,7 +147,7 @@ public class GameDamageInspectionEventExportService {
         final Date endTime = DateUtil.toDateNullSafe(new LocalDate(year, 12, 31));
 
         final List<GameDamageInspectionEvent> events =
-                eventRepository.findByRhyIdAndDateBetweenAndGameSpeciesOfficialCodeIn(rhyId, startTime, endTime, speciesCodes);
+                eventRepository.findByRhyIdAndDateBetweenAndGameSpeciesOfficialCodeInAndExpensesIncludedTrue(rhyId, startTime, endTime, speciesCodes);
 
         return dtoTransformer.apply(events);
     }

@@ -70,6 +70,12 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE_2018;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.MAIN_SUMMARY_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.METSAHALLITUS;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_HUNTER_TRAINING;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_JHT_TRAINING;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_OTHER_HUNTER_TRAINING;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_TRAINING_SUMMARY;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_YOUTH_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_HUNTER_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_HUNTER_TRAINING_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_HUNTING_RELATED;
@@ -90,8 +96,12 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.TRAINING_SUMMARY_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.YOUTH_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.*;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.NON_SUBSIDIZABLE_CARNIVORE_HUNTING_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.NON_SUBSIDIZABLE_GAME_DAMAGE_TRAINING_PARTICIPANTS;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticItem.NON_SUBSIDIZABLE_MOOSELIKE_HUNTING_TRAINING_EVENTS;
 import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
@@ -101,7 +111,7 @@ import static org.junit.Assert.fail;
 public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer implements DefaultEntitySupplierProvider {
 
     private static final ImmutableMap<Integer, LocalisedString> SPECIES_CODE_TO_NAME = ImmutableMap
-            .<Integer, LocalisedString> builder()
+            .<Integer, LocalisedString>builder()
             .put(OFFICIAL_CODE_MOOSE, LocalisedString.of("Hirvi", "Älg"))
             .put(OFFICIAL_CODE_WHITE_TAILED_DEER, LocalisedString.of("Valkohäntäpeura", "Vitsvanshjort"))
             .put(OFFICIAL_CODE_ROE_DEER, LocalisedString.of("Metsäkauris", "Rådjur"))
@@ -244,6 +254,12 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 HUNTER_TRAINING,
                 YOUTH_TRAINING,
                 OTHER_HUNTER_TRAINING,
+                NON_SUBSIDIZABLE_TRAINING_SUMMARY,
+                NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING,
+                NON_SUBSIDIZABLE_JHT_TRAINING,
+                NON_SUBSIDIZABLE_HUNTER_TRAINING,
+                NON_SUBSIDIZABLE_YOUTH_TRAINING,
+                NON_SUBSIDIZABLE_OTHER_HUNTER_TRAINING,
                 OTHER_HUNTING_RELATED,
                 COMMUNICATION,
                 SHOOTING_RANGES,
@@ -295,7 +311,7 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
         final List<Tuple2<LocalisedString, Either<Number, String>>> extractedItems = extractItems(stats);
 
         assertResult(getExpectedItems(stats), extractedItems);
-        assertEquals(161, extractedItems.size());
+        assertEquals(207, extractedItems.size());
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> getExpectedItems(final RhyAnnualStatistics stats) {
@@ -320,6 +336,15 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 .add(listExpectedHunterTrainingItems(stats.getOrCreateHunterTraining()))
                 .add(listExpectedYouthTrainingItems(stats.getOrCreateYouthTraining()))
                 .add(listExpectedOtherHunterTrainingItems(stats.getOrCreateOtherHunterTraining(), year));
+
+        if (year > 2019) {
+            builder.add(listExpectedNonSubsidizableTrainingSummaryItems(stats))
+                    .add(listExpectedNonSubsidizableHunterExamTrainingItems(stats.getOrCreateHunterExamTraining()))
+                    .add(listExpectedNonSubsidizableJhtTrainingItems(stats.getOrCreateJhtTraining()))
+                    .add(listExpectedNonSubsidizableHunterTrainingItems(stats.getOrCreateHunterTraining()))
+                    .add(listExpectedNonSubsidizableYouthTrainingItems(stats.getOrCreateYouthTraining()))
+                    .add(listExpectedNonSubsidizableOtherHunterTrainingItems(stats.getOrCreateOtherHunterTraining(), year));
+        }
 
         if (year < 2019) {
             builder.add(listExpectedPublicEventItems(stats.getOrCreatePublicEvents(), year));
@@ -574,14 +599,36 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
         }
 
         return asList(
-                number(ALL_TRAINING_EVENTS, allTrainingEvents),
-                number(ALL_TRAINING_PARTICIPANTS, allTrainingParticipants));
+                number(SUBSIDIZABLE_TRAINING_EVENTS, allTrainingEvents),
+                number(SUBSIDIZABLE_TRAINING_PARTICIPANTS, allTrainingParticipants));
+    }
+
+    private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedNonSubsidizableTrainingSummaryItems(final RhyAnnualStatistics stats) {
+        final int year = stats.getYear();
+
+        //Twice the number of subsidizable events
+        int allTrainingEvents = 2 * 1716;
+        int allTrainingParticipants = 2 * 1738;
+
+        if (year < 2020) {
+            return emptyList();
+        }
+
+        return asList(
+                number(NON_SUBSIDIZABLE_TRAINING_EVENTS, allTrainingEvents),
+                number(NON_SUBSIDIZABLE_TRAINING_PARTICIPANTS, allTrainingParticipants));
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedHunterExamTrainingItems(final HunterExamTrainingStatistics stats) {
         return asList(
                 number(HUNTER_EXAM_TRAINING_EVENTS, stats.getHunterExamTrainingEvents()),
                 number(HUNTER_EXAM_TRAINING_PARTICIPANTS, stats.getHunterExamTrainingParticipants()));
+    }
+
+    private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedNonSubsidizableHunterExamTrainingItems(final HunterExamTrainingStatistics stats) {
+        return asList(
+                number(NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING_EVENTS, stats.getNonSubsidizableHunterExamTrainingEvents()),
+                number(NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING_PARTICIPANTS, stats.getNonSubsidizableHunterExamTrainingParticipants()));
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedJhtTrainingItems(final JHTTrainingStatistics stats) {
@@ -594,6 +641,18 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 number(GAME_DAMAGE_TRAINING_PARTICIPANTS, stats.getGameDamageTrainingParticipants()),
                 number(HUNTING_CONTROL_TRAINING_EVENTS, stats.getHuntingControlTrainingEvents()),
                 number(HUNTING_CONTROL_TRAINING_PARTICIPANTS, stats.getHuntingControlTrainingParticipants()));
+    }
+
+    private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedNonSubsidizableJhtTrainingItems(final JHTTrainingStatistics stats) {
+        return asList(
+                number(NON_SUBSIDIZABLE_SHOOTING_TEST_TRAINING_EVENTS, stats.getNonSubsidizableShootingTestTrainingEvents()),
+                number(NON_SUBSIDIZABLE_SHOOTING_TEST_TRAINING_PARTICIPANTS, stats.getNonSubsidizableShootingTestTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_HUNTER_EXAM_OFFICIAL_TRAINING_EVENTS, stats.getNonSubsidizableHunterExamOfficialTrainingEvents()),
+                number(NON_SUBSIDIZABLE_HUNTER_EXAM_OFFICIAL_TRAINING_PARTICIPANTS, stats.getNonSubsidizableHunterExamOfficialTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_GAME_DAMAGE_TRAINING_EVENTS, stats.getNonSubsidizableGameDamageTrainingEvents()),
+                number(NON_SUBSIDIZABLE_GAME_DAMAGE_TRAINING_PARTICIPANTS, stats.getNonSubsidizableGameDamageTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_HUNTING_CONTROL_TRAINING_EVENTS, stats.getNonSubsidizableHuntingControlTrainingEvents()),
+                number(NON_SUBSIDIZABLE_HUNTING_CONTROL_TRAINING_PARTICIPANTS, stats.getNonSubsidizableHuntingControlTrainingParticipants()));
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedHunterTrainingItems(final HunterTrainingStatistics stats) {
@@ -614,6 +673,24 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 number(ACCIDENT_PREVENTION_TRAINING_PARTICIPANTS, stats.getAccidentPreventionTrainingParticipants()));
     }
 
+    private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedNonSubsidizableHunterTrainingItems(final HunterTrainingStatistics stats) {
+        return asList(
+                number(NON_SUBSIDIZABLE_MOOSELIKE_HUNTING_LEADER_TRAINING_EVENTS, stats.getNonSubsidizableMooselikeHuntingLeaderTrainingEvents()),
+                number(NON_SUBSIDIZABLE_MOOSELIKE_HUNTING_LEADER_TRAINING_PARTICIPANTS, stats.getNonSubsidizableMooselikeHuntingLeaderTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_CARNIVORE_HUNTING_LEADER_TRAINING_EVENTS, stats.getNonSubsidizableCarnivoreHuntingLeaderTrainingEvents()),
+                number(NON_SUBSIDIZABLE_CARNIVORE_HUNTING_LEADER_TRAINING_PARTICIPANTS, stats.getNonSubsidizableCarnivoreHuntingLeaderTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_MOOSELIKE_HUNTING_TRAINING_EVENTS, stats.getNonSubsidizableMooselikeHuntingTrainingEvents()),
+                number(NON_SUBSIDIZABLE_MOOSELIKE_HUNTING_TRAINING_PARTICIPANTS, stats.getNonSubsidizableMooselikeHuntingTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_CARNIVORE_HUNTING_TRAINING_EVENTS, stats.getNonSubsidizableCarnivoreHuntingTrainingEvents()),
+                number(NON_SUBSIDIZABLE_CARNIVORE_HUNTING_TRAINING_PARTICIPANTS, stats.getNonSubsidizableCarnivoreHuntingTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_SRVA_TRAINING_EVENTS, stats.getNonSubsidizableSrvaTrainingEvents()),
+                number(NON_SUBSIDIZABLE_SRVA_TRAINING_PARTICIPANTS, stats.getNonSubsidizableSrvaTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_CARNIVORE_CONTACT_PERSON_TRAINING_EVENTS, stats.getNonSubsidizableCarnivoreContactPersonTrainingEvents()),
+                number(NON_SUBSIDIZABLE_CARNIVORE_CONTACT_PERSON_TRAINING_PARTICIPANTS, stats.getNonSubsidizableCarnivoreContactPersonTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_ACCIDENT_PREVENTION_TRAINING_EVENTS, stats.getNonSubsidizableAccidentPreventionTrainingEvents()),
+                number(NON_SUBSIDIZABLE_ACCIDENT_PREVENTION_TRAINING_PARTICIPANTS, stats.getNonSubsidizableAccidentPreventionTrainingParticipants()));
+    }
+
     private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedYouthTrainingItems(final YouthTrainingStatistics stats) {
         return asList(
                 number(SCHOOL_TRAINING_EVENTS, stats.getSchoolTrainingEvents()),
@@ -622,6 +699,16 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 number(COLLEGE_TRAINING_PARTICIPANTS, stats.getCollegeTrainingParticipants()),
                 number(OTHER_YOUTH_TARGETED_TRAINING_EVENTS, stats.getOtherYouthTargetedTrainingEvents()),
                 number(OTHER_YOUTH_TARGETED_TRAINING_PARTICIPANTS, stats.getOtherYouthTargetedTrainingParticipants()));
+    }
+
+    private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedNonSubsidizableYouthTrainingItems(final YouthTrainingStatistics stats) {
+        return asList(
+                number(NON_SUBSIDIZABLE_SCHOOL_TRAINING_EVENTS, stats.getNonSubsidizableSchoolTrainingEvents()),
+                number(NON_SUBSIDIZABLE_SCHOOL_TRAINING_PARTICIPANTS, stats.getNonSubsidizableSchoolTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_COLLEGE_TRAINING_EVENTS, stats.getNonSubsidizableCollegeTrainingEvents()),
+                number(NON_SUBSIDIZABLE_COLLEGE_TRAINING_PARTICIPANTS, stats.getNonSubsidizableCollegeTrainingParticipants()),
+                number(NON_SUBSIDIZABLE_OTHER_YOUTH_TARGETED_TRAINING_EVENTS, stats.getNonSubsidizableOtherYouthTargetedTrainingEvents()),
+                number(NON_SUBSIDIZABLE_OTHER_YOUTH_TARGETED_TRAINING_PARTICIPANTS, stats.getNonSubsidizableOtherYouthTargetedTrainingParticipants()));
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedOtherHunterTrainingItems(final OtherHunterTrainingStatistics stats,
@@ -650,6 +737,32 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
 
         list.add(number(TRACKER_TRAINING_EVENTS, stats.getTrackerTrainingEvents()));
         list.add(number(TRACKER_TRAINING_PARTICIPANTS, stats.getTrackerTrainingParticipants()));
+
+        return list;
+    }
+
+    private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedNonSubsidizableOtherHunterTrainingItems(final OtherHunterTrainingStatistics stats,
+                                                                                                                      final int year) {
+
+        final List<Tuple2<LocalisedString, Either<Number, String>>> list = new ArrayList<>();
+        list.add(number(NON_SUBSIDIZABLE_SMALL_CARNIVORE_HUNTING_TRAINING_EVENTS, stats.getNonSubsidizableSmallCarnivoreHuntingTrainingEvents()));
+        list.add(number(NON_SUBSIDIZABLE_SMALL_CARNIVORE_HUNTING_TRAINING_PARTICIPANTS, stats.getNonSubsidizableSmallCarnivoreHuntingTrainingParticipants()));
+        list.add(number(NON_SUBSIDIZABLE_GAME_COUNTING_TRAINING_EVENTS, stats.getNonSubsidizableGameCountingTrainingEvents()));
+        list.add(number(NON_SUBSIDIZABLE_GAME_COUNTING_TRAINING_PARTICIPANTS, stats.getNonSubsidizableGameCountingTrainingParticipants()));
+        list.add(number(NON_SUBSIDIZABLE_GAME_POPULATION_MANAGEMENT_TRAINING_EVENTS, stats.getNonSubsidizableGamePopulationManagementTrainingEvents()));
+        list.add(number(NON_SUBSIDIZABLE_GAME_POPULATION_MANAGEMENT_TRAINING_PARTICIPANTS, stats.getNonSubsidizableGamePopulationManagementTrainingParticipants()));
+        list.add(number(NON_SUBSIDIZABLE_GAME_ENVIRONMENTAL_CARE_TRAINING_EVENTS, stats.getNonSubsidizableGameEnvironmentalCareTrainingEvents()));
+        list.add(number(NON_SUBSIDIZABLE_GAME_ENVIRONMENTAL_CARE_TRAINING_PARTICIPANTS, stats.getNonSubsidizableGameEnvironmentalCareTrainingParticipants()));
+        list.add(number(NON_SUBSIDIZABLE_OTHER_GAMEKEEPING_TRAINING_EVENTS, stats.getNonSubsidizableOtherGamekeepingTrainingEvents()));
+        list.add(number(NON_SUBSIDIZABLE_OTHER_GAMEKEEPING_TRAINING_PARTICIPANTS, stats.getNonSubsidizableOtherGamekeepingTrainingParticipants()));
+
+        if (year >= 2018) {
+            list.add(number(NON_SUBSIDIZABLE_SHOOTING_TRAINING_EVENTS, stats.getNonSubsidizableShootingTrainingEvents()));
+            list.add(number(NON_SUBSIDIZABLE_SHOOTING_TRAINING_PARTICIPANTS, stats.getNonSubsidizableShootingTrainingParticipants()));
+        }
+
+        list.add(number(NON_SUBSIDIZABLE_TRACKER_TRAINING_EVENTS, stats.getNonSubsidizableTrackerTrainingEvents()));
+        list.add(number(NON_SUBSIDIZABLE_TRACKER_TRAINING_PARTICIPANTS, stats.getNonSubsidizableTrackerTrainingParticipants()));
 
         return list;
     }

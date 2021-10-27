@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThrows;
 
+// TODO: Is this class still valid?
 public class HarvestFeature_DeerPilotTest extends HarvestFeatureTestBase
         implements HarvestDTOBuilderFactory, HuntingGroupFixtureMixin {
 
@@ -39,8 +40,6 @@ public class HarvestFeature_DeerPilotTest extends HarvestFeatureTestBase
         final GameSpecies species = model().newGameSpeciesWhiteTailedDeer();
 
         withHuntingGroupFixture(species, fixture -> {
-
-            model().newDeerPilot(fixture.permit);
 
             final Person author = fixture.groupMember;
             final Person actor = fixture.clubMember;
@@ -98,8 +97,6 @@ public class HarvestFeature_DeerPilotTest extends HarvestFeatureTestBase
 
         withHuntingGroupFixture(species, fixture -> {
 
-            model().newDeerPilot(fixture.permit);
-
             onSavedAndAuthenticated(createUser(fixture.groupMember), () -> {
 
                 final HarvestDTO inputDto = create(species)
@@ -124,35 +121,10 @@ public class HarvestFeature_DeerPilotTest extends HarvestFeatureTestBase
     }
 
     @Test
-    public void testCreate_withNewAntlerFields_whenDeerPilotNotActive() {
-        final GameSpecies species = model().newGameSpeciesWhiteTailedDeer();
-
-        withHuntingGroupFixture(species, fixture -> {
-
-            onSavedAndAuthenticated(createUser(fixture.groupMember), () -> {
-
-                final HarvestDTO inputDto = create(species)
-                        .withSpecimen(ADULT_MALE)
-                        .build();
-
-                // Populate `antlersWidth` manually because it is not supported in specVersion 8
-                // but expected to exist in specVersion 7 assertions.
-                final HarvestSpecimenDTO specimenDTO = inputDto.getSpecimens().get(0);
-                specimenDTO.setAntlersWidth(nextPositiveIntAtMost(100));
-
-                assertThrows(HarvestSpecimenValidationException.class, () -> invokeCreateHarvest(inputDto));
-            });
-        });
-    }
-
-    @Test
     public void testUpdate_withDeerHuntingType() {
         final GameSpecies species = model().newGameSpeciesWhiteTailedDeer();
 
         withHuntingGroupFixture(species, fixture -> {
-
-            model().newDeerPilot(fixture.permit);
-
             final Person author = fixture.groupMember;
 
             final Harvest harvest = model().newHarvest(species, author);
@@ -185,8 +157,6 @@ public class HarvestFeature_DeerPilotTest extends HarvestFeatureTestBase
         final GameSpecies species = model().newGameSpeciesWhiteTailedDeer();
 
         withHuntingGroupFixture(species, fixture -> {
-
-            model().newDeerPilot(fixture.permit);
 
             final Person author = fixture.groupMember;
 
@@ -221,8 +191,6 @@ public class HarvestFeature_DeerPilotTest extends HarvestFeatureTestBase
         final GameSpecies species = model().newGameSpeciesWhiteTailedDeer();
 
         withRhy(rhy -> withHuntingGroupFixture(rhy, species, fixture -> {
-
-            model().newDeerPilot(fixture.permit);
 
             final HarvestPermit otherPermit = model().newHarvestPermit(rhy);
             model().newHarvestPermitSpeciesAmount(otherPermit, species);

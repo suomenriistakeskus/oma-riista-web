@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.permit.application.DeliveryAddress;
+import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.feature.permit.decision.PermitDecision;
 import org.springframework.util.StringUtils;
 
@@ -11,27 +12,33 @@ import javax.annotation.Nonnull;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static fi.riista.feature.permit.application.PermitHolder.PermitHolderType.PERSON;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.springframework.util.StringUtils.hasText;
 
 public final class InvoicePdfRecipient {
 
     public static InvoicePdfRecipient create(final @Nonnull PermitDecision decision) {
-        return create(decision.getContactPerson(), decision.getDeliveryAddress());
+        return create(decision.getPermitHolder(), decision.getContactPerson(), decision.getDeliveryAddress());
     }
 
     public static InvoicePdfRecipient create(final @Nonnull HarvestPermit permit) {
-        return create(permit.getOriginalContactPerson(), permit.getPermitDecision().getDeliveryAddress());
+        final PermitDecision decision = permit.getPermitDecision();
+        return create(decision.getPermitHolder(), permit.getOriginalContactPerson(), decision.getDeliveryAddress());
     }
 
-    public static InvoicePdfRecipient create(final @Nonnull Person person, final @Nonnull DeliveryAddress deliveryAddress) {
+    public static InvoicePdfRecipient create(final @Nonnull PermitHolder permitHolder,
+                                             final @Nonnull Person person,
+                                             final @Nonnull DeliveryAddress deliveryAddress) {
         requireNonNull(person);
         requireNonNull(deliveryAddress, "address is null");
 
-        return new InvoicePdfRecipient(person.getId(), deliveryAddress);
+        return new InvoicePdfRecipient(permitHolder, person.getId(), deliveryAddress);
     }
 
 
+    private final PermitHolder permitHolder;
     private final String customerNumber;
     private final String recipient;
     private final String streetAddress;
@@ -39,8 +46,11 @@ public final class InvoicePdfRecipient {
     private final String city;
     private final String country;
 
-    private InvoicePdfRecipient(final @Nonnull Long customerNumber, final @Nonnull DeliveryAddress deliveryAddress) {
+    private InvoicePdfRecipient(final @Nonnull PermitHolder permitHolder,
+                                final @Nonnull Long customerNumber,
+                                final @Nonnull DeliveryAddress deliveryAddress) {
 
+        this.permitHolder = requireNonNull(permitHolder);
         this.customerNumber = Long.toString(requireNonNull(customerNumber));
         this.recipient = deliveryAddress.getRecipient();
 
@@ -61,11 +71,20 @@ public final class InvoicePdfRecipient {
                 .add(streetAddress)
                 .add(String.format("%s %s", postalCode, city));
 
-        if (StringUtils.hasText(country)) {
+        if (hasText(country)) {
             builder.add(country);
         }
 
         return builder.build();
+    }
+
+    public List<String> formatAsLinesWithPermitHolder() {
+        final ImmutableList.Builder<String> builder = ImmutableList.builder();
+        if (permitHolder.getType() != PERSON) {
+            builder.add(String.format("%s %s", permitHolder.getCode(), permitHolder.getName()));
+        }
+
+        return builder.addAll(formatAsLines()).build();
     }
 
     public String getCustomerNumber() {

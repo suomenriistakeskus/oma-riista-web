@@ -1,0 +1,21 @@
+<ul class="list-unstyled">
+    <li ng-repeat="attachment in $ctrl.attachments track by attachment.id">
+        <a ng-click="$ctrl.downloadAttachment(attachment.id)" ng-bind="attachment.filename"></a>
+        <button type="button"
+                ng-click="$ctrl.deleteAttachment(attachment.id)"
+                class="btn btn-link text-right">
+            <span class="glyphicon glyphicon-remove text-danger" title="{{'global.button.delete' | translate}}"></span>
+        </button>
+    </li>
+</ul>
+
+<form method="post" enctype="multipart/form-data"
+      class="dropzone"
+      ng-dropzone
+      dropzone="$ctrl.dropzone.dropzone"
+      dropzone-config="$ctrl.dropzoneConfig"
+      event-handlers="$ctrl.dropzoneEventHandlers">
+    <input type="hidden" spring-csrf-cookie/>
+
+    <div class="dz-message" translate="jht.otherwiseDeceased.buttons.uploadAttachments"></div>
+</form>

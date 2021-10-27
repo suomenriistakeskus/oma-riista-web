@@ -36,7 +36,7 @@ public class AccountRegistrationApiResource {
     @RequestMapping(value = URI_SEND_EMAIL, method = RequestMethod.POST)
     public void registerByEmail(@RequestBody @Validated RegisterAccountDTO dto,
                                 HttpServletRequest request) {
-        registerAccountFeature.sendEmail(dto, request);
+        registerAccountFeature.sendEmail(dto.getEmail(), dto.getLang(), request);
     }
 
     @RequestMapping(value = URI_FROM_EMAIL, method = RequestMethod.POST)

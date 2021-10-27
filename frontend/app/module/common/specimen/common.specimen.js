@@ -22,11 +22,8 @@ angular.module('app.common.specimen', [])
             $ctrl.$onInit = function () {
                 var speciesCode = $ctrl.entry.gameSpeciesCode;
 
-                // TODO Remove this when deer pilot 2020 is over.
-                var isDeerPilotUser = AuthenticationService.isDeerPilotUser();
-
                 $ctrl.speciesHasExtendedFields = !!speciesCode
-                    && GameSpeciesCodes.isSpeciesHavingExtendedFields(speciesCode, isDeerPilotUser);
+                    && GameSpeciesCodes.isSpeciesHavingExtendedFields(speciesCode);
             };
         }
     })

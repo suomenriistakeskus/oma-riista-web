@@ -44,6 +44,9 @@
     <logger name="org.hibernate.type" level="WARN" />
     <logger name="org.hibernate.tool" level="WARN" />
 
+    <logger name="com.querydsl.sql" level="INFO" />
+    <logger name="com.querydsl.jpa" level="INFO" />
+
     <logger name="org.hibernate.engine.internal.StatefulPersistenceContext" level="ERROR" />
     <logger name="org.quartz" level="INFO"/>
     <logger name="liquibase" level="WARN"/>

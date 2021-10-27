@@ -1,6 +1,8 @@
 package fi.riista.feature.common.decision;
 
-public enum AppealStatus {
+import fi.riista.util.LocalisedEnum;
+
+public enum AppealStatus implements LocalisedEnum {
 
     // Päätöksestä valitettu
     INITIATED,

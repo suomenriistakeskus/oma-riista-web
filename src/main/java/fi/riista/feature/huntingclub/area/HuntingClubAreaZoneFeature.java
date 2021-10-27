@@ -8,6 +8,8 @@ import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.GISUtils;
 import org.geojson.FeatureCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,8 @@ import static java.util.Objects.requireNonNull;
 
 @Component
 public class HuntingClubAreaZoneFeature {
+
+    private static final Logger LOG = LoggerFactory.getLogger(HuntingClubAreaZoneFeature.class);
 
     @Resource
     private RequireEntityService requireEntityService;
@@ -68,6 +72,7 @@ public class HuntingClubAreaZoneFeature {
         try {
             zoneEditService.updateAreaSize(zoneId);
         } catch (Exception e) {
+            LOG.error("Calculating area size failed for zone {}.", zoneId, e);
             zoneEditService.markCalculationFailed(zoneId);
         }
     }

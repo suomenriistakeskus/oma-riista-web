@@ -121,4 +121,90 @@ public class HarvestRegistryRequestDTO {
     public void setShooterHunterNumber(final String shooterHunterNumber) {
         this.shooterHunterNumber = shooterHunterNumber;
     }
+
+
+    public static final class Builder {
+        private Integer page;
+        private Integer pageSize;
+        private LocalDate beginDate;
+        private LocalDate endDate;
+        private Boolean allSpecies;
+        private Set<Integer> species;
+        private String municipalityCode;
+        private String rkaCode;
+        private String rhyCode;
+        private String shooterHunterNumber;
+
+        private Builder() {
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public Builder withPage(final Integer page) {
+            this.page = page;
+            return this;
+        }
+
+        public Builder withPageSize(final Integer pageSize) {
+            this.pageSize = pageSize;
+            return this;
+        }
+
+        public Builder withBeginDate(final LocalDate beginDate) {
+            this.beginDate = beginDate;
+            return this;
+        }
+
+        public Builder withEndDate(final LocalDate endDate) {
+            this.endDate = endDate;
+            return this;
+        }
+
+        public Builder withAllSpecies(final Boolean allSpecies) {
+            this.allSpecies = allSpecies;
+            return this;
+        }
+
+        public Builder withSpecies(final Set<Integer> species) {
+            this.species = species;
+            return this;
+        }
+
+        public Builder withMunicipalityCode(final String municipalityCode) {
+            this.municipalityCode = municipalityCode;
+            return this;
+        }
+
+        public Builder withRkaCode(final String rkaCode) {
+            this.rkaCode = rkaCode;
+            return this;
+        }
+
+        public Builder withRhyId(final String rhyCode) {
+            this.rhyCode = rhyCode;
+            return this;
+        }
+
+        public Builder withShooterHunterNumber(final String shooterHunterNumber) {
+            this.shooterHunterNumber = shooterHunterNumber;
+            return this;
+        }
+
+        public HarvestRegistryRequestDTO build() {
+            HarvestRegistryRequestDTO harvestRegistryRequestDTO = new HarvestRegistryRequestDTO();
+            harvestRegistryRequestDTO.setPage(page);
+            harvestRegistryRequestDTO.setPageSize(pageSize);
+            harvestRegistryRequestDTO.setBeginDate(beginDate);
+            harvestRegistryRequestDTO.setEndDate(endDate);
+            harvestRegistryRequestDTO.setAllSpecies(allSpecies);
+            harvestRegistryRequestDTO.setSpecies(species);
+            harvestRegistryRequestDTO.setMunicipalityCode(municipalityCode);
+            harvestRegistryRequestDTO.setRkaCode(rkaCode);
+            harvestRegistryRequestDTO.setRhyCode(rhyCode);
+            harvestRegistryRequestDTO.setShooterHunterNumber(shooterHunterNumber);
+            return harvestRegistryRequestDTO;
+        }
+    }
 }

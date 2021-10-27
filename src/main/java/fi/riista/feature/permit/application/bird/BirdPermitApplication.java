@@ -1,9 +1,9 @@
 package fi.riista.feature.permit.application.bird;
 
 import fi.riista.feature.common.entity.GeoLocation;
-import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.GameCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.HasParentApplication;
 import fi.riista.feature.permit.application.bird.area.BirdPermitApplicationProtectedArea;
 import fi.riista.feature.permit.application.bird.cause.BirdPermitApplicationCause;
 import fi.riista.feature.permit.application.derogation.area.DerogationPermitApplicationAreaInfo;
@@ -15,19 +15,15 @@ import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.Transient;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Access(AccessType.FIELD)
-public class BirdPermitApplication extends LifecycleEntity<Long> implements DerogationPermitApplicationAreaInfo {
+public class BirdPermitApplication extends HasParentApplication implements DerogationPermitApplicationAreaInfo {
 
     public static final String ID_COLUMN_NAME = "bird_permit_application_id";
 
@@ -39,11 +35,6 @@ public class BirdPermitApplication extends LifecycleEntity<Long> implements Dero
     public Long getId() {
         return id;
     }
-
-    @NotNull
-    @JoinColumn(unique = true, nullable = false)
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    private HarvestPermitApplication harvestPermitApplication;
 
     @Embedded
     @Valid
@@ -91,14 +82,6 @@ public class BirdPermitApplication extends LifecycleEntity<Long> implements Dero
     }
 
     private Long id;
-
-    public HarvestPermitApplication getHarvestPermitApplication() {
-        return harvestPermitApplication;
-    }
-
-    public void setHarvestPermitApplication(HarvestPermitApplication harvestPermitApplication) {
-        this.harvestPermitApplication = harvestPermitApplication;
-    }
 
     public BirdPermitApplicationProtectedArea getProtectedArea() {
         return protectedArea;

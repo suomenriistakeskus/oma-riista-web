@@ -16,7 +16,7 @@ public class CopyZoneGeometryQueries {
 
     private final NamedParameterJdbcOperations jdbcOperations;
     private final String copyZonePalstaSql;
-    private String copyZoneFeatureSql;
+    private final String copyZoneFeatureSql;
 
     public CopyZoneGeometryQueries(final NamedParameterJdbcOperations jdbcOperations) {
         this.jdbcOperations = jdbcOperations;
@@ -29,7 +29,7 @@ public class CopyZoneGeometryQueries {
                 " FROM zone_palsta" +
                 " WHERE zone_id = :from_zone_id";
 
-        copyZoneFeatureSql = "INSERT INTO zone_feature (zone_id, " + featureFields + ")" +
+        this.copyZoneFeatureSql = "INSERT INTO zone_feature (zone_id, " + featureFields + ")" +
                 " SELECT :to_zone_id, " + featureFields +
                 " FROM zone_feature" +
                 " WHERE zone_id = :from_zone_id";
@@ -50,6 +50,14 @@ public class CopyZoneGeometryQueries {
                 "   FROM zone AS z2 " +
                 "   WHERE z2.zone_id = :from_zone_id) " +
                 " WHERE zone_id = :to_zone_id", copyParameters(from, to));
+    }
+
+    public void addZoneGeomToFeatures(final GISZone from, final GISZone to) {
+        jdbcOperations.update("INSERT INTO zone_feature (zone_id, geom) " +
+                " SELECT :to_zone_id," +
+                " (ST_Dump(geom)).geom" +
+                " FROM zone" +
+                " WHERE zone_id = :from_zone_id", copyParameters(from, to));
     }
 
     private static MapSqlParameterSource copyParameters(final GISZone from, final GISZone to) {

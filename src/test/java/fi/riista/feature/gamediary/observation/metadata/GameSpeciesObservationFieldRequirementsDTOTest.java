@@ -2,7 +2,6 @@ package fi.riista.feature.gamediary.observation.metadata;
 
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.common.entity.Required;
-import fi.riista.feature.common.entity.RequiredWithinDeerPilot;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationType;
@@ -153,12 +152,12 @@ public class GameSpeciesObservationFieldRequirementsDTOTest implements ValueGene
     @Test
     public void testBaseFields_withPreAndPostDeerHuntingMetadata() {
         final int[] metadataVersions = {DEFAULT_METADATA_VERSION, DEER_HUNTING_METADATA_VERSION};
-        final ImmutableMap<String, RequiredWithinDeerPilot> expectedNormal =
-                ImmutableMap.of("withinMooseHunting", RequiredWithinDeerPilot.NO, "withinDeerHunting", RequiredWithinDeerPilot.NO);
-        final ImmutableMap<String, RequiredWithinDeerPilot> expectedMooseHunting =
-                ImmutableMap.of("withinMooseHunting", RequiredWithinDeerPilot.YES, "withinDeerHunting", RequiredWithinDeerPilot.NO);
-        final ImmutableMap<String, RequiredWithinDeerPilot> expectedDeerHunting =
-                ImmutableMap.of("withinMooseHunting", RequiredWithinDeerPilot.NO, "withinDeerHunting", RequiredWithinDeerPilot.YES);
+        final ImmutableMap<String, Required> expectedNormal =
+                ImmutableMap.of("withinMooseHunting", NO, "withinDeerHunting", NO);
+        final ImmutableMap<String, Required> expectedMooseHunting =
+                ImmutableMap.of("withinMooseHunting", YES, "withinDeerHunting", NO);
+        final ImmutableMap<String, Required> expectedDeerHunting =
+                ImmutableMap.of("withinMooseHunting", NO, "withinDeerHunting", YES);
 
         for (final int metadataVersion : metadataVersions) {
             assertEquals(expectedNormal, createDTO(NORMAL, metadataVersion).getBaseFields());
@@ -173,8 +172,8 @@ public class GameSpeciesObservationFieldRequirementsDTOTest implements ValueGene
         final ObservationContextSensitiveFields ctxFields = newContextSensitiveFields(species, NORMAL, some(ObservationType.class), DEFAULT_METADATA_VERSION);
         final ObservationBaseFields baseFields = newBaseFields(ctxFields.getSpecies(), NORMAL, DEFAULT_METADATA_VERSION);
         baseFields.setWithinMooseHunting(YES);
-        baseFields.setWithinDeerHunting(RequiredWithinDeerPilot.YES);
-        final ImmutableMap<String, RequiredWithinDeerPilot> expected = ImmutableMap.of("withinMooseHunting", RequiredWithinDeerPilot.YES, "withinDeerHunting", RequiredWithinDeerPilot.YES);
+        baseFields.setWithinDeerHunting(Required.YES);
+        final ImmutableMap<String, Required> expected = ImmutableMap.of("withinMooseHunting", Required.YES, "withinDeerHunting", Required.YES);
         assertEquals(expected, create(baseFields, ctxFields).getBaseFields());
     }
 
@@ -259,15 +258,15 @@ public class GameSpeciesObservationFieldRequirementsDTOTest implements ValueGene
         switch (category) {
             case NORMAL:
                 baseFields.setWithinMooseHunting(NO);
-                baseFields.setWithinDeerHunting(RequiredWithinDeerPilot.NO);
+                baseFields.setWithinDeerHunting(NO);
                 break;
             case MOOSE_HUNTING:
                 baseFields.setWithinMooseHunting(YES);
-                baseFields.setWithinDeerHunting(RequiredWithinDeerPilot.NO);
+                baseFields.setWithinDeerHunting(NO);
                 break;
             case DEER_HUNTING:
                 baseFields.setWithinMooseHunting(NO);
-                baseFields.setWithinDeerHunting(RequiredWithinDeerPilot.YES);
+                baseFields.setWithinDeerHunting(YES);
                 break;
             default:
                 throw new IllegalArgumentException("Invalid ObservationCategory");

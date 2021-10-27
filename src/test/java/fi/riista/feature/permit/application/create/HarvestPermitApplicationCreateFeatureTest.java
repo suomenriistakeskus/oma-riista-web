@@ -22,6 +22,7 @@ import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIV
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_LYNX;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_LYNX_PORONHOITO;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_WOLF;
+import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIVORE_WOLF_PORONHOITO;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.MOOSELIKE;
 import static fi.riista.test.Asserts.assertEmpty;
 import static org.junit.Assert.assertEquals;
@@ -145,6 +146,16 @@ public class HarvestPermitApplicationCreateFeatureTest extends EmbeddedDatabaseT
         dto.setCategory(LARGE_CARNIVORE_WOLF);
         dto.setHuntingYear(2019);
         dto.setApplicationName("wolf 2019");
+
+        createAndAssertForCarnivore(dto);
+    }
+
+    @Test
+    public void createCarnivore_wolfPoronhoito() {
+        final HarvestPermitApplicationCreateDTO dto = new HarvestPermitApplicationCreateDTO();
+        dto.setCategory(LARGE_CARNIVORE_WOLF_PORONHOITO);
+        dto.setHuntingYear(2019);
+        dto.setApplicationName("wolf poronhoito 2019");
 
         createAndAssertForCarnivore(dto);
     }

@@ -16,6 +16,7 @@ public enum HarvestPermitCategory {
     LARGE_CARNIVORE_LYNX(HarvestPermitApplicationName.LYNX, PermitDecisionName.LARGE_CARNIVORE),
     LARGE_CARNIVORE_LYNX_PORONHOITO(HarvestPermitApplicationName.LYNX_PORONHOITO, PermitDecisionName.LARGE_CARNIVORE),
     LARGE_CARNIVORE_WOLF(HarvestPermitApplicationName.WOLF, PermitDecisionName.LARGE_CARNIVORE),
+    LARGE_CARNIVORE_WOLF_PORONHOITO(HarvestPermitApplicationName.WOLF, PermitDecisionName.LARGE_CARNIVORE),
     MAMMAL(HarvestPermitApplicationName.MAMMAL, PermitDecisionName.MAMMAL),
     NEST_REMOVAL(HarvestPermitApplicationName.NEST_REMOVAL, PermitDecisionName.NEST_REMOVAL),
     LAW_SECTION_TEN(HarvestPermitApplicationName.LAW_SECTION_TEN, PermitDecisionName.LAW_SECTION_TEN),
@@ -35,7 +36,8 @@ public enum HarvestPermitCategory {
                 LARGE_CARNIVORE_BEAR,
                 LARGE_CARNIVORE_LYNX,
                 LARGE_CARNIVORE_LYNX_PORONHOITO,
-                LARGE_CARNIVORE_WOLF);
+                LARGE_CARNIVORE_WOLF,
+                LARGE_CARNIVORE_WOLF_PORONHOITO);
     }
 
     private final LocalisedString applicationName;
@@ -77,6 +79,7 @@ public enum HarvestPermitCategory {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
                 return true;
             default:
                 return false;
@@ -90,6 +93,7 @@ public enum HarvestPermitCategory {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
             case MAMMAL:
             case NEST_REMOVAL:
                 return true;
@@ -128,10 +132,10 @@ public enum HarvestPermitCategory {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
             case MAMMAL:
             case NEST_REMOVAL:
             case LAW_SECTION_TEN:
-            case WEAPON_TRANSPORTATION:
             case DOG_DISTURBANCE:
             case DOG_UNLEASH:
                 return true;

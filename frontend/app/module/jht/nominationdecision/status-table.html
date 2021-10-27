@@ -1,0 +1,36 @@
+<div class="row">
+    <div class="col-xs-4">
+        <div class="form-group">
+            <span translate="global.year"></span>
+            <select name="yearSelection" id="yearSelection"
+                    class="form-control decision-year-select"
+                    ng-model="$ctrl.year"
+                    ng-options="year for year in ::$ctrl.yearOptions"
+                    ng-change="$ctrl.loadStatistics()">
+                <option disabled value="">{{'global.selectCalendarYear' | translate}}</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 col-xs-12">
+
+        <table class="table table-striped6">
+            <thead>
+            <tr>
+                <th>RKA</th>
+                <th>K</th>
+                <th>V</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="rka in $ctrl.data track by rka.rka.id">
+                <td ng-bind="rka.rka | rI18nNameFilter"></td>
+                <td ng-bind="rka.ongoing"></td>
+                <td ng-bind="rka.published"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

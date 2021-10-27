@@ -121,8 +121,21 @@
 
 .r-decision-species-table {
 
+  .r-decision-table-species-name {
+    text-transform: capitalize;
+    font-weight: bold;
+  }
+
   tbody > tr > td {
-    vertical-align: middle;
+    vertical-align: top;
+  }
+
+  tbody > tr > td {
+    vertical-align: top;
+  }
+
+  tbody > tr > td.r-permit-decision-table-amount-column{
+    width: 80%;
   }
 
   tbody > tr > td:nth-child(3) {
@@ -152,6 +165,38 @@
       font-size: 11px;
       line-height: 14px;
     }
+  }
+}
+
+.r-decision-species-amount-details {
+
+  margin-bottom: 0px;
+
+  thead > tr > th {
+    font-size: 13px;
+    color: #444444;
+    background: none;
+    margin-top: 0px;
+    padding-top: 0px;
+    text-transform: none;
+    border-bottom: none;
+  };
+
+  tbody > tr {
+    padding: 0px;
+    margin: 0px;
+  } ;
+
+  tbody > tr > td {
+    border-top: none;
+    vertical-align: middle;
+    horiz-align: left;
+    text-align: left;
+    width: 13%;
+  }
+
+  tbody > tr > td:last-child {
+    width: 60%;
   }
 }
 
@@ -217,5 +262,25 @@
       .btn-block;
       line-height: 80px;
     }
+  }
+}
+
+.decision-view-primary-button {
+  .btn;
+  .btn-primary;
+
+  margin-bottom: 20px;
+}
+
+.search-view-nav-pills {
+  margin-bottom: 20px
+}
+
+.decision-year-select {
+  width: 80px;
+  margin-left: 10px;
+
+  &.form-control {
+    display: inline-block;
   }
 }

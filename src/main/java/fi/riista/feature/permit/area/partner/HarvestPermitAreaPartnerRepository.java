@@ -16,4 +16,6 @@ public interface HarvestPermitAreaPartnerRepository extends BaseRepository<Harve
 
     @Query("SELECT p.zone.id FROM #{#entityName} p WHERE p.harvestPermitArea.id = ?1")
     List<Long> findAreaPartnerZoneIds(long harvestPermitAreaId);
+
+    void deleteByHarvestPermitArea(HarvestPermitArea area);
 }

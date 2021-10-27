@@ -122,7 +122,7 @@
 
             self.isCompletedByCoordinator = function (state) {
                 return state !== RhyAnnualStatisticsState.NOT_STARTED &&
-                       state !== RhyAnnualStatisticsState.IN_PROGRESS;
+                    state !== RhyAnnualStatisticsState.IN_PROGRESS;
             };
 
             self.indexOf = function (state) {
@@ -144,7 +144,7 @@
         })
 
         .constant('AnnualStatisticsLastAvailableYear', {
-            LAST_YEAR: 2020
+            LAST_YEAR: 2021 // TODO: Update when new annual statistics opened
         })
 
         .factory('AnnualStatisticsYears', function ($resource) {
@@ -247,7 +247,7 @@
                     return true;
 
                 } else if (permission === RhyAnnualStatisticsPermission.EDIT &&
-                           state !== RhyAnnualStatisticsState.UNDER_INSPECTION) {
+                    state !== RhyAnnualStatisticsState.UNDER_INSPECTION) {
 
                     // Editing is blocked from coordinator after 15.1. next year.
 
@@ -331,6 +331,62 @@
                     showModal(data, modalCtrlOpts);
                 };
             };
+
+            this.createOpenEditTrainingDialogFunction = function (data, initialFilterMode, templateUrl, saveDataFn) {
+
+                function showModal(data, modalCtrlOpts) {
+                    var modalPromise = $uibModal.open({
+                        templateUrl: templateUrl,
+                        controllerAs: '$ctrl',
+                        controller: ModalController,
+                        resolve: {
+                            data: _.constant(data),
+                            modalCtrlOpts: _.constant(modalCtrlOpts),
+                            initialFilterMode: _.constant(initialFilterMode)
+                        }
+                    }).result.then(saveDataFn);
+
+                    NotificationService.handleModalPromise(modalPromise).then(function () {
+                        RhyAnnualStatisticsViewState.reload();
+                    });
+                }
+
+                function ModalController($uibModalInstance, data, modalCtrlOpts, initialFilterMode) {
+                    var $modalCtrl = this;
+                    angular.extend($modalCtrl, modalCtrlOpts);
+
+                    $modalCtrl.nonSubsidizableGroups = _.chain($modalCtrl.groups)
+                        .map(function (g) {
+                            var cp = angular.copy(g);
+                            cp.input1Key = 'nonSubsidizable' + _.upperFirst(g.input1Key);
+                            cp.input2Key = 'nonSubsidizable' + _.upperFirst(g.input2Key);
+                            return cp;
+                        }).value();
+
+                    $modalCtrl.data = data || {};
+                    $modalCtrl.selectedTab = initialFilterMode === 'OTHER' ? 1 : 0;
+
+                    $modalCtrl.save = function () {
+                        $uibModalInstance.close($modalCtrl.data);
+                    };
+
+                    $modalCtrl.cancel = function () {
+                        $uibModalInstance.dismiss('cancel');
+                    };
+
+                    $modalCtrl.getGroups = function () {
+                        return $modalCtrl.selectedTab === 0
+                            ? $modalCtrl.groups
+                            : $modalCtrl.nonSubsidizableGroups;
+                    };
+
+                }
+
+                return function (modalCtrlOpts) {
+                    showModal(data, modalCtrlOpts);
+                };
+            };
+
         })
 
         .service('Tuple2ListFormDialog', function (RhyAnnualStatisticsDialogHelper) {
@@ -360,7 +416,7 @@
                     }
                 };
 
-                function createModalCtrlOpts (groups, modalCtrlOpts) {
+                function createModalCtrlOpts(groups, modalCtrlOpts) {
                     var opts = angular.copy(defaults);
 
                     if (angular.isObject(modalCtrlOpts)) {
@@ -383,6 +439,73 @@
 
                 var openEditDialogFn = RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
                     data, 'rhy/annualstats/tuple2-list-form.html', updateFn);
+
+                return {
+                    /*
+                     * Each group must have the following properties:
+                     *  - name
+                     *  - input1Key
+                     *  - input2Key
+                     *
+                     * The following properties are supported in 'modalCtrlOpts' parameter:
+                     *  - input1UnitKey (localisation key for unit of the first value)
+                     *  - input2UnitKey (localisation key for unit of the second value)
+                     *
+                     * Additionally, 'modalCtrlOtps' may contain the following functions overriding the default implementations:
+                     *  - getValue1Min(group)
+                     *  - getValue1Max(group)
+                     *  - getValue2Min(group)
+                     *  - getValue2Max(group)
+                     */
+                    open: function (groups, modalCtrlOpts) {
+                        return openEditDialogFn(createModalCtrlOpts(groups, modalCtrlOpts));
+                    }
+                };
+            };
+
+            this.createForTraining = function (data, filterMode, localisationPrefix, updateFn) {
+                var upperLimit = 99999;
+
+                var defaults = {
+                    input1UnitKey: 'global.pcs',
+                    input2UnitKey: 'global.pcs',
+                    getValue1Min: function (group) {
+                        return 0;
+                    },
+                    getValue1Max: function (group) {
+                        return upperLimit;
+                    },
+                    getValue2Min: function (group) {
+                        return 0;
+                    },
+                    getValue2Max: function (group) {
+                        return upperLimit;
+                    }
+                };
+
+                function createModalCtrlOpts(groups, modalCtrlOpts) {
+                    var opts = angular.copy(defaults);
+
+                    if (angular.isObject(modalCtrlOpts)) {
+                        angular.extend(opts, modalCtrlOpts);
+                    }
+
+                    angular.extend(opts, {
+                        groups: groups,
+                        titleKey: localisationPrefix + 'title',
+                        header0: localisationPrefix + 'header0',
+                        header1: localisationPrefix + 'header1',
+                        header2: localisationPrefix + 'header2',
+                        getGroupTitle: function (group) {
+                            return localisationPrefix + group.name + 'Title';
+                        }
+                    });
+
+                    return opts;
+                }
+
+                var openEditDialogFn = RhyAnnualStatisticsDialogHelper.createOpenEditTrainingDialogFunction(
+                    data, filterMode, 'rhy/annualstats/training-list-form.html', updateFn);
 
                 return {
                     /*
@@ -512,7 +635,7 @@
                     statistics.otherPublicAdmin, 'rhy/annualstats/administration/edit-other-admin-data.html', updateFn);
             };
 
-            this.openHunterExamTraining = function (statistics, isModerator) {
+            this.openHunterExamTraining = function (statistics, filterMode, isModerator) {
                 var updateFn = function (data) {
                     var urlPostfix;
 
@@ -528,15 +651,13 @@
                     return update(statistics.id, urlPostfix, data);
                 };
 
-                var openDialog = RhyAnnualStatisticsDialogHelper.createOpenEditDialogFunction(
-                    statistics.hunterExamTraining, 'rhy/annualstats/trainings/edit-hunter-exam-training.html', updateFn);
+                var openDialog = RhyAnnualStatisticsDialogHelper.createOpenEditTrainingDialogFunction(
+                    statistics.hunterExamTraining, filterMode, 'rhy/annualstats/trainings/edit-hunter-exam-training.html', updateFn);
 
-                return function () {
-                    return openDialog({
+                return openDialog({
                         isModerator: isModerator,
                         hunterExamTrainingEventsOverridden: _.isFinite(statistics.hunterExamTraining.moderatorOverriddenHunterExamTrainingEvents)
                     });
-                };
             };
 
             var createTrainingFormGroups = function (trainingTypes) {
@@ -559,42 +680,42 @@
                 }
             };
 
-            this.openJhtTraining = function (statistics, trainingTypes) {
+            this.openJhtTraining = function (statistics, filterMode, trainingTypes) {
                 var updateFn = function (data) {
                     return update(statistics.id, 'jhttraining', data);
                 };
 
-                var dialog = Tuple2ListFormDialog.create(statistics.jhtTraining, 'rhy.annualStats.trainings.jht.form.', updateFn);
+                var dialog = Tuple2ListFormDialog.createForTraining(statistics.jhtTraining, filterMode, 'rhy.annualStats.trainings.jht.form.', updateFn);
 
                 return dialog.open(createTrainingFormGroups(trainingTypes), trainingModalCtrlOpts);
             };
 
-            this.openHunterTraining = function (statistics, trainingTypes) {
+            this.openHunterTraining = function (statistics, filterMode, trainingTypes) {
                 var updateFn = function (data) {
                     return update(statistics.id, 'huntertraining', data);
                 };
 
-                var dialog = Tuple2ListFormDialog.create(statistics.hunterTraining, 'rhy.annualStats.trainings.hunter.form.', updateFn);
+                var dialog = Tuple2ListFormDialog.createForTraining(statistics.hunterTraining, filterMode, 'rhy.annualStats.trainings.hunter.form.', updateFn);
 
                 return dialog.open(createTrainingFormGroups(trainingTypes), trainingModalCtrlOpts);
             };
 
-            this.openYouthTraining = function (statistics, trainingTypes) {
+            this.openYouthTraining = function (statistics, filterMode, trainingTypes) {
                 var updateFn = function (data) {
                     return update(statistics.id, 'youthtraining', data);
                 };
 
-                var dialog = Tuple2ListFormDialog.create(statistics.youthTraining, 'rhy.annualStats.trainings.youth.form.', updateFn);
+                var dialog = Tuple2ListFormDialog.createForTraining(statistics.youthTraining, filterMode, 'rhy.annualStats.trainings.youth.form.', updateFn);
 
                 return dialog.open(createTrainingFormGroups(trainingTypes), trainingModalCtrlOpts);
             };
 
-            this.openOtherHunterTraining = function (statistics, trainingTypes) {
+            this.openOtherHunterTraining = function (statistics, filterMode, trainingTypes) {
                 var updateFn = function (data) {
                     return update(statistics.id, 'otherhuntertraining', data);
                 };
 
-                var dialog = Tuple2ListFormDialog.create(statistics.otherHunterTraining, 'rhy.annualStats.trainings.otherHunter.form.', updateFn);
+                var dialog = Tuple2ListFormDialog.createForTraining(statistics.otherHunterTraining, filterMode, 'rhy.annualStats.trainings.otherHunter.form.', updateFn);
 
                 return dialog.open(createTrainingFormGroups(trainingTypes), trainingModalCtrlOpts);
             };
@@ -995,7 +1116,8 @@
             bindings: {
                 huntingControl: '<',
                 editable: '<',
-                openEditDialog: '&'
+                openEditDialog: '&',
+                isModerator: '<'
             }
         })
 
@@ -1042,7 +1164,10 @@
                             name: $ctrl.allSpeciesNames[speciesCode]
                         };
                     });
-                    $ctrl.speciesCodeNamePairs.push({code: -1, name: $translate.instant("rhy.annualStats.srva.otherSpecies")});
+                    $ctrl.speciesCodeNamePairs.push({
+                        code: -1,
+                        name: $translate.instant("rhy.annualStats.srva.otherSpecies")
+                    });
                 };
             }
         })
@@ -1097,6 +1222,31 @@
             }
         })
 
+        .constant('RhyTrainingFilterMode', {
+            ALL: 'ALL',
+            SUBSIDIZED: 'SUBSIDIZED',
+            OTHER: 'OTHER'
+        })
+
+        .service('RhyStatsTrainingValueExtractor', function (RhyTrainingFilterMode) {
+            var self = this;
+
+            function getNonSubsidizableValue(array, type, suffix) {
+                return array['nonSubsidizable' + _.upperFirst(type) + suffix] || 0;
+            }
+
+            self.extractValue = function (array, type, filterMode, suffix) {
+                switch (filterMode) {
+                    case RhyTrainingFilterMode.SUBSIDIZED:
+                        return array[type + suffix];
+                    case RhyTrainingFilterMode.ALL:
+                        return array[type + suffix] + getNonSubsidizableValue(array, type, suffix);
+                    case RhyTrainingFilterMode.OTHER:
+                        return getNonSubsidizableValue(array, type, suffix);
+                }
+            };
+        })
+
         .component('annualTrainingStatistics', {
             templateUrl: 'rhy/annualstats/trainings/annual-training-statistics.html',
             bindings: {
@@ -1104,35 +1254,88 @@
                 isEditable: '<',
                 isModerator: '<'
             },
-            controller: function (RhyAnnualStatisticsEditDialog) {
+            controller: function (LocalStorageService, RhyAnnualStatisticsEditDialog, RhyTrainingFilterMode) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.editHunterExamTraining = RhyAnnualStatisticsEditDialog.openHunterExamTraining($ctrl.statistics, $ctrl.isModerator);
+                    $ctrl.filterMode = RhyTrainingFilterMode.ALL;
+                    $ctrl.activeFilter = _.parseInt(LocalStorageService.getKey('annual-stats-training-filter-mode')) || 0;
+                    $ctrl.onTabSelected($ctrl.activeFilter);
+
+                    $ctrl.editHunterExamTraining = function () {
+                        return RhyAnnualStatisticsEditDialog.openHunterExamTraining($ctrl.statistics, $ctrl.filterMode, $ctrl.isModerator);
+                    };
 
                     $ctrl.editJhtTraining = function (trainingTypes) {
-                        return RhyAnnualStatisticsEditDialog.openJhtTraining($ctrl.statistics, trainingTypes);
+                        return RhyAnnualStatisticsEditDialog.openJhtTraining($ctrl.statistics, $ctrl.filterMode, trainingTypes);
                     };
 
                     $ctrl.editHunterTraining = function (trainingTypes) {
-                        RhyAnnualStatisticsEditDialog.openHunterTraining($ctrl.statistics, trainingTypes);
+                        RhyAnnualStatisticsEditDialog.openHunterTraining($ctrl.statistics, $ctrl.filterMode, trainingTypes);
                     };
 
                     $ctrl.editYouthTraining = function (trainingTypes) {
-                        RhyAnnualStatisticsEditDialog.openYouthTraining($ctrl.statistics, trainingTypes);
+                        RhyAnnualStatisticsEditDialog.openYouthTraining($ctrl.statistics, $ctrl.filterMode, trainingTypes);
                     };
 
                     $ctrl.editOtherHunterTraining = function (trainingTypes) {
-                        return RhyAnnualStatisticsEditDialog.openOtherHunterTraining($ctrl.statistics, trainingTypes);
+                        return RhyAnnualStatisticsEditDialog.openOtherHunterTraining($ctrl.statistics, $ctrl.filterMode, trainingTypes);
                     };
                 };
+
+                $ctrl.onTabSelected = function (activeTab) {
+                    LocalStorageService.setKey('annual-stats-training-filter-mode', activeTab);
+                    $ctrl.filterMode = getFilterMode(activeTab);
+                };
+
+                function getFilterMode(activeTab) {
+                    if (_.isFinite(activeTab)) {
+                        switch (activeTab) {
+                            case 0:
+                                return RhyTrainingFilterMode.ALL;
+                            case 1:
+                                return RhyTrainingFilterMode.SUBSIDIZED;
+                            case 2:
+                                return RhyTrainingFilterMode.OTHER;
+                        }
+                    }
+                    return RhyTrainingFilterMode.ALL;
+                }
             }
         })
 
         .component('showTrainingStatisticsOverview', {
             templateUrl: 'rhy/annualstats/trainings/show-training-overview.html',
             bindings: {
-                statistics: '<'
+                statistics: '<',
+                filterMode: '<'
+            },
+            controller: function (RhyTrainingFilterMode) {
+                var $ctrl = this;
+
+                $ctrl.getEventCount = function () {
+                    switch ($ctrl.filterMode) {
+                        case RhyTrainingFilterMode.SUBSIDIZED:
+                            return $ctrl.statistics.allTrainingEvents;
+                        case RhyTrainingFilterMode.OTHER:
+                            return $ctrl.statistics.allNonSubsidizableTrainingEvents || 0;
+                        case RhyTrainingFilterMode.ALL:
+                            return $ctrl.statistics.allTrainingEvents +
+                                ($ctrl.statistics.allNonSubsidizableTrainingEvents || 0);
+                    }
+                };
+
+                $ctrl.getParticipantCount = function () {
+                    switch ($ctrl.filterMode) {
+                        case RhyTrainingFilterMode.SUBSIDIZED:
+                            return $ctrl.statistics.allTrainingParticipants;
+                        case RhyTrainingFilterMode.OTHER:
+                            return $ctrl.statistics.allNonSubsidizableTrainingParticipants || 0;
+                        case RhyTrainingFilterMode.ALL:
+                            return $ctrl.statistics.allTrainingParticipants +
+                                ($ctrl.statistics.allNonSubsidizableTrainingParticipants || 0);
+                    }
+                };
             }
         })
 
@@ -1141,13 +1344,46 @@
             bindings: {
                 hunterExamTraining: '<',
                 editable: '<',
-                openEditDialog: '&'
+                openEditDialog: '&',
+                filterMode: '<'
             },
-            controller: function () {
+            controller: function (RhyTrainingFilterMode, RhyStatsTrainingValueExtractor) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
-                    $ctrl.hunterExamTrainingEventsOverridden = _.isFinite($ctrl.hunterExamTraining.moderatorOverriddenHunterExamTrainingEvents);
+                    $ctrl.hunterExamTrainingEventsOverridden =
+                        _.isFinite($ctrl.hunterExamTraining.moderatorOverriddenHunterExamTrainingEvents);
+                };
+
+                function getSubsidisedEventCount() {
+                    return $ctrl.hunterExamTrainingEventsOverridden
+                        ? $ctrl.hunterExamTraining.moderatorOverriddenHunterExamTrainingEvents
+                        : $ctrl.hunterExamTraining.hunterExamTrainingEvents;
+                }
+
+                function getOtherEventCount() {
+                    return RhyStatsTrainingValueExtractor.extractValue(
+                        $ctrl.hunterExamTraining, 'hunterExam', RhyTrainingFilterMode.OTHER, 'TrainingEvents');
+                }
+
+                $ctrl.editHunterExamTraining = function () {
+                    $ctrl.openEditDialog();
+                };
+
+                $ctrl.getEventCount = function () {
+                    switch ($ctrl.filterMode) {
+                        case RhyTrainingFilterMode.SUBSIDIZED:
+                            return getSubsidisedEventCount();
+                        case RhyTrainingFilterMode.OTHER:
+                            return getOtherEventCount();
+                        case RhyTrainingFilterMode.ALL:
+                            return getSubsidisedEventCount() + getOtherEventCount();
+                    }
+                };
+
+                $ctrl.getParticipantCount = function () {
+                    return RhyStatsTrainingValueExtractor.extractValue(
+                        $ctrl.hunterExamTraining, 'hunterExam', $ctrl.filterMode, 'TrainingParticipants');
                 };
             }
         })
@@ -1157,9 +1393,10 @@
             bindings: {
                 jhtTraining: '<',
                 editable: '<',
-                openEditDialog: '&'
+                openEditDialog: '&',
+                filterMode: '<'
             },
-            controller: function () {
+            controller: function (RhyStatsTrainingValueExtractor) {
                 var $ctrl = this;
 
                 $ctrl.trainingTypes = ['shootingTest', 'hunterExamOfficial', 'gameDamage', 'huntingControl'];
@@ -1167,7 +1404,18 @@
                 $ctrl.editJhtTraining = function () {
                     $ctrl.openEditDialog({trainingTypes: $ctrl.trainingTypes});
                 };
+
+                $ctrl.getEventCount = function (type) {
+                    return RhyStatsTrainingValueExtractor.extractValue(
+                        $ctrl.jhtTraining, type, $ctrl.filterMode, 'TrainingEvents');
+                };
+
+                $ctrl.getParticipantCount = function (type) {
+                    return RhyStatsTrainingValueExtractor.extractValue(
+                        $ctrl.jhtTraining, type, $ctrl.filterMode, 'TrainingParticipants');
+                };
             }
+
         })
 
         .component('showHunterTrainingStatistics', {
@@ -1175,17 +1423,32 @@
             bindings: {
                 hunterTraining: '<',
                 editable: '<',
-                openEditDialog: '&'
+                openEditDialog: '&',
+                filterMode: '<'
             },
-            controller: function () {
+            controller: function (RhyStatsTrainingValueExtractor) {
                 var $ctrl = this;
 
+                $ctrl.huntingTrainingTypes = [
+                    'mooselikeHunting', 'carnivoreHunting', 'srva', 'carnivoreContactPerson', 'accidentPrevention'];
+                $ctrl.huntingLeaderTrainingTypes = [
+                    'mooselikeHuntingLeader', 'carnivoreHuntingLeader'];
                 $ctrl.trainingTypes = [
                     'mooselikeHunting', 'mooselikeHuntingLeader', 'carnivoreHunting', 'carnivoreHuntingLeader', 'srva',
                     'carnivoreContactPerson', 'accidentPrevention'];
 
                 $ctrl.editHunterTraining = function () {
                     $ctrl.openEditDialog({trainingTypes: $ctrl.trainingTypes});
+                };
+
+                $ctrl.getEventCount = function (type) {
+                    return RhyStatsTrainingValueExtractor.extractValue(
+                        $ctrl.hunterTraining, type, $ctrl.filterMode, 'TrainingEvents');
+                };
+
+                $ctrl.getParticipantCount = function (type) {
+                    return RhyStatsTrainingValueExtractor.extractValue(
+                        $ctrl.hunterTraining, type, $ctrl.filterMode, 'TrainingParticipants');
                 };
             }
         })
@@ -1195,15 +1458,26 @@
             bindings: {
                 youthTraining: '<',
                 editable: '<',
-                openEditDialog: '&'
+                openEditDialog: '&',
+                filterMode: '<'
             },
-            controller: function () {
+            controller: function (RhyStatsTrainingValueExtractor) {
                 var $ctrl = this;
 
                 $ctrl.trainingTypes = ['school', 'college', 'otherYouthTargeted'];
 
                 $ctrl.editYouthTraining = function () {
                     $ctrl.openEditDialog({trainingTypes: $ctrl.trainingTypes});
+                };
+
+                $ctrl.getEventCount = function (type) {
+                    return RhyStatsTrainingValueExtractor.extractValue(
+                        $ctrl.youthTraining, type, $ctrl.filterMode, 'TrainingEvents');
+                };
+
+                $ctrl.getParticipantCount = function (type) {
+                    return RhyStatsTrainingValueExtractor.extractValue(
+                        $ctrl.youthTraining, type, $ctrl.filterMode, 'TrainingParticipants');
                 };
             }
         })
@@ -1213,9 +1487,10 @@
             bindings: {
                 otherHunterTraining: '<',
                 editable: '<',
-                openEditDialog: '&'
+                openEditDialog: '&',
+                filterMode: '<'
             },
-            controller: function () {
+            controller: function (RhyStatsTrainingValueExtractor) {
                 var $ctrl = this;
 
                 $ctrl.trainingTypes = [
@@ -1225,6 +1500,16 @@
 
                 $ctrl.editHunterTraining = function () {
                     $ctrl.openEditDialog({trainingTypes: $ctrl.trainingTypes});
+                };
+
+                $ctrl.getEventCount = function (type) {
+                    return RhyStatsTrainingValueExtractor.extractValue(
+                        $ctrl.otherHunterTraining, type, $ctrl.filterMode, 'TrainingEvents');
+                };
+
+                $ctrl.getParticipantCount = function (type) {
+                    return RhyStatsTrainingValueExtractor.extractValue(
+                        $ctrl.otherHunterTraining, type, $ctrl.filterMode, 'TrainingParticipants');
                 };
             }
         })

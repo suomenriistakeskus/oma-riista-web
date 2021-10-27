@@ -1,6 +1,13 @@
 
 package fi.riista.integration.common.export.permits;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 import org.jvnet.jaxb2_commons.lang.Equals2;
 import org.jvnet.jaxb2_commons.lang.EqualsStrategy2;
 import org.jvnet.jaxb2_commons.lang.HashCode2;
@@ -12,14 +19,6 @@ import org.jvnet.jaxb2_commons.lang.ToString2;
 import org.jvnet.jaxb2_commons.lang.ToStringStrategy2;
 import org.jvnet.jaxb2_commons.locator.ObjectLocator;
 import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 
 /**
@@ -51,13 +50,13 @@ import java.util.List;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "Permit", propOrder = {
     "permitNumber",
-        "permitYear",
+    "permitYear",
     "rhyOfficialCode",
     "geoLocation",
     "originalPermitNumber",
     "permitDisplayName",
-        "huntingFinished",
-        "derogationReasons"
+    "huntingFinished",
+    "derogationReasons"
 })
 public class CPER_Permit implements Equals2, HashCode2, ToString2
 {
@@ -292,8 +291,8 @@ public class CPER_Permit implements Equals2, HashCode2, ToString2
     }
 
     public CPER_Permit withDerogationReasons(String... values) {
-        if (values != null) {
-            for (String value : values) {
+        if (values!= null) {
+            for (String value: values) {
                 getDerogationReasons().add(value);
             }
         }
@@ -301,14 +300,14 @@ public class CPER_Permit implements Equals2, HashCode2, ToString2
     }
 
     public CPER_Permit withDerogationReasons(Collection<String> values) {
-        if (values != null) {
+        if (values!= null) {
             getDerogationReasons().addAll(values);
         }
         return this;
     }
 
     public String toString() {
-        final ToStringStrategy2 strategy = JAXBToStringStrategy.INSTANCE;
+        final ToStringStrategy2 strategy = JAXBToStringStrategy.INSTANCE2;
         final StringBuilder buffer = new StringBuilder();
         append(null, buffer, strategy);
         return buffer.toString();
@@ -359,10 +358,8 @@ public class CPER_Permit implements Equals2, HashCode2, ToString2
         }
         {
             List<String> theDerogationReasons;
-            theDerogationReasons = (((this.derogationReasons != null) && (!this.derogationReasons.isEmpty())) ?
-                    this.getDerogationReasons() : null);
-            strategy.appendField(locator, this, "derogationReasons", buffer, theDerogationReasons,
-                    ((this.derogationReasons != null) && (!this.derogationReasons.isEmpty())));
+            theDerogationReasons = (((this.derogationReasons!= null)&&(!this.derogationReasons.isEmpty()))?this.getDerogationReasons():null);
+            strategy.appendField(locator, this, "derogationReasons", buffer, theDerogationReasons, ((this.derogationReasons!= null)&&(!this.derogationReasons.isEmpty())));
         }
         return buffer;
     }
@@ -440,14 +437,10 @@ public class CPER_Permit implements Equals2, HashCode2, ToString2
         }
         {
             List<String> lhsDerogationReasons;
-            lhsDerogationReasons = (((this.derogationReasons != null) && (!this.derogationReasons.isEmpty())) ? this.getDerogationReasons() : null);
+            lhsDerogationReasons = (((this.derogationReasons!= null)&&(!this.derogationReasons.isEmpty()))?this.getDerogationReasons():null);
             List<String> rhsDerogationReasons;
-            rhsDerogationReasons = (((that.derogationReasons != null) && (!that.derogationReasons.isEmpty())) ?
-                    that.getDerogationReasons() : null);
-            if (!strategy.equals(LocatorUtils.property(thisLocator, "derogationReasons", lhsDerogationReasons),
-                    LocatorUtils.property(thatLocator, "derogationReasons", rhsDerogationReasons),
-                    lhsDerogationReasons, rhsDerogationReasons,
-                    ((this.derogationReasons != null) && (!this.derogationReasons.isEmpty())), ((that.derogationReasons != null) && (!that.derogationReasons.isEmpty())))) {
+            rhsDerogationReasons = (((that.derogationReasons!= null)&&(!that.derogationReasons.isEmpty()))?that.getDerogationReasons():null);
+            if (!strategy.equals(LocatorUtils.property(thisLocator, "derogationReasons", lhsDerogationReasons), LocatorUtils.property(thatLocator, "derogationReasons", rhsDerogationReasons), lhsDerogationReasons, rhsDerogationReasons, ((this.derogationReasons!= null)&&(!this.derogationReasons.isEmpty())), ((that.derogationReasons!= null)&&(!that.derogationReasons.isEmpty())))) {
                 return false;
             }
         }
@@ -455,7 +448,7 @@ public class CPER_Permit implements Equals2, HashCode2, ToString2
     }
 
     public boolean equals(Object object) {
-        final EqualsStrategy2 strategy = JAXBEqualsStrategy.INSTANCE;
+        final EqualsStrategy2 strategy = JAXBEqualsStrategy.INSTANCE2;
         return equals(null, null, object, strategy);
     }
 
@@ -494,20 +487,18 @@ public class CPER_Permit implements Equals2, HashCode2, ToString2
         {
             boolean theHuntingFinished;
             theHuntingFinished = this.isHuntingFinished();
-            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "huntingFinished", theHuntingFinished)
-                    , currentHashCode, theHuntingFinished, true);
+            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "huntingFinished", theHuntingFinished), currentHashCode, theHuntingFinished, true);
         }
         {
             List<String> theDerogationReasons;
-            theDerogationReasons = (((this.derogationReasons != null) && (!this.derogationReasons.isEmpty())) ?
-                    this.getDerogationReasons() : null);
-            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "derogationReasons", theDerogationReasons), currentHashCode, theDerogationReasons, ((this.derogationReasons != null) && (!this.derogationReasons.isEmpty())));
+            theDerogationReasons = (((this.derogationReasons!= null)&&(!this.derogationReasons.isEmpty()))?this.getDerogationReasons():null);
+            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "derogationReasons", theDerogationReasons), currentHashCode, theDerogationReasons, ((this.derogationReasons!= null)&&(!this.derogationReasons.isEmpty())));
         }
         return currentHashCode;
     }
 
     public int hashCode() {
-        final HashCodeStrategy2 strategy = JAXBHashCodeStrategy.INSTANCE;
+        final HashCodeStrategy2 strategy = JAXBHashCodeStrategy.INSTANCE2;
         return this.hashCode(null, strategy);
     }
 

@@ -4,31 +4,31 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import fi.riista.feature.common.dto.LastModifierDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.util.F;
-import fi.riista.util.NumberUtils;
 import fi.riista.validation.DoNotValidate;
 
+import javax.annotation.Nonnull;
 import javax.validation.Valid;
-import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 import static fi.riista.util.F.mapNullable;
-import static java.util.Optional.ofNullable;
 
 public class PermitUsageDTO {
 
-    public static PermitUsageDTO create(final HarvestPermitSpeciesAmount speciesAmount,
+    public static PermitUsageDTO create(final @Nonnull HarvestPermitSpeciesAmount speciesAmount,
                                         final PermitUsage usage,
                                         final List<PermitUsageLocationDTO> usageLocations,
                                         final LastModifierDTO lastModifier) {
-        final Long id = ofNullable(usage).map(PermitUsage::getId).orElse(null);
+        Objects.requireNonNull(speciesAmount);
+
+        final Long id = F.mapNullable(usage, PermitUsage::getId);
         final int speciesCode = speciesAmount.getGameSpecies().getOfficialCode();
         final Integer permitAmount = mapNullable(speciesAmount.getSpecimenAmount(), Float::intValue);
-        final int usedAmount = ofNullable(usage).map(PermitUsage::getSpecimenAmount).orElse(0);
+        final Integer usedAmount = F.mapNullable(usage, PermitUsage::getSpecimenAmount);
         final Integer permitEggAmount = speciesAmount.getEggAmount();
-        final int usedEggAmount = ofNullable(usage).map(PermitUsage::getEggAmount).orElse(0);
+        final Integer usedEggAmount = F.mapNullable(usage, PermitUsage::getEggAmount);
 
         return new PermitUsageDTO(
                 id, speciesCode, permitAmount, usedAmount, permitEggAmount, usedEggAmount, usageLocations, lastModifier);
@@ -41,12 +41,12 @@ public class PermitUsageDTO {
     private Integer permitSpecimenAmount;
 
     @Min(0)
-    private int usedSpecimenAmount;
+    private Integer usedSpecimenAmount;
 
     private Integer permitEggAmount;
 
     @Min(0)
-    private int usedEggAmount;
+    private Integer usedEggAmount;
 
     @Valid
     private List<PermitUsageLocationDTO> permitUsageLocations = new ArrayList<>();
@@ -61,9 +61,9 @@ public class PermitUsageDTO {
     public PermitUsageDTO(final Long id,
                           final int speciesCode,
                           final Integer permitSpecimenAmount,
-                          final int usedSpecimenAmount,
+                          final Integer usedSpecimenAmount,
                           final Integer permitEggAmount,
-                          final int usedEggAmount,
+                          final Integer usedEggAmount,
                           final @Valid List<PermitUsageLocationDTO> permitUsageLocations,
                           final @Valid LastModifierDTO lastModifier) {
         this.id = id;
@@ -92,19 +92,19 @@ public class PermitUsageDTO {
         this.speciesCode = speciesCode;
     }
 
-    public int getPermitSpecimenAmount() {
+    public Integer getPermitSpecimenAmount() {
         return permitSpecimenAmount;
     }
 
-    public void setPermitSpecimenAmount(final int permitSpecimenAmount) {
+    public void setPermitSpecimenAmount(final Integer permitSpecimenAmount) {
         this.permitSpecimenAmount = permitSpecimenAmount;
     }
 
-    public int getUsedSpecimenAmount() {
+    public Integer getUsedSpecimenAmount() {
         return usedSpecimenAmount;
     }
 
-    public void setUsedSpecimenAmount(final int usedSpecimenAmount) {
+    public void setUsedSpecimenAmount(final Integer usedSpecimenAmount) {
         this.usedSpecimenAmount = usedSpecimenAmount;
     }
 
@@ -116,7 +116,7 @@ public class PermitUsageDTO {
         this.permitEggAmount = permitEggAmount;
     }
 
-    public int getUsedEggAmount() {
+    public Integer getUsedEggAmount() {
         return usedEggAmount;
     }
 

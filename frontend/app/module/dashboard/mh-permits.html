@@ -1,9 +1,26 @@
 <span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span>
+
+<ng-form class="form-inline">
+    <div class="form-group">
+        <label class="control-label" for="huntingYearFilter" translate="global.huntingYear"></label>:
+        <select class="form-control"
+                name="huntingYearFilter" id="huntingYearFilter"
+                ng-model="$ctrl.huntingYearFilter"
+                ng-change="$ctrl.onHuntingYearChange()"
+                ie10-optgroup-fix>
+            <option value="" translate="global.showAll"></option>
+            <option ng-repeat="y in $ctrl.availableHuntingYears track by y.year" value="{{::y.year}}">{{::y.name}}</option>
+        </select>
+    </div>
+</ng-form>
+
+<hr class="invisible"/>
+
 <table class="table table-bordered table-striped">
 
-    <tr ng-repeat="permitTypeCount in $ctrl.metrics.permitCounts">
-        <td class="col-sm-6" ng-bind="::permitTypeCount.permitType"></td>
-        <td class="col-sm-6" ng-bind="::permitTypeCount.permitCount"></td>
+    <tr ng-repeat="permitTypeCount in $ctrl.metrics.permitCounts track by permitTypeCount.permitType">
+        <td class="col-sm-6" ng-bind="permitTypeCount.permitType"></td>
+        <td class="col-sm-6" ng-bind="permitTypeCount.permitCount"></td>
     </tr>
 </table>
 
@@ -12,14 +29,14 @@
 <table class="table table-bordered table-striped">
     <tr>
         <td class="col-sm-6" translate="reporting.dashboard.mhPermitsTab.permitHolders"></td>
-        <td class="col-sm-6" ng-bind="::$ctrl.metrics.hunterCount"></td>
+        <td class="col-sm-6" ng-bind="$ctrl.metrics.hunterCount"></td>
     </tr>
     <tr ng-if="$ctrl.metrics.invalidPeriodPermitCount > 0">
         <td class="col-sm-6" translate="reporting.dashboard.mhPermitsTab.invalidPeriod"></td>
-        <td class="col-sm-6" ng-bind="::$ctrl.metrics.invalidPeriodPermitCount"></td>
+        <td class="col-sm-6" ng-bind="$ctrl.metrics.invalidPeriodPermitCount"></td>
     </tr>
     <tr ng-if="$ctrl.metrics.swedishTypeMissingPermitCount > 0">
         <td class="col-sm-6" translate="reporting.dashboard.mhPermitsTab.swedishMissing"></td>
-        <td class="col-sm-6" ng-bind="::$ctrl.metrics.swedishTypeMissingPermitCount"></td>
+        <td class="col-sm-6" ng-bind="$ctrl.metrics.swedishTypeMissingPermitCount"></td>
     </tr>
 </table>

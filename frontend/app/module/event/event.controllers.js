@@ -23,10 +23,10 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
 
             var reloadPage = function () {
                 EventsByYear.query({orgId: orgId, year: $scope.calendarYear}).$promise.then(function (data) {
-                    $scope.allEvents = data.map(function(event) {
+                    $scope.allEvents = data.map(function (event) {
                         if (event.additionalCalendarEvents && event.additionalCalendarEvents.length > 0) {
                             var key = 1;
-                            event.additionalCalendarEvents = event.additionalCalendarEvents.map(function(additionalEvent) {
+                            event.additionalCalendarEvents = event.additionalCalendarEvents.map(function (additionalEvent) {
                                 return angular.extend({}, additionalEvent, {key: key++});
                             });
                         }
@@ -38,13 +38,13 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
             };
             reloadPage();
 
-            var onSuccess = function() {
+            var onSuccess = function () {
                 reloadPage();
 
                 NotificationService.showDefaultSuccess();
             };
 
-            var onFailure = function(reason) {
+            var onFailure = function (reason) {
                 if (reason === 'error') {
                     NotificationService.showDefaultFailure();
                 }
@@ -64,7 +64,12 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                     resolve: {
                         orgId: Helpers.wrapToFunction(orgId),
                         eventTypes: Helpers.wrapToFunction(EventTypes),
-                        event: Helpers.wrapToFunction({publicVisibility: true, excludedFromStatistics: false, remoteEvent: false}),
+                        event: Helpers.wrapToFunction({
+                            publicVisibility: true,
+                            excludedFromStatistics: false,
+                            remoteEvent: false,
+                            nonSubsidizable: false
+                        }),
                         venues: function () {
                             return Venues.query({orgId: orgId});
                         }
@@ -130,7 +135,7 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
             };
 
             var findAdditionalEvent = function (key) {
-                var position = $scope.viewState.event.additionalCalendarEvents.findIndex(function(additionalEvent) {
+                var position = $scope.viewState.event.additionalCalendarEvents.findIndex(function (additionalEvent) {
                     return additionalEvent.key === key;
                 });
 
@@ -206,7 +211,7 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
 
             $scope.eventTypes = eventTypes.data;
 
-            $scope.removeAdditionalEvent = function(key) {
+            $scope.removeAdditionalEvent = function (key) {
                 var elemPos = findAdditionalEvent(key);
                 $scope.viewState.event.additionalCalendarEvents.splice(elemPos, 1);
 
@@ -220,7 +225,7 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 $scope.cancelEditEvent();
             };
 
-            $scope.addAdditionalEvent = function() {
+            $scope.addAdditionalEvent = function () {
                 $scope.viewState.cancelEditedEventFunc = $scope.removeAdditionalEvent;
 
                 if (!$scope.viewState.event.additionalCalendarEvents) {
@@ -273,19 +278,19 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 $scope.viewState.editedEvent.venue = findVenue($scope.viewState.editedEvent.venue);
             };
 
-            $scope.isParticipantsShown = function() {
+            $scope.isParticipantsShown = function () {
                 var e = $scope.viewState.event;
                 if (e) {
                     if (e.calendarEventType === 'AMPUMAKOE' ||
-                    e.calendarEventType === 'JOUSIAMPUMAKOE' ||
-                    e.calendarEventType === 'METSASTAJATUTKINTO') {
+                        e.calendarEventType === 'JOUSIAMPUMAKOE' ||
+                        e.calendarEventType === 'METSASTAJATUTKINTO') {
                         return false;
                     }
                 }
                 return true;
             };
 
-            $scope.onSelectionChange = function() {
+            $scope.onSelectionChange = function () {
                 $scope.viewState.event.publicVisibility = $scope.eventDefaultVisibility[$scope.viewState.event.calendarEventType];
             };
 
@@ -297,7 +302,7 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 return false;
             };
 
-            $scope.isDateTooFarInThePast = function() {
+            $scope.isDateTooFarInThePast = function () {
                 if (ActiveRoleService.isModerator()) {
                     return false;
                 }
@@ -332,9 +337,9 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 var saveMethod = !savedEvent.id ? Events.save : Events.update;
 
                 saveMethod({orgId: orgId}, savedEvent).$promise
-                    .then(function() {
+                    .then(function () {
                         $uibModalInstance.close();
-                    }, function() {
+                    }, function () {
                         $uibModalInstance.dismiss('error');
                     });
             };
@@ -372,9 +377,9 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
             $scope.event = event;
             $scope.remove = function () {
                 Events.delete({orgId: orgId}, event).$promise
-                    .then(function() {
+                    .then(function () {
                         $uibModalInstance.close();
-                    }, function() {
+                    }, function () {
                         $uibModalInstance.dismiss('error');
                     });
             };
@@ -390,13 +395,13 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
 
             reloadPage();
 
-            var onSuccess = function() {
+            var onSuccess = function () {
                 reloadPage();
 
                 NotificationService.showDefaultSuccess();
             };
 
-            var onFailure = function(reason) {
+            var onFailure = function (reason) {
                 if (reason === 'error') {
                     NotificationService.showDefaultFailure();
                 }
@@ -477,9 +482,9 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
 
             $scope.use = function (venue) {
                 Venues.attach({orgId: orgId, id: venue.id}).$promise
-                    .then(function() {
+                    .then(function () {
                         $uibModalInstance.close();
-                    }, function() {
+                    }, function () {
                         $uibModalInstance.dismiss('error');
                     });
             };
@@ -492,9 +497,9 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                     },
                     controller: 'VenueFormController'
                 }).result
-                    .then(function() {
+                    .then(function () {
                         $uibModalInstance.close();
-                    }, function() {
+                    }, function () {
                         $uibModalInstance.dismiss('error');
                     });
             };
@@ -510,9 +515,9 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 var saveMethod = !venue.id ? Venues.save : Venues.update;
 
                 saveMethod({orgId: orgId}, venue).$promise
-                    .then(function() {
+                    .then(function () {
                         $uibModalInstance.close();
-                    }, function() {
+                    }, function () {
                         $uibModalInstance.dismiss('error');
                     });
             };
@@ -526,9 +531,9 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
             $scope.venue = venue;
             $scope.remove = function () {
                 Venues.detach({orgId: orgId, id: venue.id}).$promise
-                    .then(function() {
+                    .then(function () {
                         $uibModalInstance.close();
-                    }, function() {
+                    }, function () {
                         $uibModalInstance.dismiss('error');
                     });
             };

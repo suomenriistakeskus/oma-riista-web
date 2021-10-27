@@ -1,7 +1,6 @@
 package fi.riista.feature.gamediary.observation;
 
 import fi.riista.feature.common.entity.Required;
-import fi.riista.feature.error.ProhibitedFieldFound;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.fixture.ObservationFixtureMixin;
 import fi.riista.feature.harvestpermit.HarvestPermit;
@@ -18,15 +17,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Resource;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static fi.riista.feature.gamediary.DeerHuntingType.DOG_HUNTING;
 import static fi.riista.feature.gamediary.observation.ObservationCategory.DEER_HUNTING;
 import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
 import static fi.riista.feature.gamediary.observation.ObservationType.NAKO;
+import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.NO;
 import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.VOLUNTARY;
-import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.VOLUNTARY_DEER_PILOT;
 import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.YES;
-import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.YES_DEER_PILOT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -70,20 +69,160 @@ public class ObservationFeature_DeerHuntingDayTest extends ObservationFeatureTes
         });
     }
 
-    @Test(expected = ProhibitedFieldFound.class)
+    @Test
+    public void testDeerObservation_asGroupMember_laterModifiedAsDeerHuntingCategory() {
+        final AtomicLong observationId = new AtomicLong();
+
+        withDeerHuntingGroupFixture(fixture -> {
+            createObservationMetaF(NORMAL, NAKO)
+                    .withDeerHuntingTypeFieldsAs(NO, NO)
+                    .withMooselikeAmountFieldsAs(Required.YES)
+                    .consumeBy(obsMeta -> {
+                        onSavedAndAuthenticated(createUser(fixture.groupMember), () -> {
+
+                            final ObservationDTO inputDto = obsMeta.dtoBuilder()
+                                    .withGeoLocation(fixture.zoneCentroid)
+                                    .mutateMooselikeAmountFields()
+                                    .build();
+
+                            final ObservationDTO outputDto = invokeCreateObservation(inputDto);
+
+                            runInTransaction(() -> {
+                                final Observation observation = assertObservationCreated(outputDto.getId());
+
+                                assertThat(observation.getHuntingDayOfGroup(), is(nullValue()));
+                                assertThat(observation.getApproverToHuntingDay(), is(nullValue()));
+                            });
+
+                            observationId.set(outputDto.getId());
+
+                        });
+                    });
+
+            // UPDATE TO DEER_HUNTING
+            createObservationMetaF(DEER_HUNTING, NAKO)
+                    .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
+                    .withMooselikeAmountFieldsAs(Required.YES)
+                    .consumeBy(obsMeta -> {
+                        onSavedAndAuthenticated(createUser(fixture.groupMember), () -> {
+
+                            final ObservationDTO inputDto = obsMeta.dtoBuilder()
+                                    .withDeerHuntingType(DOG_HUNTING)
+                                    .withGeoLocation(fixture.zoneCentroid)
+                                    .mutateMooselikeAmountFields()
+                                    .build();
+
+                            inputDto.setId(observationId.get());
+
+                            final ObservationDTO outputDto = invokeUpdateObservation(inputDto);
+
+                            runInTransaction(() -> {
+                                final Observation observation = getObservation(outputDto.getId());
+
+                                assertThat(observation.getHuntingDayOfGroup(), is(notNullValue()));
+                                assertThat(observation.getApproverToHuntingDay(), is(equalTo(fixture.groupMember)));
+                            });
+                        });
+                    });
+        });
+    }
+
+    @Test
+    public void testDeerObservation_asGroupMember_laterModifiedAsDeerHuntingCategory_huntingEnded() {
+        final AtomicLong observationId = new AtomicLong();
+
+        withDeerHuntingGroupFixture(fixture -> {
+            createObservationMetaF(NORMAL, NAKO)
+                    .withDeerHuntingTypeFieldsAs(NO, NO)
+                    .withMooselikeAmountFieldsAs(Required.YES)
+                    .consumeBy(obsMeta -> {
+                        onSavedAndAuthenticated(createUser(fixture.groupMember), () -> {
+
+                            final ObservationDTO inputDto = obsMeta.dtoBuilder()
+                                    .withGeoLocation(fixture.zoneCentroid)
+                                    .mutateMooselikeAmountFields()
+                                    .build();
+
+                            final ObservationDTO outputDto = invokeCreateObservation(inputDto);
+
+                            runInTransaction(() -> {
+                                final Observation observation = assertObservationCreated(outputDto.getId());
+
+                                assertThat(observation.getHuntingDayOfGroup(), is(nullValue()));
+                                assertThat(observation.getApproverToHuntingDay(), is(nullValue()));
+                            });
+
+                            observationId.set(outputDto.getId());
+
+                        });
+                    });
+
+            // End hunting
+            model().newBasicHuntingSummary(fixture.speciesAmount, fixture.club, true);
+
+            // UPDATE TO DEER_HUNTING
+            createObservationMetaF(DEER_HUNTING, NAKO)
+                    .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
+                    .withMooselikeAmountFieldsAs(Required.YES)
+                    .consumeBy(obsMeta -> {
+                        onSavedAndAuthenticated(createUser(fixture.groupMember), () -> {
+
+                            final ObservationDTO inputDto = obsMeta.dtoBuilder()
+                                    .withDeerHuntingType(DOG_HUNTING)
+                                    .withGeoLocation(fixture.zoneCentroid)
+                                    .mutateMooselikeAmountFields()
+                                    .build();
+
+                            inputDto.setId(observationId.get());
+
+                            final ObservationDTO outputDto = invokeUpdateObservation(inputDto);
+
+                            runInTransaction(() -> {
+                                final Observation observation = getObservation(outputDto.getId());
+
+                                // Hunting day information should not be set since hunting is finished
+                                assertThat(observation.getHuntingDayOfGroup(), is(nullValue()));
+                                assertThat(observation.getApproverToHuntingDay(), is(nullValue()));
+                            });
+                        });
+                    });
+        });
+    }
+
+    @Test
     public void testSetHuntingDayForDeerObservation_asNonMember() {
         withDeerHuntingGroupFixture(fixture -> {
             withPerson(randomGuy -> {
-                makeWithinDeerHuntingObservation(fixture, randomGuy);
+                createObservationMetaF(DEER_HUNTING, NAKO)
+                        .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
+                        .withMooselikeAmountFieldsAs(Required.YES)
+                        .consumeBy(obsMeta -> {
+                            onSavedAndAuthenticated(createUser(randomGuy), () -> {
+
+                                final ObservationDTO inputDto = obsMeta.dtoBuilder()
+                                        .withDeerHuntingType(DOG_HUNTING)
+                                        .withGeoLocation(fixture.zoneCentroid)
+                                        .mutateMooselikeAmountFields()
+                                        .build();
+
+                                final ObservationDTO outputDto = invokeCreateObservation(inputDto);
+
+                                runInTransaction(() -> {
+                                    final Observation observation = assertObservationCreated(outputDto.getId());
+
+                                    assertThat(observation.getHuntingDayOfGroup(), is(nullValue()));
+                                    assertThat(observation.getApproverToHuntingDay(), is(nullValue()));
+                                });
+                            });
+                        });
             });
         });
     }
 
     private void makeWithinDeerHuntingObservation(final HuntingGroupFixture fixture, final Person author) {
-        enableDeerPilot(fixture.permit);
 
         createObservationMetaF(DEER_HUNTING, NAKO)
-                .withDeerHuntingTypeFieldsAs(YES_DEER_PILOT, VOLUNTARY_DEER_PILOT)
+                .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
                 .withMooselikeAmountFieldsAs(Required.YES)
                 .consumeBy(obsMeta -> {
                     onSavedAndAuthenticated(createUser(author), () -> {
@@ -177,12 +316,10 @@ public class ObservationFeature_DeerHuntingDayTest extends ObservationFeatureTes
             speciesAmount.setEndDate2(end2);
         }
 
-        enableDeerPilot(permit);
-
         withHuntingGroupFixture(speciesAmount, huntingFixt -> {
 
             createObservationMetaF(species, DEER_HUNTING, NAKO)
-                    .withDeerHuntingTypeFieldsAs(YES_DEER_PILOT, VOLUNTARY_DEER_PILOT)
+                    .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
                     .withMooselikeAmountFieldsAs(Required.YES)
                     .consumeBy(obsMeta -> {
 
@@ -320,9 +457,5 @@ public class ObservationFeature_DeerHuntingDayTest extends ObservationFeatureTes
                                 });
                     });
         });
-    }
-
-    private void enableDeerPilot(final HarvestPermit permit) {
-        model().newDeerPilot(permit);
     }
 }

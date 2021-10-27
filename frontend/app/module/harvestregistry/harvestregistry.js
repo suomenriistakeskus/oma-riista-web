@@ -10,6 +10,7 @@ angular.module('app.harvestregistry', [])
 
         return $resource(apiPrefix, {personId: '@personId'}, {
             query: postMethod('', false),
+            queryRhy: postMethod('/rhy', false),
             list: postMethod('/:personId')
         });
     })

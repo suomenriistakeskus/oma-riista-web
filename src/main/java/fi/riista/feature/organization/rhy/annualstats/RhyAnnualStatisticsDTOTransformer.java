@@ -10,8 +10,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 
-import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countAllTrainingEvents;
-import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countAllTrainingParticipants;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countAllNonSubsidizableTrainingEvents;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableTrainingEvents;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableTrainingParticipants;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countNonSubsidizableAllTrainingParticipants;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableOtherTrainingEvents;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableStudentAndYouthTrainingEvents;
 import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.APPROVED;
@@ -68,8 +70,10 @@ public class RhyAnnualStatisticsDTOTransformer {
         dto.setQuantitiesContributingToSubsidyLastModified(entity.getLastModifiedTimeOfQuantitiesContributingToSubsidy());
         dto.setJhtQuantitiesLastModified(entity.getLastModifiedTimeOfJhtQuantities());
 
-        dto.setAllTrainingEvents(countAllTrainingEvents(entity));
-        dto.setAllTrainingParticipants(countAllTrainingParticipants(entity));
+        dto.setAllTrainingEvents(countSubsidizableTrainingEvents(entity));
+        dto.setAllTrainingParticipants(countSubsidizableTrainingParticipants(entity));
+        dto.setAllNonSubsidizableTrainingEvents(countAllNonSubsidizableTrainingEvents(entity));
+        dto.setAllNonSubsidizableTrainingParticipants(countNonSubsidizableAllTrainingParticipants(entity));
 
         dto.setReadyForInspection(entity.isReadyForInspection());
         dto.setCompleteForApproval(entity.isCompleteForApproval());

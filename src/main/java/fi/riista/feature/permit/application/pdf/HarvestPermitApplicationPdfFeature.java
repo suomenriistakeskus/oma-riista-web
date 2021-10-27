@@ -244,6 +244,7 @@ public class HarvestPermitApplicationPdfFeature {
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
             case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO:
                 final CarnivorePermitApplication carnivorePermitApplication = carnivorePermitApplicationRepository.findByHarvestPermitApplication(application);
                 return new PdfModel(JSP_CARNIVORE, CarnivorePermitApplicationSummaryDTO.from(application, carnivorePermitApplication), speciesNameIndex);
             case MAMMAL: {

@@ -5,6 +5,7 @@ import fi.riista.feature.gamediary.HasGameSpeciesCode;
 import fi.riista.feature.gamediary.harvest.HarvestReportingType;
 import fi.riista.feature.gamediary.harvest.HuntingMethod;
 
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RINGED_SEAL;
 import static fi.riista.feature.gamediary.harvest.HarvestReportingType.BASIC;
 import static fi.riista.feature.gamediary.harvest.HarvestReportingType.HUNTING_DAY;
 import static fi.riista.feature.gamediary.harvest.HarvestReportingType.PERMIT;
@@ -14,10 +15,9 @@ public class RequiredHarvestFieldsImpl {
 
     public static ReportImpl getFormFields(final int huntingYear,
                                            final int gameSpeciesCode,
-                                           final HarvestReportingType reportingType,
-                                           final boolean isDeerPilotEnabled) {
+                                           final HarvestReportingType reportingType) {
 
-        return new ReportImpl(huntingYear, gameSpeciesCode, reportingType, isDeerPilotEnabled);
+        return new ReportImpl(huntingYear, gameSpeciesCode, reportingType);
     }
 
     public static SpecimenImpl getSpecimenFields(final int huntingYear,
@@ -34,17 +34,14 @@ public class RequiredHarvestFieldsImpl {
         private final int huntingYear;
         private final int gameSpeciesCode;
         private final HarvestReportingType reportingType;
-        private final boolean isDeerPilotEnabled;
 
         protected ReportImpl(final int huntingYear,
                              final int gameSpeciesCode,
-                             final HarvestReportingType reportingType,
-                             final boolean isDeerPilotEnabled) {
+                             final HarvestReportingType reportingType) {
 
             this.huntingYear = huntingYear;
             this.gameSpeciesCode = gameSpeciesCode;
             this.reportingType = reportingType;
-            this.isDeerPilotEnabled = isDeerPilotEnabled;
         }
 
         @Override
@@ -84,8 +81,7 @@ public class RequiredHarvestFieldsImpl {
 
         @Override
         public RequiredHarvestField getDeerHuntingType() {
-            // TODO Remove deer pilot condition when pilot is over.
-            return isDeerPilotEnabled && huntingYear >= 2020 && isWhiteTailedDeer() && reportingType != PERMIT
+            return huntingYear >= 2020 && isWhiteTailedDeer() && reportingType != PERMIT
                     ? RequiredHarvestField.VOLUNTARY
                     : RequiredHarvestField.NO;
         }
@@ -141,7 +137,7 @@ public class RequiredHarvestFieldsImpl {
                 .of(47774, 47476, 47479, 47282, 46549, 47212, 47348, 47503, 47484, 47629, 200556, 47926, 47169, 46615);
 
         // {villisika,saukko,ilves,piisami,rämemajava,"tarhattu naali",pesukarhu,hilleri,kirjohylje,mufloni,
-        // saksanhirvi,japaninpeura ,halli,susi,"villiintynyt kissa",metsäjänis,rusakko,orava,kanadanmajava,kettu,
+        // saksanhirvi,japaninpeura,halli,susi,"villiintynyt kissa",metsäjänis,rusakko,orava,kanadanmajava,kettu,
         // kärppä,näätä,minkki,villikani,supikoira,mäyrä,itämerennorppa,euroopanmajava,ahma,karhu,metsäkauris,hirvi,
         // kuusipeura,valkohäntäpeura,metsäpeura}
         static final ImmutableSet<Integer> PERMIT_MANDATORY_GENDER = ImmutableSet
@@ -153,9 +149,9 @@ public class RequiredHarvestFieldsImpl {
         static final ImmutableSet<Integer> PERMIT_MANDATORY_WEIGHT = ImmutableSet
                 .of(47282, 46549, 47169, 46615, 47212, 47348);
 
-        // {karhu,metsäkauris,halli,villisika}
+        // {karhu,metsäkauris,halli,villisika, norppa}
         private static final ImmutableSet<Integer> SEASON_COMMON_MANDATORY = ImmutableSet
-                .of(47348, 47507, 47282, 47926);
+                .of(47348, 47507, 47282, 47926, OFFICIAL_CODE_RINGED_SEAL);
 
         private final int huntingYear;
         private final int gameSpeciesCode;
@@ -212,7 +208,7 @@ public class RequiredHarvestFieldsImpl {
                 return voluntaryIf(huntingYear < 2015);
 
             } else if (isRoeDeer() || isWildBoar()) {
-                return voluntaryIf(!fields2020Enabled && reportingType == SEASON);
+                return voluntaryIf(!fields2020Enabled);
             }
 
             return getRequirement(PERMIT_MANDATORY_WEIGHT, gameSpeciesCode);
@@ -234,7 +230,8 @@ public class RequiredHarvestFieldsImpl {
                     return RequiredHarvestSpecimenField.VOLUNTARY;
                 }
 
-                // TODO Can be removed when deer pilot 2020 is over.
+                // TODO Can be removed after mobile clients with spec version less than _8 are no longer supported
+                // Until then, mobile clients may send harvests with weight field.
                 if (huntingYear >= 2020 && (isRoeDeer() || isWildBoar())) {
                     return RequiredHarvestSpecimenField.ALLOWED_BUT_HIDDEN;
                 }
@@ -270,13 +267,9 @@ public class RequiredHarvestFieldsImpl {
 
         @Override
         public RequiredHarvestSpecimenField getFitnessClass() {
-            if (isMoose()) {
-                return huntingYear >= 2016 && associatedToHuntingDay
-                        ? RequiredHarvestSpecimenField.YES
-                        : RequiredHarvestSpecimenField.VOLUNTARY;
-            }
-
-            return RequiredHarvestSpecimenField.NO;
+            return isMoose()
+                    ? RequiredHarvestSpecimenField.VOLUNTARY
+                    : RequiredHarvestSpecimenField.NO;
         }
 
         @Override
@@ -296,15 +289,9 @@ public class RequiredHarvestFieldsImpl {
                 return RequiredHarvestSpecimenField.NO;
             }
 
-            if (!fields2020Enabled) {
-                return huntingYear >= 2016 && associatedToHuntingDay
-                        ? RequiredHarvestSpecimenField.YES_IF_ADULT_MALE
-                        : RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE;
-            }
-
-            return associatedToHuntingDay
-                    ? RequiredHarvestSpecimenField.YES_IF_ANTLERS_PRESENT
-                    : RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT;
+            return fields2020Enabled
+                    ? RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT
+                    : RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE;
         }
 
         @Override
@@ -314,18 +301,14 @@ public class RequiredHarvestFieldsImpl {
             }
 
             if (!fields2020Enabled) {
-                return huntingYear >= 2016 && isMoose() && associatedToHuntingDay
-                        ? RequiredHarvestSpecimenField.YES_IF_ADULT_MALE
-                        : RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE;
+                return RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE;
             }
 
             if (isWhiteTailedDeer()) {
                 return RequiredHarvestSpecimenField.DEPRECATED_ANTLER_DETAIL;
             }
 
-            return isMoose() && associatedToHuntingDay
-                    ? RequiredHarvestSpecimenField.YES_IF_ANTLERS_PRESENT
-                    : RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT;
+            return RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT;
         }
 
         @Override
@@ -339,14 +322,10 @@ public class RequiredHarvestFieldsImpl {
                     return RequiredHarvestSpecimenField.NO;
                 }
 
-                return huntingYear >= 2016 && isMoose() && associatedToHuntingDay
-                        ? RequiredHarvestSpecimenField.YES_IF_ADULT_MALE
-                        : RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE;
+                return RequiredHarvestSpecimenField.VOLUNTARY_IF_ADULT_MALE;
             }
 
-            return isMoose() && associatedToHuntingDay
-                    ? RequiredHarvestSpecimenField.YES_IF_ANTLERS_PRESENT
-                    : RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT;
+            return RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT;
         }
 
         @Override
@@ -355,9 +334,7 @@ public class RequiredHarvestFieldsImpl {
                 return RequiredHarvestSpecimenField.NO;
             }
 
-            return isMoose() && associatedToHuntingDay
-                    ? RequiredHarvestSpecimenField.YES_IF_ANTLERS_PRESENT
-                    : RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT;
+            return RequiredHarvestSpecimenField.VOLUNTARY_IF_ANTLERS_PRESENT;
         }
 
         @Override
@@ -384,9 +361,7 @@ public class RequiredHarvestFieldsImpl {
         @Override
         public RequiredHarvestSpecimenField getAlone() {
             if (isMoose()) {
-                return associatedToHuntingDay
-                        ? RequiredHarvestSpecimenField.YES_IF_YOUNG
-                        : RequiredHarvestSpecimenField.VOLUNTARY_IF_YOUNG;
+                return RequiredHarvestSpecimenField.VOLUNTARY_IF_YOUNG;
             }
 
             return RequiredHarvestSpecimenField.NO;

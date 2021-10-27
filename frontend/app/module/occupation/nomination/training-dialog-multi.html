@@ -1,0 +1,134 @@
+<div>
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="occupation.nomination.title.addTraining"></h3>
+    </div>
+
+    <div class="modal-body">
+        <form name="trainingForm"
+              role="form" novalidate autocomplete="off"
+              class="form form-horizontal">
+            <div class="form-group">
+                <label for="occupationType" class="control-label col-xs-4"
+                       translate="occupation.nomination.field.occupationType"></label>
+                <div class="col-xs-8">
+                    <p class="form-control-static" id="occupationType"
+                       ng-bind="$ctrl.occupationType | translateWithPrefix:'occupation.type.'"></p>
+                </div>
+            </div>
+
+            <div class="form-group" show-errors>
+                <label for="trainingDate" class="control-label col-xs-4"
+                       translate="occupation.nomination.field.trainingDate"></label>
+
+                <div class="col-xs-4">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" name="trainingDate" id="trainingDate"
+                               class="form-control"
+                               required
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-options="$ctrl.datePickerOptions"
+                               date-between-min-max
+                               max-date="today()"
+                               ng-model="$ctrl.trainingDate"/>
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+
+                    <p class="help-block has-error"
+                       ng-show="trainingForm.trainingDate.$invalid && trainingForm.trainingDate.$touched"
+                       ng-messages="trainingForm.trainingDate.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-group" ng-if="$ctrl.trainingType === 'LAHI'" show-errors>
+                <label for="trainingLocation" class="control-label col-xs-4"
+                       translate="occupation.nomination.field.trainingLocation"></label>
+
+                <div class="col-xs-8">
+                    <input type="text" name="trainingLocation" id="trainingLocation"
+                           class="form-control"
+                           required
+                           ng-model="$ctrl.trainingLocation">
+
+                    <p class="help-block has-error"
+                       ng-show="trainingForm.trainingLocation.$invalid && trainingForm.trainingLocation.$touched"
+                       ng-messages="trainingForm.trainingLocation.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+
+            <div ng-switch="!!$ctrl.checkedNumberList.length">
+                <div ng-switch-when="false">
+                    <div class="form-group">
+                        <label for="hunterNumberList" class="control-label col-xs-4">
+                            <span translate="global.person.hunterNumber"></span>
+                        </label>
+                        <div class="col-xs-8">
+                        <textarea type="text" class="form-control" name="hunterNumberList" id="hunterNumberList"
+                                  rows="6"
+                                  ng-model="$ctrl.hunterNumberList" minlength="8" required></textarea>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary"
+                            ng-click="$ctrl.checkNumbers()"
+                            ng-disabled="trainingForm.$invalid"
+                            translate="occupation.form.button.checkNumbers"></button>
+                </div>
+
+                <div ng-switch-when="true">
+                    <div ng-if="$ctrl.invalidNumberCount > 0">
+                        <span class="text-danger">
+                            {{'occupation.form.button.invalidNumberCount' | translate:{count:$ctrl.invalidNumberCount} }}
+                        </span>
+                    </div>
+                    <hr>
+                    <div class="r-nomination-training-person-list">
+                        <table>
+                            <tbody>
+                            <tr ng-repeat="person in $ctrl.checkedNumberList">
+                                <td class="col-xs-4">
+                                    <span ng-if="person.id" class="fa fa-check text-primary"></span>
+                                    <span ng-if="!person.id" class="fa fa-remove text-danger"></span>
+                                    <span ng-bind="person.hunterNumber"></span>
+                                </td>
+                                <td class="col-xs-6">
+                                    <span ng-bind="person.firstName"></span>
+                                    <span ng-bind="person.lastName"></span>
+                                </td>
+                                <td class="col-xs-2">
+                                    <button type="button" class="btn btn-danger" ng-if="!person.id" ng-click="$ctrl.remove(person.key)">
+                                        <span translate="global.button.delete"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <hr>
+                    <button type="button" class="btn btn-primary"
+                            ng-click="$ctrl.clearNumbers()"
+                            translate="occupation.form.button.clearNumbers"></button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()"
+                translate="occupation.form.button.cancel"></button>
+
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.submit()"
+                ng-disabled="$ctrl.submitDisabled(trainingForm)"
+                translate="occupation.form.button.save"></button>
+
+    </div>
+</div>

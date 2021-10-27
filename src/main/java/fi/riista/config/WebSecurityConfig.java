@@ -5,6 +5,7 @@ import fi.riista.api.mobile.MobileVersionApiResource;
 import fi.riista.api.pub.AccountRegistrationApiResource;
 import fi.riista.api.pub.HealthCheckController;
 import fi.riista.api.pub.PasswordResetApiResource;
+import fi.riista.api.pub.mobile.MobileAccountRegistrationApiResource;
 import fi.riista.config.web.SentryUserContextFilter;
 import fi.riista.security.aop.CustomWebSecurityExpressionHandler;
 import fi.riista.security.audit.LogoutAuditEventListener;
@@ -72,10 +73,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             PATTERN_MOBILE_API,
 
             AccountRegistrationApiResource.URI_SEND_EMAIL,
+            MobileAccountRegistrationApiResource.URI_SEND_EMAIL,
             AccountRegistrationApiResource.URI_FROM_EMAIL,
             PasswordResetApiResource.URI_SEND_MAIL,
             PasswordResetApiResource.URI_VERIFY_TOKEN,
             PasswordResetApiResource.URI_RESET_PASSWORD,
+            MobileAccountRegistrationApiResource.URI_RESET_PASSWORD,
 
             // SAML attribute consumer service is protected using TRID parameter
             "/saml/acs",
@@ -218,7 +221,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/saml/acs",
                         "/saml/sls",
                         "/api/mobile/v2/area/vector/**",
-
+                        MobileAccountRegistrationApiResource.URI_SEND_EMAIL,
+                        MobileAccountRegistrationApiResource.URI_RESET_PASSWORD,
                         PaytrailController.NOTIFY_PATH,
                         MobileVersionApiResource.LATEST_RELEASE_URL,
                         HealthCheckController.URI_HEALTH_CHECK,

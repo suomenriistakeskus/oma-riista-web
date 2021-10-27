@@ -25,8 +25,14 @@ import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNAN
 @Component
 public class OccupationAuthorization extends AbstractEntityAuthorization<Occupation> {
     private enum Role {
-        PERSONAL_CLUB_MEMBERSHIP
+        PERSONAL_CLUB_MEMBERSHIP,
+        PERSONAL_OCCUPATION
     }
+
+    public enum OccupationPermission {
+        UPDATE_CONTACT_INFO_VISIBILITY
+    }
+
 
     @Resource
     private UserAuthorizationHelper userAuthorizationHelper;
@@ -39,6 +45,8 @@ public class OccupationAuthorization extends AbstractEntityAuthorization<Occupat
         allow(EntityPermission.CREATE, Role.PERSONAL_CLUB_MEMBERSHIP);
         allow(EntityPermission.READ, SEURAN_JASEN, RYHMAN_JASEN);
         allow(EntityPermission.DELETE, SEURAN_JASEN, RYHMAN_JASEN, Role.PERSONAL_CLUB_MEMBERSHIP);
+
+        allow(OccupationPermission.UPDATE_CONTACT_INFO_VISIBILITY, Role.PERSONAL_OCCUPATION, ROLE_ADMIN, ROLE_MODERATOR);
     }
 
     @Override
@@ -54,6 +62,9 @@ public class OccupationAuthorization extends AbstractEntityAuthorization<Occupat
         }
 
         userAuthorizationHelper.getPerson(userInfo).ifPresent(activePerson -> {
+            collector.addAuthorizationRole(Role.PERSONAL_OCCUPATION, () ->
+                    Objects.equals(activePerson, occupationPerson));
+
             final OrganisationType organisationType = occupationOrganisation.getOrganisationType();
 
             if (organisationType == OrganisationType.RHY) {

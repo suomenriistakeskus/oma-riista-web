@@ -1,6 +1,6 @@
 package fi.riista.feature.permit.decision;
 
-import fi.riista.feature.harvestpermit.HarvestPermitCategory;
+import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.util.LocalisedString;
 
 import javax.annotation.Nonnull;
@@ -49,26 +49,29 @@ public class PermitDecisionName {
             "Anlagsprov på björn");
     public static final LocalisedString DEPORTATION = LocalisedString.of(
             "Poikkeuslupa riistaeläimen ja rauhoittamattoman eläimen häiritsemiseen (karkottaminen)",
-            "Poikkeuslupa riistaeläimen ja rauhoittamattoman eläimen häiritsemiseen (karkottaminen)");
+            "Dispens för att störa vilt och icke fredade djur (fördrivning)");
     public static final LocalisedString RESEARCH = LocalisedString.of(
             "Elävänä pyydystäminen",
-            "Elävänä pyydystäminen");
+            "Levandefångst");
     public static final LocalisedString IMPORTING = LocalisedString.of(
             "Vierasperäisen riistaeläimen ja riistaeläinkannan maahantuonti ja luontoon laskeminen",
-            "Vierasperäisen riistaeläimen ja riistaeläinkannan maahantuonti ja luontoon laskeminen");
+            "Införsel och utsättande i frihet av vilt och viltbestånd av främmande ursprung");
     public static final LocalisedString GAME_MANAGEMENT = LocalisedString.of(
             "Riistanhoidollinen toimenpide tai eläimen tarhaaminen",
-            "Riistanhoidollinen toimenpide tai eläimen tarhaaminen");
+            "Viltvårdsåtgärd eller uppfödning av djur");
+    public static final LocalisedString FORBIDDEN_METHOD = LocalisedString.of(
+            "Kielletyt pyyntivälineet ja menetelmät",
+            "Förbjudna fångstredskap och metoder");
 
     @Nonnull
     public static LocalisedString getDecisionName(final @Nonnull PermitDecision.DecisionType decisionType,
-                                                  final @Nonnull HarvestPermitCategory permitCategory) {
+                                                  final @Nonnull String permitTypeCode) {
         requireNonNull(decisionType);
-        requireNonNull(permitCategory);
+        requireNonNull(permitTypeCode);
 
         switch (decisionType) {
             case HARVEST_PERMIT:
-                return permitCategory.getDecisionName();
+                return PermitTypeCode.getDecisionName(permitTypeCode);
 
             case CANCEL_APPLICATION:
                 return CANCEL_APPLICATION;

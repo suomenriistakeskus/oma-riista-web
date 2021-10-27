@@ -8,6 +8,7 @@ import fi.riista.feature.gamediary.harvest.mutation.HarvestUpdater;
 import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
 import fi.riista.feature.harvestpermit.report.email.HarvestReportNotificationService;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingStatusService;
+import fi.riista.feature.huntingclub.hunting.mobile.MobileGroupHarvestDTO;
 import fi.riista.feature.organization.person.Person;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,10 +70,12 @@ public class HarvestService {
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public boolean canBusinessFieldsBeUpdatedFromMobile(@Nonnull final Person activePerson,
                                                         @Nonnull final Harvest harvest,
-                                                        @Nonnull final HarvestSpecVersion harvestSpecVersion) {
+                                                        @Nonnull final HarvestSpecVersion harvestSpecVersion,
+                                                        final boolean isGroupHunting) {
 
-        // for mobile should be canEdit=false if attached to hunting day
-        final Predicate<Harvest> groupHuntingStatusLockedTester = createGroupHuntingStatusLockedTester();
+        // for mobile should be canEdit=false if attached to hunting day and not group hunting feature
+        final Predicate<Harvest> groupHuntingStatusLockedTester =
+                isGroupHunting ? createGroupHuntingStatusLockedTester() : h -> h.getHuntingDayOfGroup() != null;
         final Predicate<Harvest> contactPersonTester = HarvestLockedCondition.createContactPersonTester(activePerson);
 
         return HarvestLockedCondition.canEditFromMobile(
@@ -87,24 +90,46 @@ public class HarvestService {
     public HarvestChangeHistory updateMutableFields(final Harvest harvest,
                                                     final MobileHarvestDTO dto,
                                                     final SystemUser activeUser,
-                                                    final boolean businessFieldsCanBeUpdated,
-                                                    final boolean isDeerPilotUser) {
+                                                    final boolean businessFieldsCanBeUpdated) {
         final HarvestChangeHistory historyEvent;
 
         if (businessFieldsCanBeUpdated) {
-            final boolean isDeerPilotActive = isDeerPilotUser && dto.getHarvestSpecVersion().supportsDeerHuntingType();
 
             final HarvestUpdater harvestMutator =
-                    HarvestUpdater.create(harvestMutationFactory, harvest, activeUser, isDeerPilotActive);
+                    HarvestUpdater.create(harvestMutationFactory, harvest, activeUser);
 
             harvestMutator.execute(harvest, dto);
             historyEvent = harvestMutator.createHistoryEventIfRequiredForPerson(harvest);
 
-            if (harvestMutator.shouldSendHarvestNotificationEmail(harvest)) {
-                commitHookService.runInTransactionAfterCommit(() -> {
-                    harvestReportNotificationService.sendNotificationForHarvest(harvest.getId());
-                });
+            sendNotifications(harvest, harvestMutator);
+        } else {
+            historyEvent = null;
+
+            if (dto.isCanEdit()) {
+                LOG.warn("Could not update read-only harvest id: " + dto.getId());
             }
+        }
+
+        harvest.setDescription(dto.getDescription());
+
+        return historyEvent;
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public HarvestChangeHistory updateMutableFields(final Harvest harvest,
+                                                    final MobileGroupHarvestDTO dto,
+                                                    final SystemUser activeUser,
+                                                    final boolean businessFieldsCanBeUpdated) {
+        final HarvestChangeHistory historyEvent;
+
+        if (businessFieldsCanBeUpdated) {
+            final HarvestUpdater harvestMutator =
+                    HarvestUpdater.create(harvestMutationFactory, harvest, activeUser);
+
+            harvestMutator.execute(harvest, dto);
+            historyEvent = harvestMutator.createHistoryEventIfRequiredForPerson(harvest);
+
+            sendNotifications(harvest, harvestMutator);
         } else {
             historyEvent = null;
 
@@ -122,25 +147,19 @@ public class HarvestService {
     public HarvestChangeHistory updateMutableFields(final Harvest harvest,
                                                     final HarvestDTO dto,
                                                     final SystemUser activeUser,
-                                                    final boolean businessFieldsCanBeUpdated,
-                                                    final boolean isDeerPilotActive) {
+                                                    final boolean businessFieldsCanBeUpdated) {
 
         final HarvestChangeHistory historyEvent;
 
         if (businessFieldsCanBeUpdated) {
             final HarvestUpdater harvestMutator =
-                    HarvestUpdater.create(harvestMutationFactory, harvest, activeUser, isDeerPilotActive);
+                    HarvestUpdater.create(harvestMutationFactory, harvest, activeUser);
             final HarvestReportingType reportingType = harvestMutator.execute(harvest, dto);
 
             historyEvent = harvestMutator
                     .createHistoryEventIfRequired(activeUser, harvest, reportingType,dto.getModeratorReasonForChange());
 
-            if (harvestMutator.shouldSendHarvestNotificationEmail(harvest)) {
-                commitHookService.runInTransactionAfterCommit(() -> {
-                    harvestReportNotificationService.sendNotificationForHarvest(harvest.getId());
-                });
-            }
-
+            sendNotifications(harvest, harvestMutator);
         } else {
             historyEvent = null;
 
@@ -172,5 +191,13 @@ public class HarvestService {
         assertNotAttachedToHuntingDay(harvest);
 
         harvestRepository.delete(harvest);
+    }
+
+    private void sendNotifications(final Harvest harvest, final HarvestUpdater harvestMutator) {
+        if (harvestMutator.shouldSendHarvestNotificationEmail(harvest)) {
+            commitHookService.runInTransactionAfterCommit(() -> {
+                harvestReportNotificationService.sendNotificationForHarvest(harvest.getId());
+            });
+        }
     }
 }

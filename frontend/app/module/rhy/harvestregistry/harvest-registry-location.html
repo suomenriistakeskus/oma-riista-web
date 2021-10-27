@@ -1,0 +1,26 @@
+<form name="form" role="form" class="form form-horizontal r-event-form">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="harvestRegistry.item.geoLocation"></h3>
+    </div>
+
+    <div class="modal-body">
+        <leaflet class="r-cursor-pointer"
+                 id="harvest-registry-map"
+                 defaults="$ctrl.mapDefaults"
+                 layers="$ctrl.mapDefaults.mmlLayers"
+                 controls="$ctrl.mapDefaults.controls"
+                 event-broadcast="$ctrl.mapEvents"
+                 lf-center="$ctrl.mapState.center"
+                 r-geolocation-marker="$ctrl.location"
+                 r-geolocation-editable="false"
+                 r-geolocation-marker-force-finland="true"
+                 height="400px">
+        </leaflet>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.close()" translate="global.button.close"></button>
+    </div>
+</form>

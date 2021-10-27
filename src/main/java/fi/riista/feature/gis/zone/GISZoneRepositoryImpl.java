@@ -370,6 +370,13 @@ public class GISZoneRepositoryImpl implements GISZoneRepositoryCustom {
     }
 
     @Override
+    @Transactional
+    public GISZone addAreas(final GISZone added, final GISZone orig) {
+        copyZoneGeometryQueries.addZoneGeomToFeatures(added, orig);
+        return orig;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<Geometry> loadSplicedGeometries(final Collection<Long> zoneIds) {
         if (zoneIds.isEmpty()) {

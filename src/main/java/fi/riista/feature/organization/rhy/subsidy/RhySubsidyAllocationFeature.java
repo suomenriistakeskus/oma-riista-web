@@ -142,7 +142,7 @@ public class RhySubsidyAllocationFeature {
 
             // Combine with merged first year statistics
             final List<AnnualStatisticsExportDTO> compoundMergedStatistics =
-                    previousYearMergeResolver.combine(statistics, previousYearMergeResult);
+                    previousYearMergeResolver.combine(previousYearMergeResult, statistics);
 
             // Merge with second year rhy merges
             mergedRhyStatistics = mergeResolver.mergeStatistics(compoundMergedStatistics);

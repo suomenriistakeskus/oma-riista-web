@@ -21,6 +21,7 @@ import java.util.Date;
 
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_GREY_SEAL;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RINGED_SEAL;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -28,7 +29,8 @@ public class HarvestArea extends LifecycleEntity<Long> {
 
     public enum HarvestAreaType {
         HALLIALUE,
-        PORONHOITOALUE;
+        PORONHOITOALUE,
+        NORPPAALUE;
 
         public static HarvestAreaType getValidTypeFor(final int speciesCode){
             switch (speciesCode){
@@ -36,9 +38,26 @@ public class HarvestArea extends LifecycleEntity<Long> {
                     return PORONHOITOALUE;
                 case OFFICIAL_CODE_GREY_SEAL:
                     return HALLIALUE;
+                case OFFICIAL_CODE_RINGED_SEAL:
+                    return NORPPAALUE;
                 default:
                     return null;
             }
+        }
+    }
+
+    public enum HarvestAreaDetailedType {
+        PORONHOITOALUE_ITAINEN,
+        PORONHOITOALUE_LANTINEN;
+
+        public static HarvestAreaDetailedType getByName(final String name) {
+            if (name.equals("Itäinen poronhoitoalue")) {
+                return PORONHOITOALUE_ITAINEN;
+            } else if (name.equals("Läntinen poronhoitoalue")) {
+                return PORONHOITOALUE_LANTINEN;
+            }
+
+            return null;
         }
     }
 

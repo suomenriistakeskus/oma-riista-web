@@ -40,6 +40,7 @@ import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YH
 import static fi.riista.util.DateUtil.today;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
@@ -366,9 +367,8 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implement
     @Test
     public void testGetObservationsOfGroupMembers_deerHunting_deerHuntingObservationsAreShown() {
         withDeerHuntingGroupFixture(fixture -> {
-            model().newDeerPilot(fixture.permit);
             final Observation observation = newObservation(fixture.species, fixture.zoneCentroid, fixture.groupMember, DEER_HUNTING);
-
+            linkObservationToHuntingDayOfGroup(observation, fixture.group);
             onSavedAndAuthenticated(
                     createUser(fixture.groupMember),
                     () -> assertGroupMemberObservations(fixture.group, observation));
@@ -376,20 +376,20 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implement
     }
 
     @Test
-    public void testGetObservationsOfGroupMembers_deerHunting_deerHuntingObservationsForNonPilotGroupsAreHidden() {
+    public void testGetObservationsOfGroupMembers_deerHunting_suggestedDeerHuntingObservationsAreHidden() {
+        // Suggested observations has no groupHuntingDay, or they are not rejected.
+        // This appears when observations within deer hunting are done before person belongs to the group.
         withDeerHuntingGroupFixture(fixture -> {
             newObservation(fixture.species, fixture.zoneCentroid, fixture.groupMember, DEER_HUNTING);
-
             onSavedAndAuthenticated(
                     createUser(fixture.groupMember),
-                    () -> assertGroupMemberObservations(fixture.group));
+                    () -> assertTrue(feature.getObservationsOfGroupMembers(fixture.group.getId()).isEmpty()));
         });
     }
 
     @Test
     public void testGetObservationsOfGroupMembers_deerHunting_normalObservationsAreHidden() {
         withDeerHuntingGroupFixture(fixture -> {
-            model().newDeerPilot(fixture.permit);
             newObservation(fixture.species, fixture.zoneCentroid, fixture.groupMember, NORMAL);
 
             onSavedAndAuthenticated(
@@ -401,7 +401,6 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implement
     @Test
     public void testGetObservationsOfGroupMembers_deerHunting_rejectedObservationsAreShown() {
         withDeerHuntingGroupFixture(fixture -> {
-            model().newDeerPilot(fixture.permit);
             final Observation observation = newObservation(fixture.species, fixture.zoneCentroid, fixture.groupMember, DEER_HUNTING);
             model().newObservationRejection(fixture.group, observation);
 
@@ -414,7 +413,6 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implement
     @Test
     public void testGetObservationsOfGroupMembers_deerHunting_observationsNotInGroupAreaAreHidden() {
         withDeerHuntingGroupFixture(fixture -> {
-            model().newDeerPilot(fixture.permit);
             final GeoLocation location = geoLocation();
             newObservation(fixture.species, location, fixture.groupMember, DEER_HUNTING);
 
@@ -478,6 +476,13 @@ public class GroupHuntingDiaryFeatureTest extends EmbeddedDatabaseTest implement
         final Observation observation = model().newObservation(species, member, observationCategory);
         observation.setGeoLocation(location);
         return observation;
+    }
+
+    private void linkObservationToHuntingDayOfGroup(final Observation observation,
+                                                    final HuntingClubGroup group) {
+
+        final GroupHuntingDay huntingDay = model().newGroupHuntingDay(group, observation.getPointOfTimeAsLocalDate());
+        observation.updateHuntingDayOfGroup(huntingDay, observation.getAuthor());
     }
 
     private void assertGroupMemberHarvests(final HuntingClubGroup clubGroup, final Harvest... expectedHarvests) {

@@ -2,8 +2,8 @@
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
-        <span class="alert-title" translate="harvestpermit.wizard.carnivore.map.areaTitle"></span>
-        <p translate="harvestpermit.wizard.carnivore.map.instructions"></p>
+        <span class="alert-title" translate="harvestpermit.wizard.common.map.areaTitle"></span>
+        <p translate="harvestpermit.wizard.common.map.instructions"></p>
     </div>
 </div>
 
@@ -14,7 +14,7 @@
             <div class="col-md-4">
 
                 <div class="form-group" show-errors>
-                    <label for="areaSize" translate="harvestpermit.wizard.carnivore.map.areaSize"></label>
+                    <label for="areaSize" translate="harvestpermit.wizard.common.map.areaSize"></label>
 
                     <div class="input-group">
                         <input type="number" class="form-control"
@@ -46,12 +46,11 @@
         <span ng-if="!$ctrl.areaInfo.geoLocation" class="fa fa-exclamation-triangle"></span>
 
         <div class="alert-content">
-            <span translate="harvestpermit.wizard.carnivore.map.geoLocationInstruction"></span>
+            <span translate="harvestpermit.wizard.common.map.geoLocationInstruction"></span>
         </div>
     </div>
 
-    <!-- TODO: Figure out whether to copy or refactor this component out from bird wizard -->
-    <bird-application-location-editor protected-area="$ctrl.areaInfo"></bird-application-location-editor>
+    <derogation-application-location-editor protected-area="$ctrl.areaInfo"></derogation-application-location-editor>
 
 </ng-form>
 

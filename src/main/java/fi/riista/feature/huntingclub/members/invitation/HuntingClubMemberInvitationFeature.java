@@ -9,6 +9,7 @@ import fi.riista.feature.account.user.UserAuthorizationHelper;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
+import fi.riista.feature.huntingclub.members.invitation.mobile.MobileHuntingClubMemberInvitationDTO;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationDTO;
@@ -175,22 +176,16 @@ public class HuntingClubMemberInvitationFeature {
     }
 
     @Transactional(readOnly = true)
-    public List<HuntingClubMemberInvitationDTO> listMyInvitations(Long personId) {
-        final SystemUser activeUser = activeUserService.requireActiveUser();
-        Person person = activeUser.getPerson();
+    public List<HuntingClubMemberInvitationDTO> listMyInvitations(final Long personId) {
+        final List<HuntingClubMemberInvitation> myInvitations = getMyInvitationsList(personId);
+        return HuntingClubMemberInvitationDTO.create(myInvitations);
+    }
 
-        if (person == null) {
-            if (personId != null && activeUser.isModeratorOrAdmin()) {
-                person = personRepository.getOne(personId);
-            } else {
-                return emptyList();
-            }
-        }
-
-        return HuntingClubMemberInvitationDTO.create(invitationRepository.findAll(JpaSpecs.and(
-                JpaSpecs.equal(HuntingClubMemberInvitation_.person, person),
-                JpaSpecs.isNull(HuntingClubMemberInvitation_.userRejectedTime)
-        )));
+    @Transactional(readOnly = true)
+    public List<MobileHuntingClubMemberInvitationDTO> listMyInvitationsMobile() {
+        // In mobile search only active user's invitations
+        final List<HuntingClubMemberInvitation> myInvitations = getMyInvitationsList(null);
+        return MobileHuntingClubMemberInvitationDTO.create(myInvitations);
     }
 
     @Transactional
@@ -227,4 +222,22 @@ public class HuntingClubMemberInvitationFeature {
 
         return personRepository.findFinnishPersonsByHunterNumber(hunterNumbers);
     }
+
+    private List<HuntingClubMemberInvitation> getMyInvitationsList(final Long personId) {
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        Person person = activeUser.getPerson();
+
+        if (person == null) {
+            if (personId != null && activeUser.isModeratorOrAdmin()) {
+                person = personRepository.getOne(personId);
+            } else {
+                return emptyList();
+            }
+        }
+
+        return invitationRepository.findAll(JpaSpecs.and(
+                JpaSpecs.equal(HuntingClubMemberInvitation_.person, person),
+                JpaSpecs.isNull(HuntingClubMemberInvitation_.userRejectedTime)));
+    }
+
 }

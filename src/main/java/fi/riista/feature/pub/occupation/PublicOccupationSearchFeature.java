@@ -2,6 +2,7 @@ package fi.riista.feature.pub.occupation;
 
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -37,6 +38,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.organization.occupation.OccupationType.ALUEKOKOUKSEN_EDUSTAJA;
+import static fi.riista.feature.organization.occupation.OccupationType.ALUEKOKOUKSEN_VARAEDUSTAJA;
 import static fi.riista.util.Collect.idSet;
 import static fi.riista.util.jpa.JpaSpecs.fetch;
 import static fi.riista.util.jpa.JpaSpecs.inCollection;
@@ -51,6 +54,9 @@ public class PublicOccupationSearchFeature {
     private static final QOccupation OCCUPATION = QOccupation.occupation;
     private static final QRiistakeskuksenAlue RKA = QRiistakeskuksenAlue.riistakeskuksenAlue;
     private static final QOrganisation ORG = QOrganisation.organisation;
+
+    private static final List<OccupationType> NON_PUBLIC_OCCUPATION_TYPES =
+            ImmutableList.of(ALUEKOKOUKSEN_EDUSTAJA, ALUEKOKOUKSEN_VARAEDUSTAJA);
 
     @Resource
     private OccupationRepository occupationRepository;
@@ -141,6 +147,8 @@ public class PublicOccupationSearchFeature {
                 .join(OCCUPATION.organisation, ORG)
                 .leftJoin(ORG.parentOrganisation, RKA._super)
                 .where(parameters.toQueryDslPredicate())
+                .where(OCCUPATION.occupationType.notIn(NON_PUBLIC_OCCUPATION_TYPES))
+                .where(OCCUPATION.nameVisibility.isTrue())
                 .limit(searchPageSize + 1)
                 .offset(pageNumber * searchPageSize)
                 .orderBy(

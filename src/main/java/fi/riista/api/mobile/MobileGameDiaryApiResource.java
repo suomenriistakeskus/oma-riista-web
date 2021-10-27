@@ -123,8 +123,7 @@ public class MobileGameDiaryApiResource {
                         gameSpeciesCode,
                         harvestDate,
                         new GeoLocation(latitude, longitude),
-                        withPermit,
-                        /* personId */null),
+                        withPermit),
                 HarvestSpecVersion.fromIntValue(harvestSpecVersion));
     }
 

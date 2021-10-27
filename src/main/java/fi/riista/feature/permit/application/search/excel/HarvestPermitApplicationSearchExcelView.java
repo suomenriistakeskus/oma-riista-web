@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import static fi.riista.util.DateUtil.DATE_FORMAT_FINNISH;
 import static fi.riista.util.DateUtil.now;
+import static fi.riista.util.F.mapNullable;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -53,6 +54,7 @@ public class HarvestPermitApplicationSearchExcelView extends AbstractXlsxView {
                 "permitHolder",
                 "applicationYear",
                 "harvestPermitCategory",
+                "permitTypeCode",
                 "rkaName",
                 "rhyName",
                 "submitDate",
@@ -132,6 +134,7 @@ public class HarvestPermitApplicationSearchExcelView extends AbstractXlsxView {
                 .appendTextCell(dto.getPermitHolder().getName())
                 .appendNumberCell(dto.getApplicationYear())
                 .appendTextCell(i18nEnum(dto.getHarvestPermitCategory()))
+                .appendTextCell(mapNullable(dto.getPermitTypeCode(), code -> localiser.getTranslation("PermitTypeCode." + code)))
                 .appendTextCell(localiser.getTranslation(dto.getRkaName()))
                 .appendTextCell(localiser.getTranslation(dto.getRhyName()))
                 .appendTextCell(dto.getSubmitDate().toString(DATE_FORMAT_FINNISH))

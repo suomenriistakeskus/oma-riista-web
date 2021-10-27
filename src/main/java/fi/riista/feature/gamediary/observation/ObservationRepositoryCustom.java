@@ -6,9 +6,9 @@ import org.joda.time.Interval;
 import java.util.List;
 
 public interface ObservationRepositoryCustom {
-    List<Observation> findGroupObservations(HuntingClubGroup huntingClubGroup,
-                                            ObservationCategory observationCategory,
-                                            Interval interval);
+    List<Observation> findGroupObservationsWithinMooseHunting(HuntingClubGroup huntingClubGroup, Interval interval);
+
+    List<Observation> findGroupObservationsWithinDeerHunting(HuntingClubGroup huntingClubGroup);
 
     List<HuntingClubGroup> findGroupCandidatesForDeerObservation(final Observation observation);
 

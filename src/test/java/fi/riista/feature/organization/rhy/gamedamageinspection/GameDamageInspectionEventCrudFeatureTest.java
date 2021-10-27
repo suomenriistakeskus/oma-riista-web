@@ -1,6 +1,9 @@
 package fi.riista.feature.organization.rhy.gamedamageinspection;
 
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
+import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.rhy.RhyEventTimeException;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysDTO;
@@ -18,8 +21,11 @@ import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
 import static fi.riista.util.DateUtil.toLocalDateNullSafe;
 import static fi.riista.util.DateUtil.today;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 
 public class GameDamageInspectionEventCrudFeatureTest extends EmbeddedDatabaseTest {
 
@@ -44,11 +50,16 @@ public class GameDamageInspectionEventCrudFeatureTest extends EmbeddedDatabaseTe
                                                    final LocalDate date,
                                                    final LocalTime beginTime,
                                                    final LocalTime endTime) {
+        final Person inspector = model().newPerson(rhy);
+        model().newOccupation(rhy, inspector, OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA, date, date);
+        persistInNewTransaction();
+
         final GameDamageInspectionEventDTO dto = new GameDamageInspectionEventDTO();
 
         dto.setRhy(RiistanhoitoyhdistysDTO.create(rhy));
         dto.setGameSpeciesCode(OFFICIAL_CODE_MOOSE);
-        dto.setInspectorName("Inspector");
+
+        dto.setInspector(PersonContactInfoDTO.create(inspector));
 
         dto.setGeoLocation(geoLocation());
 
@@ -68,6 +79,8 @@ public class GameDamageInspectionEventCrudFeatureTest extends EmbeddedDatabaseTe
 
         dto.setGameDamageInspectionKmExpenses(Arrays.asList(expenseDTO));
 
+        dto.setExpensesIncluded(true);
+
         return dto;
     }
 
@@ -86,6 +99,13 @@ public class GameDamageInspectionEventCrudFeatureTest extends EmbeddedDatabaseTe
 
         assertEquals(rhy.getId(), event.getRhy().getId());
         assertEquals(dto.getGameSpeciesCode(), event.getGameSpecies().getOfficialCode());
+
+        final PersonContactInfoDTO dtoInspector = dto.getInspector();
+        final Person inspector = event.getInspector();
+        assertEquals(dtoInspector.getId(), inspector.getId());
+        assertEquals(dtoInspector.getFirstName(), inspector.getFirstName());
+        assertEquals(dtoInspector.getLastName(), inspector.getLastName());
+
         assertEquals(dto.getInspectorName(), event.getInspectorName());
 
         assertEquals(dto.getGeoLocation().getLatitude(), event.getGeoLocation().getLatitude());
@@ -98,10 +118,16 @@ public class GameDamageInspectionEventCrudFeatureTest extends EmbeddedDatabaseTe
 
         assertEquals(dto.getDescription(), event.getDescription());
 
-        assertEquals(dto.getHourlyExpensesUnit().doubleValue(), event.getHourlyExpensesUnit().doubleValue(), 0.001);
-        assertEquals(dto.getDailyAllowance().doubleValue(), event.getDailyAllowance().doubleValue(), 0.001);
-
+        if (event.getExpensesIncluded()) {
+            assertEquals(dto.getHourlyExpensesUnit().doubleValue(), event.getHourlyExpensesUnit().doubleValue(), 0.001);
+            assertEquals(dto.getDailyAllowance().doubleValue(), event.getDailyAllowance().doubleValue(), 0.001);
+        } else {
+            assertNull(event.getHourlyExpensesUnit());
+            assertNull(event.getDailyAllowance());
+        }
         assertEquals(lockedAsPastStatistics, event.isLockedAsPastStatistics());
+
+        assertEquals(dto.isExpensesIncluded(), event.getExpensesIncluded());
     }
 
     private static void assertExpenses(final GameDamageInspectionEvent event, final GameDamageInspectionEventDTO dto) {
@@ -189,11 +215,22 @@ public class GameDamageInspectionEventCrudFeatureTest extends EmbeddedDatabaseTe
     @Test
     public void testUpdate() {
         withRhyAndCoordinator((rhy, coordinator) -> withRhy(anotherRhy -> {
+            final Person inspector = model().newPerson(rhy);
+            model().newOccupation(rhy, inspector, OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA, today(), today());
+
             final GameSpecies moose = model().newGameSpecies(OFFICIAL_CODE_MOOSE);
             final GameSpecies bear = model().newGameSpecies(OFFICIAL_CODE_BEAR);
             final GameDamageInspectionEvent event = model().newGameDamageInspectionEvent(rhy, moose);
+            event.setExpensesIncluded(true);
+
+            event.setInspector(inspector);
 
             onSavedAndAuthenticated(createUser(coordinator), () -> {
+                final Person newInspector = model().newPerson(anotherRhy);
+                model().newOccupation(rhy, newInspector, OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA, today().minusDays(1), today().minusDays(1));
+
+                persistInNewTransaction();
+
                 final GameDamageInspectionKmExpense expense = model().newGameDamageInspectionKmExpense(event);
 
                 final GameDamageInspectionEventDTO mutated =
@@ -201,13 +238,16 @@ public class GameDamageInspectionEventCrudFeatureTest extends EmbeddedDatabaseTe
                                 anotherRhy,
                                 Arrays.asList(GameDamageInspectionKmExpenseDTO.create(expense)));
                 mutated.setGameSpeciesCode(bear.getOfficialCode());
-                mutated.setInspectorName(mutated.getInspectorName() + "_mutated");
+
+                mutated.setInspector(PersonContactInfoDTO.create(newInspector));
+
                 mutated.setDate(mutated.getDate().minusDays(1));
                 mutated.setBeginTime(mutated.getBeginTime().plusHours(1));
                 mutated.setEndTime(mutated.getEndTime().plusHours(1));
                 mutated.setDescription(mutated.getDescription() + "_mutated");
                 mutated.setHourlyExpensesUnit(mutated.getHourlyExpensesUnit().add(BigDecimal.ONE));
                 mutated.setDailyAllowance(mutated.getDailyAllowance().add(BigDecimal.ONE));
+                mutated.setExpensesIncluded(true);
 
                 final GameDamageInspectionKmExpenseDTO mutatedExpense = mutated.getGameDamageInspectionKmExpenses().get(0);
                 mutatedExpense.setKilometers(mutatedExpense.getKilometers() + 1);
@@ -225,5 +265,54 @@ public class GameDamageInspectionEventCrudFeatureTest extends EmbeddedDatabaseTe
                 });
             });
         }));
+    }
+
+    @Test
+    public void testUpdate_removeExpenses() {
+        withRhyAndCoordinator((rhy, coordinator) -> withRhy(anotherRhy -> {
+            final Person inspector = model().newPerson(rhy);
+            model().newOccupation(rhy, inspector, OccupationType.RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA, today(), today());
+
+            final GameSpecies moose = model().newGameSpecies(OFFICIAL_CODE_MOOSE);
+            final GameDamageInspectionEvent event = model().newGameDamageInspectionEvent(rhy, moose);
+            event.setExpensesIncluded(true);
+
+            event.setInspector(inspector);
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+                final GameDamageInspectionEventDTO mutated =
+                        GameDamageInspectionEventDTO.create(event, anotherRhy, null);
+                mutated.setHourlyExpensesUnit(null);
+                mutated.setDailyAllowance(null);
+                mutated.setExpensesIncluded(false);
+
+                feature.update(mutated);
+
+                runInTransaction(() -> {
+                    final GameDamageInspectionEvent reloaded = repository.getOne(event.getId());
+
+                    assertEvent(reloaded, mutated, RiistanhoitoyhdistysDTO.create(rhy), false);
+                    assertThat(reloaded.getGameDamageInspectionKmExpenses(), hasSize(0));
+                });
+            });
+        }));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void testCreate_noOccupationForInspector() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            model().newGameSpecies(OFFICIAL_CODE_MOOSE);
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+                final GameDamageInspectionEventDTO inputDTO = createDTO(rhy);
+                final Person invalidInspector = model().newPerson(rhy);
+
+                persistInNewTransaction();
+
+                inputDTO.setInspector(PersonContactInfoDTO.create(invalidInspector));
+
+                feature.create(inputDTO);
+            });
+        });
     }
 }

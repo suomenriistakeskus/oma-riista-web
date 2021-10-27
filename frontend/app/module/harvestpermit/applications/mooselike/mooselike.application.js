@@ -116,4 +116,17 @@ angular.module('app.harvestpermit.application.mooselike', ['app.metadata'])
                 isArray: true
             }
         });
+    })
+    .service('MooselikeApplicationLate', function () {
+        var self = this;
+
+        self.isLate = function (applicationYear, date) {
+            var submitDate = moment(date, 'YYYY-MM-DDTHH:mm');
+
+            if (!!applicationYear && submitDate.isValid()) {
+                var lastValidSubmitTime = moment(applicationYear + '-04-30T16:15', 'YYYY-MM-DDTHH:mm');
+                return submitDate.diff(lastValidSubmitTime) > 0;
+            }
+            return false;
+        };
     });

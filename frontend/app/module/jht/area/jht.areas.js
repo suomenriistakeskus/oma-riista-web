@@ -26,6 +26,26 @@ angular.module('app.jht.area', [])
                 method: 'POST',
                 url: apiPrefix + '/copy',
                 params: {year: '@year'}
+            },
+            importArea: {
+                method: 'POST',
+                url: apiPrefix + '/import',
+                isArray: false
+            },
+            findByExternalId: {
+                method: 'GET',
+                url: apiPrefix + '/by-external-id/:externalId',
+                isArray: false
+            },
+            findByExternalIds: {
+                method: 'POST',
+                url: apiPrefix + '/by-external-ids',
+                isArray: true
+            },
+            addAreasOutline: {
+                method: 'POST',
+                url: apiPrefix + '/add-areas',
+                isArray: false
             }
         });
     })

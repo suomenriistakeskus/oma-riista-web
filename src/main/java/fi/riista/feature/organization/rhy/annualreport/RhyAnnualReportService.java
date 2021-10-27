@@ -29,7 +29,9 @@ import fi.riista.feature.organization.rhy.annualstats.YouthTrainingStatistics;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.Locales;
+import io.vavr.Tuple;
 import io.vavr.Tuple3;
+import io.vavr.Tuple5;
 import org.docx4j.XmlUtils;
 import org.docx4j.model.datastorage.migration.VariablePrepare;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
@@ -314,19 +316,10 @@ public class RhyAnnualReportService {
             replaceTable(carnivoreOfficialPlaceholders, carnivoreOfficialTableVariables, wordprocessingMLPackage);
 
             // Trainings
-            final List<String> trainingPlaceholders = Arrays.asList("KOULUTUS", "TAPAHTUMA_LKM", "OSALLISTUJA_LKM");
-            final List<Tuple3<String, Integer, Integer>> trainingList = createTrainingList(dto, localiser);
+            final List<String> trainingPlaceholders = Arrays.asList("KOULUTUS", "TAPAHTUMA_LKM", "OSALLISTUJA_LKM", "TAPAHTUMA_MUU", "OSALLISTUJA_MUU");
+            final List<Tuple5<String, Integer, Integer, Integer, Integer>> trainingList = createTrainingList(dto, localiser);
             final List<Map<String, String>> trainingTableVariables = createTrainingTableVariables(trainingList, trainingPlaceholders);
 
-            if (trainingTableVariables.size() > 0) {
-                // Add table header row if there are events
-                final Map<String, String> headerMap = new HashMap<>();
-                headerMap.put(trainingPlaceholders.get(0), "");
-                headerMap.put(trainingPlaceholders.get(1), localiser.getTranslation("RhyAnnualReport.events"));
-                headerMap.put(trainingPlaceholders.get(2), localiser.getTranslation("RhyAnnualReport.participants"));
-
-                trainingTableVariables.add(0, headerMap);
-            }
             replaceTable(trainingPlaceholders, trainingTableVariables, wordprocessingMLPackage);
 
         } catch (Exception e) {
@@ -369,12 +362,16 @@ public class RhyAnnualReportService {
         final List<Object> tables = getAllElementFromObject(wordprocessingMLPackage.getMainDocumentPart(), Tbl.class);
         final Tbl tempTable = (Tbl) getTemplateObject(tables, placeholders.get(0));
 
-        final List<Object> rows = getAllElementFromObject(tempTable, Tr.class);
-        final Tr tempRow = (Tr) getTemplateObject(rows, placeholders.get(0));
+        if (textToAdd.isEmpty()){
+            tempTable.getContent().clear();
+        } else {
+            final List<Object> rows = getAllElementFromObject(tempTable, Tr.class);
+            final Tr tempRow = (Tr) getTemplateObject(rows, placeholders.get(0));
 
-        textToAdd.forEach(text -> addRowToTable(tempTable, tempRow, text));
+            textToAdd.forEach(text -> addRowToTable(tempTable, tempRow, text));
 
-        tempTable.getContent().remove(tempRow);
+            tempTable.getContent().remove(tempRow);
+        }
     }
 
     private Object getTemplateObject(final List<Object> objects, final String templateKey) {
@@ -444,7 +441,7 @@ public class RhyAnnualReportService {
         return memberVariables;
     }
 
-    private static List<Map<String, String>> createTrainingTableVariables(final List<Tuple3<String, Integer, Integer>> trainings,
+    private static List<Map<String, String>> createTrainingTableVariables(final List<Tuple5<String, Integer, Integer, Integer, Integer>> trainings,
                                                                           final List<String> trainingPlaceHolders) {
         final List<Map<String, String>> trainingVariables = new ArrayList<>();
 
@@ -453,6 +450,8 @@ public class RhyAnnualReportService {
             trainingMap.put(trainingPlaceHolders.get(0), training._1);
             trainingMap.put(trainingPlaceHolders.get(1), training._2.toString());
             trainingMap.put(trainingPlaceHolders.get(2), training._3.toString());
+            trainingMap.put(trainingPlaceHolders.get(3), training._4.toString());
+            trainingMap.put(trainingPlaceHolders.get(4), training._5.toString());
 
             trainingVariables.add(trainingMap);
         });
@@ -463,114 +462,165 @@ public class RhyAnnualReportService {
     private static void addIfEvent(final String placeholder,
                                    final Integer eventCount,
                                    final Integer participantCount,
-                                   final List<Tuple3<String, Integer, Integer>> list) {
-        final int events = getIntValueOrZero(eventCount);
+                                   final Integer nonSubsidizableEventCount,
+                                   final Integer nonSubsidizableParticipantCount,
+                                   final List<Tuple5<String, Integer, Integer, Integer, Integer>> list) {
+        final int events = getIntValueOrZero(eventCount) + getIntValueOrZero(nonSubsidizableEventCount);
         if (events > 0) {
+            final int subsidizableEvents = getIntValueOrZero(events);
             final int participants = getIntValueOrZero(participantCount);
-            list.add(new Tuple3<>(placeholder, events, participants));
+            final Integer nonSubsidizableEvents = getIntValueOrZero(nonSubsidizableEventCount);
+            final Integer nonSubsidizableParticipants = getIntValueOrZero(nonSubsidizableParticipantCount);
+            list.add(Tuple.of(placeholder, subsidizableEvents, participants, nonSubsidizableEvents, nonSubsidizableParticipants));
         }
     }
 
-    private static List<Tuple3<String, Integer, Integer>> createTrainingList(final RhyAnnualReportDTO dto,
+    private static List<Tuple5<String, Integer, Integer, Integer, Integer>> createTrainingList(final RhyAnnualReportDTO dto,
                                                                              final EnumLocaliser localiser) {
-        final List<Tuple3<String, Integer, Integer>> trainingList = new ArrayList<>();
+        final List<Tuple5<String, Integer, Integer, Integer, Integer>> trainingList = new ArrayList<>();
 
         final HunterExamTrainingStatisticsDTO hunterExamTrainingDTO = dto.getAnnualStatistics().getHunterExamTraining();
         final Integer hunterExamTrainingEvents = Optional
                 .ofNullable(hunterExamTrainingDTO.getModeratorOverriddenHunterExamTrainingEvents())
                 .orElseGet(() -> getIntValueOrZero(hunterExamTrainingDTO.getHunterExamTrainingEvents()));
-        addIfEvent(localiser.getTranslation("RhyAnnualReport.hunterExamTrainings"), hunterExamTrainingEvents, hunterExamTrainingDTO.getHunterExamTrainingParticipants(), trainingList);
+        addIfEvent(localiser.getTranslation("RhyAnnualReport.hunterExamTrainings"),
+                hunterExamTrainingEvents, hunterExamTrainingDTO.getHunterExamTrainingParticipants(),
+                hunterExamTrainingDTO.getNonSubsidizableHunterExamTrainingEvents(),
+                hunterExamTrainingDTO.getNonSubsidizableHunterExamTrainingParticipants(), trainingList);
+
 
         final HunterTrainingStatistics hunterTraining = dto.getAnnualStatistics().getHunterTraining();
         addIfEvent(localiser.getTranslation("RhyAnnualReport.mooselikeHuntingLeaderTrainings"),
                 hunterTraining.getMooselikeHuntingLeaderTrainingEvents(),
                 hunterTraining.getMooselikeHuntingLeaderTrainingParticipants(),
+                hunterTraining.getNonSubsidizableMooselikeHuntingLeaderTrainingEvents(),
+                hunterTraining.getNonSubsidizableMooselikeHuntingLeaderTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.carnivoreHuntingLeaderTrainings"),
                 hunterTraining.getCarnivoreHuntingLeaderTrainingEvents(),
                 hunterTraining.getCarnivoreHuntingLeaderTrainingParticipants(),
+                hunterTraining.getNonSubsidizableCarnivoreHuntingLeaderTrainingEvents(),
+                hunterTraining.getNonSubsidizableCarnivoreHuntingLeaderTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.mooselikeHuntingTrainings"),
                 hunterTraining.getMooselikeHuntingTrainingEvents(),
                 hunterTraining.getMooselikeHuntingTrainingParticipants(),
+                hunterTraining.getNonSubsidizableMooselikeHuntingTrainingEvents(),
+                hunterTraining.getNonSubsidizableMooselikeHuntingTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.carnivoreHuntingTrainings"),
                 hunterTraining.getCarnivoreHuntingTrainingEvents(),
                 hunterTraining.getCarnivoreHuntingTrainingParticipants(),
+                hunterTraining.getNonSubsidizableCarnivoreHuntingTrainingEvents(),
+                hunterTraining.getNonSubsidizableCarnivoreHuntingTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.srvaTrainings"),
                 hunterTraining.getSrvaTrainingEvents(),
                 hunterTraining.getSrvaTrainingParticipants(),
+                hunterTraining.getNonSubsidizableSrvaTrainingEvents(),
+                hunterTraining.getNonSubsidizableSrvaTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.carnivoreContactPersonTrainings"),
                 hunterTraining.getCarnivoreContactPersonTrainingEvents(),
                 hunterTraining.getCarnivoreContactPersonTrainingParticipants(),
+                hunterTraining.getNonSubsidizableCarnivoreContactPersonTrainingEvents(),
+                hunterTraining.getNonSubsidizableCarnivoreContactPersonTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.accidentPreventionTrainings"),
                 hunterTraining.getAccidentPreventionTrainingEvents(),
                 hunterTraining.getAccidentPreventionTrainingParticipants(),
+                hunterTraining.getNonSubsidizableAccidentPreventionTrainingEvents(),
+                hunterTraining.getNonSubsidizableAccidentPreventionTrainingParticipants(),
                 trainingList);
 
         final YouthTrainingStatistics youthTraining = dto.getAnnualStatistics().getYouthTraining();
         addIfEvent(localiser.getTranslation("RhyAnnualReport.schoolTrainings"),
                 youthTraining.getSchoolTrainingEvents(),
                 youthTraining.getSchoolTrainingParticipants(),
+                youthTraining.getNonSubsidizableSchoolTrainingEvents(),
+                youthTraining.getNonSubsidizableSchoolTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.collegeTrainings"),
                 youthTraining.getCollegeTrainingEvents(),
                 youthTraining.getCollegeTrainingParticipants(),
+                youthTraining.getNonSubsidizableCollegeTrainingEvents(),
+                youthTraining.getNonSubsidizableCollegeTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.otherYouthTargetedTrainings"),
                 youthTraining.getOtherYouthTargetedTrainingEvents(),
                 youthTraining.getOtherYouthTargetedTrainingParticipants(),
+                youthTraining.getNonSubsidizableOtherYouthTargetedTrainingEvents(),
+                youthTraining.getNonSubsidizableOtherYouthTargetedTrainingParticipants(),
                 trainingList);
 
         final JHTTrainingStatistics jhtTraining = dto.getAnnualStatistics().getJhtTraining();
         addIfEvent(localiser.getTranslation("RhyAnnualReport.shootingTestTrainings"),
                 jhtTraining.getShootingTestTrainingEvents(),
                 jhtTraining.getShootingTestTrainingParticipants(),
+                jhtTraining.getNonSubsidizableShootingTestTrainingEvents(),
+                jhtTraining.getNonSubsidizableShootingTestTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.hunterExamOfficialTrainings"),
                 jhtTraining.getHunterExamOfficialTrainingEvents(),
                 jhtTraining.getHunterExamOfficialTrainingParticipants(),
+                jhtTraining.getNonSubsidizableHunterExamOfficialTrainingEvents(),
+                jhtTraining.getNonSubsidizableHunterExamOfficialTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.gameDamageTrainings"),
                 jhtTraining.getGameDamageTrainingEvents(),
                 jhtTraining.getGameDamageTrainingParticipants(),
+                jhtTraining.getNonSubsidizableGameDamageTrainingEvents(),
+                jhtTraining.getNonSubsidizableGameDamageTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.huntingControlTrainings"),
                 jhtTraining.getHuntingControlTrainingEvents(),
                 jhtTraining.getHuntingControlTrainingParticipants(),
+                jhtTraining.getNonSubsidizableHuntingControlTrainingEvents(),
+                jhtTraining.getNonSubsidizableHuntingControlTrainingParticipants(),
                 trainingList);
 
         final OtherHunterTrainingStatistics otherHunterTraining = dto.getAnnualStatistics().getOtherHunterTraining();
         addIfEvent(localiser.getTranslation("RhyAnnualReport.smallCarnivoreHuntingTrainings"),
                 otherHunterTraining.getSmallCarnivoreHuntingTrainingEvents(),
                 otherHunterTraining.getSmallCarnivoreHuntingTrainingParticipants(),
+                otherHunterTraining.getNonSubsidizableSmallCarnivoreHuntingTrainingEvents(),
+                otherHunterTraining.getNonSubsidizableSmallCarnivoreHuntingTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.gameCountingTrainings"),
                 otherHunterTraining.getGameCountingTrainingEvents(),
                 otherHunterTraining.getGameCountingTrainingParticipants(),
+                otherHunterTraining.getNonSubsidizableGameCountingTrainingEvents(),
+                otherHunterTraining.getNonSubsidizableGameCountingTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.gamePopulationManagementTrainingEvents"),
                 otherHunterTraining.getGamePopulationManagementTrainingEvents(),
                 otherHunterTraining.getGamePopulationManagementTrainingParticipants(),
+                otherHunterTraining.getNonSubsidizableGamePopulationManagementTrainingEvents(),
+                otherHunterTraining.getNonSubsidizableGamePopulationManagementTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.gameEnvironmentalCareTrainings"),
                 otherHunterTraining.getGameEnvironmentalCareTrainingEvents(),
                 otherHunterTraining.getGameEnvironmentalCareTrainingParticipants(),
+                otherHunterTraining.getNonSubsidizableGameEnvironmentalCareTrainingEvents(),
+                otherHunterTraining.getNonSubsidizableGameEnvironmentalCareTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.otherGamekeepingTrainings"),
                 otherHunterTraining.getOtherGamekeepingTrainingEvents(),
                 otherHunterTraining.getOtherGamekeepingTrainingParticipants(),
+                otherHunterTraining.getNonSubsidizableOtherGamekeepingTrainingEvents(),
+                otherHunterTraining.getNonSubsidizableOtherGamekeepingTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.shootingTrainingEvents"),
                 otherHunterTraining.getShootingTrainingEvents(),
                 otherHunterTraining.getShootingTrainingParticipants(),
+                otherHunterTraining.getNonSubsidizableShootingTrainingEvents(),
+                otherHunterTraining.getNonSubsidizableShootingTrainingParticipants(),
                 trainingList);
         addIfEvent(localiser.getTranslation("RhyAnnualReport.trackerTrainingEvents"),
                 otherHunterTraining.getTrackerTrainingEvents(),
                 otherHunterTraining.getTrackerTrainingParticipants(),
+                otherHunterTraining.getNonSubsidizableTrackerTrainingEvents(),
+                otherHunterTraining.getNonSubsidizableTrackerTrainingParticipants(),
                 trainingList);
 
         return trainingList;

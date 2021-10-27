@@ -122,9 +122,13 @@ angular.module('app.harvestpermit.management.panels', [])
             permit: '<',
             lastModifier: '<'
         },
-        controller: function ($state, NotificationService) {
+        controller: function ($state, NotificationService, PermitTypes, EndOfPermitPeriodReportModal) {
 
             var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.showEndOfPermitPeriodPanel = $ctrl.permit.permitTypeCode === PermitTypes.GAME_MANAGEMENT;
+            };
 
             $ctrl.reportUsage = function () {
                 var currentState = $state.current;
@@ -133,6 +137,12 @@ angular.module('app.harvestpermit.management.panels', [])
                 }).catch(function () {
                     $state.go(currentState.name, currentState.params);
                     NotificationService.showDefaultFailure();
+                });
+            };
+
+            $ctrl.showEndOfPermitPeriodReport = function () {
+                EndOfPermitPeriodReportModal.openModal($ctrl.permit.id).finally(function () {
+                    $state.reload();
                 });
             };
 

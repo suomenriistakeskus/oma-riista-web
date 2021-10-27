@@ -1,6 +1,5 @@
 package fi.riista.feature.huntingclub.hunting;
 
-import fi.riista.feature.account.pilot.DeerPilotRepository;
 import fi.riista.feature.gamediary.GameDiaryEntryDTO;
 import fi.riista.feature.gamediary.HasHuntingDayId;
 import fi.riista.feature.gamediary.HuntingDiaryEntryDTO;
@@ -10,7 +9,6 @@ import fi.riista.feature.gamediary.harvest.HarvestDTOTransformer;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.observation.Observation;
-import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationDTO;
 import fi.riista.feature.gamediary.observation.ObservationDTOTransformer;
 import fi.riista.feature.gamediary.observation.ObservationRepository;
@@ -42,10 +40,6 @@ public class GroupHuntingDiaryService {
     @Resource
     private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
 
-    // TODO: To be removed after deer pilot
-    @Resource
-    private DeerPilotRepository deerPilotRepository;
-
     @Resource
     private HarvestDTOTransformer harvestTransformer;
 
@@ -57,37 +51,34 @@ public class GroupHuntingDiaryService {
         final Interval interval = DateUtil.huntingYearInterval(group.getHuntingYear());
         final List<Harvest> groupHarvest = harvestRepository.findGroupHarvest(group, interval);
 
-        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED
-                // TODO Remove this when deer pilot 2020 is over.
-                .revertIfNotOnDeerPilot(isDeerPilotGroup(group));
+        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED;
 
-        return filterResult(group, harvestTransformer.apply(groupHarvest, specVersion));
+        return filterGroupHuntingResult(group, harvestTransformer.apply(groupHarvest, specVersion));
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public List<ObservationDTO> getObservationsOfGroupMembers(HuntingClubGroup group) {
         final Interval interval = DateUtil.huntingYearInterval(group.getHuntingYear());
-        final List<Observation> groupObservations = getObservations(group, interval);
+        final List<Observation> groupObservations = getGroupObservations(group, interval);
 
-        return filterResult(group, observationTransformer.apply(groupObservations));
+        return filterGroupHuntingResult(group, observationTransformer.apply(groupObservations));
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public List<HuntingDiaryEntryDTO> getDiaryOfGroupMembers(HuntingClubGroup group) {
         final Interval interval = DateUtil.huntingYearInterval(group.getHuntingYear());
         final List<Harvest> groupHarvest = harvestRepository.findGroupHarvest(group, interval);
-        final List<Observation> groupObservations = getObservations(group, interval);
+        final List<Observation> groupObservations = getGroupObservations(group, interval);
 
-        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED
-                // TODO Remove this when deer pilot 2020 is over.
-                .revertIfNotOnDeerPilot(isDeerPilotGroup(group));
+        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED;
 
         return F.concat(
-                filterResult(group, harvestTransformer.apply(groupHarvest, specVersion)),
-                filterResult(group, observationTransformer.apply(groupObservations)));
+                filterGroupHuntingResult(group, harvestTransformer.apply(groupHarvest, specVersion)),
+                filterGroupHuntingResult(group, observationTransformer.apply(groupObservations)));
     }
 
-    private <T extends GameDiaryEntryDTO & HasHuntingDayId> List<T> filterResult(
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public <T extends GameDiaryEntryDTO & HasHuntingDayId> List<T> filterGroupHuntingResult(
             final HuntingClubGroup huntingClubGroup, final List<T> input) {
 
         if (huntingClubGroup.getHarvestPermit() == null) {
@@ -101,16 +92,13 @@ public class GroupHuntingDiaryService {
                 .orElseGet(Collections::emptyList);
     }
 
-    private List<Observation> getObservations(HuntingClubGroup group, Interval interval) {
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public List<Observation> getGroupObservations(HuntingClubGroup group, Interval interval) {
         if (group.getSpecies().isMoose()) {
-            return observationRepository.findGroupObservations(group, ObservationCategory.MOOSE_HUNTING, interval);
-        } else if (group.getSpecies().isWhiteTailedDeer() && isDeerPilotGroup(group)) {
-            return observationRepository.findGroupObservations(group, ObservationCategory.DEER_HUNTING, interval);
+            return observationRepository.findGroupObservationsWithinMooseHunting(group, interval);
+        } else if (group.getSpecies().isWhiteTailedDeer()) {
+            return observationRepository.findGroupObservationsWithinDeerHunting(group);
         }
         return Collections.emptyList();
-    }
-
-    private boolean isDeerPilotGroup(final HuntingClubGroup group) {
-        return deerPilotRepository.isPilotGroup(group.getId());
     }
 }

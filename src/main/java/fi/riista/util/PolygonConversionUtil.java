@@ -5,12 +5,14 @@ import org.geojson.Geometry;
 import org.geojson.GeometryCollection;
 import org.geojson.LngLatAlt;
 import org.geojson.MultiPolygon;
+import org.geojson.Point;
 import org.geojson.Polygon;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.LinearRing;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -67,8 +69,9 @@ public class PolygonConversionUtil {
             return javaPolygonToGeoJson(org.locationtech.jts.geom.Polygon.class.cast(geometry));
         } else if (geometry instanceof org.locationtech.jts.geom.GeometryCollection) {
             return javaGeometryCollectionToGeoJson(org.locationtech.jts.geom.GeometryCollection.class.cast(geometry));
-        } else if (geometry instanceof org.locationtech.jts.geom.LineString ||
-                geometry instanceof org.locationtech.jts.geom.Point) {
+        } else if (geometry instanceof org.locationtech.jts.geom.Point) {
+            return javaPointToGeoJson(org.locationtech.jts.geom.Point.class.cast(geometry));
+        } else if (geometry instanceof org.locationtech.jts.geom.LineString) {
             // TODO: Not required right now...
             return null;
         }
@@ -168,6 +171,13 @@ public class PolygonConversionUtil {
         }
 
         return polygon;
+    }
+
+    private static Point javaPointToGeoJson(final org.locationtech.jts.geom.Point geomPoint) {
+        final List<LngLatAlt> coordinates = Arrays.stream(geomPoint.getCoordinates())
+                .map(c -> new LngLatAlt(c.getOrdinate(Coordinate.X), c.getOrdinate(Coordinate.Y)))
+                .collect(toList());
+        return new Point(coordinates.get(0));
     }
 
     // Java: MultiPolygon

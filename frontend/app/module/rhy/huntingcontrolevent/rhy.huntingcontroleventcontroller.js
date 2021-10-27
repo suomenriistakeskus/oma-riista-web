@@ -23,7 +23,7 @@ angular.module('app.rhy.huntingcontrolevent', [])
     })
     .controller('HuntingControlEventListController',
         function ($scope, $uibModal, Helpers, NotificationService, TranslatedSpecies, Species,
-                  ActiveRoleService, HuntingControlEvents, rhy, events, availableYears) {
+                  ActiveRoleService, FetchAndSaveBlob, HuntingControlEvents, rhy, events, availableYears) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
@@ -116,7 +116,16 @@ angular.module('app.rhy.huntingcontrolevent', [])
                     controllerAs: '$ctrl'
                 }).result.then($ctrl.onSuccess, $ctrl.onFailure);
             };
-    })
+
+            $ctrl.exportToExcel = function () {
+                FetchAndSaveBlob.post('/api/v1/riistanhoitoyhdistys/' + $ctrl.rhy.id +
+                    '/huntingcontrolevents/excel/' + $ctrl.calendarYear);
+            };
+
+            $ctrl.exportAllToExcel = function () {
+                FetchAndSaveBlob.post('/api/v1/riistanhoitoyhdistys/huntingcontrolevents/excel/all/' + $ctrl.calendarYear);
+            };
+        })
     .controller('HuntingControlEventFormController',
         function ($scope, $uibModalInstance, $timeout, $translate,
                   Helpers, MapBounds, MapDefaults, GIS, MapUtil, dialogs,

@@ -250,7 +250,7 @@ public final class DateUtil {
                 rangeFrom(begin2, end2));
     }
 
-    private static <T extends Comparable<? super T>> Range<T> rangeFrom(@Nullable final T begin,
+    public static <T extends Comparable<? super T>> Range<T> rangeFrom(@Nullable final T begin,
                                                                         @Nullable final T end) {
         if (begin == null) {
             return end == null ? Range.all() : Range.atMost(end);

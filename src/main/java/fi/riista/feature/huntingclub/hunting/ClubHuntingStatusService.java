@@ -3,6 +3,7 @@ package fi.riista.feature.huntingclub.hunting;
 import com.google.common.collect.Sets;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.harvestpermit.HarvestPermitLockedByDateService;
 import fi.riista.feature.huntingclub.HuntingClub;
@@ -70,13 +71,15 @@ public class ClubHuntingStatusService {
             result.setCanEditHuntingDay(true);
             result.setCanEditDiaryEntry(true);
 
-            if (group.getSpecies().isMoose()) {
+            final GameSpecies species = group.getSpecies();
+
+            if (species.isMoose()) {
                 result.setCanEditPermit(!groupHuntingDayRepository.groupHasHuntingDays(group));
                 result.setCanCreateObservation(true);
                 result.setCanCreateHuntingDay(true);
-
-            } else if (!groupHasDiaryEntriesLinkedToHuntingDay(group)) {
-                result.setCanEditPermit(true);
+            } else {
+                result.setCanEditHuntingDay(false);
+                result.setCanEditPermit(!groupHasDiaryEntriesLinkedToHuntingDay(group));
             }
         }
 

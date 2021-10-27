@@ -120,7 +120,7 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
         helper.appendHeaderRow(concatAndTranslate(getCommonHeaders(), "observationType", "amount",
                 "mooselikeMaleAmount", "mooselikeFemaleAmount", "mooselikeFemale1CalfAmount",
                 "mooselikeFemale2CalfsAmount", "mooselikeFemale3CalfsAmount", "mooselikeFemale4CalfsAmount",
-                "mooselikeUnknownSpecimenAmount", "gender", "age", "gameMarking", "observedGameState"));
+                "mooselikeCalfAmount", "mooselikeUnknownSpecimenAmount", "gender", "age", "gameMarking", "observedGameState"));
 
         for (ObservationDTO observation : observations) {
             final List<ObservationSpecimenDTO> specimens = observation.getSpecimens();
@@ -159,6 +159,7 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
                 .appendNumberCell(observation.getMooselikeFemale2CalfsAmount())
                 .appendNumberCell(observation.getMooselikeFemale3CalfsAmount())
                 .appendNumberCell(observation.getMooselikeFemale4CalfsAmount())
+                .appendNumberCell(observation.getMooselikeCalfAmount())
                 .appendNumberCell(observation.getMooselikeUnknownSpecimenAmount());
     }
 

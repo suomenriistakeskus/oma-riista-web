@@ -73,7 +73,7 @@ public abstract class AbstractCrudFeature<ID extends Serializable, E extends Bas
         } catch (InstantiationException e) {
             throw new RuntimeException("Could not create entity", e);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("Could access constructor", e);
+            throw new RuntimeException("Could not access constructor", e);
         }
     }
 

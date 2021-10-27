@@ -10,9 +10,14 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static java.util.Objects.requireNonNull;
 
 @Component
 @Transactional(propagation = Propagation.MANDATORY)
@@ -96,6 +101,16 @@ public class PersonLookupService {
                 .filter(Validators::isValidHunterNumber)
                 .flatMap(personRepository::findByHunterNumber)
                 .filter(person -> validatePerson(person, isForeignPersonEligible));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Person> findByHunterNumberIn(@Nonnull final List<String> hunterNumbers,
+                                             final boolean isForeignPersonEligible) {
+        requireNonNull(hunterNumbers);
+
+        return personRepository.findAllByHunterNumberIn(hunterNumbers).stream()
+                .filter(person -> validatePerson(person, isForeignPersonEligible))
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)

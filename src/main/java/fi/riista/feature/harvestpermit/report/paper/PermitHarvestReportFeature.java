@@ -2,6 +2,8 @@ package fi.riista.feature.harvestpermit.report.paper;
 
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gamediary.GameSpeciesService;
+import fi.riista.feature.permit.PermitTypeCode;
+import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmountRepository;
@@ -41,7 +43,12 @@ public class PermitHarvestReportFeature {
         final PermitHarvestReportModel model = PermitHarvestReportModel.create(permitDecision, speciesAmountList);
         final PermitHarvestReportI18n i18n = new PermitHarvestReportI18n(nameIndex, permitDecision.getLocale());
 
-        switch (permitDecision.getPermitTypeCode()) {
+        // Deduce through application in order to resolve original type in case of forbidden methods
+        final HarvestPermitApplication application = permitDecision.getApplication();
+        final String permitTypeCode = PermitTypeCode.getPermitTypeCode(
+                application.getHarvestPermitCategory(), application.getValidityYears());
+
+        switch (permitTypeCode) {
             case FOWL_AND_UNPROTECTED_BIRD:
             case ANNUAL_UNPROTECTED_BIRD: {
                 return PermitHarvestReportPdf.create(BirdHarvestReportPdfBuilder.getPdf(model, i18n));

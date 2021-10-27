@@ -1,5 +1,6 @@
 package fi.riista.feature.common.decision.nomination;
 
+import fi.riista.api.decision.nomination.NominationDecisionHandlingStatisticsDTO;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.common.decision.DecisionHandlerDTO;
@@ -72,4 +73,9 @@ public class NominationDecisionFeature {
         decision.setHandler(null);
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_MODERATOR')")
+    @Transactional(readOnly = true)
+    public List<NominationDecisionHandlingStatisticsDTO> getStatistics(final int year) {
+        return nominationDecisionRepository.getStatistics(year);
+    }
 }

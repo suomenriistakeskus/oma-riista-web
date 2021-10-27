@@ -10,9 +10,6 @@ angular.module('app.harvestpermit.decision.reference', [])
                 controller: ModalController,
                 resolve: {
                     decision: _.constant(decision),
-                    availableSpecies: function (MooselikeSpecies) {
-                        return MooselikeSpecies.getPermitBased();
-                    },
                     handlers: function (HarvestPermitApplications) {
                         return HarvestPermitApplications.listHandlers().$promise;
                     }
@@ -27,14 +24,14 @@ angular.module('app.harvestpermit.decision.reference', [])
             });
         };
 
-        function ModalController($uibModalInstance, HuntingYearService, ApplicationStatusList, PermitDecision,
-                                 PermitCategories, DecisionGrantStatus,
-                                 decision, availableSpecies, handlers) {
+        function ModalController($uibModalInstance, HuntingYearService, ApplicationStatusList, DerogationReasonType, PermitDecision,
+                                 PermitCategories, DecisionGrantStatus, HarvestPermitApplications,
+                                 decision, handlers) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
                 $ctrl.statusList = ApplicationStatusList.decision();
-                $ctrl.availableSpecies = availableSpecies;
+                $ctrl.availableSpecies = [];
                 $ctrl.handlers = handlers;
                 $ctrl.permitCategoryList = _.map(PermitCategories, function (category) {
                     return {
@@ -42,10 +39,13 @@ angular.module('app.harvestpermit.decision.reference', [])
                         translationKey: 'harvestpermit.wizard.summary.permitCategory.' + category
                     };
                 });
+                $ctrl.languages = ['fi', 'sv'];
                 $ctrl.grantStatusList = DecisionGrantStatus;
+                $ctrl.derogationReasonList = DerogationReasonType;
                 $ctrl.filters = {
                     harvestPermitCategory: decision.harvestPermitCategory
                 };
+                reloadAvailableSpecies(decision.harvestPermitCategory);
 
                 var beginYear = 2018;
                 var endYear = new Date().getFullYear();
@@ -56,6 +56,17 @@ angular.module('app.harvestpermit.decision.reference', [])
                 });
 
                 $ctrl.previewEnabledId = null;
+
+                $ctrl.onPermitCategoryChange = function () {
+                    reloadAvailableSpecies($ctrl.filters.harvestPermitCategory);
+                };
+
+                function reloadAvailableSpecies(harvestPermitCategory) {
+                    HarvestPermitApplications.listSpecies({permitCategory: harvestPermitCategory}).$promise
+                        .then(function (res) {
+                            $ctrl.availableSpecies = res;
+                        });
+                }
             };
 
             $ctrl.loadPage = function (page) {
@@ -71,11 +82,13 @@ angular.module('app.harvestpermit.decision.reference', [])
                     // optional
                     gameSpeciesCode: f.gameSpeciesCode,
                     harvestPermitCategory: f.harvestPermitCategory === 'ALL' ? null : f.harvestPermitCategory,
+                    decisionLocale: $ctrl.filters.decisionLocale,
                     rhyOfficialCode: f.rhyOfficialCode,
                     rkaOfficialCode: f.rkaOfficialCode,
                     applicationNumber: f.applicationNumber,
                     handlerId: f.handlerId,
-                    grantStatus: f.grantStatus ? [f.grantStatus] : null
+                    grantStatus: f.grantStatus ? [f.grantStatus] : null,
+                    derogationReason: f.derogationReason ? [f.derogationReason] : null
 
                 }).$promise.then(function (res) {
                     $ctrl.results = res;

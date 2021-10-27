@@ -1,6 +1,5 @@
 package fi.riista.feature.harvestpermit;
 
-import fi.riista.feature.account.pilot.DeerPilotService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.CommitHookService;
@@ -44,9 +43,6 @@ public class HarvestPermitAcceptHarvestFeature {
     @Resource
     private CommitHookService commitHookService;
 
-    @Resource
-    private DeerPilotService deerPilotService;
-
     @Transactional
     public void changeAcceptedToPermit(@Nonnull HarvestPermitAcceptHarvestDTO dto) {
         Objects.requireNonNull(dto);
@@ -89,7 +85,7 @@ public class HarvestPermitAcceptHarvestFeature {
                 throw new HarvestReportExistsException(harvest);
             }
 
-            validateHarvestFieldsForReporting(harvest, deerPilotService.isPilotUser(harvest.getAuthor()));
+            validateHarvestFieldsForReporting(harvest);
 
             final SystemUser activeUser = activeUserService.requireActiveUser();
             harvest.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
@@ -112,7 +108,7 @@ public class HarvestPermitAcceptHarvestFeature {
     }
 
     // Fields must be validated again because editing from mobile might cause inconsistencies
-    private static void validateHarvestFieldsForReporting(final Harvest harvest, final boolean deerPilotUser) {
+    private static void validateHarvestFieldsForReporting(final Harvest harvest) {
         final int huntingYear = DateUtil.huntingYearContaining(harvest.getPointOfTimeAsLocalDate());
         final int gameSpeciesCode = harvest.getSpecies().getOfficialCode();
         final HarvestReportingType reportingType = HarvestReportingType.PERMIT;
@@ -124,21 +120,17 @@ public class HarvestPermitAcceptHarvestFeature {
                 .orElse(false);
 
         final RequiredHarvestFields.Report reportFieldRequirements = RequiredHarvestFields
-                .getFormFields(huntingYear, gameSpeciesCode, reportingType, legallyMandatoryFieldsOnly, deerPilotUser);
-
-        // TODO `overrideSpecVersion` will be removed when deer pilot 2020 is over.
-        final HarvestSpecVersion overrideSpecVersion =
-                HarvestSpecVersion.CURRENTLY_SUPPORTED.revertIfNotOnDeerPilot(deerPilotUser);
+                .getFormFields(huntingYear, gameSpeciesCode, reportingType, legallyMandatoryFieldsOnly);
 
         final RequiredHarvestFields.Specimen specimenFieldRequirements = RequiredHarvestFields.getSpecimenFields(
                 huntingYear, gameSpeciesCode, harvest.getHuntingMethod(), reportingType, legallyMandatoryFieldsOnly,
-                overrideSpecVersion);
+                HarvestSpecVersion.CURRENTLY_SUPPORTED);
 
         new HarvestFieldValidator(reportFieldRequirements, harvest).validateAll().throwOnErrors();
 
         for (HarvestSpecimen harvestSpecimen : harvest.getSortedSpecimens()) {
             new HarvestSpecimenValidator(specimenFieldRequirements, harvestSpecimen, gameSpeciesCode,
-                    associatedWithHuntingDay, legallyMandatoryFieldsOnly)
+                    associatedWithHuntingDay)
                     .validateAll()
                     .throwOnErrors();
         }

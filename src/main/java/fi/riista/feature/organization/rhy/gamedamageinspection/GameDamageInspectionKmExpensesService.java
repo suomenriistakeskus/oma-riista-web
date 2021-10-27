@@ -29,7 +29,10 @@ public class GameDamageInspectionKmExpensesService {
     public void updateGameDamageInspectionKmExpenses(final GameDamageInspectionEvent event,
                                                      final List<GameDamageInspectionKmExpenseDTO> expenses) {
         deleteGameDamageInspectionKmExpenses(event);
-        addGameDamageInspectionKmExpenses(event, expenses);
+
+        if (expenses != null) {
+            addGameDamageInspectionKmExpenses(event, expenses);
+        }
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)

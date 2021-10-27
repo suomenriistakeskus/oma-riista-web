@@ -58,7 +58,7 @@ public interface MobileHarvestDTOBuilderFactory extends ValueGeneratorMixin {
                 .withGameSpeciesCode(species.getOfficialCode());
     }
 
-    class Builder extends MobileHarvestDTO.Builder<Builder> {
+    class Builder extends MobileHarvestDTO.Builder<MobileHarvestDTO, Builder> {
 
         private final ValueGeneratorMixin values;
 
@@ -105,6 +105,11 @@ public interface MobileHarvestDTOBuilderFactory extends ValueGeneratorMixin {
                     dto.getHarvestSpecVersion(),
                     DateUtil.huntingYearContaining(dto.getPointOfTime().toLocalDate()),
                     values.getNumberGenerator());
+        }
+
+        @Override
+        protected MobileHarvestDTO createDTO() {
+            return new MobileHarvestDTO();
         }
     }
 }

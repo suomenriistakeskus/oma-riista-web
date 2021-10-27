@@ -67,6 +67,8 @@ public class HarvestPermitSearchExcelView extends AbstractXlsxView {
                 "state",
                 "validity",
                 "rka",
+                "latitude",
+                "longitude",
                 "contactName",
                 "contactHunterNumber",
                 "contactEmail",
@@ -76,18 +78,20 @@ public class HarvestPermitSearchExcelView extends AbstractXlsxView {
         }));
 
         permits.forEach(permit -> helper.appendRow()
-                    .appendTextCell(permit.getPermitNumber())
-                    .appendTextCell(permit.getPermitType())
-                    .appendWrappedTextCell(String.join(",\n", F.mapNonNullsToList(permit.getSpeciesAmounts(), this::formatSpeciesAmounts)))
-                    .appendTextCell(permit.getHarvestReportState() == null ? i18n("reportStateEmpty"): localiser.getTranslation(permit.getHarvestReportState()))
-                    .appendTextCell(localiser.getTranslation(permit.getValidity()))
-                    .appendTextCell(localiser.getTranslation(permit.getRka()))
-                    .appendWrappedTextCell(String.join(",\n", F.mapNonNullsToList(permit.getContacts(), HarvestPermitSearchExportDTO.ContactPersonDTO::getFullName)))
-                    .appendWrappedTextCell(String.join(",\n", F.mapNonNullsToList(permit.getContacts(), HarvestPermitSearchExportDTO.ContactPersonDTO::getHunterNumber)))
-                    .appendWrappedTextCell(String.join(",\n", F.mapNonNullsToList(permit.getContacts(), HarvestPermitSearchExportDTO.ContactPersonDTO::getEmail)))
-                    .appendWrappedTextCell(String.join(",\n", F.mapNonNullsToList(permit.getContacts(), HarvestPermitSearchExportDTO.ContactPersonDTO::getPhoneNumber)))
-                    .appendTextCell(permit.getPermitHolderName())
-                    .appendTextCell(translateHolderType(permit.getPermitHolderType())));
+                .appendTextCell(permit.getPermitNumber())
+                .appendTextCell(permit.getPermitType())
+                .appendWrappedTextCell(String.join(",\n", F.mapNonNullsToList(permit.getSpeciesAmounts(), this::formatSpeciesAmounts)))
+                .appendTextCell(permit.getHarvestReportState() == null ? i18n("reportStateEmpty"): localiser.getTranslation(permit.getHarvestReportState()))
+                .appendTextCell(localiser.getTranslation(permit.getValidity()))
+                .appendTextCell(localiser.getTranslation(permit.getRka()))
+                .appendNumberCell(permit.getLatitude())
+                .appendNumberCell(permit.getLongitude())
+                .appendWrappedTextCell(String.join(",\n", F.mapNonNullsToList(permit.getContacts(), HarvestPermitSearchExportDTO.ContactPersonDTO::getFullName)))
+                .appendWrappedTextCell(String.join(",\n", F.mapNonNullsToList(permit.getContacts(), HarvestPermitSearchExportDTO.ContactPersonDTO::getHunterNumber)))
+                .appendWrappedTextCell(String.join(",\n", F.mapNonNullsToList(permit.getContacts(), HarvestPermitSearchExportDTO.ContactPersonDTO::getEmail)))
+                .appendWrappedTextCell(String.join(",\n", F.mapNonNullsToList(permit.getContacts(), HarvestPermitSearchExportDTO.ContactPersonDTO::getPhoneNumber)))
+                .appendTextCell(permit.getPermitHolderName())
+                .appendTextCell(translateHolderType(permit.getPermitHolderType())));
         helper.autoSizeColumns();
     }
 

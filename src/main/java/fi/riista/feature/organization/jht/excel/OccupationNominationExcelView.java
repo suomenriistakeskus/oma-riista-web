@@ -10,6 +10,7 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
 import fi.riista.util.Locales;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.joda.time.LocalDate;
 import org.springframework.context.MessageSource;
 import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
@@ -25,6 +26,7 @@ public class OccupationNominationExcelView extends AbstractXlsxView {
             "RHY-koodi",
             "RHY",
             "Tehtävä",
+            "Viimeisin koulutuspvm.",
             "Status",
             "Esityspäivä",
             "Päätöspäivä",
@@ -45,12 +47,13 @@ public class OccupationNominationExcelView extends AbstractXlsxView {
             "JVF-nummer",
             "JVF",
             "Uppdrag",
+            "Datum för senaste utbildning",
             "Status",
-            "Esityspäivä",
-            "Päätöspäivä",
-            "Käsittelijä",
-            "Tehtävän alkupvm.",
-            "Tehtävän loppupvm.",
+            "Datum för förslag",
+            "Datum för beslut",
+            "Handläggare",
+            "Startdatum för uppgiften",
+            "Slutdatum för uppgiften",
             "Efternamn",
             "Förnamn",
             "E-Postadress",
@@ -62,15 +65,18 @@ public class OccupationNominationExcelView extends AbstractXlsxView {
     };
 
     private final List<OccupationNominationDTO> results;
+    private final Map<Long, LocalDate> lastTrainingDatesByPersonId;
     private final OccupationNominationSearchDTO searchDTO;
     private final EnumLocaliser localiser;
     private final boolean isSwedish;
 
     public OccupationNominationExcelView(final List<OccupationNominationDTO> results,
+                                         final Map<Long, LocalDate> lastTrainingDatesByPersonId,
                                          final OccupationNominationSearchDTO dto,
                                          final MessageSource messageSource,
                                          final Locale locale) {
         this.results = results;
+        this.lastTrainingDatesByPersonId = lastTrainingDatesByPersonId;
         this.searchDTO = dto;
         this.localiser = new EnumLocaliser(messageSource, locale);
         this.isSwedish = Locales.isSwedish(locale);
@@ -98,8 +104,9 @@ public class OccupationNominationExcelView extends AbstractXlsxView {
         for (final OccupationNominationDTO result : this.results) {
             helper.appendRow()
                     .appendTextCell(result.getRhy().getOfficialCode())
-                    .appendTextCell(result.getRhy().getNameFI())
+                    .appendTextCell(this.isSwedish ? result.getRhy().getNameSV() : result.getRhy().getNameFI())
                     .appendTextCell(localiser.getTranslation(result.getOccupationType()))
+                    .appendDateCell(getLastTrainingDate(result.getPerson()))
                     .appendTextCell(localiser.getTranslation(result.getNominationStatus()))
                     .appendDateCell(result.getNominationDate())
                     .appendDateCell(result.getDecisionDate())
@@ -132,5 +139,9 @@ public class OccupationNominationExcelView extends AbstractXlsxView {
         }
 
         helper.autoSizeColumns();
+    }
+
+    private LocalDate getLastTrainingDate(final OccupationNominationDTO.PersonDTO personDTO) {
+        return lastTrainingDatesByPersonId.get(personDTO.getId());
     }
 }

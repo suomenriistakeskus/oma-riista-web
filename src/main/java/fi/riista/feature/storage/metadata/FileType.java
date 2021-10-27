@@ -20,7 +20,8 @@ public enum FileType {
     IMAGE_UPLOAD(StorageType.AWS_S3_BUCKET),
     MOOSE_DATA_CARD(StorageType.AWS_S3_BUCKET),
     SHOOTING_TEST_EXPORT(StorageType.AWS_S3_BUCKET),
-    HUNTING_CONTROL_ATTACHMENT(StorageType.AWS_S3_BUCKET);
+    HUNTING_CONTROL_ATTACHMENT(StorageType.AWS_S3_BUCKET),
+    OTHERWISE_DECEASED_ATTACHMENT(StorageType.AWS_S3_BUCKET);
 
     private final StorageType storageType;
 
@@ -90,6 +91,9 @@ public enum FileType {
 
             case HUNTING_CONTROL_ATTACHMENT:
                 return "huntingcontrolattachment/" + formatFilename(metadata);
+
+            case OTHERWISE_DECEASED_ATTACHMENT:
+                return "otherwisedeceasedattachment/" + formatFilename(metadata);
 
             default:
                 return formatFilename(metadata);

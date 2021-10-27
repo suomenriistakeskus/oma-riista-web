@@ -103,7 +103,7 @@ angular.module('app.common.species', ['ngResource'])
 
         this.getMammalPermitSpecies = function () {
             return _.filter(speciesList, function (v) {
-                return v.category === 'GAME_MAMMAL';
+                return v.category === 'GAME_MAMMAL' && _.indexOf(alienSpecies, v.code) === -1;
             });
         };
 
@@ -128,6 +128,12 @@ angular.module('app.common.species', ['ngResource'])
         this.getLawSectionTenPermitSpecies = function () {
             return _.filter(speciesList, function (v) {
                 return v.code === 200555 || v.code === 27048 || v.code === 48251;
+            });
+        };
+
+        this.getPermitSpeciesWithoutAlienSpecies = function () {
+            return _.filter(speciesList, function (v) {
+                return _.indexOf(alienSpecies, v.code) === -1;
             });
         };
 
@@ -298,11 +304,10 @@ angular.module('app.common.species', ['ngResource'])
             return gameSpeciesCode === RINGED_SEAL;
         };
 
-        // TODO Remove `isDeerPilotUser` parameter when deer pilot 2020 is over.
-        self.isSpeciesHavingExtendedFields = function (gameSpeciesCode, isDeerPilotUser) {
+        self.isSpeciesHavingExtendedFields = function (gameSpeciesCode) {
             var huntingYear = HuntingYearService.getCurrent();
 
-            if (huntingYear < 2020 || !isDeerPilotUser) {
+            if (huntingYear < 2020) {
                 return self.isPermitBasedMooselike(gameSpeciesCode);
             }
 

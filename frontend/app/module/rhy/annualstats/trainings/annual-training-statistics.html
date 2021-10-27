@@ -1,32 +1,61 @@
+<div class="row rhy-training-filter-selection">
+    <div class="col-md-6 col-sm-8 col-xs-12">
+        <uib-tabset type="pills" active="$ctrl.activeFilter" justified=false>
+            <uib-tab index="0" select="$ctrl.onTabSelected(0)">
+                <uib-tab-heading>
+                    <span translate="rhy.annualStats.trainings.filterMode.ALL"></span>
+                </uib-tab-heading>
+            </uib-tab>
+            <uib-tab index="1" select="$ctrl.onTabSelected(1)">
+                <uib-tab-heading>
+                    <span translate="rhy.annualStats.trainings.filterMode.SUBSIDIZED"></span>
+                </uib-tab-heading>
+            </uib-tab>
+            <uib-tab index="2" select="$ctrl.onTabSelected(2)">
+                <uib-tab-heading>
+                    <span translate="rhy.annualStats.trainings.filterMode.OTHER"></span>
+                </uib-tab-heading>
+            </uib-tab>
+        </uib-tabset>
+    </div>
+</div>
+
 <div class="r-annual-statistics-panel row">
     <div class="col-sm-6">
-        <show-training-statistics-overview statistics="::$ctrl.statistics"></show-training-statistics-overview>
+        <show-training-statistics-overview statistics="::$ctrl.statistics"
+                                           filter-mode="$ctrl.filterMode">
+        </show-training-statistics-overview>
 
         <show-hunter-exam-training-statistics hunter-exam-training="::$ctrl.statistics.hunterExamTraining"
                                               editable="::$ctrl.isEditable"
-                                              open-edit-dialog="$ctrl.editHunterExamTraining()">
+                                              open-edit-dialog="$ctrl.editHunterExamTraining()"
+                                              filter-mode="$ctrl.filterMode">
         </show-hunter-exam-training-statistics>
 
         <show-hunter-training-statistics hunter-training="::$ctrl.statistics.hunterTraining"
                                          editable="::$ctrl.isEditable"
-                                         open-edit-dialog="$ctrl.editHunterTraining(trainingTypes)">
+                                         open-edit-dialog="$ctrl.editHunterTraining(trainingTypes)"
+                                         filter-mode="$ctrl.filterMode">
         </show-hunter-training-statistics>
 
         <show-youth-training-statistics youth-training="::$ctrl.statistics.youthTraining"
-                                         editable="::$ctrl.isEditable"
-                                         open-edit-dialog="$ctrl.editYouthTraining(trainingTypes)">
+                                        editable="::$ctrl.isEditable"
+                                        open-edit-dialog="$ctrl.editYouthTraining(trainingTypes)"
+                                        filter-mode="$ctrl.filterMode">
         </show-youth-training-statistics>
     </div>
 
     <div class="col-sm-6">
         <show-jht-training-statistics jht-training="::$ctrl.statistics.jhtTraining"
                                       editable="::$ctrl.isEditable"
-                                      open-edit-dialog="$ctrl.editJhtTraining(trainingTypes)">
+                                      open-edit-dialog="$ctrl.editJhtTraining(trainingTypes)"
+                                      filter-mode="$ctrl.filterMode">
         </show-jht-training-statistics>
 
         <show-other-hunter-training-statistics other-hunter-training="::$ctrl.statistics.otherHunterTraining"
                                                editable="::$ctrl.isEditable"
-                                               open-edit-dialog="$ctrl.editOtherHunterTraining(trainingTypes)">
+                                               open-edit-dialog="$ctrl.editOtherHunterTraining(trainingTypes)"
+                                               filter-mode="$ctrl.filterMode">
         </show-other-hunter-training-statistics>
     </div>
 </div>

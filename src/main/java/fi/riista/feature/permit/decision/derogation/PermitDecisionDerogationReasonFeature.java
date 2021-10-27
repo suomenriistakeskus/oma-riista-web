@@ -59,7 +59,8 @@ public class PermitDecisionDerogationReasonFeature {
             case LARGE_CARNIVORE_BEAR:
             case LARGE_CARNIVORE_LYNX:
             case LARGE_CARNIVORE_LYNX_PORONHOITO:
-            case LARGE_CARNIVORE_WOLF: {
+            case LARGE_CARNIVORE_WOLF:
+            case LARGE_CARNIVORE_WOLF_PORONHOITO: {
                 return createReasonsForCarnivore(permitDecision);
             }
             case MAMMAL:

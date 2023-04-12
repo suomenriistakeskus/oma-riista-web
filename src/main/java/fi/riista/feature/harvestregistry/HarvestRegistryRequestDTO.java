@@ -1,21 +1,16 @@
 package fi.riista.feature.harvestregistry;
 
-import org.hibernate.validator.constraints.SafeHtml;
+import fi.riista.validation.FinnishHunterNumber;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.joda.time.LocalDate;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.util.Set;
 
 public class HarvestRegistryRequestDTO {
-
-    @NotNull
-    @Min(0)
-    private Integer page;
-
-    @NotNull
-    @Min(1)
-    private Integer pageSize;
 
     @NotNull
     private LocalDate beginDate;
@@ -29,18 +24,41 @@ public class HarvestRegistryRequestDTO {
     @NotNull
     private Set<Integer> species;
 
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @Pattern(regexp = "^\\d{3}$")
     private String municipalityCode;
 
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @Pattern(regexp = "^\\d{3}$")
     private String rkaCode;
 
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @Pattern(regexp = "^\\d{3}$")
     private String rhyCode;
 
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @FinnishHunterNumber
     private String shooterHunterNumber;
 
+    @NotNull
+    @Min(0)
+    private Integer page;
+
+    @NotNull
+    @Min(1)
+    private Integer pageSize;
+
+    public Integer getPage() {
+        return page;
+    }
+
+    public void setPage(final Integer page) {
+        this.page = page;
+    }
+
+    public Integer getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(final Integer pageSize) {
+        this.pageSize = pageSize;
+    }
 
     public LocalDate getBeginDate() {
         return beginDate;
@@ -56,22 +74,6 @@ public class HarvestRegistryRequestDTO {
 
     public Set<Integer> getSpecies() {
         return species;
-    }
-
-    public int getPage() {
-        return page;
-    }
-
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    public void setPage(final int page) {
-        this.page = page;
-    }
-
-    public void setPageSize(final int pageSize) {
-        this.pageSize = pageSize;
     }
 
     public void setBeginDate(final LocalDate beginDate) {
@@ -122,6 +124,10 @@ public class HarvestRegistryRequestDTO {
         this.shooterHunterNumber = shooterHunterNumber;
     }
 
+    @Override
+    public String toString() {
+        return ReflectionToStringBuilder.toString(this, ToStringStyle.MULTI_LINE_STYLE);
+    }
 
     public static final class Builder {
         private Integer page;
@@ -193,7 +199,7 @@ public class HarvestRegistryRequestDTO {
         }
 
         public HarvestRegistryRequestDTO build() {
-            HarvestRegistryRequestDTO harvestRegistryRequestDTO = new HarvestRegistryRequestDTO();
+            final HarvestRegistryRequestDTO harvestRegistryRequestDTO = new HarvestRegistryRequestDTO();
             harvestRegistryRequestDTO.setPage(page);
             harvestRegistryRequestDTO.setPageSize(pageSize);
             harvestRegistryRequestDTO.setBeginDate(beginDate);

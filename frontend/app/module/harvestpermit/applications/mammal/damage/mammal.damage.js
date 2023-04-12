@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mammal.damage', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/wizard/damage/damage.html',
                 controller: 'DerogationPermitWizardDamageController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesDamageList: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.getSpeciesDamage({id: applicationId}).$promise;

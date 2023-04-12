@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.bird.period', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/bird/period/period.html',
                 controller: 'BirdPermitWizardPeriodController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesPeriodList: function (BirdPermitApplication, applicationId) {
                         return BirdPermitApplication.listSpeciesPeriods({id: applicationId}).$promise;

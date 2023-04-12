@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mammal.attachments', ['app.metadat
                 templateUrl: 'harvestpermit/applications/mammal/attachments/attachments.html',
                 controller: 'DerogationPermitWizardAttachmentsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     attachmentList: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.listAttachments({

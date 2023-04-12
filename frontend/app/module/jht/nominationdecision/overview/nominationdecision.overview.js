@@ -13,7 +13,7 @@ angular.module('app.jht.nominationdecision.overview', [])
                     },
                 },
                 controllerAs: '$ctrl',
-                controller: function ($state, NominationDecision, NotificationService, FetchAndSaveBlob,
+                controller: function ($state, NominationDecision, NotificationService, FetchAndSaveBlob, ConfirmationDialogService,
                                       NominationDecisionActionListModal, NominationDecisionActionReadonlyListModal,
                                       NominationDecisionAppealSettingsModal, decisionId, decision) {
                     var $ctrl = this;
@@ -55,6 +55,22 @@ angular.module('app.jht.nominationdecision.overview', [])
 
                     $ctrl.unassignDecision = function () {
                         return NominationDecision.unassign({id: $ctrl.decision.id});
+                    };
+
+                    $ctrl.remove = function () {
+                        ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
+                            'jht.nomination.decision.removeConfirmation.title',
+                            'jht.nomination.decision.removeConfirmation.body')
+                            .then(function () {
+                                NominationDecision.delete({id: $ctrl.decision.id}).$promise.then(
+                                    function (res) {
+                                        NotificationService.showDefaultSuccess();
+                                        $state.go('jht.nominationdecisions');
+                                    },
+                                    function (error) {
+                                        NotificationService.showDefaultFailure();
+                                    });
+                            });
                     };
                 }
             });

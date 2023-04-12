@@ -2,6 +2,8 @@ package fi.riista.feature.gamediary.harvest;
 
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.gamediary.GameAge;
+import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.HarvestChangeHistory;
 import fi.riista.feature.gamediary.HarvestChangeHistoryRepository;
@@ -10,6 +12,7 @@ import fi.riista.feature.gamediary.harvest.Harvest.StateAcceptedToHarvestPermit;
 import fi.riista.feature.gamediary.harvest.mutation.exception.HarvestReportingTypeChangeForbiddenException;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenAssertionBuilder;
+import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenValidationException;
 import fi.riista.feature.gamediary.image.GameDiaryImage;
 import fi.riista.feature.gis.MockGISQueryService;
@@ -21,6 +24,7 @@ import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountNotFound;
 import fi.riista.feature.harvestpermit.endofhunting.EndOfHuntingReportExistsException;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
+import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
@@ -44,6 +48,7 @@ import static fi.riista.util.DateUtil.huntingYearBeginDate;
 import static fi.riista.util.DateUtil.today;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -54,6 +59,9 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
 
     @Resource
     private HarvestChangeHistoryRepository changeEventHistoryRepo;
+
+    @Resource
+    private DeletedHarvestRepository deletedHarvestRepository;
 
     @Test
     public void testCreateHarvest() {
@@ -121,6 +129,8 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
                     final List<HarvestSpecimen> specimens = findSpecimens(harvest);
                     assertThat(specimens, hasSize(5));
                     assertSpecimens(specimens, inputDto.getSpecimens(), inputDto.specimenOps()::equalContent);
+
+                    assertThat(harvest.getHuntingClub(), is(nullValue()));
                 });
             });
         }));
@@ -540,6 +550,34 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
     }
 
     @Test
+    public void testCreateHarvest_withHuntingClub() {
+        withRhy(rhy -> withPerson(author -> {
+
+            final HuntingClub huntingClub = model().newHuntingClub();
+
+            final GameSpecies species = model().newGameSpecies();
+            final HarvestPermit permit = model().newHarvestPermit(rhy);
+            model().newHarvestPermitSpeciesAmount(permit, species);
+
+            onSavedAndAuthenticated(createUser(author), () -> {
+
+                final HarvestDTO inputDto = create(species, 1)
+                        .withPermitNumber(permit.getPermitNumber())
+                        .withAuthorInfo(author)
+                        .withHuntingClub(huntingClub)
+                        .build();
+
+                final HarvestDTO outputDto = invokeCreateHarvest(inputDto);
+
+                runInTransaction(() -> {
+                    final Harvest harvest = assertHarvestCreated(outputDto.getId());
+                    assertThat(harvest.getHuntingClub(), is(huntingClub));
+                });
+            });
+        }));
+    }
+
+    @Test
     public void testUpdateHarvest_whenNoChanges() {
         withPerson(author -> {
 
@@ -835,7 +873,7 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
             final HarvestPermit permit = model().newHarvestPermit(rhy);
             model().newHarvestPermitSpeciesAmount(permit, species);
 
-            final Harvest harvest = model().newHarvest(species, author);
+            final Harvest harvest = model().newHarvest(species, author, new LocalDate(2022, 8, 2));
             harvest.setHarvestPermit(permit);
             harvest.setStateAcceptedToHarvestPermit(PROPOSED);
             harvest.setRhy(rhy);
@@ -868,7 +906,7 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
             permit.setOriginalContactPerson(originalContactPerson);
             model().newHarvestPermitSpeciesAmount(permit, species);
 
-            final Harvest harvest = model().newHarvest(species, anotherContactPerson);
+            final Harvest harvest = model().newHarvest(species, anotherContactPerson, new LocalDate(2022, 8, 2));
             harvest.setHarvestPermit(permit);
             harvest.setStateAcceptedToHarvestPermit(PROPOSED);
             harvest.setRhy(rhy);
@@ -902,7 +940,7 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
             permit.setOriginalContactPerson(originalContact);
             model().newHarvestPermitSpeciesAmount(permit, species);
 
-            final Harvest harvest = model().newHarvest(species, anotherContact);
+            final Harvest harvest = model().newHarvest(species, anotherContact, new LocalDate(2022, 8, 2));
             harvest.setHarvestPermit(permit);
             harvest.setStateAcceptedToHarvestPermit(PROPOSED);
             harvest.setRhy(permit.getRhy());
@@ -1000,7 +1038,7 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
             permit.setOriginalContactPerson(originalContactPerson);
             model().newHarvestPermitSpeciesAmount(permit, species);
 
-            final Harvest harvest = model().newHarvest(species, anotherContactPerson);
+            final Harvest harvest = model().newHarvest(species, anotherContactPerson, new LocalDate(2022, 8, 2));
             harvest.setHarvestPermit(permit);
             harvest.setStateAcceptedToHarvestPermit(ACCEPTED);
             harvest.setRhy(rhy);
@@ -1042,7 +1080,7 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
             permit.setOriginalContactPerson(originalContact);
             model().newHarvestPermitSpeciesAmount(permit, species);
 
-            final Harvest harvest = model().newHarvest(species, anotherContact);
+            final Harvest harvest = model().newHarvest(species, anotherContact, new LocalDate(2022, 8, 2));
             harvest.setHarvestPermit(permit);
             harvest.setStateAcceptedToHarvestPermit(ACCEPTED);
             harvest.setRhy(permit.getRhy());
@@ -1172,14 +1210,22 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
 
             final GameSpecies moose = model().newGameSpeciesMoose();
             final Harvest harvest = model().newHarvest(moose, author);
+            final HarvestSpecimenDTO specimenDTO = new HarvestSpecimenDTO(
+                    GameGender.MALE,
+                    GameAge.ADULT,
+                    null);
+
+            final List<HarvestSpecimenDTO> specimenList = Collections.singletonList(specimenDTO);
 
             final HarvestPermit permit = model().newMooselikePermit(rhy);
             model().newHarvestPermitSpeciesAmount(permit, moose);
+
 
             onSavedAndAuthenticated(createUser(author), () -> {
 
                 final HarvestDTO dto = create(harvest)
                         .withPermitNumber(permit.getPermitNumber())
+                        .withSpecimens(specimenList)
                         .build();
 
                 invokeUpdateHarvest(dto);
@@ -1600,6 +1646,7 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
                 final long harvestId = harvest.getId();
                 feature.deleteHarvest(harvestId);
                 assertThat(harvestRepo.existsById(harvestId), is(false));
+                assertDeletedHarvest(harvestId);
             });
         });
     }
@@ -1649,7 +1696,8 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
     private void testDeleteHarvest_whenHarvestHasPermitProcessingState(final boolean shouldBeDeleted,
                                                                        final StateAcceptedToHarvestPermit state) {
 
-        testDeleteHarvest_whenHarvestHasPermitProcessingState(shouldBeDeleted, state, harvest -> {});
+        testDeleteHarvest_whenHarvestHasPermitProcessingState(shouldBeDeleted, state, harvest -> {
+        });
     }
 
     private void testDeleteHarvest_whenHarvestHasPermitProcessingState(final boolean shouldBeDeleted,
@@ -1664,6 +1712,7 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
                 if (shouldBeDeleted) {
                     feature.deleteHarvest(harvestId);
                     assertThat(harvestRepo.existsById(harvestId), is(false));
+                    assertDeletedHarvest(harvestId);
                 } else {
                     final Throwable exception =
                             assertThrows(RuntimeException.class, () -> feature.deleteHarvest(harvestId));
@@ -1672,6 +1721,13 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
                 }
             });
         });
+    }
+
+    private void assertDeletedHarvest(final long harvestId) {
+        final List<DeletedHarvest> deletedHarvests = deletedHarvestRepository.findAll();
+        assertThat(deletedHarvests, hasSize(1));
+        final DeletedHarvest deletedHarvest = deletedHarvests.get(0);
+        assertThat(deletedHarvest.getHarvestId(), equalTo(harvestId));
     }
 
     private void withHarvestHavingPermitState(final StateAcceptedToHarvestPermit state,
@@ -1684,7 +1740,7 @@ public class HarvestFeature_GameDiaryTest extends HarvestFeatureTestBase impleme
             final HarvestPermit permit = model().newHarvestPermit(rhy, true);
             model().newHarvestPermitSpeciesAmount(permit, species);
 
-            final Harvest harvest = model().newHarvest(species, author);
+            final Harvest harvest = model().newHarvest(species, author, new LocalDate(2022, 8, 2));
             harvest.setHarvestPermit(permit);
             harvest.setStateAcceptedToHarvestPermit(state);
             harvest.setRhy(rhy);

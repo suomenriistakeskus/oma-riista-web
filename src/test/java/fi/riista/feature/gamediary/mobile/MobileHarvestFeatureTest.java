@@ -4,6 +4,7 @@ import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.fixture.MobileHarvestDTOBuilderFactory;
+import fi.riista.feature.gamediary.harvest.DeletedHarvestRepository;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.Harvest.StateAcceptedToHarvestPermit;
 import fi.riista.feature.gamediary.harvest.HarvestRepository;
@@ -12,20 +13,22 @@ import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenAssertionBuilder;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenRepository;
-import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenValidationException;
 import fi.riista.feature.gis.MockGISQueryService;
 import fi.riista.feature.gis.RhyNotResolvableByGeoLocationException;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.harvestpermit.season.HarvestSeason;
+import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonRepository;
+import fi.riista.test.Asserts;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -49,9 +52,16 @@ import static fi.riista.feature.gamediary.harvest.HarvestSpecVersion.LOWEST_VERS
 import static fi.riista.test.Asserts.assertEmpty;
 import static fi.riista.test.TestUtils.createList;
 import static fi.riista.util.DateUtil.huntingYearBeginDate;
+import static fi.riista.util.DateUtil.now;
 import static fi.riista.util.EqualityHelper.equalNotNull;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -76,6 +86,9 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
     @Resource
     private PersonRepository personRepo;
+
+    @Resource
+    private DeletedHarvestRepository deletedHarvestRepository;
 
     @Theory
     public void testCreateHarvest_whenHarvestSpecVersionIsNull(final HarvestSpecVersion specVersion) {
@@ -285,7 +298,7 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
     public void testCreateHarvest_newMooseAntlerFields_startingFrom2020(final HarvestSpecVersion specVersion) {
         assumeTrue(specVersion.greaterThanOrEqualTo(LOWEST_VERSION_SUPPORTING_ANTLER_FIELDS_2020));
 
-        testCreateHarvest_mooseAntlerFields(2020, specVersion,  (entity, dto) -> {
+        testCreateHarvest_mooseAntlerFields(2020, specVersion, (entity, dto) -> {
 
             HarvestSpecimenAssertionBuilder.builder()
                     .mooseAdultMaleFields2020Present()
@@ -349,6 +362,53 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
                     consumer.accept(persistedSpecimens.get(0), inputDto.getSpecimens().get(0));
                 });
+            });
+        });
+    }
+
+    @Test
+    public void testCreateHarvest_withHuntingClub() {
+
+        final HuntingClub huntingClub = model().newHuntingClub();
+
+        final GameSpecies species = model().newGameSpecies();
+        final HarvestPermit permit = model().newHarvestPermit();
+        model().newHarvestPermitSpeciesAmount(permit, species);
+        onSavedAndAuthenticated(createUserWithPerson(), user -> {
+
+            final MobileHarvestDTO inputDto = create(HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_HARVEST_HUNTING_CLUB, species)
+                    .withPermitNumber(permit.getPermitNumber())
+                    .withPermitType(permit.getPermitType())
+                    .withHuntingClub(huntingClub)
+                    .build();
+
+            final MobileHarvestDTO outputDto = invokeCreateHarvest(inputDto);
+
+            doCreateAssertions(outputDto.getId(), inputDto, user.getPerson(), harvest -> {
+                assertThat(outputDto.getSelectedHuntingClub().getId(), is(huntingClub.getId()));
+            });
+        });
+    }
+    @Test
+    public void testCreateHarvest_withHuntingClubAndOldSpecVersion() {
+
+        final HuntingClub huntingClub = model().newHuntingClub();
+
+        final GameSpecies species = model().newGameSpecies();
+        final HarvestPermit permit = model().newHarvestPermit();
+        model().newHarvestPermitSpeciesAmount(permit, species);
+        onSavedAndAuthenticated(createUserWithPerson(), user -> {
+
+            final MobileHarvestDTO inputDto = create(HarvestSpecVersion._9, species)
+                    .withPermitNumber(permit.getPermitNumber())
+                    .withPermitType(permit.getPermitType())
+                    .withHuntingClub(huntingClub)
+                    .build();
+
+            final MobileHarvestDTO outputDto = invokeCreateHarvest(inputDto);
+
+            doCreateAssertions(outputDto.getId(), inputDto, user.getPerson(), harvest -> {
+                assertThat(outputDto.getSelectedHuntingClub(), is(nullValue()));
             });
         });
     }
@@ -816,7 +876,7 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
             final HarvestPermit permit = model().newHarvestPermit(rhy, true);
             model().newHarvestPermitSpeciesAmount(permit, species);
 
-            final Harvest harvest = model().newMobileHarvest(species, author);
+            final Harvest harvest = model().newMobileHarvest(species, author, new LocalDate(2022, 8, 2));
             harvest.setHarvestPermit(permit);
             harvest.setStateAcceptedToHarvestPermit(state);
             harvest.setRhy(rhy);
@@ -909,6 +969,153 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
         });
     }
 
+    @Test
+    public void testGetDeletedHarvestIds() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedHarvest(now, 1L, personId, personId);
+
+        onSavedAndAuthenticated(user, () -> {
+            final DateTime deletionTime = now.minusSeconds(1);
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedHarvestIds(ldt(deletionTime));
+            Asserts.assertThat(ids.getEntryIds(), hasSize(1));
+            Asserts.assertThat(ids.getEntryIds().get(0), equalTo(1L));
+            Asserts.assertThat(ids.getLatestEntry(), equalTo(ldt(now)));
+        });
+    }
+
+    @Test
+    public void testGetDeletedHarvestIds_nullDate() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedHarvest(now, 1L, personId, personId);
+
+        onSavedAndAuthenticated(user, () -> {
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedHarvestIds(null);
+            Asserts.assertThat(ids.getEntryIds(), hasSize(1));
+            Asserts.assertThat(ids.getEntryIds().get(0), equalTo(1L));
+            Asserts.assertThat(ids.getLatestEntry(), equalTo(ldt(now)));
+        });
+    }
+
+    @Test
+    public void testGetDeletedHarvestIds_author() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedHarvest(now, 1L, personId, personId + 1);
+
+        onSavedAndAuthenticated(user, () -> {
+            final DateTime deletionTime = now.minusSeconds(1);
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedHarvestIds(ldt(deletionTime));
+            Asserts.assertThat(ids.getEntryIds(), hasSize(1));
+            Asserts.assertThat(ids.getEntryIds().get(0), equalTo(1L));
+            Asserts.assertThat(ids.getLatestEntry(), equalTo(ldt(now)));
+        });
+    }
+
+    @Test
+    public void testGetDeletedHarvestIds_shooter() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedHarvest(now, 1L, personId + 1, personId);
+
+        onSavedAndAuthenticated(user, () -> {
+            final DateTime deletionTime = now.minusSeconds(1);
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedHarvestIds(ldt(deletionTime));
+            Asserts.assertThat(ids.getEntryIds(), hasSize(1));
+            Asserts.assertThat(ids.getEntryIds().get(0), equalTo(1L));
+            Asserts.assertThat(ids.getLatestEntry(), equalTo(ldt(now)));
+        });
+    }
+
+    @Test
+    public void testGetDeletedHarvestIds_otherUser() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedHarvest(now, 1L, personId, personId);
+
+        onSavedAndAuthenticated(createUserWithPerson("otherUser"), () -> {
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedHarvestIds(null);
+            Asserts.assertThat(ids.getEntryIds(), is(empty()));
+        });
+    }
+
+    @Test
+    public void testGetDeletedHarvestIds_onlyNewerDeletionTimesReturned() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedHarvest(now, 1L, personId, personId);
+
+        onSavedAndAuthenticated(user, () -> {
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedHarvestIds(ldt(now));
+            Asserts.assertThat(ids.getEntryIds(), hasSize(0));
+            Asserts.assertThat(ids.getLatestEntry(), is(nullValue()));
+        });
+    }
+
+    @Test
+    public void testGetDeletedHarvestIds_onlyOwnObservationDeletionTimesReturned() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedHarvest(now, 1L, personId + 1, personId + 1);
+
+        onSavedAndAuthenticated(user, () -> {
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedHarvestIds(ldt(now.minusSeconds(1)));
+            Asserts.assertThat(ids.getEntryIds(), hasSize(0));
+            Asserts.assertThat(ids.getLatestEntry(), is(nullValue()));
+        });
+    }
+
+    @Test
+    public void testGetHarvestsWhereOnlyAuthor() {
+        withPerson(author-> {
+            withPerson(shooter-> {
+                final Harvest harvest = model().newHarvest(author, shooter);
+
+                onSavedAndAuthenticated(createUser(author), () -> {
+                    final MobileDeletedDiaryEntriesDTO dto = feature.getHarvestsWhereOnlyAuthor();
+                    assertThat(dto.getEntryIds(), hasSize(1));
+                    assertThat(dto.getEntryIds().get(0), equalTo(harvest.getId()));
+                    assertThat(dto.getLatestEntry(), is(nullValue()));
+                });
+            });
+        });
+    }
+
+    @Test
+    public void testGetHarvestsWhereOnlyAuthor_authorAndShooter() {
+        withPerson(authorAndShooter-> {
+                final Harvest harvest = model().newHarvest(authorAndShooter, authorAndShooter);
+
+                onSavedAndAuthenticated(createUser(authorAndShooter), () -> {
+                    final MobileDeletedDiaryEntriesDTO dto = feature.getHarvestsWhereOnlyAuthor();
+                    assertThat(dto.getEntryIds(), is(empty()));
+                    assertThat(dto.getLatestEntry(), is(nullValue()));
+                });
+        });
+    }
+
     private void doTestDeleteHarvest(final boolean shouldBeDeleted, final Harvest harvest) {
         doTestDeleteHarvest(shouldBeDeleted, harvest, createUser(harvest.getAuthor()));
     }
@@ -954,7 +1161,8 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
                                     final MobileHarvestDTO expectedValues,
                                     final Person expectedAuthor) {
 
-        doCreateAssertions(harvestId, expectedValues, expectedAuthor, h -> {});
+        doCreateAssertions(harvestId, expectedValues, expectedAuthor, h -> {
+        });
     }
 
     private void doCreateAssertions(final long harvestId,
@@ -981,7 +1189,8 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
                                     final Person expectedAuthor,
                                     final int expectedRevision) {
 
-        doUpdateAssertions(expectedValues, expectedAuthor, expectedRevision, h -> {});
+        doUpdateAssertions(expectedValues, expectedAuthor, expectedRevision, h -> {
+        });
     }
 
     private void doUpdateAssertions(final MobileHarvestDTO expectedValues,
@@ -1057,5 +1266,10 @@ public class MobileHarvestFeatureTest extends EmbeddedDatabaseTest
 
     private MobileHarvestDTO withVersionChecked(final MobileHarvestDTO dto) {
         return checkDtoVersionAgainstEntity(dto, Harvest.class);
+    }
+
+
+    private LocalDateTime ldt(final DateTime dateTime) {
+        return DateUtil.toLocalDateTimeNullSafe(dateTime);
     }
 }

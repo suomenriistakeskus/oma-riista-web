@@ -72,6 +72,7 @@ angular.module('app.harvestpermit.management.endofhunting', [])
                     speciesCode: gameSpeciesCode
 
                 }).$promise.then(function () {
+                    NotificationService.showDefaultSuccess();
                     $ctrl.goBack();
 
                 }, function () {

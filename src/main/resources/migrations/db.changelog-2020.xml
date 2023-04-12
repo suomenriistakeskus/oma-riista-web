@@ -1311,6 +1311,7 @@
     </changeSet>
 
     <changeSet id="2020-06-16-add-nomination-decision" author="vincit-terole">
+        <validCheckSum>8:609f4d12279f1bc35d6ef66115d6be8f</validCheckSum>
         <createTable tableName="nomination_decision_type">
             <column name="name" type="VARCHAR(255)">
                 <constraints primaryKey="true" nullable="false"/>
@@ -1374,7 +1375,7 @@
                              foreignKeyName="fk_nomination_decision_rhy"/>
             </column>
             <column name="handler_id" type="BIGINT">
-                <constraints references="system_user(user_id)"
+                <constraints referencedTableName="system_user" referencedColumnNames="user_id"
                              foreignKeyName="fk_nomination_decision_handler_id"/>
             </column>
             <column name="contact_person_id" type="BIGINT">

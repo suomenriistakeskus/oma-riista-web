@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.nestremoval.reasons', ['app.metada
                 templateUrl: 'harvestpermit/applications/nestremoval/reasons/reasons.html',
                 controller: 'NestRemovalPermitWizardJustificationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     permitCause: function (NestRemovalPermitApplication, applicationId) {
                         return NestRemovalPermitApplication.getCurrentPermitCause({id: applicationId}).$promise;

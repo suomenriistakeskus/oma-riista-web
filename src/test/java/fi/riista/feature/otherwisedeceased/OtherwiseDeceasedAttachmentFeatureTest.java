@@ -130,9 +130,9 @@ public class OtherwiseDeceasedAttachmentFeatureTest extends EmbeddedDatabaseTest
         dto.setNoExactLocation(someBoolean());
         dto.setGeoLocation(geoLocation());
         dto.setCause(some(OtherwiseDeceasedCause.class));
-        dto.setCauseOther("Cause other " + nextLong());
+        dto.setCauseDescription("Cause other " + nextLong());
         dto.setSource(some(OtherwiseDeceasedSource.class));
-        dto.setSourceOther("Source other " + nextLong());
+        dto.setSourceDescription("Source other " + nextLong());
         dto.setDescription("Description " + nextLong());
         dto.setAdditionalInfo("Additional ingo " + nextLong());
         return dto;

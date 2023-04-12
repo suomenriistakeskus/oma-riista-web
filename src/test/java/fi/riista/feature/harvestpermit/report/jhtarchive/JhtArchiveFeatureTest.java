@@ -276,7 +276,9 @@ public class JhtArchiveFeatureTest extends EmbeddedDatabaseTest implements Moose
                 HarvestPermitCategory.IMPORTING,
                 HarvestPermitCategory.DEPORTATION,
                 HarvestPermitCategory.RESEARCH,
-                HarvestPermitCategory.GAME_MANAGEMENT);
+                HarvestPermitCategory.GAME_MANAGEMENT,
+                HarvestPermitCategory.EUROPEAN_BEAVER,
+                HarvestPermitCategory.PARTRIDGE);
 
         withPermitCategory(species, category, f -> {
 

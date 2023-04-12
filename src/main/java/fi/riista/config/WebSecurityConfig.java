@@ -6,7 +6,6 @@ import fi.riista.api.pub.AccountRegistrationApiResource;
 import fi.riista.api.pub.HealthCheckController;
 import fi.riista.api.pub.PasswordResetApiResource;
 import fi.riista.api.pub.mobile.MobileAccountRegistrationApiResource;
-import fi.riista.config.web.SentryUserContextFilter;
 import fi.riista.security.aop.CustomWebSecurityExpressionHandler;
 import fi.riista.security.audit.LogoutAuditEventListener;
 import fi.riista.security.authentication.CustomAuthenticationFailureHandler;
@@ -58,7 +57,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String PATTERN_MOBILE_API = "/api/mobile/**";
 
     // Import and export API restricted using IP whitelist
-    private static final String PATTERN_EXPORT_API = "/api/v1/export/**";
+    private static final String PATTERN_EXPORT_V1_API = "/api/v1/export/**";
+    private static final String PATTERN_EXPORT_V2_API = "/api/v2/export/**";
     private static final String PATTERN_IMPORT_API = "/api/v1/import/**";
     private static final String PATTERN_ADMIN_API = "/api/v1/admin/**";
 
@@ -67,7 +67,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String URI_LOGOUT = "/logout";
 
     private static final String[] IGNORE_CSRF_PATTERN = {
-            PATTERN_EXPORT_API,
+            PATTERN_EXPORT_V1_API,
+            PATTERN_EXPORT_V2_API,
             PATTERN_IMPORT_API,
             PATTERN_ANONYMOUS_API,
             PATTERN_MOBILE_API,
@@ -93,8 +94,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String[] SKIP_CSRF_COOKIE_GENERATION = {
             HealthCheckController.URI_HEALTH_CHECK,
-            PaytrailController.NOTIFY_PATH,
-            PATTERN_EXPORT_API,
+            PaytrailController.CALLBACK_SUCCESS_PATH,
+            PaytrailController.CALLBACK_CANCEL_PATH,
+            PATTERN_EXPORT_V1_API,
+            PATTERN_EXPORT_V2_API,
             PATTERN_IMPORT_API,
             PATTERN_ANONYMOUS_API,
             PATTERN_MOBILE_API,
@@ -138,10 +141,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) {
         web.expressionHandler(webSecurityExpressionHandler)
                 .ignoring().antMatchers(
-                "/static/**",
-                "/frontend/**",
-                "/favicon.ico"
-        );
+                        "/static/**",
+                        "/frontend/**",
+                        "/favicon.ico"
+                );
     }
 
     @Override
@@ -161,9 +164,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         final CsrfCookieGeneratorFilter csrfFilter = new CsrfCookieGeneratorFilter(SKIP_CSRF_COOKIE_GENERATION);
         httpSecurity.addFilterAfter(csrfFilter, SessionManagementFilter.class);
-
-        final SentryUserContextFilter sentryFilter = new SentryUserContextFilter();
-        httpSecurity.addFilterBefore(sentryFilter, AnonymousAuthenticationFilter.class);
 
         httpSecurity
                 .sessionManagement()
@@ -223,14 +223,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         "/api/mobile/v2/area/vector/**",
                         MobileAccountRegistrationApiResource.URI_SEND_EMAIL,
                         MobileAccountRegistrationApiResource.URI_RESET_PASSWORD,
-                        PaytrailController.NOTIFY_PATH,
+                        PaytrailController.CALLBACK_SUCCESS_PATH,
+                        PaytrailController.CALLBACK_CANCEL_PATH,
                         MobileVersionApiResource.LATEST_RELEASE_URL,
                         HealthCheckController.URI_HEALTH_CHECK,
                         PATTERN_ANONYMOUS_API
                 ).permitAll()
 
                 .antMatchers(PATTERN_IMPORT_API).access("matchesWhiteList() and hasRole('ROLE_REST')")
-                .antMatchers(PATTERN_EXPORT_API).access("matchesWhiteList() and hasRole('ROLE_REST')")
+                .antMatchers(PATTERN_EXPORT_V1_API).access("matchesWhiteList() and hasRole('ROLE_REST')")
+                .antMatchers(PATTERN_EXPORT_V2_API).access("matchesWhiteList() and hasRole('ROLE_REST')")
 
                 // Restrict admin API by IP whiteList
                 .antMatchers(PATTERN_ADMIN_API).hasRole("ADMIN")

@@ -1,4 +1,4 @@
-<div class="alert alert-info">
+<div class="alert alert-info wizard-info">
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
@@ -11,7 +11,7 @@
     <div class="col-xs-12 col-md-6">
         <form name="addSpeciesForm">
             <div class="row">
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group">
                         <select class="form-control"
                                 name="selectedSpeciesCode"
@@ -24,7 +24,7 @@
                     </div>
                 </div>
 
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <button type="button" class="btn btn-primary btn-block"
                             ng-disabled="!$ctrl.selectedSpeciesCode"
                             ng-click="$ctrl.addSpecies($ctrl.selectedSpeciesCode)">

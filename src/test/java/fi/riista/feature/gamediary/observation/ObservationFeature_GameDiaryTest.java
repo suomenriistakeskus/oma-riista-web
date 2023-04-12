@@ -65,6 +65,9 @@ public class ObservationFeature_GameDiaryTest extends ObservationFeatureTestBase
     @Resource
     private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
 
+    @Resource
+    private DeletedObservationRepository deletedObservationRepository;
+
     @Before
     public void setUp() {
         harvestPermitLockedByDateService.disableLockingForTests();
@@ -912,7 +915,15 @@ public class ObservationFeature_GameDiaryTest extends ObservationFeatureTestBase
                         onSavedAndAuthenticated(createUser(author), () -> {
                             final Long id = obsFixt.observation.getId();
                             feature.deleteObservation(id);
+                        });
+
+                        runInTransaction(() -> {
+                            final Long id = obsFixt.observation.getId();
                             assertThat(observationRepo.findById(id).isPresent(), is(false));
+                            final List<DeletedObservation> deletedObservations = deletedObservationRepository.findAll();
+                            assertThat(deletedObservations, hasSize(1));
+                            final DeletedObservation deletedObservation = deletedObservations.get(0);
+                            assertThat(deletedObservation.getObservationId(), equalTo(id));
                         });
                     });
         });

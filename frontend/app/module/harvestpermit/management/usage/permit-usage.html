@@ -1,5 +1,5 @@
-<div class="row">
-    <div class="col-xs-4">
+<div class="row r-permit-usage-btns">
+    <div class="col-sm-4">
         <a class="btn btn-default"
            ui-sref="permitmanagement.dashboard">
             <span class="fa fa-chevron-left"></span>
@@ -8,7 +8,7 @@
         </a>
     </div>
 
-    <div class="col-xs-8 text-right">
+    <div class="col-sm-8 text-right xs-text-left">
         <button type="button" class="btn btn-default"
                 ng-click="$ctrl.exportHarvestReports()">
             <span class="fa fa-file-excel-o"></span>
@@ -29,7 +29,6 @@
 <hr>
 
 <h4 translate="harvestpermit.management.usage.speciesAmounts"></h4>
-
 <permit-species-amount-usage permit-usage="$ctrl.permitUsage"></permit-species-amount-usage>
 
 <hr>

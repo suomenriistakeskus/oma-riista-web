@@ -161,6 +161,8 @@ public class HarvestPermitApplicationDeleteFeature {
                 break;
 
             case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 lawSectionTenPermitApplicationRepository.deleteByHarvestPermitApplication(application);
                 break;
 

@@ -1,11 +1,10 @@
 package fi.riista.feature.organization.jht.training;
 
+import fi.riista.feature.common.training.TrainingType;
+import fi.riista.feature.common.training.TrainingTypeConverter;
 import fi.riista.feature.common.entity.LifecycleEntity;
-import fi.riista.feature.common.entity.PersistableEnum;
-import fi.riista.feature.common.entity.PersistableEnumConverter;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
-import fi.riista.util.LocalisedEnum;
 import fi.riista.validation.XssSafe;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
@@ -14,7 +13,6 @@ import javax.persistence.Access;
 import javax.persistence.AccessType;
 import javax.persistence.Column;
 import javax.persistence.Convert;
-import javax.persistence.Converter;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -41,26 +39,6 @@ public class JHTTraining extends LifecycleEntity<Long> {
     // do not require new trainings. To make them available for selection some artifical trainings
     // were populated to production database with training_location "Sähköinen" and fake date 1.1.1900
     private static final LocalDate ARTIFICAL_DATE = new LocalDate(1900, 1, 1);
-
-    @Converter
-    public static class TrainingTypeConverter implements PersistableEnumConverter<TrainingType> {
-    }
-
-    public enum TrainingType implements LocalisedEnum, PersistableEnum {
-        LAHI("L"),
-        SAHKOINEN("S");
-
-        private final String databaseValue;
-
-        TrainingType(final String databaseValue) {
-            this.databaseValue = databaseValue;
-        }
-
-        @Override
-        public String getDatabaseValue() {
-            return databaseValue;
-        }
-    }
 
     private Long id;
 

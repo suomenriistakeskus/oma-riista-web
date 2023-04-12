@@ -18,6 +18,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.Arrays;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
@@ -30,8 +31,11 @@ public class LawSectionTenPermitApplication extends HasParentApplication impleme
 
     public static LawSectionTenPermitApplication create(@Nonnull final HarvestPermitApplication application) {
         requireNonNull(application);
-        checkArgument(application.getHarvestPermitCategory() == HarvestPermitCategory.LAW_SECTION_TEN,
-                "Application category must be law section 10");
+
+        checkArgument(Arrays.asList(
+                        HarvestPermitCategory.EUROPEAN_BEAVER,
+                        HarvestPermitCategory.PARTRIDGE).contains(application.getHarvestPermitCategory()),
+                "Application category illegal for section ten");
 
         final LawSectionTenPermitApplication lawSectionTenPermitApplication = new LawSectionTenPermitApplication();
         lawSectionTenPermitApplication.setHarvestPermitApplication(application);
@@ -52,6 +56,29 @@ public class LawSectionTenPermitApplication extends HasParentApplication impleme
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(columnDefinition = "TEXT")
     private String areaDescription;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @Column(columnDefinition = "TEXT")
+    private String justification;
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @Column(columnDefinition = "TEXT")
+    private String populationDescription;
+
+    // For european beaver
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @Column(columnDefinition = "TEXT")
+    private String damagesCaused;
+
+    // For partridge
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    @Column(columnDefinition = "TEXT")
+    private String transferredAnimalOrigin;
+
+    // For partridge
+    @Column
+    private Integer transferredAnimalAmount;
+
 
     // ACCESSORS
 
@@ -99,4 +126,43 @@ public class LawSectionTenPermitApplication extends HasParentApplication impleme
         this.areaDescription = areaDescription;
     }
 
+    public String getJustification() {
+        return justification;
+    }
+
+    public void setJustification(final String justification) {
+        this.justification = justification;
+    }
+
+    public String getPopulationDescription() {
+        return populationDescription;
+    }
+
+    public void setPopulationDescription(final String populationDescription) {
+        this.populationDescription = populationDescription;
+    }
+
+    public String getDamagesCaused() {
+        return damagesCaused;
+    }
+
+    public void setDamagesCaused(final String damagesCaused) {
+        this.damagesCaused = damagesCaused;
+    }
+
+    public String getTransferredAnimalOrigin() {
+        return transferredAnimalOrigin;
+    }
+
+    public void setTransferredAnimalOrigin(final String transferredAnimalOrigin) {
+        this.transferredAnimalOrigin = transferredAnimalOrigin;
+    }
+
+    public Integer getTransferredAnimalAmount() {
+        return transferredAnimalAmount;
+    }
+
+    public void setTransferredAnimalAmount(final Integer transferredAnimalAmount) {
+        this.transferredAnimalAmount = transferredAnimalAmount;
+    }
 }

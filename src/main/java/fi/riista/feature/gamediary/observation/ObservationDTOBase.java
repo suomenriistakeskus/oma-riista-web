@@ -144,6 +144,14 @@ public abstract class ObservationDTOBase extends HuntingDiaryEntryDTO implements
         return amount != null && specimens != null || amount == null && specimens == null;
     }
 
+    @AssertTrue
+    public boolean isValidMinimumSpecimenAmountForPoikue() {
+        if (observationType == ObservationType.POIKUE) {
+            return amount >= 2;
+        }
+        return true;
+    }
+
     public ObservationSpecimenOps specimenOps() {
         return new ObservationSpecimenOps(getGameSpeciesCode(), getObservationSpecVersion());
     }

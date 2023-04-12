@@ -1,19 +1,21 @@
 <div ng-init="$ctrl.collapsed = true" class="row form-group registry-item-row">
 
-    <div class="col-xs-1">
+    <div class="col-xs-2">
         <img ng-src="/static/elainlajikuvat/512x512/{{$ctrl.item.speciesCode}}.jpg" width="50"
              height="50"/>
     </div>
-    <div class="col-xs-5 form-control-static">
-        <span class="text-capitalize text-title" ng-bind="::$ctrl.item.species | rI18nNameFilter"></span>
+    <div class="col-xs-7">
+        <div class="col-xs-12 col-md-4 form-control-static">
+            <span class="text-capitalize text-title" ng-bind="::$ctrl.item.species | rI18nNameFilter"></span>
+        </div>
+        <div class="col-xs-6 col-md-4 form-control-static text-muted">
+            <span ng-bind="::($ctrl.item.date | date: 'd.M.yyyy')"></span>
+        </div>
+        <div class="col-xs-6 col-md-4 form-control-static text-muted">
+            <span ng-if="$ctrl.item.time" ng-bind="::($ctrl.item.time)"></span>
+        </div>
     </div>
-    <div class="col-xs-3 form-control-static text-muted">
-        <span ng-bind="::($ctrl.item.date | date: 'd.M.yyyy')"></span>
-    </div>
-    <div class="col-xs-2 form-control-static text-muted">
-        <span ng-if="$ctrl.item.time" ng-bind="::($ctrl.item.time)"></span>
-    </div>
-    <div class="col-xs-1 text-right">
+    <div class="col-xs-3 text-right">
         <a ng-if="$ctrl.collapsed" class="fa fa-fw  text-primary fa-2x fa-chevron-right "
            ng-click="$ctrl.collapsed =!$ctrl.collapsed"></a>
         <a ng-if="!$ctrl.collapsed" class="fa fa-fw  text-primary fa-2x fa-chevron-down "
@@ -23,81 +25,81 @@
         <div class="col-xs-10 col-xs-offset-1">
             <div class="row">
 
-                <div class="col-xs-4">
+                <div class="col-xs-6 col-sm-4">
                     <h5 translate="harvestRegistry.item.shooterName"></h5>
                     <label>
                         <span ng-bind="::$ctrl.item.shooterName"></span>
                     </label>
                 </div>
 
-                <div class="col-xs-4" ng-if="::$ctrl.item.shooterHunterNumber">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.shooterHunterNumber">
                     <h5 translate="harvestRegistry.item.shooterHunterNumber"></h5>
                     <label>
                         <span ng-bind="::$ctrl.item.shooterHunterNumber"></span>
                     </label>
                 </div>
 
-                <div class="col-xs-4" ng-if="::$ctrl.item.amount">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.amount">
                     <h5 translate="harvestRegistry.item.amount"></h5>
                     <label>
                         <span ng-bind="::$ctrl.item.amount"></span>
                     </label>
                 </div>
 
-                <div class="col-xs-4" ng-if="::$ctrl.item.age">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.age">
                     <h5 translate="harvestRegistry.item.age"></h5>
                     <label>
                         <span>{{::'gamediary.age.' + $ctrl.item.age | translate}}</span>
                     </label>
                 </div>
 
-                <div class="col-xs-4" ng-if="::$ctrl.item.gender">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.gender">
                     <h5 translate="harvestRegistry.item.gender"></h5>
                     <label>
                         <span>{{::'gamediary.gender.' + $ctrl.item.gender | translate}}</span>
                     </label>
                 </div>
 
-                <div class="col-xs-4" ng-if="::$ctrl.item.weight">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.weight">
                     <h5 translate="harvestRegistry.item.weight"></h5>
                     <label>
                         <span>{{::$ctrl.item.weight}} kg</span>
                     </label>
                 </div>
 
-                <div class="col-xs-4" ng-if="::$ctrl.item.municipality">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.municipality">
                     <h5 translate="harvestRegistry.item.municipality"></h5>
                     <label>
                         <span ng-bind="::$ctrl.item.municipality | rI18nNameFilter"/>
                     </label>
                 </div>
 
-                <div class="col-xs-4" ng-if="::$ctrl.item.geoLocation">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.geoLocation">
                     <h5 translate="harvestRegistry.item.geoLocation"></h5>
                     <p translate="global.geoLocation.coordinatesText" translate-values="::$ctrl.item.geoLocation"></p>
                 </div>
 
-                <div class="col-xs-4" ng-if="::$ctrl.item.harvestArea">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.harvestArea">
                     <h5 translate="harvestRegistry.item.harvestArea"></h5>
                     <label>
                         <span ng-bind="::$ctrl.item.harvestArea | rI18nNameFilter"/>
                     </label>
                 </div>
 
-                <div class="col-xs-4" ng-if="::$ctrl.item.rka">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.rka">
                     <h5 for="rka" translate="harvestRegistry.item.rka"></h5>
                     <label id="rka">
                         <span ng-bind="::$ctrl.item.rka | rI18nNameFilter "></span>
                     </label>
                 </div>
 
-                <div class="col-xs-4" ng-if="::$ctrl.item.rhy">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.rhy">
                     <h5 translate="harvestRegistry.item.rhy"></h5>
                     <label>
                         <span ng-bind="::$ctrl.item.rhy  | rI18nNameFilter"></span>
                     </label>
                 </div>
-                <div class="col-xs-4" ng-if="::$ctrl.item.shooterAddress">
+                <div class="col-xs-6 col-sm-4" ng-if="::$ctrl.item.shooterAddress">
                     <h5 translate="harvestRegistry.item.shooterAddress"></h5>
                     <label>
                         <span ng-bind="::$ctrl.item.shooterAddress.streetAddress"></span><br/>

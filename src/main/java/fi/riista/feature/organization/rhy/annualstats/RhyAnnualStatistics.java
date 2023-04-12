@@ -23,7 +23,10 @@ import javax.persistence.PrePersist;
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -237,12 +240,8 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
     }
 
     private boolean isEndDateForCoordinatorUpdatesPassed() {
-        return today().isAfter(getEndDateForCoordinatorUpdates());
-    }
-
-    // Editing is blocked from coordinator after 15.1. next year.
-    public LocalDate getEndDateForCoordinatorUpdates() {
-        return new LocalDate(year + 1, 1, 15);
+        final LocalDate lastDateOfStatisticsYear = new LocalDate(year, 12, 31);
+        return AnnualStatisticsService.hasDeadlinePassed(lastDateOfStatisticsYear);
     }
 
     public RhyBasicInfo getOrCreateBasicInfo() {
@@ -373,7 +372,7 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
 
     public DateTime getLastModifiedTimeOfQuantitiesContributingToSubsidy() {
         final Stream<DateTime> editTimestamps = Stream
-                .<AnnualStatisticsManuallyEditableFields> of(huntingControl, jhtTraining, hunterTraining, youthTraining,
+                .<AnnualStatisticsManuallyEditableFields>of(huntingControl, jhtTraining, hunterTraining, youthTraining,
                         otherHunterTraining, otherHuntingRelated, luke, metsahallitus)
                 .map(AnnualStatisticsManuallyEditableFields::getLastModified);
 
@@ -386,7 +385,7 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
 
     public DateTime getLastModifiedTimeOfJhtQuantities() {
         final Stream<DateTime> editTimestamps = Stream
-                .<AnnualStatisticsManuallyEditableFields> of(gameDamage, huntingControl, otherPublicAdmin)
+                .<AnnualStatisticsManuallyEditableFields>of(gameDamage, huntingControl, otherPublicAdmin)
                 .map(AnnualStatisticsManuallyEditableFields::getLastModified);
 
         final Stream<DateTime> moderatorOverrideTmestamps = Stream
@@ -403,6 +402,12 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
 
     public boolean isReadyForInspection() {
         return isInCoordinatorUpdateableState() && requiredFieldsPresentForInspection();
+    }
+
+    public Map<AnnualStatisticsParticipantFieldGroup, List<AnnualStatisticsParticipantField>> listMissingParticipants() {
+        return streamParticipantFieldsets()
+                .map(AnnualStatisticsFieldsetParticipants::listMissingParticipants)
+                .collect(Collectors.toMap(missing -> missing._1, missing -> missing._2, (a, b) -> b));
     }
 
     public boolean isCompleteForApproval() {
@@ -422,6 +427,12 @@ public class RhyAnnualStatistics extends LifecycleEntity<Long> {
                 basicInfo, hunterExams, shootingTests, gameDamage, huntingControl, otherPublicAdmin, hunterExamTraining,
                 jhtTraining, hunterTraining, youthTraining, otherHunterTraining, publicEvents, otherHuntingRelated, communication,
                 shootingRanges, luke, metsahallitus);
+    }
+
+    private Stream<? extends AnnualStatisticsFieldsetParticipants> streamParticipantFieldsets() {
+        return Stream.of(
+                hunterExams, huntingControl, hunterExamTraining,
+                jhtTraining, hunterTraining, youthTraining, otherHunterTraining, publicEvents);
     }
 
     // Accessors -->

@@ -2,6 +2,8 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -13,10 +15,27 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.GAME_COUNTING_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.GAME_ENVIRONMENTAL_CARE_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.GAME_POPULATION_MANAGEMENT_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_GAME_COUNTING_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_GAME_ENVIRONMENTAL_CARE_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_GAME_POPULATION_MANAGEMENT_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_OTHER_GAMEKEEPING_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_SHOOTING_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_SMALL_CARNIVORE_HUNTING_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_TRACKER_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.OTHER_GAMEKEEPING_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.SHOOTING_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.SMALL_CARNIVORE_HUNTING_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.TRACKER_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantFieldGroup.OTHER_HUNTER_TRAINING_STATISTICS;
 import static fi.riista.util.F.nullsafeMax;
 import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
@@ -25,44 +44,45 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class OtherHunterTrainingStatistics
         implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsFieldsetParticipants,
         AnnualStatisticsManuallyEditableFields<OtherHunterTrainingStatistics>,
         Serializable {
 
-    public static final OtherHunterTrainingStatistics reduce(@Nullable final OtherHunterTrainingStatistics a,
-                                                             @Nullable final OtherHunterTrainingStatistics b) {
+    public static OtherHunterTrainingStatistics reduce(@Nullable final OtherHunterTrainingStatistics a,
+                                                       @Nullable final OtherHunterTrainingStatistics b) {
 
         final OtherHunterTrainingStatistics result = new OtherHunterTrainingStatistics();
-        result.setSmallCarnivoreHuntingTrainingEvents(nullableIntSum(a, b, s -> s.getSmallCarnivoreHuntingTrainingEvents()));
-        result.setSmallCarnivoreHuntingTrainingParticipants(nullableIntSum(a, b, s -> s.getSmallCarnivoreHuntingTrainingParticipants()));
-        result.setGameCountingTrainingEvents(nullableIntSum(a, b, s -> s.getGameCountingTrainingEvents()));
-        result.setGameCountingTrainingParticipants(nullableIntSum(a, b, s -> s.getGameCountingTrainingParticipants()));
-        result.setGamePopulationManagementTrainingEvents(nullableIntSum(a, b, s -> s.getGamePopulationManagementTrainingEvents()));
-        result.setGamePopulationManagementTrainingParticipants(nullableIntSum(a, b, s -> s.getGamePopulationManagementTrainingParticipants()));
-        result.setGameEnvironmentalCareTrainingEvents(nullableIntSum(a, b, s -> s.getGameEnvironmentalCareTrainingEvents()));
-        result.setGameEnvironmentalCareTrainingParticipants(nullableIntSum(a, b, s -> s.getGameEnvironmentalCareTrainingParticipants()));
-        result.setOtherGamekeepingTrainingEvents(nullableIntSum(a, b, s -> s.getOtherGamekeepingTrainingEvents()));
-        result.setOtherGamekeepingTrainingParticipants(nullableIntSum(a, b, s -> s.getOtherGamekeepingTrainingParticipants()));
-        result.setShootingTrainingEvents(nullableIntSum(a, b, s -> s.getShootingTrainingEvents()));
-        result.setShootingTrainingParticipants(nullableIntSum(a, b, s -> s.getShootingTrainingParticipants()));
-        result.setTrackerTrainingEvents(nullableIntSum(a, b, s -> s.getTrackerTrainingEvents()));
-        result.setTrackerTrainingParticipants(nullableIntSum(a, b, s -> s.getTrackerTrainingParticipants()));
+        result.setSmallCarnivoreHuntingTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getSmallCarnivoreHuntingTrainingEvents));
+        result.setSmallCarnivoreHuntingTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getSmallCarnivoreHuntingTrainingParticipants));
+        result.setGameCountingTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getGameCountingTrainingEvents));
+        result.setGameCountingTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getGameCountingTrainingParticipants));
+        result.setGamePopulationManagementTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getGamePopulationManagementTrainingEvents));
+        result.setGamePopulationManagementTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getGamePopulationManagementTrainingParticipants));
+        result.setGameEnvironmentalCareTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getGameEnvironmentalCareTrainingEvents));
+        result.setGameEnvironmentalCareTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getGameEnvironmentalCareTrainingParticipants));
+        result.setOtherGamekeepingTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getOtherGamekeepingTrainingEvents));
+        result.setOtherGamekeepingTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getOtherGamekeepingTrainingParticipants));
+        result.setShootingTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getShootingTrainingEvents));
+        result.setShootingTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getShootingTrainingParticipants));
+        result.setTrackerTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getTrackerTrainingEvents));
+        result.setTrackerTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getTrackerTrainingParticipants));
 
-        result.setNonSubsidizableSmallCarnivoreHuntingTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableSmallCarnivoreHuntingTrainingEvents()));
-        result.setNonSubsidizableSmallCarnivoreHuntingTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableSmallCarnivoreHuntingTrainingParticipants()));
-        result.setNonSubsidizableGameCountingTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableGameCountingTrainingEvents()));
-        result.setNonSubsidizableGameCountingTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableGameCountingTrainingParticipants()));
-        result.setNonSubsidizableGamePopulationManagementTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableGamePopulationManagementTrainingEvents()));
-        result.setNonSubsidizableGamePopulationManagementTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableGamePopulationManagementTrainingParticipants()));
-        result.setNonSubsidizableGameEnvironmentalCareTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableGameEnvironmentalCareTrainingEvents()));
-        result.setNonSubsidizableGameEnvironmentalCareTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableGameEnvironmentalCareTrainingParticipants()));
-        result.setNonSubsidizableOtherGamekeepingTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableOtherGamekeepingTrainingEvents()));
-        result.setNonSubsidizableOtherGamekeepingTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableOtherGamekeepingTrainingParticipants()));
-        result.setNonSubsidizableShootingTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableShootingTrainingEvents()));
-        result.setNonSubsidizableShootingTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableShootingTrainingParticipants()));
-        result.setNonSubsidizableTrackerTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableTrackerTrainingEvents()));
-        result.setNonSubsidizableTrackerTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableTrackerTrainingParticipants()));
+        result.setNonSubsidizableSmallCarnivoreHuntingTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableSmallCarnivoreHuntingTrainingEvents));
+        result.setNonSubsidizableSmallCarnivoreHuntingTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableSmallCarnivoreHuntingTrainingParticipants));
+        result.setNonSubsidizableGameCountingTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableGameCountingTrainingEvents));
+        result.setNonSubsidizableGameCountingTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableGameCountingTrainingParticipants));
+        result.setNonSubsidizableGamePopulationManagementTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableGamePopulationManagementTrainingEvents));
+        result.setNonSubsidizableGamePopulationManagementTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableGamePopulationManagementTrainingParticipants));
+        result.setNonSubsidizableGameEnvironmentalCareTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableGameEnvironmentalCareTrainingEvents));
+        result.setNonSubsidizableGameEnvironmentalCareTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableGameEnvironmentalCareTrainingParticipants));
+        result.setNonSubsidizableOtherGamekeepingTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableOtherGamekeepingTrainingEvents));
+        result.setNonSubsidizableOtherGamekeepingTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableOtherGamekeepingTrainingParticipants));
+        result.setNonSubsidizableShootingTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableShootingTrainingEvents));
+        result.setNonSubsidizableShootingTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableShootingTrainingParticipants));
+        result.setNonSubsidizableTrackerTrainingEvents(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableTrackerTrainingEvents));
+        result.setNonSubsidizableTrackerTrainingParticipants(nullableIntSum(a, b, OtherHunterTrainingStatistics::getNonSubsidizableTrackerTrainingParticipants));
 
-        result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
+        result.setLastModified(nullsafeMax(a, b, OtherHunterTrainingStatistics::getLastModified));
         return result;
     }
 
@@ -472,7 +492,66 @@ public class OtherHunterTrainingStatistics
                 gameEnvironmentalCareTrainingEvents, gameEnvironmentalCareTrainingParticipants,
                 otherGamekeepingTrainingEvents, otherGamekeepingTrainingParticipants,
                 shootingTrainingEvents, shootingTrainingParticipants,
-                trackerTrainingEvents, trackerTrainingParticipants);
+                trackerTrainingEvents, trackerTrainingParticipants) && hasParticipants();
+    }
+
+    private boolean hasParticipants() {
+        return listMissingParticipants()._2.isEmpty();
+    }
+
+    @Override
+    public Tuple2<AnnualStatisticsParticipantFieldGroup, List<AnnualStatisticsParticipantField>> listMissingParticipants() {
+        final List<AnnualStatisticsParticipantField> missing = new ArrayList<>();
+        if (smallCarnivoreHuntingTrainingEvents != null && smallCarnivoreHuntingTrainingEvents > 0 && smallCarnivoreHuntingTrainingParticipants <= 0) {
+            missing.add(SMALL_CARNIVORE_HUNTING_TRAINING_EVENTS);
+        }
+        if (gameCountingTrainingEvents != null && gameCountingTrainingEvents > 0 && gameCountingTrainingParticipants <= 0) {
+            missing.add(GAME_COUNTING_TRAINING_EVENTS);
+        }
+        if (gamePopulationManagementTrainingEvents != null && gamePopulationManagementTrainingEvents > 0 && gamePopulationManagementTrainingParticipants <= 0) {
+            missing.add(GAME_POPULATION_MANAGEMENT_TRAINING_EVENTS);
+        }
+        if (gameEnvironmentalCareTrainingEvents != null && gameEnvironmentalCareTrainingEvents > 0 && gameEnvironmentalCareTrainingParticipants <= 0) {
+            missing.add(GAME_ENVIRONMENTAL_CARE_TRAINING_EVENTS);
+        }
+        if (otherGamekeepingTrainingEvents != null && otherGamekeepingTrainingEvents > 0 && otherGamekeepingTrainingParticipants <= 0) {
+            missing.add(OTHER_GAMEKEEPING_TRAINING_EVENTS);
+        }
+        if (shootingTrainingEvents != null && shootingTrainingEvents > 0 && shootingTrainingParticipants <= 0) {
+            missing.add(SHOOTING_TRAINING_EVENTS);
+        }
+        if (trackerTrainingEvents != null && trackerTrainingEvents > 0 && trackerTrainingParticipants <= 0) {
+            missing.add(TRACKER_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableSmallCarnivoreHuntingTrainingEvents != null && nonSubsidizableSmallCarnivoreHuntingTrainingEvents > 0 &&
+                nonSubsidizableSmallCarnivoreHuntingTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_SMALL_CARNIVORE_HUNTING_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableGameCountingTrainingEvents != null && nonSubsidizableGameCountingTrainingEvents > 0 &&
+                nonSubsidizableGameCountingTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_GAME_COUNTING_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableGamePopulationManagementTrainingEvents != null && nonSubsidizableGamePopulationManagementTrainingEvents > 0 &&
+                nonSubsidizableGamePopulationManagementTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_GAME_POPULATION_MANAGEMENT_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableGameEnvironmentalCareTrainingEvents != null && nonSubsidizableGameEnvironmentalCareTrainingEvents > 0 &&
+                nonSubsidizableGameEnvironmentalCareTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_GAME_ENVIRONMENTAL_CARE_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableOtherGamekeepingTrainingEvents != null && nonSubsidizableOtherGamekeepingTrainingEvents > 0 &&
+                nonSubsidizableOtherGamekeepingTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_OTHER_GAMEKEEPING_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableShootingTrainingEvents != null && nonSubsidizableShootingTrainingEvents > 0 &&
+                nonSubsidizableShootingTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_SHOOTING_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableTrackerTrainingEvents != null && nonSubsidizableTrackerTrainingEvents > 0 &&
+                nonSubsidizableTrackerTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_TRACKER_TRAINING_EVENTS);
+        }
+        return Tuple.of(OTHER_HUNTER_TRAINING_STATISTICS, missing);
     }
 
     @Override

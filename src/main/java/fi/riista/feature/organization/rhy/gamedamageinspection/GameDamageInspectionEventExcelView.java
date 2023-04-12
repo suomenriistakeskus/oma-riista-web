@@ -13,6 +13,8 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
+import org.apache.poi.xssf.usermodel.IndexedColorMap;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.springframework.web.servlet.view.document.AbstractXlsxView;
@@ -77,8 +79,9 @@ public class GameDamageInspectionEventExcelView extends AbstractXlsxView {
 
         final Workbook wb = excelHelper.getSheet().getWorkbook();
 
-        final XSSFColor green = new XSSFColor(new java.awt.Color(235, 242, 221));
-        final XSSFColor gray = new XSSFColor(new java.awt.Color(242, 242, 242));
+        final IndexedColorMap colorMap = new DefaultIndexedColorMap();
+        final XSSFColor green = new XSSFColor(new java.awt.Color(235, 242, 221), colorMap);
+        final XSSFColor gray = new XSSFColor(new java.awt.Color(242, 242, 242), colorMap);
 
         this.tableCellFont = wb.createFont();
         this.tableCellFont.setFontHeightInPoints((short)10);

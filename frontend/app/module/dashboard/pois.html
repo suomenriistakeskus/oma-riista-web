@@ -1,0 +1,41 @@
+
+<table class="table table-bordered table-striped">
+    <thead>
+    <tr>
+        <td><span ng-if="!$ctrl.metrics.$resolved" class="fa fa-refresh fa-spin fa-lg"></span></td>
+        <td translate="reporting.dashboard.usersTab.pois.individuals"></td>
+        <td translate="reporting.dashboard.usersTab.pois.groups"></td>
+    </tr>
+    </thead>
+    <tr>
+        <td translate="reporting.dashboard.usersTab.pois.sightingPlace"></td>
+        <td ng-bind="::$ctrl.metrics.individualSightingPlaceCount"></td>
+        <td ng-bind="::$ctrl.metrics.groupSightingPlaceCount"></td>
+    </tr>
+    <tr>
+        <td translate="reporting.dashboard.usersTab.pois.mineralLick"></td>
+        <td ng-bind="::$ctrl.metrics.individualMineralLickCount"></td>
+        <td ng-bind="::$ctrl.metrics.groupMineralLickCount"></td>
+    </tr>
+    <tr>
+        <td translate="reporting.dashboard.usersTab.pois.feedingPlace"></td>
+        <td ng-bind="::$ctrl.metrics.individualFeedingPlaceCount"></td>
+        <td ng-bind="::$ctrl.metrics.groupFeedingPlaceCount"></td>
+    </tr>
+    <tr>
+        <td translate="reporting.dashboard.usersTab.pois.other"></td>
+        <td ng-bind="::$ctrl.metrics.individualOtherCount"></td>
+        <td ng-bind="::$ctrl.metrics.groupOtherCount"></td>
+    </tr>
+</table>
+
+<table class="table table-bordered table-striped">
+    <tr>
+        <td class="col-sm-6" translate="reporting.dashboard.usersTab.pois.area"></td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.areaPOICount"></td>
+    </tr>
+    <tr>
+        <td class="col-sm-6" translate="reporting.dashboard.usersTab.pois.club"></td>
+        <td class="col-sm-6" ng-bind="::$ctrl.metrics.clubPOICount"></td>
+    </tr>
+</table>

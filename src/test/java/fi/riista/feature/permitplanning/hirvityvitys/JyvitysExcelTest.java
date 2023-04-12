@@ -243,8 +243,8 @@ public class JyvitysExcelTest {
 
     @Test
     public void testVerotuslohko_totalAreaForCalculcation() {
-        assertEquals("J17 + J18", getCell(1, "J16").getCellFormula());
-        assertEquals("J17 + J18", getCell(2, "J16").getCellFormula());
+        assertEqualsOmittingSpaces("J17 + J18", getCell(1, "J16").getCellFormula());
+        assertEqualsOmittingSpaces("J17 + J18", getCell(2, "J16").getCellFormula());
     }
 
     @Test
@@ -285,13 +285,13 @@ public class JyvitysExcelTest {
     @Test
     public void testFormulas_permitsPer1000Ha() {
         // Permits per 1000ha private land multiplier
-        assertEquals("C12 / J16 * 1000", getCell(2, "G13").getCellFormula());
+        assertEqualsOmittingSpaces("C12 / J16 * 1000", getCell(2, "G13").getCellFormula());
     }
 
     @Test
     public void testFormulas_permitsPerShooter() {
         // Permits per shooter multiplier
-        assertEquals("IF( J10 > 0, C14 / J10, 0)", getCell(2, "G14").getCellFormula());
+        assertEqualsOmittingSpaces("IF( J10 > 0, C14 / J10, 0)", getCell(2, "G14").getCellFormula());
     }
 
     @Test
@@ -313,34 +313,34 @@ public class JyvitysExcelTest {
     @Test
     public void testFormulas_suggestion() {
         // By land
-        assertEquals("C8 * G13 / 1000", getCell(1, "L8").getCellFormula());
-        assertEquals("C9 * G13 / 1000", getCell(1, "L9").getCellFormula());
-        assertEquals("C8 * G13 / 1000", getCell(2, "L8").getCellFormula());
-        assertEquals("C9 * G13 / 1000", getCell(2, "L9").getCellFormula());
+        assertEqualsOmittingSpaces("C8 * G13 / 1000", getCell(1, "L8").getCellFormula());
+        assertEqualsOmittingSpaces("C9 * G13 / 1000", getCell(1, "L9").getCellFormula());
+        assertEqualsOmittingSpaces("C8 * G13 / 1000", getCell(2, "L8").getCellFormula());
+        assertEqualsOmittingSpaces("C9 * G13 / 1000", getCell(2, "L9").getCellFormula());
 
         // By shooters
-        assertEquals("J8 * G14", getCell(1, "M8").getCellFormula());
-        assertEquals("J9 * G14", getCell(1, "M9").getCellFormula());
-        assertEquals("J8 * G14", getCell(2, "M8").getCellFormula());
-        assertEquals("J9 * G14", getCell(2, "M9").getCellFormula());
+        assertEqualsOmittingSpaces("J8 * G14", getCell(1, "M8").getCellFormula());
+        assertEqualsOmittingSpaces("J9 * G14", getCell(1, "M9").getCellFormula());
+        assertEqualsOmittingSpaces("J8 * G14", getCell(2, "M8").getCellFormula());
+        assertEqualsOmittingSpaces("J9 * G14", getCell(2, "M9").getCellFormula());
 
         // Combined
-        assertEquals("L8 + M8", getCell(1, "N8").getCellFormula());
-        assertEquals("L9 + M9", getCell(1, "N9").getCellFormula());
-        assertEquals("L8 + M8", getCell(2, "N8").getCellFormula());
-        assertEquals("L9 + M9", getCell(2, "N9").getCellFormula());
+        assertEqualsOmittingSpaces("L8 + M8", getCell(1, "N8").getCellFormula());
+        assertEqualsOmittingSpaces("L9 + M9", getCell(1, "N9").getCellFormula());
+        assertEqualsOmittingSpaces("L8 + M8", getCell(2, "N8").getCellFormula());
+        assertEqualsOmittingSpaces("L9 + M9", getCell(2, "N9").getCellFormula());
 
         // Total suggestion
-        assertEquals("N8", getCell(1, "O8").getCellFormula());
-        assertEquals("N9", getCell(1, "O9").getCellFormula());
-        assertEquals("N8", getCell(2, "O8").getCellFormula());
-        assertEquals("N9", getCell(2, "O9").getCellFormula());
+        assertEqualsOmittingSpaces("N8", getCell(1, "O8").getCellFormula());
+        assertEqualsOmittingSpaces("N9", getCell(1, "O9").getCellFormula());
+        assertEqualsOmittingSpaces("N8", getCell(2, "O8").getCellFormula());
+        assertEqualsOmittingSpaces("N9", getCell(2, "O9").getCellFormula());
 
         // Adults
-        assertEquals("ROUND( ( 2 * O8 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(1, "P8").getCellFormula());
-        assertEquals("ROUND( ( 2 * O9 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(1, "P9").getCellFormula());
-        assertEquals("ROUND( ( 2 * O8 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(2, "P8").getCellFormula());
-        assertEquals("ROUND( ( 2 * O9 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(2, "P9").getCellFormula());
+        assertEqualsOmittingSpaces("ROUND( ( 2 * O8 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(1, "P8").getCellFormula());
+        assertEqualsOmittingSpaces("ROUND( ( 2 * O9 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(1, "P9").getCellFormula());
+        assertEqualsOmittingSpaces("ROUND( ( 2 * O8 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(2, "P8").getCellFormula());
+        assertEqualsOmittingSpaces("ROUND( ( 2 * O9 * (100- C15 ) / (200- C15 ) ), 0 )", getCell(2, "P9").getCellFormula());
 
     }
 
@@ -388,5 +388,12 @@ public class JyvitysExcelTest {
         return workbook.getSheetAt(sheetNumber)
                 .getRow(celladdress.getRow())
                 .getCell(celladdress.getColumn());
+    }
+
+    private void assertEqualsOmittingSpaces(final String expected, final String actual) {
+        assertEquals(stripSpaces(expected), stripSpaces(actual));
+    }
+    private String stripSpaces(final String s) {
+        return s.replaceAll(" ", "");
     }
 }

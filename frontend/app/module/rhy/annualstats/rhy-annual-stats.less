@@ -6,15 +6,34 @@
   margin-bottom: 12px;
 }
 
+.r-annual-statistics-top-notifications {
+  clear: both;
+  display: flex;
+  justify-content: end;
+  flex-direction: column;
+
+  padding: 16px;
+  border: 1px solid @alert-danger-border;
+  border-radius: 8px;
+  margin: 0 15px 12px;
+
+  background-color: @alert-danger-bg;
+  color: @alert-danger-text;
+  ul {
+    margin-left: 32px;
+  }
+}
+
 @r-annual-statistics-not-started-color: #c44d4a;
 @r-annual-statistics-in-progress-color: @r-annual-statistics-not-started-color;
 @r-annual-statistics-under-inspection-color: @r-yellow;
 @r-annual-statistics-approved-color: @btn-primary-bg;
+@r-annual-statistics-warning-color: @r-annual-statistics-in-progress-color;
 
 .r-annual-statistics-state-label {
   .h5;
-  margin-top: 0px;
-  margin-bottom: 0px;
+  margin-top: 0;
+  margin-bottom: 0;
 
   &.not-started {
     color: @r-annual-statistics-not-started-color;
@@ -44,11 +63,17 @@
 
 .r-annual-statistics-tabset {
   margin-bottom: 15px;
+  .fa-warning {
+    color: @r-annual-statistics-warning-color;
+  }
 }
 
 .rhy-training-filter-selection {
-  margin-top: 10px;
-  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin: 10px 0;
 }
 
 .r-annual-statistics-panel {
@@ -63,13 +88,17 @@
         .h3;
         font-size: 15px;
         line-height: 1.4;
-        margin-top: 0px;
-        margin-bottom: 0px;
+        margin-top: 0;
+        margin-bottom: 0;
 
         .timestamped-panel-heading-title {
           .make-xs-column(9, 0);
 
           display: inline-block;
+
+          .fa-warning {
+            color: @r-annual-statistics-warning-color;
+          }
         }
 
         .timestamped-panel-heading-timestamp {
@@ -84,6 +113,20 @@
           @media (min-width: 768px) and (max-width: 991px) {
             margin-top: -1px;
             margin-bottom: -6px;
+          }
+        }
+
+        .timestamped-panel-heading-title-second-row {
+          font-family: @font-family-open-sans;
+          font-size: 12px;
+          font-weight: 400;
+          margin-top: 2px;
+
+          .fa-info-circle {
+            color: @brand-info;
+            font-size: 20px;
+            float: left;
+            margin-right: 5px;
           }
         }
       }

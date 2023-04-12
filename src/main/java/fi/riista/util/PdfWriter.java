@@ -111,6 +111,11 @@ public class PdfWriter implements Closeable {
         return this;
     }
 
+    public PdfWriter write(final String text) throws IOException {
+        writeText(text, this.posX, this.posY);
+        return this;
+    }
+
     public PdfWriter writeLine(final String text) throws IOException {
         writeText(text, this.posX, this.posY);
         this.posY -= this.lineHeight;
@@ -186,6 +191,15 @@ public class PdfWriter implements Closeable {
         return this;
     }
 
+    public PdfWriter drawFilledBox(final float widthMm, final float heightMm, final Color color) throws IOException {
+        this.contentStream.addRect(this.posX, this.posY,
+                widthMm * DOTS_PER_MM, heightMm * DOTS_PER_MM);
+        this.contentStream.setNonStrokingColor(color);
+        this.contentStream.fill();
+        this.contentStream.setNonStrokingColor(Color.BLACK);
+        return this;
+    }
+
     public void barCode(final String barCodeMessage) throws IOException {
         final float scale = 100f / 300;
         final Code128Bean code128Bean = new Code128Bean();
@@ -223,5 +237,17 @@ public class PdfWriter implements Closeable {
     @Override
     public void close() throws IOException {
         this.contentStream.close();
+    }
+
+    public float getLineHeight() {
+        return lineHeight;
+    }
+
+    public float getMarginFromMm(final float value) {
+        return value * DOTS_PER_MM;
+    }
+
+    public float getPosY() {
+        return posY;
     }
 }

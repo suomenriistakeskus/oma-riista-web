@@ -317,11 +317,21 @@ public class DogEventUnleashFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
-    @Test(expected = ConstraintViolationException.class)
+    @Test
     public void updateEvents_validate_contactPhoneContainsCharacter() {
         onAuthenticated(user, () -> {
             final DogEventUnleashDTO event = newEventDto(1);
-            event.setContactPhone("+123x");
+            event.setContactPhone("+35850123456x"); // X -> 9
+            feature.updateEvent(application.getId(), event);
+            assertThat(event.getContactPhone(), equalTo("+35850123456x"));
+        });
+    }
+
+    @Test
+    public void updateEvents_validate_contactPhoneContainsHyphen() {
+        onAuthenticated(user, () -> {
+            final DogEventUnleashDTO event = newEventDto(1);
+            event.setContactPhone("+35840-123456789");
             feature.updateEvent(application.getId(), event);
         });
     }
@@ -362,7 +372,7 @@ public class DogEventUnleashFeatureTest extends EmbeddedDatabaseTest {
         event.setLocationDescription("Location description");
         event.setContactName("Contact name");
         event.setContactMail("contact@mail");
-        event.setContactPhone("1234567890");
+        event.setContactPhone("0501234567");
         event.setAdditionalInfo("Additional info");
         event.setGeoLocation(geoLocation());
         return event;

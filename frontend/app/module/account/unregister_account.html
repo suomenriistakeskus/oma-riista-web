@@ -1,0 +1,22 @@
+<form name="accountUnregisterForm" role="form" class="form" novalidate
+      ng-submit="$ctrl.unregister()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="account.profile.title.unregisterUserAccount"></h3>
+    </div>
+
+    <div class="modal-body">
+        <p translate="account.profile.unregisterUserAccount.notRequested.confirmUnregisterMessage"></p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+
+        <button type="submit" class="btn btn-danger"
+                ng-disabled="accountUnregisterForm.$invalid"
+                translate="account.profile.button.unregister"></button>
+    </div>
+</form>

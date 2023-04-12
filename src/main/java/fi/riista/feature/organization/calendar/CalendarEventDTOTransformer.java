@@ -21,8 +21,8 @@ import static fi.riista.util.jpa.CriteriaUtils.singleQueryFunction;
 import static fi.riista.util.jpa.JpaSpecs.fetch;
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 
 @Component
 public class CalendarEventDTOTransformer extends ListTransformer<CalendarEvent, CalendarEventDTO> {
@@ -48,7 +48,7 @@ public class CalendarEventDTOTransformer extends ListTransformer<CalendarEvent, 
         final Function<CalendarEvent, Organisation> eventToOrganisation = getCalendarEventToOrganisationMapping(events);
         final Function<CalendarEvent, Venue> eventToVenue = getCalendarEventToVenueMapping(events);
         final boolean isModeratorOrAdmin = activeUserService.isModeratorOrAdmin();
-        final Predicate<CalendarEvent> isLockedAsPastCalendarEventTester = getCalendarEventToLockingStatusMapping(events, isModeratorOrAdmin);
+        final Predicate<CalendarEvent> isLockedAsPastCalendarEventTester = getCalendarEventToLockingStatusMapping(events);
         final Predicate<CalendarEvent> isLockedAsPastStatisticsTester = getCalendarEventToLockedStatisticsMapping(events, isModeratorOrAdmin);
         final Map<Long, List<AdditionalCalendarEventDTO>> eventIdToAdditionalEventDTOs =
                 getEventIdToAdditionalCalendarEventDTOs(events);
@@ -81,7 +81,7 @@ public class CalendarEventDTOTransformer extends ListTransformer<CalendarEvent, 
     }
 
     @Nonnull
-    private Predicate<CalendarEvent> getCalendarEventToLockingStatusMapping(final Collection<CalendarEvent> events, boolean isModeratorOrAdmin) {
+    private Predicate<CalendarEvent> getCalendarEventToLockingStatusMapping(final Collection<CalendarEvent> events) {
         final List<CalendarEvent> shootingTestCalendarEvents =
                 events.stream().filter(event -> event.getCalendarEventType().isShootingTest()).collect(toList());
 
@@ -96,10 +96,7 @@ public class CalendarEventDTOTransformer extends ListTransformer<CalendarEvent, 
                     .collect(indexingByIdOf(ShootingTestEvent::getCalendarEvent));
         }
 
-        return event -> {
-            return !isModeratorOrAdmin && event.isLockedAsPastCalendarEvent()
-                    || calendarEventIdToShootingTestEvent.get(event.getId()) != null;
-        };
+        return event -> calendarEventIdToShootingTestEvent.get(event.getId()) != null;
     }
 
     @Nonnull

@@ -106,6 +106,8 @@ public class HarvestPermitApplicationPdfFeature {
     private static final String JSP_MAMMAL = "pdf/application-mammal";
     private static final String JSP_NEST_REMOVAL = "pdf/application-nest-removal";
     private static final String JSP_LAW_SECTION_TEN = "pdf/application-law-section-ten";
+    private static final String JSP_EUROPEAN_BEAVER = "pdf/application-european-beaver";
+    private static final String JSP_PARTRIDGE = "pdf/application-partridge";
     private static final String JSP_WEAPON_TRANSPORTATION = "pdf/application-weapon-transportation";
     private static final String JSP_DISABILITY = "pdf/application-disability";
     private static final String JSP_DOG_EVENT_UNLEASH = "pdf/application-dog-event-unleash";
@@ -267,6 +269,20 @@ public class HarvestPermitApplicationPdfFeature {
                 final LawSectionTenPermitApplication lawSectionTenPermitApplication =
                         lawSectionTenPermitApplicationRepository.findByHarvestPermitApplication(application);
                 return new PdfModel(JSP_LAW_SECTION_TEN,
+                        LawSectionTenPermitApplicationSummaryDTO.create(application, lawSectionTenPermitApplication),
+                        speciesNameIndex);
+            }
+            case EUROPEAN_BEAVER: {
+                final LawSectionTenPermitApplication lawSectionTenPermitApplication =
+                        lawSectionTenPermitApplicationRepository.findByHarvestPermitApplication(application);
+                return new PdfModel(JSP_EUROPEAN_BEAVER,
+                        LawSectionTenPermitApplicationSummaryDTO.create(application, lawSectionTenPermitApplication),
+                        speciesNameIndex);
+            }
+            case PARTRIDGE: {
+                final LawSectionTenPermitApplication lawSectionTenPermitApplication =
+                        lawSectionTenPermitApplicationRepository.findByHarvestPermitApplication(application);
+                return new PdfModel(JSP_PARTRIDGE,
                         LawSectionTenPermitApplicationSummaryDTO.create(application, lawSectionTenPermitApplication),
                         speciesNameIndex);
             }

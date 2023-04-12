@@ -6,6 +6,7 @@ import com.querydsl.jpa.JPQLQueryFactory;
 import com.querydsl.jpa.sql.JPASQLQuery;
 import com.querydsl.sql.SQLTemplates;
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +58,19 @@ public class GISHirvitalousalueRepositoryImpl implements GISHirvitalousalueRepos
                 .from(hta)
                 .where(hta.geom.intersects(geoLocation.toPointGeometry()))
                 .fetchOne();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HirvitalousalueDTO> findByRHY(final Riistanhoitoyhdistys rhy) {
+        final QGISHirvitalousalue hta = QGISHirvitalousalue.gISHirvitalousalue;
+        final QRHYHirvitalousalue rhyHTA = QRHYHirvitalousalue.rHYHirvitalousalue;
+
+        return jpqlQueryFactory.select(createDTOProjection(hta))
+                .from(hta)
+                .innerJoin(hta.rhyHTAs, rhyHTA)
+                .where(rhyHTA.rhy.eq(rhy))
+                .fetch();
     }
 
 }

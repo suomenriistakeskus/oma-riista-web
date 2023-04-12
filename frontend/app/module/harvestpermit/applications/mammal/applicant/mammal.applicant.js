@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mammal.applicant', ['app.metadata'
                 templateUrl: 'harvestpermit/applications/mammal/applicant/applicant.html',
                 controller: 'MammalPermitWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

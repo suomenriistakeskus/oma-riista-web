@@ -20,6 +20,7 @@ angular.module('app.harvestpermit.application.dogdisturbance.eventdetails', ['ap
                 templateUrl: 'harvestpermit/applications/dogdisturbance/eventdetails/eventdetails.html',
                 controller: 'DogDisturbanceEventDetailsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     event: function (applicationId, DogDisturbanceApplication, DogEventType) {
                         return DogDisturbanceApplication.getEventDetails({id: applicationId, eventType: DogEventType.DOG_TRAINING}).$promise
@@ -81,6 +82,7 @@ angular.module('app.harvestpermit.application.dogdisturbance.eventdetails', ['ap
                 templateUrl: 'harvestpermit/applications/dogdisturbance/eventdetails/eventdetails.html',
                 controller: 'DogDisturbanceEventDetailsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     event: function (applicationId, DogDisturbanceApplication, DogEventType) {
                         return DogDisturbanceApplication.getEventDetails({id: applicationId, eventType: DogEventType.DOG_TEST}).$promise

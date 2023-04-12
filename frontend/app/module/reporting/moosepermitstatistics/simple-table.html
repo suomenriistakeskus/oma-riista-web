@@ -10,13 +10,7 @@
                 <span translate="reporting.moosePermitStatistics.permitUsedTop"></span>
             </th>
             <th colspan="2">
-                <span translate="reporting.moosePermitStatistics.remaining.top"></span>
-            </th>
-            <th colspan="2">
                 <span translate="reporting.moosePermitStatistics.area.top"></span>
-            </th>
-            <th colspan="2">
-                <span translate="reporting.moosePermitStatistics.remainingPer1000.top"></span>
             </th>
         </tr>
         <tr class="lowheader">
@@ -70,30 +64,12 @@
             </th>
 
             <th>
-                <r-with-tooltip content-key="reporting.moosePermitStatistics.remaining.total"
-                                tooltip-key="reporting.moosePermitStatistics.remaining.totalTooltip"></r-with-tooltip>
-            </th>
-            <th>
-                <r-with-tooltip content-key="reporting.moosePermitStatistics.remaining.effective"
-                                tooltip-key="reporting.moosePermitStatistics.remaining.effectiveTooltip"></r-with-tooltip>
-            </th>
-
-            <th>
                 <r-with-tooltip content-key="reporting.moosePermitStatistics.area.total"
                                 tooltip-key="reporting.moosePermitStatistics.area.totalTooltip"></r-with-tooltip>
             </th>
             <th>
                 <r-with-tooltip content-key="reporting.moosePermitStatistics.area.effective"
                                 tooltip-key="reporting.moosePermitStatistics.area.effectiveTooltip"></r-with-tooltip>
-            </th>
-
-            <th>
-                <r-with-tooltip content-key="reporting.moosePermitStatistics.remainingPer1000.total"
-                                tooltip-key="reporting.moosePermitStatistics.remainingPer1000.totalTooltip"></r-with-tooltip>
-            </th>
-            <th>
-                <r-with-tooltip content-key="reporting.moosePermitStatistics.remainingPer1000.effective"
-                                tooltip-key="reporting.moosePermitStatistics.remainingPer1000.effectiveTooltip"></r-with-tooltip>
             </th>
         </tr>
         </thead>
@@ -172,30 +148,12 @@
                                 tooltip-key="reporting.moosePermitStatistics.auPercentageTooltip"></r-with-tooltip>
             </td>
             <td>
-                <r-with-tooltip content-val="{{::s.areaAndPopulation.remainingPopulationInTotalArea }}"
-                                tooltip-key="reporting.moosePermitStatistics.remaining.totalTooltip"></r-with-tooltip>
-            </td>
-            <td>
-                <r-with-tooltip content-val="{{::s.areaAndPopulation.remainingPopulationInEffectiveArea }}"
-                                tooltip-key="reporting.moosePermitStatistics.remaining.effectiveTooltip"></r-with-tooltip>
-            </td>
-            <td>
                 <r-with-tooltip content-val="{{::s.areaAndPopulation.totalAreaSize}}"
                                 tooltip-key="reporting.moosePermitStatistics.area.totalTooltip"></r-with-tooltip>
             </td>
             <td>
                 <r-with-tooltip content-val="{{::s.areaAndPopulation.effectiveAreaSize}}"
                                 tooltip-key="reporting.moosePermitStatistics.area.effectiveTooltip"></r-with-tooltip>
-            </td>
-            <td>
-                <r-with-tooltip
-                        content-val="{{::s.areaAndPopulation.remainingPopulationInTotalAreaPer1000ha | number: 2}}"
-                        tooltip-key="reporting.moosePermitStatistics.remainingPer1000.totalTooltip"></r-with-tooltip>
-            </td>
-            <td>
-                <r-with-tooltip
-                        content-val="{{::s.areaAndPopulation.remainingPopulationInEffectiveAreaPer1000ha | number: 2}}"
-                        tooltip-key="reporting.moosePermitStatistics.remainingPer1000.effectiveTooltip"></r-with-tooltip>
             </td>
         </tr>
         </tbody>

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 
+import static fi.riista.feature.otherwisedeceased.OtherwiseDeceasedCause.OTHER;
 import static fi.riista.feature.otherwisedeceased.OtherwiseDeceasedCause.UNDER_INVESTIGATION;
 import static java.util.stream.Collectors.toList;
 
@@ -66,14 +67,14 @@ public class OtherwiseDeceasedExportFeature {
                 .withGender(ODA_GameGenderEnum.fromValue(entity.getGender().name()))
                 .withPointOfTime(entity.getPointOfTime().toLocalDateTime())
                 .withCause(ODA_DeathCauseEnum.fromValue(entity.getCause().name()))
-                .withCauseOther(entity.getCauseOther())
+                .withCauseOther(entity.getCause() == OTHER ? entity.getCauseDescription() : null)
                 .withDescription(entity.getDescription())
                 .withGeoLocation(createGeoLocationDto(entity.getGeoLocation(), entity.getNoExactLocation(), f));
     }
 
-    private ODA_GeoLocation createGeoLocationDto (final GeoLocation geoLocation,
-                                                  final boolean noExactLocation,
-                                                  final ObjectFactory f) {
+    private ODA_GeoLocation createGeoLocationDto(final GeoLocation geoLocation,
+                                                 final boolean noExactLocation,
+                                                 final ObjectFactory f) {
         return f.createODA_GeoLocation()
                 .withLatitude(geoLocation.getLatitude())
                 .withLongitude(geoLocation.getLongitude())

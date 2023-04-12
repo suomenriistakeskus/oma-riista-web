@@ -5,7 +5,6 @@ import fi.riista.feature.gamediary.srva.SrvaPdfFeature;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.Locales;
 import fi.riista.util.MediaTypeExtras;
-import io.sentry.Sentry;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.slf4j.Logger;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.support.RequestContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
@@ -48,8 +48,12 @@ public class SrvaPdfReportApiResource {
     @GetMapping(value = "{id:\\d+}/report/html")
     public String html(final @PathVariable long id,
                        @RequestParam(required = false, defaultValue = "fi") final String lang,
-                       final Model model) {
+                       final Model model,
+                       final HttpServletRequest httpServletRequest,
+                       final HttpServletResponse httpServletResponse) {
         final Locale locale = Locales.getLocaleByLanguageCode(lang);
+        new RequestContext(httpServletRequest, httpServletResponse).changeLocale(locale);
+
         final SrvaPdfFeature.PdfModel pdfModel = srvaPdfFeature.getPdfModel(id, locale);
         model.addAttribute("model", pdfModel.getModel());
 
@@ -77,7 +81,6 @@ public class SrvaPdfReportApiResource {
 
         } catch (Exception ex) {
             LOG.error("Could not generate PDF", ex);
-            Sentry.capture(ex);
         }
     }
 

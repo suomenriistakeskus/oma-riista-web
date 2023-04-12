@@ -102,6 +102,12 @@ public class NominationDecisionApiResource {
         return nominationDecisionFeature.getDecision(decisionId);
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping(value = "{decisionId:\\d+}")
+    public void deleteDecision(final @PathVariable long decisionId) {
+        nominationDecisionFeature.delete(decisionId);
+    }
+
     // DOCUMENT
 
     @CacheControl(policy = CachePolicy.NO_CACHE)

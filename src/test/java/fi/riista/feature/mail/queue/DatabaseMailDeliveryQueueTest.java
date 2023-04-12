@@ -3,6 +3,7 @@ package fi.riista.feature.mail.queue;
 import fi.riista.config.properties.MailProperties;
 import fi.riista.feature.mail.MailMessageDTO;
 import fi.riista.feature.mail.MailMessageDelivery;
+import fi.riista.feature.mail.bounce.MailMessageBounce;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.F;
 import org.hamcrest.Matchers;
@@ -17,12 +18,17 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static fi.riista.util.DateUtil.now;
+import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+
 
 public class DatabaseMailDeliveryQueueTest extends EmbeddedDatabaseTest {
 
@@ -66,24 +72,111 @@ public class DatabaseMailDeliveryQueueTest extends EmbeddedDatabaseTest {
 
         runInTransaction(() -> {
             final List<MailMessage> mailMessages = mailMessageRepository.findAll();
-            assertEquals(1, mailMessages.size());
+            assertThat(mailMessages, hasSize(1));
 
             final MailMessage msg = mailMessages.get(0);
-            assertEquals(dto.getBody(), msg.getBody());
-            assertEquals(dto.getSubject(), msg.getSubject());
-            assertEquals(dto.getFrom(), msg.getFromEmail());
-            assertTrue(msg.getScheduledTime().isBeforeNow());
+            assertThat(msg.getBody(), equalTo(dto.getBody()));
+            assertThat(msg.getSubject(), equalTo(dto.getSubject()));
+            assertThat(msg.getFromEmail(), equalTo(dto.getFrom()));
+            assertThat(msg.getScheduledTime(), is(lessThan(now())));
 
             final List<MailMessageRecipient> recipients = mailMessageRecipientRepository.findAll();
-            assertEquals(2, recipients.size());
-            assertEquals(Arrays.asList("first@riista.fi", "second@riista.fi"),
-                    F.mapNonNullsToList(recipients, MailMessageRecipient::getEmail));
+            assertThat(recipients, hasSize(2));
+            assertThat(F.mapNonNullsToList(recipients, MailMessageRecipient::getEmail),
+                    containsInAnyOrder("first@riista.fi", "second@riista.fi"));
 
             for (MailMessageRecipient recipient : recipients) {
-                assertEquals(msg, recipient.getMailMessage());
-                assertNull(recipient.getDeliveryTime());
-                assertEquals(0, recipient.getFailureCounter());
+                assertThat(recipient.getMailMessage(), equalTo(msg));
+                assertThat(recipient.getDeliveryTime(), is(nullValue()));
+                assertThat(recipient.getFailureCounter(), equalTo(0));
             }
+        });
+    }
+
+    @Test
+    public void testScheduleForDelivery_invalidEmailAddress() {
+        final String bouncedMailAddress = "test@riista.fi";
+
+        model().newMailMessageBounce(bouncedMailAddress);
+        persistInNewTransaction();
+
+        final MailMessageDTO dto = scheduleDelivery(mailMessage(bouncedMailAddress, "valid@riista.fi"));
+
+        runInTransaction(() -> {
+            final List<MailMessage> mailMessages = mailMessageRepository.findAll();
+            assertThat(mailMessages, hasSize(1));
+
+            final MailMessage msg = mailMessages.get(0);
+            assertThat(msg.getBody(), equalTo(dto.getBody()));
+            assertThat(msg.getSubject(), equalTo(dto.getSubject()));
+            assertThat(msg.getFromEmail(), equalTo(dto.getFrom()));
+            assertThat(msg.getScheduledTime(), is(lessThan(now())));
+
+            final List<MailMessageRecipient> recipients = mailMessageRecipientRepository.findAll();
+            assertThat(recipients, hasSize(1));
+            final MailMessageRecipient recipient = recipients.get(0);
+
+            assertThat(recipient.getEmail(), equalTo("valid@riista.fi"));
+            assertThat(recipient.getMailMessage(), equalTo(msg));
+            assertThat(recipient.getDeliveryTime(), is(nullValue()));
+            assertThat(recipient.getFailureCounter(), equalTo(0));
+        });
+    }
+
+    @Test
+    public void testScheduleForDelivery_temporaryBounce() {
+        final String bouncedMailAddress = "test@riista.fi";
+
+        // Should not filter out bounce with non-permanent type
+        model().newMailMessageBounce(bouncedMailAddress,
+                MailMessageBounce.BounceType.Transient, MailMessageBounce.BounceSubType.MailboxFull);
+
+        persistInNewTransaction();
+
+        final MailMessageDTO dto = scheduleDelivery(mailMessage(bouncedMailAddress));
+
+        runInTransaction(() -> {
+            final List<MailMessage> mailMessages = mailMessageRepository.findAll();
+            assertThat(mailMessages, hasSize(1));
+
+            final MailMessage msg = mailMessages.get(0);
+            assertThat(msg.getBody(), equalTo(dto.getBody()));
+            assertThat(msg.getSubject(), equalTo(dto.getSubject()));
+            assertThat(msg.getFromEmail(), equalTo(dto.getFrom()));
+            assertThat(msg.getScheduledTime(), is(lessThan(now())));
+
+            final List<MailMessageRecipient> recipients = mailMessageRecipientRepository.findAll();
+            assertThat(recipients, hasSize(1));
+            final MailMessageRecipient recipient = recipients.get(0);
+
+            assertThat(recipient.getEmail(), equalTo(bouncedMailAddress));
+            assertThat(recipient.getMailMessage(), equalTo(msg));
+            assertThat(recipient.getDeliveryTime(), is(nullValue()));
+            assertThat(recipient.getFailureCounter(), equalTo(0));
+        });
+    }
+
+    @Test
+    public void testScheduleForDelivery_onlyInvalidAddresses() {
+        final String bouncedMailAddress = "test@riista.fi";
+
+        model().newMailMessageBounce(bouncedMailAddress);
+        persistInNewTransaction();
+
+        final MailMessageDTO dto = scheduleDelivery(mailMessage(bouncedMailAddress));
+
+        runInTransaction(() -> {
+            final List<MailMessage> mailMessages = mailMessageRepository.findAll();
+            assertThat(mailMessages, hasSize(1));
+
+            final MailMessage msg = mailMessages.get(0);
+            assertThat(msg.getBody(), equalTo(dto.getBody()));
+            assertThat(msg.getSubject(), equalTo(dto.getSubject()));
+            assertThat(msg.getFromEmail(), equalTo(dto.getFrom()));
+            assertThat(msg.getScheduledTime(), is(lessThan(now())));
+
+            final List<MailMessageRecipient> recipients = mailMessageRecipientRepository.findAll();
+            assertThat(recipients, is(emptyList()));
         });
     }
 
@@ -93,18 +186,18 @@ public class DatabaseMailDeliveryQueueTest extends EmbeddedDatabaseTest {
 
         final Optional<MailMessageDelivery> deliveryOptional = deliveryQueue.nextDelivery();
 
-        assertTrue(deliveryOptional.isPresent());
+        assertThat(deliveryOptional.isPresent(), is(true));
 
         final MailMessageDelivery delivery = deliveryOptional.get();
 
-        assertEquals(dto.getBody(), delivery.getBody());
-        assertEquals(dto.getSubject(), delivery.getSubject());
-        assertEquals(dto.getFrom(), delivery.getFrom());
+        assertThat(delivery.getBody(), equalTo(dto.getBody()));
+        assertThat(delivery.getSubject(), equalTo(dto.getSubject()));
+        assertThat(delivery.getFrom(), equalTo(dto.getFrom()));
 
         final HashSet<String> recipients = new HashSet<>();
         delivery.consumeRemainingRecipients(recipients::add);
 
-        assertEquals(2, recipients.size());
+        assertThat(recipients, hasSize(2));
         assertThat(recipients, Matchers.containsInAnyOrder("first@riista.fi", "second@riista.fi"));
     }
 
@@ -113,7 +206,7 @@ public class DatabaseMailDeliveryQueueTest extends EmbeddedDatabaseTest {
         scheduleDelivery(mailMessage());
 
         final Optional<MailMessageDelivery> deliveryOptional = deliveryQueue.nextDelivery();
-        assertTrue(deliveryOptional.isPresent());
+        assertThat(deliveryOptional.isPresent(), is(true));
 
         final MailMessageDelivery delivery = deliveryOptional.get();
         delivery.consumeRemainingRecipients(email -> {
@@ -122,16 +215,16 @@ public class DatabaseMailDeliveryQueueTest extends EmbeddedDatabaseTest {
         deliveryQueue.storeDeliveryStatus(delivery);
 
         // No more deliveries pending after success
-        assertFalse(deliveryQueue.nextDelivery().isPresent());
+        assertThat(deliveryQueue.nextDelivery().isPresent(), is(false));
 
         runInTransaction(() -> {
             final List<MailMessageRecipient> recipients = mailMessageRecipientRepository.findAll();
-            assertEquals(2, recipients.size());
+            assertThat(recipients, hasSize(2));
 
             for (MailMessageRecipient recipient : recipients) {
-                assertNotNull(recipient.getDeliveryTime());
-                assertTrue(recipient.getDeliveryTime().isBeforeNow());
-                assertEquals(0, recipient.getFailureCounter());
+                assertThat(recipient.getDeliveryTime(), is(notNullValue()));
+                assertThat(recipient.getDeliveryTime(), is(lessThan(now())));
+                assertThat(recipient.getFailureCounter(), equalTo(0));
             }
         });
     }
@@ -141,7 +234,7 @@ public class DatabaseMailDeliveryQueueTest extends EmbeddedDatabaseTest {
         scheduleDelivery(mailMessage());
 
         final Optional<MailMessageDelivery> deliveryOptional = deliveryQueue.nextDelivery();
-        assertTrue(deliveryOptional.isPresent());
+        assertThat(deliveryOptional.isPresent(), is(true));
 
         final MailMessageDelivery delivery = deliveryOptional.get();
 
@@ -164,15 +257,15 @@ public class DatabaseMailDeliveryQueueTest extends EmbeddedDatabaseTest {
         deliveryQueue.storeDeliveryStatus(delivery);
 
         // Delivery is still pending
-        assertTrue(deliveryQueue.nextDelivery().isPresent());
+        assertThat(deliveryQueue.nextDelivery().isPresent(), is(true));
 
         runInTransaction(() -> {
             final List<MailMessageRecipient> recipients = mailMessageRecipientRepository.findAll();
-            assertEquals(2, recipients.size());
+            assertThat(recipients, hasSize(2));
 
             for (MailMessageRecipient recipient : recipients) {
-                assertNull(recipient.getDeliveryTime());
-                assertEquals(1, recipient.getFailureCounter());
+                assertThat(recipient.getDeliveryTime(), is(nullValue()));
+                assertThat(recipient.getFailureCounter(), equalTo(1));
             }
         });
     }
@@ -183,7 +276,7 @@ public class DatabaseMailDeliveryQueueTest extends EmbeddedDatabaseTest {
 
         for (int i = 0; i < MailProperties.MAX_RECIPIENT_SEND_FAILURES; i++) {
             final Optional<MailMessageDelivery> deliveryOptional = deliveryQueue.nextDelivery();
-            assertTrue(deliveryOptional.isPresent());
+            assertThat(deliveryOptional.isPresent(), is(true));
 
             final MailMessageDelivery delivery = deliveryOptional.get();
 
@@ -196,29 +289,29 @@ public class DatabaseMailDeliveryQueueTest extends EmbeddedDatabaseTest {
             } catch (TestException ignore) {
             }
 
-            assertEquals(Collections.singleton("to@riista.fi"), recipientEmails);
+            assertThat(recipientEmails, equalTo(Collections.singleton("to@riista.fi")));
 
             deliveryQueue.storeDeliveryStatus(delivery);
         }
 
         // Maximum delivery count reached
         final Optional<MailMessageDelivery> delivery = deliveryQueue.nextDelivery();
-        assertFalse(delivery.isPresent());
+        assertThat(delivery.isPresent(), is(false));
 
         runInTransaction(() -> {
             final List<MailMessage> messageList = mailMessageRepository.findAll();
-            assertEquals(1, messageList.size());
+            assertThat(messageList, hasSize(1));
 
             for (MailMessage msg : messageList) {
-                assertTrue(msg.isDelivered());
+                assertThat(msg.isDelivered(), is(true));
             }
 
             final List<MailMessageRecipient> recipients = mailMessageRecipientRepository.findAll();
-            assertEquals(1, recipients.size());
+            assertThat(recipients, hasSize(1));
 
             for (MailMessageRecipient recipient : recipients) {
-                assertNull(recipient.getDeliveryTime());
-                assertEquals(MailProperties.MAX_RECIPIENT_SEND_FAILURES, recipient.getFailureCounter());
+                assertThat(recipient.getDeliveryTime(), is(nullValue()));
+                assertThat(recipient.getFailureCounter(), equalTo(MailProperties.MAX_RECIPIENT_SEND_FAILURES));
             }
         });
     }

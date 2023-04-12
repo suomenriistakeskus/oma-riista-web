@@ -1,0 +1,14 @@
+<span ng-switch="$ctrl.event.status">
+    <div ng-switch-when="PROPOSED" class="status proposed">
+        <span class="fa fa-exclamation-triangle"></span>
+        <span translate="rhy.huntingControlEvent.eventStatus.PROPOSED"></span>
+    </div>
+    <div ng-switch-when="REJECTED" class="status rejected">
+        <span class="fa fa-times-circle"></span>
+        <span translate="rhy.huntingControlEvent.eventStatus.REJECTED"></span>
+    </div>
+    <div ng-switch-default class="status accepted">
+        <span class="fa fa-check-square"></span>
+        <span translate="rhy.huntingControlEvent.eventStatus.ACCEPTED"></span>
+    </div>
+</span>

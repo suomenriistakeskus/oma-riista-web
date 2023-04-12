@@ -287,7 +287,10 @@ angular.module('app.common.map.services', [])
         var maxBounds = MapBounds.getBoundsOfMmlBasemap();
         var vectorLayerTemplate = _.template('https://kartta.riista.fi/vector/<%= layer %>/{z}/{x}/{y}');
 
-        this.createLayer = function (vectorGridLayerName, style) {
+        this.createLayer = function (vectorGridLayerName, style, mouseOverPropertyName, mouseOverPropertyDesc, mouseOverExtraDesc) {
+            if (mouseOverPropertyName === undefined) {
+                mouseOverPropertyName = 'KOHDE_NIMI';
+            }
             var vectorTileLayerStyles = {};
             vectorTileLayerStyles[vectorGridLayerName] = style;
 
@@ -309,9 +312,18 @@ angular.module('app.common.map.services', [])
 
             layer.on('mouseover', function (e) {
                 var map = e.target._map;
-                var name = _.get(e.layer.properties, 'KOHDE_NIMI', '');
+                var name = _.get(e.layer.properties, mouseOverPropertyName, '');
+                var description = mouseOverExtraDesc !== undefined ? mouseOverExtraDesc : '';
+                if(mouseOverPropertyDesc !== undefined) {
+                    var tmpDesc = _.get(e.layer.properties, mouseOverPropertyDesc, '');
+                    tmpDesc = tmpDesc.replace(/\b(http[^\s]*)\b/gi, "<a href='$1' target='_blank'>$1</a>");
+                    description += tmpDesc;
+                }
 
-                if (!_.isEmpty(name)) {
+                if (!_.isEmpty(name) && !_.isEmpty(description)) {
+                    L.DomEvent.stopPropagation(e);
+                    popup.setContent("<b>" + name + "</b><p>"+description+"</p>").setLatLng(e.latlng).openOn(map);
+                } else if (!_.isEmpty(name)) {
                     L.DomEvent.stopPropagation(e);
                     popup.setContent(name).setLatLng(e.latlng).openOn(map);
                 }
@@ -342,7 +354,55 @@ angular.module('app.common.map.services', [])
         };
     })
 
-    .service('MapDefaults', function (BaseMapLayers, VectorMapLayers, SelectedMapLayers) {
+    .service('PropertyBorderVectorMapLayers', function ($translate, MapBounds, mmlOpenAPIKey) {
+        var maxBounds = MapBounds.getBoundsOfMmlBasemap();
+        var vectorLayerTemplate =
+            _.template('https://avoin-karttakuva.maanmittauslaitos.fi/kiinteisto-avoin/tiles/wmts/1.0.0/' +
+                'kiinteistojaotus/default/v3/WGS84_Pseudo-Mercator/{z}/{y}/{x}.pbf?api-key=' + mmlOpenAPIKey);
+
+        this.createLayer = function (vectorGridLayerName) {
+            var borderStyle = {
+                    fill: false,
+                    weight: 2,
+                    color: 'red'
+            };
+            var noStyle = {
+                fill: false,
+                stroke: false
+            };
+
+            var vectorTileLayerStyles = {};
+
+
+            vectorTileLayerStyles.KiinteistorajanSijaintitiedot = borderStyle;
+            vectorTileLayerStyles.PalstanSijaintitiedot = noStyle;
+            vectorTileLayerStyles.KiinteistotunnuksenSijaintitiedot = noStyle;
+            vectorTileLayerStyles.MaaraalanOsanSijaintitiedot = noStyle;
+            vectorTileLayerStyles.MaaraalanOsanSijaintitiedot_point = noStyle;
+            vectorTileLayerStyles.RajamerkinSijaintitiedot = noStyle;
+            vectorTileLayerStyles.RajamerkinSijaintitiedot_tunnus = noStyle;
+            vectorTileLayerStyles.metadata = noStyle;
+
+            var layer = L.vectorGrid.protobuf(vectorLayerTemplate({layer: vectorGridLayerName}), {
+                interactive: true,
+                pane: 'overlayPane',
+                updateWhenZooming: true,
+                keepBuffer: 10,
+                minZoom: 12,
+                maxZoom: 15,
+                rendererFactory: L.canvas.tile,
+                bounds: L.latLngBounds(maxBounds.southWest, maxBounds.northEast),
+                vectorTileLayerStyles: vectorTileLayerStyles
+            });
+            return {
+                name: $translate.instant('global.map.overlay.' + vectorGridLayerName),
+                type: 'custom',
+                layer: layer
+            };
+        };
+    })
+
+    .service('MapDefaults', function (BaseMapLayers, VectorMapLayers, SelectedMapLayers, $translate, PropertyBorderVectorMapLayers) {
         var mapBaseLayers = {
             terrain: BaseMapLayers.createLayer('terrain'),
             background: BaseMapLayers.createLayer('background'),
@@ -376,7 +436,42 @@ angular.module('app.common.map.services', [])
                 weight: 5.0,
                 color: 'blue'
             }),
-            natura: naturaLayer
+            hirvi_rajoitusalueet: VectorMapLayers.createLayer('hirvi_rajoitusalueet',
+                {
+                    fill: true,
+                    fillColor: 'FireBrick',
+                    fillOpacity: 0.4,
+                    weight: 0.85,
+                    color: 'FireBrick'
+                },
+                'KOHDE_NIMI',
+                'LISATIETO',
+                '<p>'+$translate.instant('global.map.overlay.retkikartta_extra_description')+'</p>'
+            ),
+            pienriista_rajoitusalueet: VectorMapLayers.createLayer('pienriista_rajoitusalueet',
+                {
+                    fill: true,
+                    fillColor: 'FireBrick',
+                    fillOpacity: 0.4,
+                    weight: 0.90,
+                    color: 'FireBrick'
+                },
+                'KOHDE_NIMI',
+                'LISATIETO'
+            ),
+            avi_metsastyskieltoalueet: VectorMapLayers.createLayer('avi_metsastyskieltoalueet',
+                {
+                    fill: true,
+                    fillColor: 'FireBrick',
+                    fillOpacity: 0.4,
+                    weight: 0.95,
+                    color: 'FireBrick'
+                },
+                'KUVAUS',
+                'LISATIETO'
+            ),
+            natura: naturaLayer,
+            propertyBorders: PropertyBorderVectorMapLayers.createLayer('kiinteistoraja')
         };
 
         this.create = function (cfg) {
@@ -467,7 +562,7 @@ angular.module('app.common.map.services', [])
                     logic: 'emit',
                     enable: []
                 },
-                marker: {
+                markers: {
                     logic: 'emit',
                     enable: []
                 },
@@ -563,8 +658,20 @@ angular.module('app.common.map.services', [])
             return $http.get('/api/v1/gis/property/id', {params: params});
         };
 
+        this.getPropertyPolygonWithWaterAreaById = function (id) {
+            var params = {id: id, withWaterArea: true};
+            return $http.get('/api/v1/gis/property/id', {params: params});
+        };
+
         this.getPropertyByCoordinates = function (latlng) {
             var params = angular.copy(latlng);
+
+            return $http.get('/api/v1/gis/property/point', {params: params});
+        };
+
+        this.getPropertyWithWaterAreaByCoordinates = function (latlng) {
+            var params = angular.copy(latlng);
+            params.withWaterArea = true;
 
             return $http.get('/api/v1/gis/property/point', {params: params});
         };

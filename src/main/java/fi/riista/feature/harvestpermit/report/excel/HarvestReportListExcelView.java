@@ -36,7 +36,7 @@ public class HarvestReportListExcelView extends AbstractXlsxView {
 
     /*package*/ static final String[] HEADER_LOCALIZATION_KEYS_DETAILS = new String[]{
             "state", "reportingTime", "date", "clockTime",
-            "species", "gender", "age", "weightEstimated", "weightMeasured",
+            "amount", "species", "gender", "age", "weightEstimated", "weightMeasured",
             "rka", "rhyAbbrv",
             "permitNumber", "permitType",
             "harvestSeasonName", "harvestQuotaArea",
@@ -52,7 +52,7 @@ public class HarvestReportListExcelView extends AbstractXlsxView {
 
     /*package*/ static final String[] HEADER_LOCALIZATION_KEYS = new String[]{
             "state", "reportingTime", "date", "clockTime",
-            "species", "gender", "age", "weightEstimated", "weightMeasured",
+            "amount", "species", "gender", "age", "weightEstimated", "weightMeasured",
             "rka", "rhyAbbrv",
             "permitNumber", "permitType",
             "harvestSeasonName", "harvestQuotaArea",
@@ -100,7 +100,7 @@ public class HarvestReportListExcelView extends AbstractXlsxView {
                     .appendTimeCell(dto.getPointOfTime())
 
                     // specimen fields
-
+                    .appendNumberCell(dto.getAmount())
                     .appendTextCell(dto.getSpeciesName())
                     .appendTextCell(dto.getGenderName())
                     .appendTextCell(dto.getAgeName())

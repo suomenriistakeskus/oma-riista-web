@@ -19,6 +19,8 @@ public class HunterExamStatisticsDTO {
 
         dto.setPassedHunterExams(entity.getPassedHunterExams());
         dto.setFailedHunterExams(entity.getFailedHunterExams());
+        dto.setHunterExamAttemptResultsOverridden(entity.isHunterExamAttemptResultsOverridden());
+
         dto.setHunterExamOfficials(entity.getHunterExamOfficials());
         dto.setLastModified(entity.getLastModified());
         return dto;
@@ -41,6 +43,8 @@ public class HunterExamStatisticsDTO {
     // Hylättyjen metsästäjätutkintoyritysten määrä
     @Min(0)
     private Integer failedHunterExams;
+
+    private boolean hunterExamAttemptResultsOverridden;
 
     // Metsästäjätutkinnon vastaanottajien määrä
     @Min(0)
@@ -85,6 +89,14 @@ public class HunterExamStatisticsDTO {
 
     public void setFailedHunterExams(final Integer failedHunterExams) {
         this.failedHunterExams = failedHunterExams;
+    }
+
+    public boolean isHunterExamAttemptResultsOverridden() {
+        return hunterExamAttemptResultsOverridden;
+    }
+
+    public void setHunterExamAttemptResultsOverridden(final boolean hunterExamAttemptResultsOverridden) {
+        this.hunterExamAttemptResultsOverridden = hunterExamAttemptResultsOverridden;
     }
 
     public Integer getHunterExamOfficials() {

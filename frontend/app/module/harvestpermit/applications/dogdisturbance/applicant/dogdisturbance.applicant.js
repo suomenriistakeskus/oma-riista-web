@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.dogdisturbance.applicant', ['app.m
                 templateUrl: 'harvestpermit/applications/dogdisturbance/applicant/applicant.html',
                 controller: 'DogDisturbanceApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

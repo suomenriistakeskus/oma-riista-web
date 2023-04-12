@@ -13,13 +13,13 @@
 }
 
 .permit-management-section {
-  color: #555;
+  color: @r-info-box-text-grey;
   border-top: 1px solid @table-bg-accent;
 
   .section-title {
     font-size: 18px;
     font-weight: bold;
-    color: #555;
+    color: @r-info-box-text-grey;
     margin: 20px 0;
     padding-left: 4px;
   }
@@ -27,7 +27,7 @@
   .column-title {
     text-transform: uppercase;
     font-weight: 700;
-    color: #555;
+    color: @r-info-box-text-grey;
   }
 
   .large-text {
@@ -95,7 +95,7 @@
   }
 
   > .panel-body {
-    color: #555;
+    color: @r-info-box-text-grey;
     padding: 0 20px 5px;
     height: 110px;
     overflow: hidden;
@@ -106,3 +106,15 @@
     text-align: right;
   }
 }
+.r-permit-usage-btns {
+  button {
+    white-space: pre-wrap;
+  }
+}
+
+@media (max-width: @screen-xs-max) {
+  .xs-text-left {
+    text-align: left;
+  }
+}
+

@@ -80,7 +80,8 @@
                 <textarea name="text" id="text" class="form-control" rows="6"
                           required
                           ng-model="$ctrl.selectedAction.text"
-                          minlength="5"></textarea>
+                          minlength="5"
+                          spellcheck="false"></textarea>
                 <p class="help-block has-error"
                    ng-show="form.text.$invalid"
                    ng-messages="form.text.$error">
@@ -91,7 +92,8 @@
             <div class="form-group" show-errors>
                 <label for="decisionText" translate="decision.action.decisionText"></label>
                 <textarea name="decisionText" id="decisionText" class="form-control" rows="6"
-                          ng-model="$ctrl.selectedAction.decisionText"></textarea>
+                          ng-model="$ctrl.selectedAction.decisionText"
+                          spellcheck="false"></textarea>
                 <p class="help-block has-error"
                    ng-show="form.decisionText.$invalid"
                    ng-messages="form.decisionText.$error">

@@ -8,7 +8,8 @@ angular.module('app.harvestpermit.decision.document.processing', [])
             controllerAs: '$ctrl',
             controller: function ($state, PermitDecisionUtils, PermitDecisionActionListModal,
                                   PermitDecisionAdjustedAreaSize, PermitDecisionSection,
-                                  NotificationService, RefreshDecisionStateService, decision, decisionId) {
+                                  NotificationService, RefreshDecisionStateService, decision, decisionId,
+                                  reference) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
@@ -16,10 +17,12 @@ angular.module('app.harvestpermit.decision.document.processing', [])
                     $ctrl.decision = decision;
                     $ctrl.sectionContent = PermitDecisionUtils.getSectionContent(decision, $ctrl.sectionId);
                     $ctrl.mooseLike = $ctrl.decision.permitTypeCode === '100';
+                    $ctrl.reference = reference;
                 };
 
                 $ctrl.editSection = function () {
-                    PermitDecisionActionListModal.open(decisionId).then(function () {
+                    var actions = $ctrl.reference ? $ctrl.reference.actions : null;
+                    PermitDecisionActionListModal.open(decisionId, actions).then(function () {
                         RefreshDecisionStateService.refresh();
                     }, function () {
                         RefreshDecisionStateService.refresh();

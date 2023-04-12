@@ -64,7 +64,6 @@ public class CarnivorePermitApplicationJustificationFeatureTest extends Embedded
         onSavedAndAuthenticated(createNewUser("applicant", applicant), () -> {
             final CarnivorePermitApplicationJustificationDTO dto = new CarnivorePermitApplicationJustificationDTO();
             dto.setPopulationAmount(LOREM_IPSUM + "amount");
-            dto.setPopulationDescription(LOREM_IPSUM + "description");
 
             feature.updateJustification(application.getId(), dto);
         });
@@ -76,7 +75,6 @@ public class CarnivorePermitApplicationJustificationFeatureTest extends Embedded
             assertThat(all, hasSize(1));
             final HarvestPermitApplicationSpeciesAmount speciesAmount = all.get(0);
             assertEquals(LOREM_IPSUM + "amount", speciesAmount.getPopulationAmount());
-            assertEquals(LOREM_IPSUM + "description", speciesAmount.getPopulationDescription());
         });
     }
 

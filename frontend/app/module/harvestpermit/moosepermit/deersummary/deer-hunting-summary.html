@@ -15,7 +15,7 @@
                 <span ng-bind="::$ctrl.getGameSpeciesName()"></span>
             </div>
 
-            <div ng-show="$ctrl.showAlertForPermitAreaSize()"
+            <div ng-show="$ctrl.showAlertForPermitAreaSize(huntingSummaryForm)"
                  class="alert alert-warning">
                 <span translate="club.hunting.huntingSummary.totalHuntingAreaInfoText"></span>
                 <span ng-bind="$ctrl.summary.permitAreaSize"></span>
@@ -27,8 +27,6 @@
                     <div class="form-group" show-errors>
                         <label for="totalHuntingArea" class="control-label col-xs-6">
                             <span translate="club.hunting.huntingSummary.totalHuntingArea"></span>
-                            <small ng-show="$ctrl.isTotalHuntingAreaRequired()"
-                                   class="glyphicon glyphicon-asterisk text-danger"></small>
                         </label>
 
                         <div class="col-xs-6">
@@ -53,8 +51,6 @@
                     <div class="form-group" show-errors>
                         <label for="remainingPopulationInTotalArea" class="control-label col-xs-6">
                             <span translate="club.hunting.deerHuntingSummary.remainingPopulationInTotalArea"></span>
-                            <small ng-show="$ctrl.isRemainingPopulationForTotalAreaRequired()"
-                                   class="glyphicon glyphicon-asterisk text-danger"></small>
                         </label>
 
                         <div class="col-xs-6">
@@ -81,8 +77,6 @@
                     <div class="form-group" show-errors>
                         <label for="effectiveHuntingArea" class="control-label col-xs-6">
                             <span translate="club.hunting.huntingSummary.effectiveHuntingArea"></span>
-                            <small class="glyphicon glyphicon-asterisk text-danger"
-                                   ng-show="$ctrl.isEffectiveHuntingAreaRequired()"></small>
                         </label>
 
                         <div class="col-xs-6">
@@ -107,8 +101,6 @@
                     <div class="form-group" show-errors>
                         <label for="remainingPopulationInEffectiveArea" class="control-label col-xs-6">
                             <span translate="club.hunting.deerHuntingSummary.remainingPopulationInEffectiveArea"></span>
-                            <small class="glyphicon glyphicon-asterisk text-danger"
-                                   ng-show="$ctrl.isRemainingPopulationForEffectiveAreaRequired()"></small>
                         </label>
 
                         <div class="col-xs-6">
@@ -150,6 +142,7 @@
                                uib-datepicker-popup is-open="isDatePickerOpen"
                                ng-model="$ctrl.huntingEndDate"
                                date-between-min-max
+                               required
                                min-date="$ctrl.speciesAmount.beginDate"
                                max-date="$ctrl.speciesAmount.endDate"
                                min-date2="$ctrl.speciesAmount.beginDate2"

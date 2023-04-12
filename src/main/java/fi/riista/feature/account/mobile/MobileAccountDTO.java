@@ -8,6 +8,7 @@ import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,6 +39,8 @@ public class MobileAccountDTO {
         dto.setUsername(username);
         dto.setFirstName(person.getFirstName());
         dto.setLastName(person.getLastName());
+
+        dto.setUnregisterRequestedTime(DateUtil.toLocalDateTimeNullSafe(person.getUnregisterRequestedTime()));
 
         dto.setBirthDate(person.parseDateOfBirth());
 
@@ -88,6 +91,8 @@ public class MobileAccountDTO {
     private String username;
     private String firstName;
     private String lastName;
+
+    private LocalDateTime unregisterRequestedTime;
 
     private LocalDate birthDate;
 
@@ -146,6 +151,14 @@ public class MobileAccountDTO {
 
     public void setLastName(final String lastName) {
         this.lastName = lastName;
+    }
+
+    public LocalDateTime getUnregisterRequestedTime() {
+        return unregisterRequestedTime;
+    }
+
+    public void setUnregisterRequestedTime(LocalDateTime unregisterRequestedTime) {
+        this.unregisterRequestedTime = unregisterRequestedTime;
     }
 
     public LocalDate getBirthDate() {

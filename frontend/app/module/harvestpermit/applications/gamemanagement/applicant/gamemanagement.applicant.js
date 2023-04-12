@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.gamemanagement.applicant', ['app.m
                 templateUrl: 'harvestpermit/applications/gamemanagement/applicant/applicant.html',
                 controller: 'GameManagementWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

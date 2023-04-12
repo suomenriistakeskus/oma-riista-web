@@ -1,17 +1,35 @@
 .permit-application-wizard-navigation {
-  text-align: center;
-  border-top: 1px solid @hr-border;
-  padding-top: 20px;
-  margin-top: 40px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background: @r-footer-body;
+  min-height: 80px;
+  width: 100%;
+  padding: 20px;
+  z-index: 1000; // One more than map
 
-  @media (min-width: @screen-sm-min) {
-    button + button {
-      margin-left: 30px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-content: center;
+
+  @media (max-width: @screen-xs-max) {
+    button {
+      margin: 10px;
+      > span.fa {
+        display: none;
+      }
     }
+  }
+
+  @media (max-width: 374px) {
+    flex-direction: column;
+
   }
 }
 
 .permit-application-wizard-container {
+
   .panel-group .panel {
     margin-bottom: 15px;
   }
@@ -36,12 +54,23 @@
     padding: 20px 20px 0;
   }
 
+  .fa-border {
+    padding-left: 0;
+    margin-bottom: 20px;
+    padding-right: 0;
+    background-color: white;
+
+    img {
+      max-width: 100%;
+    }
+  }
+
   .alert {
-    background-color: #F7F7F7;
+    background-color: @r-info-box-bg-white;
     border-color: @table-border-color;
     margin: 10px 0 20px;
     padding: 15px 15px 10px;
-    color: #555;
+    color: @r-info-box-text-grey;
     overflow: auto;
 
     a {
@@ -81,12 +110,130 @@
 
   .contact-person-data-section {
     .applicant-data-section;
-    margin-top: 60px;
+  }
+
+  @media (max-width: @screen-xs-max) {
+
+    button {
+      white-space: pre-wrap;
+      width: 100%;
+    }
+
+    .wizard-info {
+      background-color: #FFFFFF;
+
+      span.fa {
+        display: none;
+      }
+
+      .alert-content {
+        margin-left: 0;
+      }
+
+      ul {
+        padding-left: 24px;
+      }
+
+    }
+
+    application-type {
+      button {
+        width: 100%;
+      }
+    }
+
+    .btn-lg {
+      width: 100%;
+      padding: 10px 0;
+    }
+
+    .btn-group-justified {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-content: center;
+      width: 100%;
+
+      a {
+        width: 100%;
+        border-radius: 4px !important;
+        margin: 3px 0;
+      }
+    }
+
+    .remove-button {
+      width: 100%;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, .15);
+      text-shadow: none;
+      display: inline-block;
+      cursor: pointer;
+      background-image: none;
+
+      color: #333;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 9px 12px;
+
+      border-radius: 4px;
+
+      &:hover {
+        background-color: #e6e6e6;
+        border-color: #adadad;
+        text-decoration: unset;
+      }
+    }
+
+    .col-xs-12 > button {
+      width: 100%;
+
+      span.fa {
+        display: none;
+      }
+
+      span {
+        max-width: 100%;
+        display: inline-block;
+        overflow: hidden;
+      }
+
+    }
+
+    .alert {
+      span.fa {
+        float: initial;
+        width: 100%;
+        text-align: center;
+        margin-bottom: 16px;
+      }
+
+      .alert-content {
+        margin-left: 0;
+      }
+    }
+
+    permit-application-select-name {
+      > .alert {
+        margin: 0;
+        padding-left: 0;
+        border: 0;
+        background-color: unset;
+
+        a {
+          overflow: auto;
+          max-width: 100%;
+          display: block;
+        }
+      }
+
+      ul {
+        padding-left: 24px;
+      }
+    }
   }
 
 }
 
-.r-applicant-selection{
+.r-applicant-selection {
   .btn;
   .btn-default;
   width: 200px;
@@ -94,6 +241,7 @@
   margin: 5px;
   white-space: normal;
   padding-top: 15px;
+
   .fa {
     margin-bottom: 10px;
   }
@@ -131,6 +279,65 @@
       right: 10px;
       top: 50%;
       transform: translateY(-50%);
+    }
+
+    @media (max-width: @screen-xs-max) {
+
+      > .attachment-logo {
+        display: none;
+      }
+
+      > .attachment-name {
+        left: 0;
+      }
+
+      > .remove-button {
+        width: 50px;
+      }
+
+    }
+  }
+}
+
+.application-steps {
+  display: flex;
+  justify-content: center;
+  >li {
+    width: unset;
+    display: block;
+    > a {
+      padding: 12px 10px;
+    }
+  }
+
+  @media (max-width: @screen-xs-max) {
+    display: none;
+  }
+  @media (min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+    flex-wrap: wrap;
+  }
+}
+
+
+.decisionSummaryRow {
+  @media (min-width: @screen-sm-min) {
+    button {
+      white-space: pre-wrap;
+    }
+
+    > div {
+      min-height: 320px;
+      position: relative;
+
+      .spacer {
+        padding-bottom: 125px;
+      }
+
+      .ng-isolate-scope {
+        position: absolute;
+        bottom: 0;
+        min-height: 110px;
+      }
     }
   }
 }

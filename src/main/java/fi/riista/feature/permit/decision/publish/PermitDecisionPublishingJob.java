@@ -2,7 +2,6 @@ package fi.riista.feature.permit.decision.publish;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
 import fi.riista.config.quartz.RunAsAdminJob;
-import io.sentry.Sentry;
 import org.quartz.DisallowConcurrentExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,6 @@ public class PermitDecisionPublishingJob extends RunAsAdminJob {
                 permitDecisionPublishingFeature.publishRevision(revisionId);
             } catch (Exception e) {
                 LOG.error("Failed to publish decision revision id: " + revisionId, e);
-                Sentry.capture(e);
             }
         }
 

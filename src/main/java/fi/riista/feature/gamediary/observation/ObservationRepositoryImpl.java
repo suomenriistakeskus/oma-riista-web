@@ -17,6 +17,7 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.OccupationType;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.sql.SQGameObservation;
 import fi.riista.sql.SQGameSpecies;
 import fi.riista.sql.SQGroupHuntingDay;
@@ -32,6 +33,7 @@ import fi.riista.util.GISUtils;
 import org.geolatte.geom.Geometry;
 import org.joda.time.Interval;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -54,8 +56,8 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
     @Resource
     private SQLTemplates sqlTemplates;
 
-    @Transactional(readOnly = true)
     @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public List<HuntingClubGroup> findGroupCandidatesForDeerObservation(final Observation observation) {
         final SQOrganisation group = new SQOrganisation("organisation");
         final SQOccupation occupation = new SQOccupation("occupation");
@@ -122,6 +124,17 @@ public class ObservationRepositoryImpl implements ObservationRepositoryCustom {
                 .fetch();
 
         return huntingClubGroups;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public List<Long> getObservationIdsWhereOnlyAuthor(final long activePersonId) {
+        final SQGameObservation observation = new SQGameObservation("game_observation");
+
+        return new JPASQLQuery<Observation>(entityManager, sqlTemplates)
+                .select(observation.gameObservationId).from(observation)
+                .where(observation.authorId.eq(activePersonId).and(observation.observerId.ne(activePersonId)))
+                .fetch();
     }
 
     private static BooleanExpression isDeerObservationRejected(

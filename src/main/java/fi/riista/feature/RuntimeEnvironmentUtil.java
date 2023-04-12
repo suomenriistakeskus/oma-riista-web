@@ -30,6 +30,12 @@ public class RuntimeEnvironmentUtil {
     @Value("${file.storage.folder}")
     private String fileStorageFolder;
 
+    @Value("${mml.avoin.rajapinta.api.key}")
+    private String mmlOpenAPIKey;
+
+    @Value("${dd_conf.client.token}")
+    private String ddClientToken;
+
     @Nonnull
     public String getRevision() {
         // Always force cache bust using changing timestamp
@@ -37,6 +43,11 @@ public class RuntimeEnvironmentUtil {
             return "" + System.currentTimeMillis();
         }
 
+        return getCommitId();
+    }
+
+    @Nonnull
+    public String getCommitId() {
         return hasText(gitCommitIdAbbrev) ? gitCommitIdAbbrev : Long.toHexString(JVM_STARTUP_TIMESTAMP);
     }
 
@@ -50,6 +61,14 @@ public class RuntimeEnvironmentUtil {
 
     public boolean isStagingEnvironment() {
         return "staging".equals(getEnvironmentId());
+    }
+
+    public boolean isAwsStagingEnvironment() {
+        return "aws-staging".equals(getEnvironmentId());
+    }
+
+    public boolean isAwsEnvironment() {
+        return isProductionEnvironment() || isAwsStagingEnvironment();
     }
 
     public boolean isProductionEnvironment() {
@@ -74,5 +93,13 @@ public class RuntimeEnvironmentUtil {
 
     public URI getMapExportEndpoint() {
         return mapExportEndpoint;
+    }
+
+    public String getMmlOpenAPIKey() {
+        return mmlOpenAPIKey;
+    }
+
+    public String getDdClientToken() {
+        return ddClientToken;
     }
 }

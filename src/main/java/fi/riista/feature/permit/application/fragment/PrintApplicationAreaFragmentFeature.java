@@ -11,6 +11,7 @@ import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
+import fi.riista.feature.permit.application.PrintApplicationApproachMapFeatureCollection;
 import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.integration.mapexport.MapPdfModel;
 import fi.riista.integration.mapexport.MapPdfParameters;
@@ -28,6 +29,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.geojson.Feature;
+import org.geojson.FeatureCollection;
 import org.locationtech.jts.geom.Geometry;
 import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,6 +46,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -116,12 +119,12 @@ public class PrintApplicationAreaFragmentFeature {
 
         final List<InputStream> bais = fragmentsData.stream()
                 .map(fragmentData -> {
-                    final MapPdfModel mapModel = getMapModel(fragmentData,
-                            fragmentsDto.getPdfParameters().getOverlay(), locale);
-                    fileName.compareAndSet(null, mapModel.getExportFileName());
-
-                    return createSingleFragmentPdf(fragmentData, mapModel,
+                    final PrintApplicationAreaFragmentMapModel mapModel = getMapModelWithApproachMap(applicationId,
+                            fragmentData,
                             fragmentsDto.getPdfParameters(), locale);
+                    fileName.compareAndSet(null, fragmentData.getApplicationName() + fragmentData.getFragmentId());
+
+                    return createSingleFragmentWithApproachPdf(fragmentData, mapModel, locale);
                 })
                 .map(ByteArrayInputStream::new)
                 .collect(Collectors.toList());
@@ -146,45 +149,48 @@ public class PrintApplicationAreaFragmentFeature {
 
     }
 
-
     @Transactional(readOnly = true)
-    public MapPdfModel getMapModel(final PrintApplicationAreaFragmentDTO dto,
-                                   final MapPdfParameters.Overlay overlay,
-                                   final Locale locale) {
-        final GISZoneSizeDTO areaSize = GISZoneSizeDTO.create(
-                dto.getFragmentSize().getBothSize(),
-                dto.getFragmentSize().getStateSize().getTotal(),
-                dto.getFragmentSize().getPrivateSize().getTotal());
+    public PrintApplicationAreaFragmentMapModel getMapModelWithApproachMap(final long applicationId,
+                                                                                   final PrintApplicationAreaFragmentDTO dto,
+                                                                                   final MapPdfParameters parameters,
+                                                                                   final Locale locale) {
+        final MapPdfModel fragmentModel = getMapModel(dto, parameters.getOverlay(), locale);
 
-        // Lookup fragment polygon by geohash
-        final Feature fragmentFeature = gisZoneRepository
-                .getCombinedPolygonFeatures(dto.getZoneId(), GISUtils.SRID.ETRS_TM35FIN)
-                .getFeatures().stream()
-                .filter(feature -> dto.getFragmentId().equals(feature.getProperty(GeoJSONConstants.PROPERTY_HASH)))
-                .findFirst().orElseThrow(IllegalArgumentException::new);
+        final FeatureCollection fragmentFeatureCollection = fragmentModel.getFeatures();
+        final Feature fragmentFeature = fragmentFeatureCollection.getFeatures().get(0);
 
-        final Geometry overlayGeometry = overlay == MapPdfParameters.Overlay.VALTIONMAA ?
-                gisZoneRepository.getStateGeometry(calculateOverlayBox(fragmentFeature.getBbox()),
-                        GISUtils.SRID.ETRS_TM35FIN)
-                : null;
+        final Feature fragmentApproachFeature = new Feature();
+        fragmentApproachFeature.setGeometry(fragmentFeature.getGeometry());
+        fragmentApproachFeature.setBbox(fragmentFeature.getBbox());
+        fragmentApproachFeature.setCrs(fragmentFeature.getCrs());
+        fragmentApproachFeature.setProperty("fill", "rgb(255, 0, 0)");
+        fragmentApproachFeature.setProperty("fill-opacity", 1.0);
+        fragmentApproachFeature.setProperty("stroke-width", 1.0);
+        fragmentApproachFeature.setProperty("stroke", "rgb(0,0,0)");
 
-        return new MapPdfModel.Builder(locale)
-                .withExternalId(dto.getFragmentId())
-                .withAreaName(LocalisedString.of(dto.getApplicationName()))
-                .withClubName(LocalisedString.of(dto.getPermitHolderName()))
-                .withModificationTime(dto.getApplicationSubmitDate())
-                .withAreaSize(areaSize)
-                .withBbox(fragmentFeature.getBbox())
-                .withGeometry(fragmentFeature.getGeometry())
-                .withOverlayGeometry(overlayGeometry)
-                .build();
+        final int mapZoom = MapPdfRemoteService.zoomLayer(fragmentFeatureCollection.getBbox(), parameters);
+
+        final FeatureCollection approachMapFeatures = getApproachMapFeatures(applicationId);
+        approachMapFeatures.add(fragmentApproachFeature);
+
+        final int approachMapZoom = MapPdfRemoteService.zoomLayer(approachMapFeatures.getBbox(), parameters);
+
+        final PrintApplicationApproachMapFeatureCollection featureCollection =
+                new PrintApplicationApproachMapFeatureCollection(
+                        fragmentModel.getFeatures(),
+                        parameters.getLayer().getName() + mapZoom,
+                        approachMapFeatures,
+                        parameters.getLayer().getName() + approachMapZoom,
+                        parameters.getPaperSize().name(),
+                        parameters.getPaperOrientation().asLetter());
+
+        return new PrintApplicationAreaFragmentMapModel(featureCollection, fragmentModel.getExportFileName());
     }
 
-    public byte[] createSingleFragmentPdf(final PrintApplicationAreaFragmentDTO fragmentData,
-                                          final MapPdfModel mapPdfModel,
-                                          final MapPdfParameters mapParameters,
-                                          final Locale locale) {
-        final byte[] mapPdfData = mapPdfRemoteService.renderPdf(mapParameters, mapPdfModel);
+    public byte[] createSingleFragmentWithApproachPdf(final PrintApplicationAreaFragmentDTO fragmentData,
+                                                      final PrintApplicationAreaFragmentMapModel mapPdfModel,
+                                                      final Locale locale) {
+        final byte[] mapPdfData = mapPdfRemoteService.renderApproachMapPdf(mapPdfModel.getFeatureCollection());
 
         try (final InputStream is = new ByteArrayInputStream(mapPdfData);
              final PDDocument pdfDocument = PDDocument.load(is)) {
@@ -194,7 +200,7 @@ public class PrintApplicationAreaFragmentFeature {
                             .sorted(Comparator.comparing(HarvestPermitAreaFragmentPropertyDTO::getPropertyNumber))
                             .collect(Collectors.toList());
 
-            for (List<HarvestPermitAreaFragmentPropertyDTO> partition : Lists.partition(propertyList, 45)) {
+            for (final List<HarvestPermitAreaFragmentPropertyDTO> partition : Lists.partition(propertyList, 45)) {
                 renderPageOfProperties(pdfDocument, fragmentData.getFragmentId(), partition, locale);
             }
 
@@ -247,34 +253,51 @@ public class PrintApplicationAreaFragmentFeature {
                                         final String fragmentId,
                                         final List<HarvestPermitAreaFragmentPropertyDTO> propertyList,
                                         final Locale locale) throws IOException {
-        final PDPage pdfPage = new PDPage(PDRectangle.A4);
-        pdfDocument.addPage(pdfPage);
+        final Iterator<HarvestPermitAreaFragmentPropertyDTO> propertyIterator = propertyList.iterator();
 
-        try (final PdfWriter writer = new PdfWriter(pdfDocument, pdfPage)) {
-            writer.topOffsetMm(15).marginLeftMm(15);
-            writer.writeLine(i18n(locale, "fragmentIdentifier") + " " + fragmentId);
+        while (propertyIterator.hasNext()) {
+            final PDPage pdfPage = new PDPage(PDRectangle.A4);
+            pdfDocument.addPage(pdfPage);
 
-            writer.topOffsetMm(25).marginLeftMm(15);
+            try (final PdfWriter writer = new PdfWriter(pdfDocument, pdfPage)) {
+                writer.topOffsetMm(15).marginLeftMm(15);
+                writer.writeLine(i18n(locale, "fragmentIdentifier") + " " + fragmentId);
 
+                writer.topOffsetMm(25);
+                writer.marginLeftMm(65).write(i18n(locale, "totalArea") + " ")
+                        .marginLeftMm(105).write(i18n(locale, "landArea") + " ")
+                        .marginLeftMm(135).write(i18n(locale, "waterArea") + " ")
+                        .writeEmptyLine().writeEmptyLine();
 
-            for (HarvestPermitAreaFragmentPropertyDTO fragmentProperty : propertyList) {
-                writer.writeLine(fragmentProperty.getPropertyNumber());
-            }
+                while (propertyIterator.hasNext()) {
+                    final HarvestPermitAreaFragmentPropertyDTO fragmentProperty = propertyIterator.next();
 
-            writer.topOffsetMm(25).marginLeftMm(65);
+                    writer.marginLeftMm(15);
+                    writer.write(fragmentProperty.getPropertyNumber());
 
-            for (HarvestPermitAreaFragmentPropertyDTO fragmentProperty : propertyList) {
-                final String sizeText = DECIMAL_FORMAT.format(fragmentProperty.getPropertyArea() / 10_000);
-                writer.writeLine(sizeText + " ha");
-            }
+                    writer.marginLeftMm(65);
+                    final String totalArea = DECIMAL_FORMAT.format(fragmentProperty.getPropertyArea() / 10_000);
+                    writer.write(totalArea + " ha");
 
-            writer.topOffsetMm(25).marginLeftMm(100);
+                    writer.marginLeftMm(105);
+                    final String landArea = DECIMAL_FORMAT.format(fragmentProperty.getPropertyLandArea() / 10_000);
+                    writer.write(landArea + " ha");
 
-            for (HarvestPermitAreaFragmentPropertyDTO fragmentProperty : propertyList) {
-                if (StringUtils.hasText(fragmentProperty.getPropertyName())) {
-                    writer.writeLine(fragmentProperty.getPropertyName());
-                } else {
-                    writer.writeEmptyLine();
+                    writer.marginLeftMm(135);
+                    final String waterArea = DECIMAL_FORMAT.format(fragmentProperty.getPropertyWaterArea() / 10_000);
+                    writer.writeLine(waterArea + " ha");
+
+                    if (StringUtils.hasText(fragmentProperty.getPropertyName())) {
+                        writer.marginLeftMm(25);
+                        writer.italicFont().writeParagraph(fragmentProperty.getPropertyName(), 95f);
+                    }
+
+                    writer.normalFont().writeEmptyLine();
+
+                    final float sizeNeededForContent = 3 * writer.getLineHeight() + writer.getMarginFromMm(15);
+                    if ((writer.getPosY() - sizeNeededForContent) < 0) {
+                        break;
+                    }
                 }
             }
         }
@@ -370,4 +393,60 @@ public class PrintApplicationAreaFragmentFeature {
                 GISUtils.SRID.ETRS_TM35FIN);
     }
 
+    private MapPdfModel getMapModel(final PrintApplicationAreaFragmentDTO dto,
+                                    final MapPdfParameters.Overlay overlay,
+                                    final Locale locale) {
+        final GISZoneSizeDTO areaSize = GISZoneSizeDTO.create(
+                dto.getFragmentSize().getBothSize(),
+                dto.getFragmentSize().getStateSize().getTotal(),
+                dto.getFragmentSize().getPrivateSize().getTotal());
+
+        // Lookup fragment polygon by geohash
+        final Feature fragmentFeature = gisZoneRepository
+                .getCombinedPolygonFeatures(dto.getZoneId(), GISUtils.SRID.ETRS_TM35FIN)
+                .getFeatures().stream()
+                .filter(feature -> dto.getFragmentId().equals(feature.getProperty(GeoJSONConstants.PROPERTY_HASH)))
+                .findFirst().orElseThrow(IllegalArgumentException::new);
+
+        final Geometry overlayGeometry = overlay == MapPdfParameters.Overlay.VALTIONMAA ?
+                gisZoneRepository.getStateGeometry(calculateOverlayBox(fragmentFeature.getBbox()),
+                        GISUtils.SRID.ETRS_TM35FIN)
+                : null;
+
+        return new MapPdfModel.Builder(locale)
+                .withExternalId(dto.getFragmentId())
+                .withAreaName(LocalisedString.of(dto.getApplicationName()))
+                .withClubName(LocalisedString.of(dto.getPermitHolderName()))
+                .withModificationTime(dto.getApplicationSubmitDate())
+                .withAreaSize(areaSize)
+                .withBbox(fragmentFeature.getBbox())
+                .withGeometry(fragmentFeature.getGeometry())
+                .withOverlayGeometry(overlayGeometry)
+                .build();
+    }
+
+    private FeatureCollection getApproachMapFeatures(final long applicationId) {
+        final HarvestPermitApplication application =
+                requireEntityService.requireHarvestPermitApplication(applicationId, EntityPermission.READ);
+        final Geometry applicationGeometry = Optional.ofNullable(application.getArea())
+                .map(HarvestPermitArea::getZone)
+                .map(GISZone::getId)
+                .map(zoneId -> gisZoneRepository.getSimplifiedGeometry(zoneId, GISUtils.SRID.ETRS_TM35FIN))
+                .orElse(null);
+        final GISBounds bounds = gisZoneRepository.getBounds(application.getArea().getZone().getId(), GISUtils.SRID.ETRS_TM35FIN);
+
+        final Feature applicationFeature = new Feature();
+        applicationFeature.setGeometry(PolygonConversionUtil.javaToGeoJSON(applicationGeometry));
+        applicationFeature.setProperty("fill", "rgb(0, 255, 0)");
+        applicationFeature.setProperty("fill-opacity", 0.4);
+        applicationFeature.setProperty("stroke-width", 1.0);
+        applicationFeature.setProperty("stroke", "rgb(0,0,0)");
+
+        final FeatureCollection approachMapFeatures = new FeatureCollection();
+        approachMapFeatures.setCrs(GISUtils.SRID.ETRS_TM35FIN.getGeoJsonCrs());
+        approachMapFeatures.setBbox(bounds.toBBox());
+        approachMapFeatures.add(applicationFeature);
+
+        return approachMapFeatures;
+    }
 }

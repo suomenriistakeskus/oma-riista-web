@@ -11,61 +11,66 @@
     <tr>
         <th translate="global.map.size.privateLandAreaSize"></th>
         <td class="text-right"
-            ng-switch="!!$ctrl.area.size">
+            ng-switch="$ctrl.area.size.status">
 
-            <span ng-switch-when="true"
+            <span ng-switch-when="OK"
                   ng-bind="$ctrl.area.size.privateLandAreaSize | prettyAreaSize:1"></span>
-
-            <strong ng-switch-default
-                    translate="global.map.size.calculating"></strong>
+            <span ng-switch-when="PROCESSING"
+                  translate="global.map.size.calculating"></span>
+            <strong ng-switch-when="FAILED"
+                    translate="global.map.size.calculationFailed"></strong>
         </td>
     </tr>
     <tr>
         <th translate="global.map.size.stateLandAreaSize"></th>
         <td class="text-right"
-            ng-switch="!!$ctrl.area.size">
+            ng-switch="$ctrl.area.size.status">
 
-            <span ng-switch-when="true"
+            <span ng-switch-when="OK"
                   ng-bind="$ctrl.area.size.stateLandAreaSize | prettyAreaSize:1"></span>
-
-            <strong ng-switch-default
-                    translate="global.map.size.calculating"></strong>
+            <span ng-switch-when="PROCESSING"
+                  translate="global.map.size.calculating"></span>
+            <strong ng-switch-when="FAILED"
+                    translate="global.map.size.calculationFailed"></strong>
         </td>
     </tr>
     <tr>
         <th translate="global.map.size.landAreaSize"></th>
         <td class="text-right"
-            ng-switch="!!$ctrl.area.size">
+            ng-switch="$ctrl.area.size.status">
 
-            <span ng-switch-when="true"
+            <span ng-switch-when="OK"
                   ng-bind="$ctrl.area.size.all.land | prettyAreaSize:1"></span>
-
-            <strong ng-switch-default
-                    translate="global.map.size.calculating"></strong>
+            <span ng-switch-when="PROCESSING"
+                  translate="global.map.size.calculating"></span>
+            <strong ng-switch-when="FAILED"
+                    translate="global.map.size.calculationFailed"></strong>
         </td>
     </tr>
     <tr>
         <th translate="global.map.size.waterAreaSize"></th>
         <td class="text-right"
-            ng-switch="!!$ctrl.area.size">
+            ng-switch="$ctrl.area.size.status">
 
-            <span ng-switch-when="true"
+            <span ng-switch-when="OK"
                   ng-bind="$ctrl.area.size.all.water | prettyAreaSize:1"></span>
-
-            <strong ng-switch-default
-                    translate="global.map.size.calculating"></strong>
+            <span ng-switch-when="PROCESSING"
+                  translate="global.map.size.calculating"></span>
+            <strong ng-switch-when="FAILED"
+                    translate="global.map.size.calculationFailed"></strong>
         </td>
     </tr>
     <tr>
         <th translate="global.map.size.totalAreaSize"></th>
         <td class="text-right"
-            ng-switch="!!$ctrl.area.size">
+            ng-switch="$ctrl.area.size.status">
 
-            <span ng-switch-when="true"
+            <span ng-switch-when="OK"
                   ng-bind="$ctrl.area.size.all.total | prettyAreaSize:1"></span>
-
-            <strong ng-switch-default
-                    translate="global.map.size.calculating"></strong>
+            <span ng-switch-when="PROCESSING"
+                  translate="global.map.size.calculating"></span>
+            <strong ng-switch-when="FAILED"
+                    translate="global.map.size.calculationFailed"></strong>
         </td>
     </tr>
     </tbody>

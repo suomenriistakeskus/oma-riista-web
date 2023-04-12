@@ -20,7 +20,7 @@ angular.module('app.harvestpermit.decision', [])
                 url: apiPrefix + '/generate/:sectionId',
                 params: {id: '@id', sectionId: '@sectionId'}
             },
-            generateAdjustedAreaSizeAction: {method: 'GET', url : apiPrefix + '/generate-area-action'},
+            generateAdjustedAreaSizeAction: {method: 'GET', url: apiPrefix + '/generate-area-action'},
             getCompleteStatus: {method: 'GET', url: apiPrefix + '/complete'},
             updateCompleteStatus: {method: 'PUT', url: apiPrefix + '/complete'},
             getPaymentOptions: {method: 'GET', url: apiPrefix + '/payment', isArray: true},
@@ -31,7 +31,11 @@ angular.module('app.harvestpermit.decision', [])
             getRevisions: {method: 'GET', url: apiPrefix + '/revisions', isArray: true},
             assign: {method: 'POST', url: apiPrefix + '/assign'},
             unassign: {method: 'POST', url: apiPrefix + '/unassign'},
-            setForbiddenMethods: {method: 'POST', url: apiPrefix + '/set-forbidden-methods', params: {forbiddenMethodsOnly: '@forbiddenMethodsOnly'}},
+            setForbiddenMethods: {
+                method: 'POST',
+                url: apiPrefix + '/set-forbidden-methods',
+                params: {forbiddenMethodsOnly: '@forbiddenMethodsOnly'}
+            },
             lock: {method: 'POST', url: apiPrefix + '/lock'},
             unlock: {method: 'POST', url: apiPrefix + '/unlock'},
             updatePosted: {
@@ -57,9 +61,17 @@ angular.module('app.harvestpermit.decision', [])
             updateAppealSettings: {method: 'PUT', url: apiPrefix + '/appeal-settings'},
             getDeliveries: {method: 'GET', url: apiPrefix + '/delivery', isArray: true},
             updateDeliveries: {method: 'POST', url: apiPrefix + '/delivery'},
+            updateAutomaticDeliveryDeduction: {
+                method: 'POST',
+                url: apiPrefix + '/automatic-delivery-deduction',
+                params: {enabled: '@enabled'}
+            },
             getAuthorities: {method: 'GET', url: apiPrefix + '/authorities'},
             updateAuthorities: {method: 'POST', url: apiPrefix + '/authorities'},
-            updateGrantStatus: {method: 'PUT', url: apiPrefix + '/grantstatus'}
+            updateGrantStatus: {method: 'PUT', url: apiPrefix + '/grantstatus'},
+            createInformationRequestLink: {method: 'POST', url: apiPrefix + '/inforequests'},
+            deleteInformationRequestLink: {method: 'DELETE', url: apiPrefix + '/inforequests/:linkId'},
+            listInformationRequestLinks: {method: 'GET', url: apiPrefix + '/inforequests', isArray: true}
         });
     })
     .factory('PermitDecisionDerogation', function ($resource) {
@@ -70,6 +82,14 @@ angular.module('app.harvestpermit.decision', [])
             updateReasons: {method: 'POST', url: apiPrefix + '/reasons'},
             getProtectedAreaTypes: {method: 'GET', url: apiPrefix + '/area'},
             updateProtectedAreaTypes: {method: 'POST', url: apiPrefix + '/area'}
+        });
+    })
+    .factory('PermitDecisionRenewal', function ($resource) {
+        var apiPrefix = '/api/v1/decision/annual/:id';
+
+        return $resource(apiPrefix, {id: '@id'}, {
+            isRenewable: {method: 'GET', url: apiPrefix},
+            createPermitForHuntingYear: {method: 'POST', url: apiPrefix }
         });
     })
     .factory('PermitDecisionRkaAuthority', function ($resource) {

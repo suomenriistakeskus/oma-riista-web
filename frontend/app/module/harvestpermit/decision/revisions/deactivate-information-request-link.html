@@ -1,0 +1,21 @@
+<form name="form" role="form" class="form form-horizontal r-event-form" ng-submit="$ctrl.submit()">
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="decision.revision.disableInformationRequestLinkModal.title"></h3>
+    </div>
+
+    <div class="modal-body r-deactivate-information-request-link-model-body">
+        <span class="text-danger glyphicon glyphicon-warning-sign"></span>
+        <p translate="decision.revision.disableInformationRequestLinkModal.text"></p>
+        <p translate="decision.revision.disableInformationRequestLinkModal.question"></p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+        <button type="button" class="btn btn-danger"
+                ng-click="$ctrl.deactivate()"
+                translate="global.button.deactivate"></button>
+    </div>
+</form>

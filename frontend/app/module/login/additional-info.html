@@ -1,0 +1,100 @@
+<div class="r-login-additional-info-background">
+    <div class="r-login-additional-info-container">
+        <h2 translate="main.additionalFeeds.title"></h2>
+
+        <div class="visible-xs r-feed-container">
+            <div class="row">
+                <div class="col-xs-12 col-sm-6">
+                    <div class="r-feed-logo-container">
+                        <div class="r-riista-feed-title-logo"></div>
+                    </div>
+                    <div class="r-feed-container-horizontal-separator"></div>
+                    <div ng-repeat="feed in $ctrl.riistaFeeds track by feed.id" class="r-feed-list">
+                        <a href="{{feed.link}}" target="_blank" ng-bind-html="feed.title"></a>
+                    </div>
+                    <div class="r-ext-link-button-container">
+                        <a target="_blank"
+                           ng-href="{{$ctrl.isSelectedLanguage({value: 'sv'}) ? 'https://riista.fi/sv' : 'https://riista.fi'}}">
+                            <div class="btn btn-primary r-ext-link-info-button">
+                                <div class="r-riista-logo"></div>
+                                <div class="r-riista-button-title" translate="main.additionalFeeds.riistaButton"></div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6">
+                    <div class="r-feed-logo-container">
+                        <div class="r-metsastaja-feed-title-logo"></div>
+                    </div>
+                    <div class="r-feed-container-horizontal-separator"></div>
+                    <div ng-repeat="feed in $ctrl.metsastajaFeeds track by feed.id" class="r-feed-list">
+                        <a href="{{feed.link}}" target="_blank" ng-bind-html="feed.title"></a>
+                    </div>
+                    <div class="r-ext-link-button-container">
+                        <a target="_blank"
+                           ng-href="{{$ctrl.isSelectedLanguage({value: 'sv'}) ? 'https://metsastajalehti.fi/sv' : 'https://metsastajalehti.fi'}}">
+                            <div class="btn btn-primary r-ext-link-info-button" style="margin-left: 0">
+                                <div class="r-metsastaja-logo"></div>
+                                <div class="r-metsastaja-button-title" translate="main.additionalFeeds.metsastajaButtonXs1"></div>
+                                <div class="r-metsastaja-button-title" translate="main.additionalFeeds.metsastajaButtonXs2"></div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hidden-xs r-feed-container">
+            <div class="row">
+                <div class="col-xs-12 col-sm-6 no-padding r-feed-logo-container">
+                    <div class="r-riista-feed-title-logo"></div>
+                </div>
+                <div class="col-xs-12 col-sm-6 no-padding r-feed-logo-container">
+                    <div class="r-metsastaja-feed-title-logo"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-6 no-padding">
+                    <ul class="r-feed-list">
+                        <li ng-repeat="feed in $ctrl.riistaFeeds">
+                            <a ng-href="{{feed.link}}" target="_blank" ng-bind-html="feed.title"></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-xs-6 no-padding">
+                    <ul class="r-feed-list">
+                        <li ng-repeat="feed in $ctrl.metsastajaFeeds">
+                            <a ng-href="{{feed.link}}" target="_blank" ng-bind-html="feed.title"></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row r-ext-link-button-container">
+                <div class="col-xs-12 col-sm-6 no-padding">
+                    <div>
+                        <a target="_blank"
+                           ng-href="{{$ctrl.isSelectedLanguage({value: 'sv'}) ? 'https://riista.fi/sv' : 'https://riista.fi'}}">
+                            <div class="btn btn-primary r-ext-link-info-button">
+                                <div class="r-riista-logo"></div>
+                                <div class="r-riista-button-title" translate="main.additionalFeeds.riistaButton"></div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-sm-6 no-padding">
+                    <div>
+                        <a target="_blank"
+                           ng-href="{{$ctrl.isSelectedLanguage({value: 'sv'}) ? 'https://metsastajalehti.fi/sv' : 'https://metsastajalehti.fi'}}">
+                            <div class="btn btn-primary r-ext-link-info-button" style="margin-left: 0">
+                                <div class="r-metsastaja-logo"></div>
+                                <div class="r-metsastaja-button-title" translate="main.additionalFeeds.metsastajaButton"></div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

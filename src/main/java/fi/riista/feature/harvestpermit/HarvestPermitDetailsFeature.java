@@ -14,6 +14,7 @@ import fi.riista.feature.harvestpermit.statistics.HarvestPermitUsageDTO;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTO;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTOFactory;
+import fi.riista.feature.huntingclub.permit.statistics.MooselikePermitObservationService;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionRepository;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.VIEW_OBSERVATION_SUMMARY;
 import static java.util.Collections.emptyList;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
@@ -63,6 +65,9 @@ public class HarvestPermitDetailsFeature {
     @Resource
     private PermitDecisionRepository permitDecisionRepository;
 
+    @Resource
+    private MooselikePermitObservationService mooselikePermitObservationService;
+
     @Transactional(readOnly = true)
     public OrganisationNameDTO getRhyCode(long permitId) {
         final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
@@ -91,13 +96,10 @@ public class HarvestPermitDetailsFeature {
                 .map(PermitDecision::getGrantStatus)
                 .orElse(null);
 
-        final PermitDecision.DecisionType decisionType = Optional.ofNullable(decision)
-                .map(PermitDecision::getDecisionType)
-                .orElse(null);
 
         return HarvestPermitDTO.create(harvestPermit, harvestPermit.getSpeciesAmounts(),
                 amendmentPermitNumbers, amendmentPermitSpeciesAmounts,
-                activeUser, grantStatus, decisionType);
+                activeUser, grantStatus, decision);
     }
 
     @Transactional(readOnly = true)
@@ -160,5 +162,13 @@ public class HarvestPermitDetailsFeature {
         final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
 
         return huntingClubPermitDTOFactory.getDTO(permit, speciesCode, null);
+    }
+
+    @Transactional(readOnly = true)
+    public MooselikePermitObservationSummaryDTO getObservationSummary(final long permitId, final int speciesCode) {
+        final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, VIEW_OBSERVATION_SUMMARY);
+        Preconditions.checkArgument(permit.isMooselikePermitType(), "Mooselike permit requided");
+
+        return mooselikePermitObservationService.getObservationSummaryDTO(permit, speciesCode);
     }
 }

@@ -6,6 +6,8 @@ import fi.riista.util.LocalisedEnum;
 public enum ObservationType implements HasMooseDataCardEncoding<ObservationType>, LocalisedEnum {
 
     NAKO,
+    POIKUE,
+    PARI,
     JALKI,
     ULOSTE,
     AANI,

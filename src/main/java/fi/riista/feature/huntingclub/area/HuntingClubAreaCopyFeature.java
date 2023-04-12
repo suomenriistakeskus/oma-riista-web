@@ -7,6 +7,7 @@ import fi.riista.feature.gis.metsahallitus.MetsahallitusMaterialYear;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.huntingclub.copy.CopyClubGroupService;
+import fi.riista.feature.huntingclub.copy.CopyClubPOIsService;
 import fi.riista.feature.huntingclub.copy.HuntingClubAreaCopyDTO;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.Locales;
@@ -36,6 +37,9 @@ public class HuntingClubAreaCopyFeature {
 
     @Resource
     private CopyClubGroupService copyClubGroupService;
+
+    @Resource
+    private CopyClubPOIsService copyClubPOIsService;
 
     @Resource
     private GISZoneRepository gisZoneRepository;
@@ -76,10 +80,14 @@ public class HuntingClubAreaCopyFeature {
                 .ifPresent(area::setZone);
 
         huntingClubAreaRepository.saveAndFlush(area);
-        huntingClubAreaRepository.calculateZoneChanges(area.getId());
+        huntingClubAreaRepository.calculateZoneChanges(
+                area.getId());
 
         if (dto.isCopyGroups()) {
             copyClubGroupService.copyGroupsHavingArea(originalArea, area);
+        }
+        if(dto.isCopyPOIs()) {
+            copyClubPOIsService.copyPOIsHavingArea(originalArea, area);
         }
         return area;
     }

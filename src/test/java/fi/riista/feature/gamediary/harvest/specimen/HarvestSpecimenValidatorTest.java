@@ -5,21 +5,22 @@ import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.HasGameSpeciesCode;
 import fi.riista.feature.gamediary.fixture.HarvestSpecimenType;
 import fi.riista.feature.gamediary.harvest.HarvestReportingType;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsImpl;
 import fi.riista.util.NumberGenerator;
 import fi.riista.util.NumberSequence;
 import fi.riista.util.ValueGeneratorMixin;
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.FromDataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -38,88 +39,40 @@ import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.spy;
 
-@RunWith(Parameterized.class)
+@RunWith(Theories.class)
 public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGeneratorMixin {
 
-    private static class Tuple implements HasGameSpeciesCode {
-
-        private final int huntingYear;
-        private final int speciesCode;
-        private final HarvestSpecimenType specimenType;
-        private final boolean linkedToHuntingDay;
-        private final boolean isClientSupportFor2020Fields;
-
-        Tuple(final int huntingYear,
-              final int speciesCode,
-              final HarvestSpecimenType specimenType,
-              final boolean linkedToHuntingDay,
-              final boolean isClientSupportFor2020Fields) {
-
-            this.huntingYear = huntingYear;
-            this.speciesCode = speciesCode;
-            this.specimenType = specimenType;
-            this.linkedToHuntingDay = linkedToHuntingDay;
-            this.isClientSupportFor2020Fields = isClientSupportFor2020Fields;
-        }
-
-        @Override
-        public int getGameSpeciesCode() {
-            return speciesCode;
-        }
-
-        public boolean isValidCombination() {
-            if (linkedToHuntingDay && !isMooseOrDeerRequiringPermitForHunting()) {
-                return false;
-            }
-
-            return specimenType != HarvestSpecimenType.ANTLERS_LOST
-                    || isClientSupportFor2020Fields && huntingYear >= 2020;
-        }
-
-        public Object[] toObjectArray() {
-            return new Object[]{huntingYear, speciesCode, specimenType, linkedToHuntingDay, isClientSupportFor2020Fields};
-        }
-    }
-
-    @Parameters(name = "{index}: huntingYear={0}; speciesCode={1}; specimenType={2}; linkedToHuntingDay={3}, isClientSupportFor2020Fields={4}")
-    public static Iterable<Object[]> data() {
-        return IntStream
-                .rangeClosed(2016, huntingYear())
-                .boxed()
-                .flatMap(huntingYear -> IntStream
-                        .of(OFFICIAL_CODE_BEAR, OFFICIAL_CODE_FALLOW_DEER, OFFICIAL_CODE_GREY_SEAL, OFFICIAL_CODE_MOOSE,
-                                OFFICIAL_CODE_ROE_DEER, OFFICIAL_CODE_WHITE_TAILED_DEER, OFFICIAL_CODE_WILD_BOAR,
-                                OFFICIAL_CODE_WILD_FOREST_REINDEER)
-                        .boxed()
-                        .flatMap(speciesCode -> Arrays.stream(HarvestSpecimenType.values())
-                                .flatMap(specimenType -> Stream.of(true, false)
-                                        .flatMap(linkedToHuntingDay -> Stream.of(true, false)
-                                                .map(isClientSupportFor2020Fields ->
-                                                        new Tuple(huntingYear,
-                                                                speciesCode,
-                                                                specimenType,
-                                                                linkedToHuntingDay,
-                                                                isClientSupportFor2020Fields)
-                                                )))))
-                .filter(Tuple::isValidCombination)
-                .map(Tuple::toObjectArray)
-                .collect(toList());
-    }
-
-    @Parameter(0)
     public int huntingYear;
-
-    @Parameter(1)
     public int gameSpeciesCode;
-
-    @Parameter(2)
     public HarvestSpecimenType specimenType;
-
-    @Parameter(3)
     public boolean linkedToHuntingDay;
+    public HarvestSpecVersion specVersion;
 
-    @Parameter(4)
-    public boolean isClientSupportFor2020Fields;
+    @DataPoints("huntingYear")
+    public static final List<Integer> HUNTING_YEARS = IntStream.rangeClosed(2016, huntingYear())
+            .boxed()
+            .collect(toList());
+
+    @DataPoints("gameSpeciesCode")
+    public static final List<Integer> SPECIES_CODES = IntStream
+            .of(OFFICIAL_CODE_BEAR, OFFICIAL_CODE_FALLOW_DEER, OFFICIAL_CODE_GREY_SEAL, OFFICIAL_CODE_MOOSE,
+                    OFFICIAL_CODE_ROE_DEER, OFFICIAL_CODE_WHITE_TAILED_DEER, OFFICIAL_CODE_WILD_BOAR,
+                    OFFICIAL_CODE_WILD_FOREST_REINDEER)
+            .boxed()
+            .collect(toList());
+
+    @DataPoints("specimenType")
+    public static final List<HarvestSpecimenType> SPECIMEN_TYPES = Arrays.stream(HarvestSpecimenType.values())
+            .collect(toList());
+
+    @DataPoints("linkedToHuntingDay")
+    public static final List<Boolean> LINKED_HUNTING_DAYS = Stream.of(true, false).collect(toList());
+
+    @DataPoints("specVersion")
+    public static final List<HarvestSpecVersion> SPEC_VERSIONS = Stream
+            .of(HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_ANTLER_FIELDS_2020,
+                    HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_MANDATORY_AGE_AND_GENDER_FIELDS_FOR_MOOSELIKE_HARVEST)
+            .collect(toList());
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -136,9 +89,23 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         return gameSpeciesCode;
     }
 
-    @Before
-    public void setup() {
-        // Mocking needed becase JPA static metamodel is not available in unit tests.
+    private void setup(final Integer huntingYear,
+                       final Integer gameSpeciesCode,
+                       final HarvestSpecimenType specimenType,
+                       final Boolean linkedToHuntingDay,
+                       final HarvestSpecVersion specVersion) {
+
+        this.huntingYear = huntingYear;
+        this.gameSpeciesCode = gameSpeciesCode;
+        this.specimenType = specimenType;
+        this.linkedToHuntingDay = linkedToHuntingDay;
+        this.specVersion = specVersion;
+
+        // Preconditions for valid combination
+        assumeTrue(specimenType != HarvestSpecimenType.ANTLERS_LOST
+                || specVersion.supportsAntlerFields2020() && huntingYear >= 2020);
+
+        // Mocking needed because JPA static metamodel is not available in unit tests.
         specimen = spy(new HarvestSpecimen());
         specimen.setAge(specimenType.getAge());
         specimen.setGender(specimenType.getGender());
@@ -153,66 +120,125 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
                 linkedToHuntingDay ? HarvestReportingType.HUNTING_DAY : HarvestReportingType.BASIC;
 
         final RequiredHarvestFields.Specimen specimenRequirements = RequiredHarvestFieldsImpl.getSpecimenFields(
-                huntingYear, gameSpeciesCode, null, reportingType, isClientSupportFor2020Fields);
+                huntingYear, gameSpeciesCode, null, reportingType, specVersion, linkedToHuntingDay);
 
         final HarvestSpecimenValidator builder = new HarvestSpecimenValidator(
-                specimenRequirements, specimen, gameSpeciesCode, linkedToHuntingDay);
+                specimenRequirements, specimen, gameSpeciesCode, linkedToHuntingDay, specVersion, linkedToHuntingDay);
 
         consumer.accept(builder);
         builder.throwOnErrors();
     }
 
-    @Test
-    public void testValidateAge_whenMissing() {
+    @Theory
+    public void testValidateAge_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                            @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                            @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                            @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                            @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         assumeFalse(specimenType.isAgePresent());
 
-        if (linkedToHuntingDay) {
+        if (isMooseOrDeerRequiringPermitForHunting()) {
+            // XOR
+            if (linkedToHuntingDay ^ specVersion.supportsMandatoryAgeAndGenderFieldsForMooselikeHarvest()) {
+                expectMissing(HarvestSpecimenFieldName.AGE);
+            }
+        } else if (linkedToHuntingDay) {
             expectMissing(HarvestSpecimenFieldName.AGE);
         }
 
         test(HarvestSpecimenValidator::validateAge);
     }
 
-    @Test
-    public void testValidateAge_whenNotValidForClubHunting() {
+    @Theory
+    public void testValidateAge_whenNotValidForClubHunting(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                           @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                           @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                           @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                           @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         assumeTrue(isMooseOrDeerRequiringPermitForHunting() && specimenType.isAgeUnknown());
 
-        if (linkedToHuntingDay) {
-            expectInvalid(HarvestSpecimenFieldName.AGE, GameAge.UNKNOWN);
+        if (specVersion.supportsMandatoryAgeAndGenderFieldsForMooselikeHarvest()) {
+            // basic
+            // hunter must give gender and age for mooselike harvest
+            if (!linkedToHuntingDay) {
+                expectInvalid(HarvestSpecimenFieldName.AGE, GameAge.UNKNOWN);
+            }
+        } else {
+            // old way
+            if (linkedToHuntingDay) {
+                expectInvalid(HarvestSpecimenFieldName.AGE, GameAge.UNKNOWN);
+            }
         }
 
         test(HarvestSpecimenValidator::validateAge);
     }
 
-    @Test
-    public void testValidateGender_whenMissing() {
+    @Theory
+    public void testValidateGender_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                               @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                               @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                               @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                               @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         assumeFalse(specimenType.isGenderPresent());
 
-        if (linkedToHuntingDay) {
+        if (isMooseOrDeerRequiringPermitForHunting()) {
+            // XOR
+            if (linkedToHuntingDay ^ specVersion.supportsMandatoryAgeAndGenderFieldsForMooselikeHarvest()) {
+                expectMissing(HarvestSpecimenFieldName.GENDER);
+            }
+        } else if (linkedToHuntingDay) {
             expectMissing(HarvestSpecimenFieldName.GENDER);
         }
 
         test(HarvestSpecimenValidator::validateGender);
     }
 
-    @Test
-    public void testValidateGender_whenNotValidForClubHunting() {
+    @Theory
+    public void testValidateGender_whenNotValidForClubHunting(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                              @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                              @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                              @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                              @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         assumeTrue(isMooseOrDeerRequiringPermitForHunting() && specimenType.isGenderUnknown());
 
-        if (linkedToHuntingDay) {
-            expectInvalid(HarvestSpecimenFieldName.GENDER, GameGender.UNKNOWN);
+        if (specVersion.supportsMandatoryAgeAndGenderFieldsForMooselikeHarvest()) {
+            // basic
+            // hunter must give gender and age for mooselike harvest
+            if (!linkedToHuntingDay) {
+                expectInvalid(HarvestSpecimenFieldName.GENDER, GameGender.UNKNOWN);
+            }
+        } else {
+            // old way
+            if (linkedToHuntingDay) {
+                expectInvalid(HarvestSpecimenFieldName.GENDER, GameGender.UNKNOWN);
+            }
         }
 
         test(HarvestSpecimenValidator::validateGender);
     }
 
-    @Test
-    public void testValidateWeight_whenEstimatedAndMeasuredWeightAreMissing() {
+    @Theory
+    public void testValidateWeight_whenEstimatedAndMeasuredWeightAreMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                                            @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                                            @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                                            @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                                            @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateMooselikeWeight);
     }
 
-    @Test
-    public void testValidateWeight_whenEstimatedWeightIsGiven() {
+    @Theory
+    public void testValidateWeight_whenEstimatedWeightIsGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                              @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                              @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                              @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                              @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         if (huntingYear < 2020 && !isMooseOrDeerRequiringPermitForHunting()
                 || huntingYear >= 2020 && !(isMooselike() || isWildBoar())) {
 
@@ -225,10 +251,15 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateMooselikeWeight);
     }
 
-    @Test
-    public void testValidateWeight_whenMeasuredWeightIsGiven() {
-        if ((!isClientSupportFor2020Fields || huntingYear < 2020) && !isMooseOrDeerRequiringPermitForHunting()
-                || isClientSupportFor2020Fields && huntingYear >= 2020 && !(isMooselike() || isWildBoar())) {
+    @Theory
+    public void testValidateWeight_whenMeasuredWeightIsGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                             @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                             @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                             @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                             @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
+        if ((!specVersion.supportsAntlerFields2020() || huntingYear < 2020) && !isMooseOrDeerRequiringPermitForHunting()
+                || specVersion.supportsAntlerFields2020() && huntingYear >= 2020 && !(isMooselike() || isWildBoar())) {
 
             expectIllegal(HarvestSpecimenFieldName.WEIGHT_MEASURED);
         }
@@ -239,8 +270,13 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateMooselikeWeight);
     }
 
-    @Test
-    public void testValidateNotEdible_whenGiven() {
+    @Theory
+    public void testValidateNotEdible_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         if (!isMooseOrDeerRequiringPermitForHunting()) {
             expectIllegal(HarvestSpecimenFieldName.NOT_EDIBLE);
         }
@@ -249,8 +285,13 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateNotEdible);
     }
 
-    @Test
-    public void testValidateNotEdible_whenMissing() {
+    @Theory
+    public void testValidateNotEdible_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                  @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                  @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                  @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                  @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         if (isMoose() && linkedToHuntingDay) {
             expectMissing(HarvestSpecimenFieldName.NOT_EDIBLE);
         }
@@ -258,8 +299,13 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateNotEdible);
     }
 
-    @Test
-    public void testValidateFitnessClass_whenGiven() {
+    @Theory
+    public void testValidateFitnessClass_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                   @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                   @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                   @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                   @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         if (!isMoose()) {
             expectIllegal(HarvestSpecimenFieldName.FITNESS_CLASS);
         }
@@ -268,14 +314,24 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateFitnessClass);
     }
 
-    @Test
-    public void testValidateFitnessClass_whenMissing() {
+    @Theory
+    public void testValidateFitnessClass_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                     @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                     @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                     @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                     @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateFitnessClass);
     }
 
-    @Test
-    public void testValidateAntlersLost_whenGiven() {
-        if (!isClientSupportFor2020Fields || huntingYear < 2020 || !isMooselike() || !specimenType.isAdultMale()) {
+    @Theory
+    public void testValidateAntlersLost_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                  @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                  @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                  @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                  @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
+        if (!specVersion.supportsAntlerFields2020() || huntingYear < 2020 || !isMooselike() || !specimenType.isAdultMale()) {
             expectIllegal(HarvestSpecimenFieldName.ANTLERS_LOST);
         }
 
@@ -283,11 +339,16 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAntlersLost);
     }
 
-    @Test
-    public void testValidateAntlersLost_whenMissing() {
+    @Theory
+    public void testValidateAntlersLost_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                    @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                    @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                    @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                    @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         assumeFalse(specimenType.isAntlersLost());
 
-        if (isClientSupportFor2020Fields
+        if (specVersion.supportsAntlerFields2020()
                 && huntingYear >= 2020
                 && isMooselike()
                 && specimenType.isAdultMale()
@@ -300,8 +361,13 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAntlersLost);
     }
 
-    @Test
-    public void testValidateAntlersType_whenGiven() {
+    @Theory
+    public void testValidateAntlersType_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                  @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                  @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                  @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                  @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         if (!isMoose() || !specimenType.isAdultMaleAndAntlersPresent()) {
             expectIllegal(HarvestSpecimenFieldName.ANTLERS_TYPE);
         }
@@ -310,16 +376,26 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAntlersType);
     }
 
-    @Test
-    public void testValidateAntlersType_whenMissing() {
+    @Theory
+    public void testValidateAntlersType_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                    @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                    @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                    @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                    @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateAntlersType);
     }
 
-    @Test
-    public void testValidateAntlersWidth_whenGiven() {
+    @Theory
+    public void testValidateAntlersWidth_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                   @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                   @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                   @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                   @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         if (!specimenType.isAdultMaleAndAntlersPresent()
-                || (!isClientSupportFor2020Fields || huntingYear < 2020) && !isMooseOrDeerRequiringPermitForHunting()
-                || isClientSupportFor2020Fields && huntingYear >= 2020 && !isMooseOrDeerRequiringPermitForHunting()) {
+                || (!specVersion.supportsAntlerFields2020() || huntingYear < 2020) && !isMooseOrDeerRequiringPermitForHunting()
+                || specVersion.supportsAntlerFields2020() && huntingYear >= 2020 && !isMooseOrDeerRequiringPermitForHunting()) {
 
             expectIllegal(HarvestSpecimenFieldName.ANTLERS_WIDTH);
         }
@@ -328,16 +404,26 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAntlersWidth);
     }
 
-    @Test
-    public void testValidateAntlersWidth_whenMissing() {
+    @Theory
+    public void testValidateAntlersWidth_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                     @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                     @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                     @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                     @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateAntlersWidth);
     }
 
-    @Test
-    public void testValidateAntlerPointsLeft_whenGiven() {
+    @Theory
+    public void testValidateAntlerPointsLeft_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                       @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                       @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                       @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                       @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         if (!specimenType.isAdultMaleAndAntlersPresent()
-                || (!isClientSupportFor2020Fields || huntingYear < 2020) && !isMooseOrDeerRequiringPermitForHunting()
-                || isClientSupportFor2020Fields && huntingYear >= 2020 && !isMooselike()) {
+                || (!specVersion.supportsAntlerFields2020() || huntingYear < 2020) && !isMooseOrDeerRequiringPermitForHunting()
+                || specVersion.supportsAntlerFields2020() && huntingYear >= 2020 && !isMooselike()) {
 
             expectIllegal(HarvestSpecimenFieldName.ANTLER_POINTS_LEFT);
         }
@@ -346,16 +432,26 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAntlerPointsLeft);
     }
 
-    @Test
-    public void testValidateAntlerPointsLeft_whenMissing() {
+    @Theory
+    public void testValidateAntlerPointsLeft_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                         @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                         @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                         @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                         @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateAntlerPointsLeft);
     }
 
-    @Test
-    public void testValidateAntlerPointsRight_whenGiven() {
+    @Theory
+    public void testValidateAntlerPointsRight_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                        @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                        @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                        @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                        @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         if (!specimenType.isAdultMaleAndAntlersPresent()
-                || (!isClientSupportFor2020Fields || huntingYear < 2020) && !isMooseOrDeerRequiringPermitForHunting()
-                || isClientSupportFor2020Fields && huntingYear >= 2020 && !isMooselike()) {
+                || (!specVersion.supportsAntlerFields2020() || huntingYear < 2020) && !isMooseOrDeerRequiringPermitForHunting()
+                || specVersion.supportsAntlerFields2020() && huntingYear >= 2020 && !isMooselike()) {
 
             expectIllegal(HarvestSpecimenFieldName.ANTLER_POINTS_RIGHT);
         }
@@ -364,14 +460,24 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAntlerPointsRight);
     }
 
-    @Test
-    public void testValidateAntlerPointsRight_whenMissing() {
+    @Theory
+    public void testValidateAntlerPointsRight_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                          @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                          @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                          @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                          @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateAntlerPointsRight);
     }
 
-    @Test
-    public void testValidateAntlersGirth_whenGiven() {
-        if (!isClientSupportFor2020Fields
+    @Theory
+    public void testValidateAntlersGirth_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                   @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                   @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                   @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                   @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
+        if (!specVersion.supportsAntlerFields2020()
                 || huntingYear < 2020
                 || !(isMoose() || isWhiteTailedDeer())
                 || !specimenType.isAdultMaleAndAntlersPresent()) {
@@ -383,14 +489,24 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAntlersGirth);
     }
 
-    @Test
-    public void testValidateAntlersGirth_whenMissing() {
+    @Theory
+    public void testValidateAntlersGirth_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                     @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                     @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                     @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                     @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateAntlersGirth);
     }
 
-    @Test
-    public void testValidateAntlersLength_whenGiven() {
-        if (!isClientSupportFor2020Fields
+    @Theory
+    public void testValidateAntlersLength_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                    @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                    @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                    @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                    @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
+        if (!specVersion.supportsAntlerFields2020()
                 || huntingYear < 2020
                 || !(isRoeDeer() || isWhiteTailedDeer())
                 || !specimenType.isAdultMaleAndAntlersPresent()) {
@@ -402,14 +518,24 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAntlersLength);
     }
 
-    @Test
-    public void testValidateAntlersLength_whenMissing() {
+    @Theory
+    public void testValidateAntlersLength_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                      @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                      @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                      @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                      @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateAntlersLength);
     }
 
-    @Test
-    public void testValidateAntlersInnerWidth_whenGiven() {
-        if (!isClientSupportFor2020Fields
+    @Theory
+    public void testValidateAntlersInnerWidth_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                        @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                        @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                        @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                        @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
+        if (!specVersion.supportsAntlerFields2020()
                 || huntingYear < 2020
                 || !isWhiteTailedDeer()
                 || !specimenType.isAdultMaleAndAntlersPresent()) {
@@ -421,14 +547,24 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAntlersInnerWidth);
     }
 
-    @Test
-    public void testValidateAntlersInnerWidth_whenMissing() {
+    @Theory
+    public void testValidateAntlersInnerWidth_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                          @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                          @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                          @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                          @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateAntlersInnerWidth);
     }
 
-    @Test
-    public void testValidateAntlerShaftWidth_whenGiven() {
-        if (!isClientSupportFor2020Fields
+    @Theory
+    public void testValidateAntlerShaftWidth_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                       @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                       @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                       @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                       @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
+        if (!specVersion.supportsAntlerFields2020()
                 || huntingYear < 2020
                 || !isRoeDeer()
                 || !specimenType.isAdultMaleAndAntlersPresent()) {
@@ -440,13 +576,23 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAntlerShaftWidth);
     }
 
-    @Test
-    public void testValidateAntlerShaftWidth_whenMissing() {
+    @Theory
+    public void testValidateAntlerShaftWidth_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                                         @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                                         @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                                         @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                                         @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateAntlerShaftWidth);
     }
 
-    @Test
-    public void testValidateAlone_whenGiven() {
+    @Theory
+    public void testValidateAlone_whenGiven(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                            @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                            @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                            @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                            @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         if (!isMoose() || !specimenType.isYoung()) {
             expectIllegal(HarvestSpecimenFieldName.ALONE);
         }
@@ -455,20 +601,32 @@ public class HarvestSpecimenValidatorTest implements HasGameSpeciesCode, ValueGe
         test(HarvestSpecimenValidator::validateAlone);
     }
 
-    @Test
-    public void testValidateAlone_whenMissing() {
+    @Theory
+    public void testValidateAlone_whenMissing(@FromDataPoints("huntingYear") final Integer huntingYear,
+                                              @FromDataPoints("gameSpeciesCode") final Integer gameSpeciesCode,
+                                              @FromDataPoints("specimenType") final HarvestSpecimenType specimenType,
+                                              @FromDataPoints("linkedToHuntingDay") final Boolean linkedToHuntingDay,
+                                              @FromDataPoints("specVersion") final HarvestSpecVersion specVersion) {
+        setup(huntingYear, gameSpeciesCode, specimenType, linkedToHuntingDay, specVersion);
         test(HarvestSpecimenValidator::validateAlone);
     }
 
     private void expectMissing(final HarvestSpecimenFieldName fieldName) {
+        // adds expectation that current test will throw an error
+        // this is wanted behavior when test data/parameters are in invalid state
         thrown.expectMessage("missing " + fieldName.name());
     }
 
     private void expectIllegal(final HarvestSpecimenFieldName fieldName) {
+        // adds expectation that current test will throw an error
+        // this is wanted behavior when test data/parameters are in invalid state
         thrown.expectMessage("illegal " + fieldName.name());
     }
 
     private void expectInvalid(final HarvestSpecimenFieldName fieldName, final Object value) {
+        // adds expectation that current test will throw an error
+        // this is wanted behavior when test data/parameters are in invalid state
         thrown.expectMessage("invalid " + fieldName.name() + ": " + value);
     }
+
 }

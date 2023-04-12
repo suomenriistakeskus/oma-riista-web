@@ -19,8 +19,8 @@ import java.util.Map;
 public class RhyClubLeadersExcelView extends AbstractXlsxView {
 
     private static final String HEADER_PREFIX = "RhyClubLeadersExcel.";
-    private static final String[] HEADERS_CONTACTS = new String[]{"club", "name", "primary", "email", "phoneNumber"};
-    private static final String[] HEADERS_LEADERS = new String[]{"club", "group", "name", "primary", "email", "phoneNumber"};
+    private static final String[] HEADERS_CONTACTS = new String[]{"club", "huntingClubSubtype", "name", "primary", "email", "phoneNumber"};
+    private static final String[] HEADERS_LEADERS = new String[]{"club", "huntingClubSubtype", "group", "name", "primary", "email", "phoneNumber"};
 
     private final EnumLocaliser localiser;
     private final int huntingYear;
@@ -83,7 +83,8 @@ public class RhyClubLeadersExcelView extends AbstractXlsxView {
 
     private void createRow(final ExcelHelper helper, final RhyClubOccupationDTO dto, OccupationType occType) {
         helper.appendRow()
-                .appendTextCell(localiser.getTranslation(dto.getClub().getNameLocalisation()));
+                .appendTextCell(localiser.getTranslation(dto.getClub().getNameLocalisation()))
+                .appendTextCell(localiser.getTranslation(dto.getClubSubtype()));
 
         if (occType == OccupationType.RYHMAN_METSASTYKSENJOHTAJA) {
             helper.appendTextCell(localiser.getTranslation(dto.getGroup().getNameLocalisation()));

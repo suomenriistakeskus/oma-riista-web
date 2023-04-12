@@ -54,6 +54,10 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
         dto.setBeginDate(occupation.getBeginDate());
         dto.setEndDate(occupation.getEndDate());
 
+        dto.setNameVisibility(occupation.isNameVisibility());
+        dto.setPhoneNumberVisibility(occupation.isPhoneNumberVisibility());
+        dto.setEmailVisibility(occupation.isEmailVisibility());
+
         return dto;
     }
 
@@ -77,13 +81,19 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
 
     private List<MyClubOccupationDTO> groupOccupations;
 
+    private boolean nameVisibility;
+
+    private boolean phoneNumberVisibility;
+
+    private boolean emailVisibility;
+
     @Override
     public Long getId() {
         return id;
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 
@@ -93,7 +103,7 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setRev(Integer rev) {
+    public void setRev(final Integer rev) {
         this.rev = rev;
     }
 
@@ -101,7 +111,7 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
         return occupationType;
     }
 
-    public void setOccupationType(OccupationType occupationType) {
+    public void setOccupationType(final OccupationType occupationType) {
         this.occupationType = occupationType;
     }
 
@@ -109,7 +119,7 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
         return callOrder;
     }
 
-    public void setCallOrder(Integer callOrder) {
+    public void setCallOrder(final Integer callOrder) {
         this.callOrder = callOrder;
     }
 
@@ -117,7 +127,7 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
         return organisation;
     }
 
-    public void setOrganisation(OrganisationDTO organisation) {
+    public void setOrganisation(final OrganisationDTO organisation) {
         this.organisation = organisation;
     }
 
@@ -125,7 +135,7 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
         return parentOrganisation;
     }
 
-    public void setParentOrganisation(OrganisationDTO parentOrganisation) {
+    public void setParentOrganisation(final OrganisationDTO parentOrganisation) {
         this.parentOrganisation = parentOrganisation;
     }
 
@@ -133,7 +143,7 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
         return contactInfoShare;
     }
 
-    public void setContactInfoShare(ContactInfoShare contactInfoShare) {
+    public void setContactInfoShare(final ContactInfoShare contactInfoShare) {
         this.contactInfoShare = contactInfoShare;
     }
 
@@ -141,7 +151,7 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
         return beginDate;
     }
 
-    public void setBeginDate(LocalDate beginDate) {
+    public void setBeginDate(final LocalDate beginDate) {
         this.beginDate = beginDate;
     }
 
@@ -149,7 +159,7 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
         return endDate;
     }
 
-    public void setEndDate(LocalDate endDate) {
+    public void setEndDate(final LocalDate endDate) {
         this.endDate = endDate;
     }
 
@@ -157,7 +167,31 @@ public class MyClubOccupationDTO extends BaseEntityDTO<Long> {
         return groupOccupations;
     }
 
-    public void setGroupOccupations(List<MyClubOccupationDTO> groupOccupations) {
+    public void setGroupOccupations(final List<MyClubOccupationDTO> groupOccupations) {
         this.groupOccupations = groupOccupations;
+    }
+
+    public boolean isNameVisibility() {
+        return nameVisibility;
+    }
+
+    public void setNameVisibility(final boolean nameVisibility) {
+        this.nameVisibility = nameVisibility;
+    }
+
+    public boolean isPhoneNumberVisibility() {
+        return phoneNumberVisibility;
+    }
+
+    public void setPhoneNumberVisibility(final boolean phoneNumberVisibility) {
+        this.phoneNumberVisibility = phoneNumberVisibility;
+    }
+
+    public boolean isEmailVisibility() {
+        return emailVisibility;
+    }
+
+    public void setEmailVisibility(final boolean emailVisibility) {
+        this.emailVisibility = emailVisibility;
     }
 }

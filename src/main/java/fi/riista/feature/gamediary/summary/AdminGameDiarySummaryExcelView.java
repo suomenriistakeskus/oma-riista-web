@@ -81,8 +81,9 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
     private void createHarvestsSheet(final Workbook workbook) {
         final ExcelHelper helper = new ExcelHelper(workbook, localiser.getTranslation("harvests"));
         helper.appendHeaderRow(concatAndTranslate(getCommonHeaders(), "amount", "solitaryCalf", "gender", "age",
-                "weight", "notEdible", "weightEstimated", "weightMeasured", "fitnessClass", "antlersType",
-                "antlersWidth", "antlerPointsLeft", "antlerPointsRight"));
+                "weight", "notEdible", "weightEstimated", "weightMeasured", "fitnessClass", "antlersLost", "antlersType",
+                "antlersWidth", "antlerPointsLeft", "antlerPointsRight", "antlersGirth", "antlersLength",
+                "antlersInnerWidth", "antlerShaftWidth"));
 
         for (final HarvestDTO harvest : harvests) {
             final List<HarvestSpecimenDTO> specimens = harvest.getSpecimens();
@@ -107,10 +108,15 @@ public class AdminGameDiarySummaryExcelView extends AbstractXlsxStreamingView {
                         .appendNumberCell(specimen.getWeightEstimated())
                         .appendNumberCell(specimen.getWeightMeasured())
                         .appendTextCell(localise(specimen.getFitnessClass()))
+                        .appendTextCell(Boolean.TRUE.equals(specimen.getAntlersLost()) ? "x" : "")
                         .appendTextCell(localise(specimen.getAntlersType()))
                         .appendNumberCell(specimen.getAntlersWidth())
                         .appendNumberCell(specimen.getAntlerPointsLeft())
-                        .appendNumberCell(specimen.getAntlerPointsRight());
+                        .appendNumberCell(specimen.getAntlerPointsRight())
+                        .appendNumberCell(specimen.getAntlersGirth())
+                        .appendNumberCell(specimen.getAntlersLength())
+                        .appendNumberCell(specimen.getAntlersInnerWidth())
+                        .appendNumberCell(specimen.getAntlerShaftWidth());
             }
         }
     }

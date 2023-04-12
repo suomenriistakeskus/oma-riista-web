@@ -18,8 +18,6 @@ import fi.riista.feature.harvestpermit.HarvestPermitNotFoundException;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountNotFound;
 import fi.riista.feature.organization.person.PersonNotFoundException;
 import fi.riista.util.LocalisedString;
-import io.sentry.Sentry;
-import io.sentry.SentryClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -49,12 +47,6 @@ public class HarvestExceptionMapper {
     @Nonnull
     public ResponseEntity<HarvestValidationFailureDTO> handleException(final RuntimeException e) {
         final ResponseEntity<HarvestValidationFailureDTO> response = mapExceptionInternal(e);
-        final SentryClient sentry = Sentry.getStoredClient();
-
-        if (sentry != null) {
-            sentry.sendException(e);
-        }
-
         if (response != null) {
             LOG.error("Harvest validation failed with exception " + e.getClass().getSimpleName() + " : " + e.getMessage());
 

@@ -22,7 +22,7 @@
             </li>
         </ul>
 
-        <ul class="nav navbar-nav navbar-right r-main-navbar-nav-right">
+        <ul class="nav navbar-nav r-main-navbar-nav-right">
             <nav-search ng-if="$ctrl.isAdminOrModerator()"></nav-search>
 
             <li class="hidden-xs" ng-if="$ctrl.isUser()">
@@ -32,5 +32,6 @@
             <nav-language class="hidden-xs"></nav-language>
             <nav-change-role></nav-change-role>
         </ul>
+        <riista-mobile-menu></riista-mobile-menu>
     </div>
 </div>

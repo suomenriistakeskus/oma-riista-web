@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.carnivore.attachments', ['app.meta
                 templateUrl: 'harvestpermit/applications/carnivore/attachments/attachments.html',
                 controller: 'CarnivorePermitWizardAttachmentsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     states: function () {
                         return {

@@ -1,5 +1,4 @@
-
-<div class="panel-body">
+<div class="panel-body dogunleash-list-row">
     <div class="row">
 
         <!-- left column -->
@@ -43,14 +42,30 @@
         <div class="col-sm-6">
             <table class="table-single-column">
                 <tbody>
-                <tr><th translate="harvestpermit.wizard.dogunleash.eventDetails.eventDescription"></th></tr>
-                <tr><td>
-                    <r-paragraphed-text content="$ctrl.event.eventDescription"></r-paragraphed-text>
-                </td></tr>
-                <tr><th translate="harvestpermit.wizard.dogunleash.eventDetails.locationDescription"></th></tr>
-                <tr><td><r-paragraphed-text content="$ctrl.event.locationDescription"></r-paragraphed-text></td></tr>
-                <tr><th translate="harvestpermit.wizard.dogunleash.eventDetails.additionalInfo"></th></tr>
-                <tr><td><r-paragraphed-text content="$ctrl.event.additionalInfo"></r-paragraphed-text></td></tr>
+                <tr>
+                    <th translate="harvestpermit.wizard.dogunleash.eventDetails.eventDescription"></th>
+                </tr>
+                <tr>
+                    <td>
+                        <r-paragraphed-text content="$ctrl.event.eventDescription"></r-paragraphed-text>
+                    </td>
+                </tr>
+                <tr>
+                    <th translate="harvestpermit.wizard.dogunleash.eventDetails.locationDescription"></th>
+                </tr>
+                <tr>
+                    <td>
+                        <r-paragraphed-text content="$ctrl.event.locationDescription"></r-paragraphed-text>
+                    </td>
+                </tr>
+                <tr>
+                    <th translate="harvestpermit.wizard.dogunleash.eventDetails.additionalInfo"></th>
+                </tr>
+                <tr>
+                    <td>
+                        <r-paragraphed-text content="$ctrl.event.additionalInfo"></r-paragraphed-text>
+                    </td>
+                </tr>
                 </tbody>
             </table>
         </div>
@@ -58,30 +73,24 @@
 
     <!-- buttons -->
 
-    <div class="row">
+    <div class="row button-row">
         <div class="col-xs-12">
-            <table class="table">
-                <tbody>
-                 <tr>
-                     <td class="r-table-actions-cell">
-                         <button class="btn btn-primary"
-                                 ng-click="$ctrl.edit()"
-                                 translate="global.button.edit">
-                         </button>
-                         &nbsp;
-                         <button class="btn btn-default"
-                                 ng-click="$ctrl.copy()"
-                                 translate="global.button.copy">
-                         </button>
-                         &nbsp;
-                         <button class="btn btn-danger"
-                                 ng-click="$ctrl.delete()"
-                                 translate="global.button.delete">
-                         </button>
-                     </td>
-                    </tr>
-                </tbody>
-            </table>
+
+            <button class="btn btn-primary"
+                    ng-click="$ctrl.edit()"
+                    translate="global.button.edit">
+            </button>
+            &nbsp;
+            <button class="btn btn-default"
+                    ng-click="$ctrl.copy()"
+                    translate="global.button.copy">
+            </button>
+            &nbsp;
+            <button class="btn btn-danger"
+                    ng-click="$ctrl.delete()"
+                    translate="global.button.delete">
+            </button>
+
 
         </div>
     </div>

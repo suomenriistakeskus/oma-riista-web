@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('app.account.controllers', ['ui.router', 'app.account.services'])
+angular.module('app.account.controllers', ['ui.router', 'app.account.services', 'app.harvestpermit.services'])
     .constant('ModeratorPrivileges', {
         bulkMessagePrivilege: 'SEND_BULK_MESSAGES',
         alterInvoicePayment: 'ALTER_INVOICE_PAYMENT',
@@ -9,7 +9,13 @@ angular.module('app.account.controllers', ['ui.router', 'app.account.services'])
         habides: 'EXPORT_HABIDES_REPORTS',
         saveHarvestWithIncompleteData: "SAVE_INCOMPLETE_HARVEST_DATA",
         moderateDisabilityPermitApplication: 'MODERATE_DISABILITY_PERMIT_APPLICATION',
-        otherwiseDeceased: 'MUUTOIN_KUOLLEET'
+        otherwiseDeceased: 'MUUTOIN_KUOLLEET',
+        moderateApplicationSchedule: 'MODERATE_APPLICATION_SCHEDULE',
+        publishFrontpageNews: 'PUBLISH_FRONTPAGE_NEWS',
+        informationRequestLinkHandler: 'INFORMATION_REQUEST_LINK_HANDLER',
+        moderateHarvestSeasons: 'MODERATE_HARVEST_SEASONS',
+        reviewHarvestReportDelays: 'REVIEW_HARVEST_REPORT_DELAYS',
+        viewHuntingControlEvents: 'VIEW_HUNTING_CONTROL_EVENTS',
     })
     .config(function ($stateProvider) {
         $stateProvider
@@ -68,6 +74,20 @@ angular.module('app.account.controllers', ['ui.router', 'app.account.services'])
                     },
                     clubOccupations: function (profile) {
                         return profile.clubOccupations;
+                    }
+                }
+            })
+            .state('profile.huntingleaderconfig', {
+                url: '/huntingleaderconfig',
+                templateUrl: 'club/huntingleaderconfig.html',
+                controllerAs: '$ctrl',
+                controller: 'HuntingLeaderContactShareController',
+                resolve: {
+                    profile: function (AccountService, $stateParams) {
+                        return AccountService.loadAccount($stateParams.id);
+                    },
+                    permitsWithGroups: function (HarvestPermits) {
+                        return HarvestPermits.listWithHuntingClubGroups().$promise;
                     }
                 }
             });

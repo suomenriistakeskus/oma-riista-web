@@ -19,6 +19,11 @@
                     <h2 translate="reporting.dashboard.usersTab.clubs.heading"></h2>
                     <dashboard-clubs></dashboard-clubs>
                 </div>
+
+                <div class="col-md-6 col-md-offset-1">
+                    <h2 translate="reporting.dashboard.usersTab.pois.heading"></h2>
+                    <dashboard-pois></dashboard-pois>
+                </div>
             </div>
         </div>
     </uib-tab>
@@ -44,7 +49,7 @@
 
         <hr/>
         <h2 translate="reporting.dashboard.harvestTab.collector.heading"></h2>
-        <dashboard-harvest-summary></dashboard-harvest-summary>
+        <dashboard-harvest-summary end-point="'api/v1/dashboard/harvestSummary'"></dashboard-harvest-summary>
         <dashboard-end-of-hunting-reports></dashboard-end-of-hunting-reports>
     </uib-tab>
 

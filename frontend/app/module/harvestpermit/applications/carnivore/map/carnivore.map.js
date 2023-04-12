@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.carnivore.map', ['app.metadata', '
                 templateUrl: 'harvestpermit/applications/wizard/area/map.html',
                 controller: 'DerogationPermitWizardMapController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     areaInfo: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.getArea({id: applicationId}).$promise;
@@ -42,6 +43,7 @@ angular.module('app.harvestpermit.application.carnivore.map', ['app.metadata', '
                 templateUrl: 'harvestpermit/applications/wizard/area/mapdetails.html',
                 controller: 'DerogationPermitWizardMapDetailsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     areaInfo: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.getArea({id: applicationId}).$promise;

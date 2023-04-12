@@ -162,6 +162,113 @@ angular.module('app.diary.harvest.view', [])
             };
         }
     })
+
+    .component('diaryHarvestHuntingClub', {
+        templateUrl: 'diary/harvest/hunting-club.html',
+        require: {
+            form: '^form'
+        },
+        bindings: {
+            gameSpeciesCode: '<',
+            harvest: '<'
+        },
+        controllerAs: '$ctrl',
+        controller: function ($scope, GameSpeciesCodes, AuthenticationService, HuntingClubSearchService, $filter, $translate) {
+            var $ctrl = this;
+            var i18n = $filter('rI18nNameFilter');
+            var ID_OTHER = -1;
+            $ctrl.HUNTING_CLUB_OFFICIAL_CODE_LENGTH = 7;
+
+            function initHuntingClubOptions() {
+                //Clubs of user
+                var authentication = AuthenticationService.getAuthentication();
+                $ctrl.huntingClubs = _.map(authentication.clubOccupations, function (clubOccupation) {
+                    return {id: clubOccupation.organisation.id, name: i18n(clubOccupation.organisation)};
+                });
+                //'Other' option for searching a club by officialCode
+                $ctrl.huntingClubs.push( {id: ID_OTHER, name: $translate.instant('gamediary.form.other')} );
+
+                //Fetch selected club if user is not a member of the club
+                if ($ctrl.huntingClubId) {
+                    var selectedHuntingClub = _.find($ctrl.huntingClubs, { id: $ctrl.huntingClubId });
+                    if (!selectedHuntingClub) {
+                        selectedHuntingClub = {
+                            id: $ctrl.harvest.selectedHuntingClub.id,
+                            name: i18n($ctrl.harvest.selectedHuntingClub) };
+                        $ctrl.huntingClubs.push(selectedHuntingClub);
+                    }
+                }
+            }
+
+            function setSelectedHuntingClub(huntingClubId) {
+                if (!huntingClubId) {
+                    $ctrl.harvest.selectedHuntingClub = null;
+                    return;
+                }
+                $ctrl.harvest.selectedHuntingClub = {id: huntingClubId };
+            }
+            function updateHuntingClubComponentVisibility() {
+                $ctrl.isHuntingClubComponentVisible = true;
+                    $ctrl.isHuntingClubComponentVisible = !GameSpeciesCodes.isPermitBasedMooselike($ctrl.gameSpeciesCode);
+                if (!$ctrl.isHuntingClubComponentVisible) {
+                    $ctrl.huntingClubId = null;
+                    setSelectedHuntingClub(null);
+                }
+            }
+
+            $ctrl.$onInit = function () {
+                $ctrl.huntingClubId = _.get($ctrl.harvest, 'selectedHuntingClub.id');
+                $ctrl.isOfficialCodeInputVisible = false;
+                $ctrl.isClubByOfficialCodeFound = false;
+                $ctrl.searchedClub = null;
+                initHuntingClubOptions();
+                updateHuntingClubComponentVisibility();
+            };
+
+            $ctrl.huntingClubSelectionChanged = function () {
+                if ($ctrl.huntingClubId === ID_OTHER) {
+                    $ctrl.isOfficialCodeInputVisible = true;
+                    setSelectedHuntingClub(null);
+                } else {
+                    $ctrl.isOfficialCodeInputVisible = false;
+                    setSelectedHuntingClub($ctrl.huntingClubId);
+                }
+                $ctrl.searchedClub = null;
+            };
+
+            function handleOfficialCodeFound(searchedClub) {
+                $ctrl.isClubByOfficialCodeFound = true;
+                $ctrl.searchedClub = searchedClub;
+                $ctrl.searchedClub.name = i18n($ctrl.searchedClub);
+                setSelectedHuntingClub($ctrl.searchedClub.id);
+            }
+            function handleOfficialCodeNotFound() {
+                $ctrl.isClubByOfficialCodeFound = false;
+                $ctrl.searchedClub = null;
+                setSelectedHuntingClub(null);
+            }
+            $ctrl.officialCodeChanged = function () {
+                if (!$ctrl.officialCode || $ctrl.officialCode.length !== $ctrl.HUNTING_CLUB_OFFICIAL_CODE_LENGTH) {
+                    handleOfficialCodeNotFound();
+                    return;
+                }
+
+                HuntingClubSearchService.findNameByOfficialCode($ctrl.officialCode).then(function (response) {
+                    handleOfficialCodeFound(response.data);
+                }, function () {
+                    handleOfficialCodeNotFound();
+                });
+            };
+
+            $scope.$watch('$ctrl.gameSpeciesCode', function (value, oldValue) {
+                if (value === oldValue) {
+                    return;
+                }
+                updateHuntingClubComponentVisibility();
+            });
+        }
+    })
+
     .component('diaryHarvestSelectSpecies', {
         templateUrl: 'diary/harvest/select-species.html',
         require: {

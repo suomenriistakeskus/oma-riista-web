@@ -59,6 +59,9 @@ public class ObservationFeature {
     @Resource
     private ObservationDTOTransformer observationDtoTransformer;
 
+    @Resource
+    private ObservationService observationService;
+
     @Transactional(readOnly = true)
     public ObservationDTO getObservation(final Long id) {
         return observationDtoTransformer.apply(requireEntityService.requireObservation(id, EntityPermission.READ));
@@ -180,11 +183,6 @@ public class ObservationFeature {
     public void deleteObservation(final long observationId) {
         final Observation observation = requireEntityService.requireObservation(observationId, EntityPermission.DELETE);
 
-        final ObservationLockInfo lockInfo =
-                observationUpdateService.getObservationLockInfo(observation, ObservationSpecVersion.MOST_RECENT);
-
-        observationSpecimenService.deleteAllSpecimens(observation);
-        gameDiaryImageService.deleteGameDiaryImages(observation);
-        observationUpdateService.deleteObservation(observation, lockInfo);
+        observationService.deleteObservation(observation);
     }
 }

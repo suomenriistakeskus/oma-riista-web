@@ -464,6 +464,7 @@ ALTER TABLE person ADD CONSTRAINT invoice_reference_previous_check CHECK (
     </changeSet>
 
     <changeSet id="2016-03-23-add-approver-to-srva_event" author="vincit-tonile">
+        <validCheckSum>8:d0cf24f58bc0f27dfb476dea785206a3</validCheckSum>
         <addColumn tableName="srva_event">
             <column name="approver_as_user_id" type="BIGINT"></column>
         </addColumn>
@@ -496,7 +497,7 @@ ALTER TABLE person ADD CONSTRAINT invoice_reference_previous_check CHECK (
         <sql>
             <![CDATA[
             UPDATE srva_event SET
-                approver_as_person_id = (SELECT person_id FROM system_user WHERE user_id = srva_event.modified_by_user_id),
+                approver_as_person_id = (SELECT person_id FROM "system_user" WHERE user_id = srva_event.modified_by_user_id),
                 approver_as_user_id = modified_by_user_id
                 WHERE state <> 'UNFINISHED';
             ALTER TABLE srva_event ADD CONSTRAINT ck_srva_event_approver_defined_for_other_than_unfinished CHECK ((state = 'UNFINISHED' AND approver_as_user_id IS NULL AND approver_as_person_id IS NULL) OR (state != 'UNFINISHED' AND approver_as_user_id IS NOT NULL))
@@ -892,6 +893,7 @@ ALTER TABLE person ADD CONSTRAINT invoice_reference_previous_check CHECK (
     </changeSet>
 
     <changeSet id="2016-06-10-occupation-nomination" author="vincit-kyostihe">
+        <validCheckSum>8:f34c5e950882fac13e25ec798f94d397</validCheckSum>
         <createTable tableName="occupation_nomination">
             <column autoIncrement="true" name="occupation_nomination_id" type="BIGSERIAL">
                 <constraints primaryKey="true" primaryKeyName="occupation_nomination_pkey"/>
@@ -941,7 +943,7 @@ ALTER TABLE person ADD CONSTRAINT invoice_reference_previous_check CHECK (
             </column>
 
             <column name="moderator_user_id" type="BIGINT">
-                <constraints references="system_user(user_id)"
+                <constraints referencedTableName="system_user" referencedColumnNames="user_id"
                              foreignKeyName="fk_occupation_nomination_user_id"/>
             </column>
 
@@ -1333,6 +1335,7 @@ AND organisation.organisation_id = hpg.organisation_id;
     </changeSet>
 
     <changeSet id="2016-09-20-announcements" author="vincit-kyostihe">
+        <validCheckSum>8:c0c7d2dbdd0d91e68671985b9d0dd392</validCheckSum>
         <createTable tableName="announcement">
             <column autoIncrement="true" name="announcement_id" type="BIGSERIAL">
                 <constraints primaryKey="true" primaryKeyName="announcement_pkey"/>
@@ -1359,7 +1362,7 @@ AND organisation.organisation_id = hpg.organisation_id;
             </column>
             <column name="from_user_id" type="BIGINT">
                 <constraints nullable="false"
-                             references="system_user(user_id)"
+                             referencedTableName="system_user" referencedColumnNames="user_id"
                              foreignKeyName="fk_announcement_user_id"/>
             </column>
             <column name="from_occupation_type" type="VARCHAR(255)">

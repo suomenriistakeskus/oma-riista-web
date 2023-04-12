@@ -19,6 +19,8 @@ public enum HarvestPermitCategory {
     LARGE_CARNIVORE_WOLF_PORONHOITO(HarvestPermitApplicationName.WOLF, PermitDecisionName.LARGE_CARNIVORE),
     MAMMAL(HarvestPermitApplicationName.MAMMAL, PermitDecisionName.MAMMAL),
     NEST_REMOVAL(HarvestPermitApplicationName.NEST_REMOVAL, PermitDecisionName.NEST_REMOVAL),
+
+    // New applications not created, split into EUROPEAN_BEAVER and PARTRIDGE
     LAW_SECTION_TEN(HarvestPermitApplicationName.LAW_SECTION_TEN, PermitDecisionName.LAW_SECTION_TEN),
     WEAPON_TRANSPORTATION(HarvestPermitApplicationName.WEAPON_TRANSPORTATION, PermitDecisionName.WEAPON_TRANSPORTATION),
     DISABILITY(HarvestPermitApplicationName.DISABILITY, PermitDecisionName.DISABILITY),
@@ -27,7 +29,9 @@ public enum HarvestPermitCategory {
     DEPORTATION(HarvestPermitApplicationName.DEPORTATION, PermitDecisionName.DEPORTATION),
     RESEARCH(HarvestPermitApplicationName.RESEARCH, PermitDecisionName.RESEARCH),
     IMPORTING(HarvestPermitApplicationName.IMPORTING, PermitDecisionName.IMPORTING),
-    GAME_MANAGEMENT(HarvestPermitApplicationName.GAME_MANAGEMENT, PermitDecisionName.GAME_MANAGEMENT);
+    GAME_MANAGEMENT(HarvestPermitApplicationName.GAME_MANAGEMENT, PermitDecisionName.GAME_MANAGEMENT),
+    EUROPEAN_BEAVER(HarvestPermitApplicationName.LAW_SECTION_TEN, PermitDecisionName.LAW_SECTION_TEN),
+    PARTRIDGE(HarvestPermitApplicationName.LAW_SECTION_TEN, PermitDecisionName.LAW_SECTION_TEN);
 
     public static final String LARGE_CARNIVORE_CATEGORIES = "LARGE_CARNIVORE";
 

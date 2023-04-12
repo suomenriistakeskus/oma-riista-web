@@ -38,6 +38,10 @@ angular.module('app.mapeditor.sidebar', [])
         controller: function (NotificationService) {
             var $ctrl = this;
 
+            $ctrl.$onInit = function () {
+                $ctrl.selectedTab = 'all';
+            };
+
             $ctrl.getFeatureList = function () {
                 return $ctrl.editor.mml.getFeatureList();
             };
@@ -104,10 +108,14 @@ angular.module('app.mapeditor.sidebar', [])
             editor: '<',
             metsahallitus: '<'
         },
-        controller: function (GIS, UnsavedChangesConfirmationService) {
+        controller: function (GIS, UnsavedChangesConfirmationService, HuntingYearService) {
             var $ctrl = this;
 
-            $ctrl.mooseAreaSearchQuery = null;
+            $ctrl.$onInit = function () {
+                $ctrl.mooseAreaSearchQuery = null;
+                $ctrl.selectedTab = 'all';
+                $ctrl.showOnlyChanged = false;
+            };
 
             $ctrl.focusMooseArea = function (area) {
                 $ctrl.editor.zoom(area.id);
@@ -135,6 +143,21 @@ angular.module('app.mapeditor.sidebar', [])
                 if (replacement) {
                     loadMooseFeature(replacement);
                 }
+            };
+
+            $ctrl.setOnlyChanged = function (value) {
+                $ctrl.showOnlyChanged = value;
+            };
+
+            $ctrl.getAreaList = function () {
+                var areaList = $ctrl.metsahallitus.getSelectedAreaList();
+                if ($ctrl.showOnlyChanged) {
+                    return _.filter(areaList, function (area) {
+                        return !$ctrl.metsahallitus.isUpToDate(area);
+                    });
+                }
+
+                return areaList;
             };
 
             function loadMooseFeature(area) {

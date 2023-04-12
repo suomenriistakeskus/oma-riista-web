@@ -62,6 +62,7 @@ public class UpdateOtherFeatureQueries {
         return featureCollection.getFeatures().stream()
                 .filter(UpdateOtherFeatureQueries::isOtherFeature)
                 .map(f -> PolygonConversionUtil.geoJsonToJava(f.getGeometry(), srid))
+                .filter(geometry -> !geometry.isEmpty())
                 .map(geometry -> {
                     if (geometry instanceof org.locationtech.jts.geom.MultiPolygon && geometry.getNumGeometries() > 1) {
                         LOG.warn("Converting multi-polygon to single polygon geometries");

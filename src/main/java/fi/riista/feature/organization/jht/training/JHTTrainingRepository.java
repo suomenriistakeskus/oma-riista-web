@@ -9,4 +9,6 @@ public interface JHTTrainingRepository extends BaseRepository<JHTTraining, Long>
 
     List<JHTTraining> findByPerson(Person person);
 
+    List<JHTTraining> findByPersonOrderByTrainingDateDesc(Person person);
+
 }

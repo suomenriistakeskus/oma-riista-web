@@ -36,6 +36,9 @@ import static fi.riista.feature.gamediary.srva.SrvaEventTypeEnum.ANIMAL_ON_ICE;
 import static fi.riista.feature.gamediary.srva.SrvaEventTypeEnum.OTHER;
 import static fi.riista.feature.gamediary.srva.SrvaEventTypeEnum.RAILWAY_ACCIDENT;
 import static fi.riista.feature.gamediary.srva.SrvaEventTypeEnum.TRAFFIC_ACCIDENT;
+import static fi.riista.test.Asserts.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -48,6 +51,9 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
     private SrvaEventRepository srvaEventRepository;
+
+    @Resource
+    private DeletedSrvaEventRepository deletedSrvaEventRepository;
 
     @Test
     public void testAddSrvaEvent() {
@@ -188,7 +194,13 @@ public class SrvaCrudFeatureTest extends EmbeddedDatabaseTest {
             onSavedAndAuthenticated(createUser(person), () -> {
                 srvaCrudFeature.deleteSrvaEvent(srvaEvent.getId());
 
+            });
+            runInTransaction(() -> {
                 assertFalse(srvaEventRepository.findById(srvaEvent.getId()).isPresent());
+                final List<DeletedSrvaEvent> deletedSrvaEvents = deletedSrvaEventRepository.findAll();
+                assertThat(deletedSrvaEvents, hasSize(1));
+                final DeletedSrvaEvent deletedSrvaEvent = deletedSrvaEvents.get(0);
+                assertThat(deletedSrvaEvent.getSrvaEventId(), equalTo(srvaEvent.getId()));
             });
         });
     }

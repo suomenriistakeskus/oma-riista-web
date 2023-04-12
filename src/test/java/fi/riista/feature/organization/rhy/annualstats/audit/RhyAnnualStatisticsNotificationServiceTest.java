@@ -11,6 +11,10 @@ import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.junit.Test;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
@@ -43,9 +47,11 @@ import static fi.riista.util.DateUtil.today;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Theories.class)
 public class RhyAnnualStatisticsNotificationServiceTest extends EmbeddedDatabaseTest {
 
-    private static final EnumSet<AnnualStatisticGroup> editableGroups = EnumSet.of(
+    @DataPoints
+    public static final EnumSet<AnnualStatisticGroup> editableGroups = EnumSet.of(
             BASIC_INFO, HUNTER_EXAMS, SHOOTING_TESTS, GAME_DAMAGE, HUNTING_CONTROL, OTHER_PUBLIC_ADMIN_TASKS,
             HUNTER_EXAM_TRAINING, JHT_TRAINING, HUNTER_TRAINING, OTHER_HUNTER_TRAINING, PUBLIC_EVENTS,
             OTHER_HUNTING_RELATED, COMMUNICATION, SHOOTING_RANGES, LUKE, METSAHALLITUS);
@@ -53,12 +59,11 @@ public class RhyAnnualStatisticsNotificationServiceTest extends EmbeddedDatabase
     @Resource
     private RhyAnnualStatisticsNotificationService service;
 
-    @Test
-    public void testFindAnnualStatisticGroupsUpdatedByModerator_verifySameGroupIncludedOnlyOnce() {
+    @Theory
+    public void testFindAnnualStatisticGroupsUpdatedByModerator_verifySameGroupIncludedOnlyOnce(final AnnualStatisticGroup group) {
         final DateTime startOfToday = DateUtil.toDateTimeNullSafe(today());
         final DateTime startOfYesterday = startOfToday.minusDays(1);
 
-        final AnnualStatisticGroup group = someEditableGroup();
         final AnnualStatisticGroup group2 = someOtherThan(group);
 
         withRhy(rhy -> {

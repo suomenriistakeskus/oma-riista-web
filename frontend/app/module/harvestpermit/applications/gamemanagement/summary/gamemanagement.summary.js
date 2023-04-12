@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.gamemanagement.summary', ['app.met
                 templateUrl: 'harvestpermit/applications/gamemanagement/summary/summary.html',
                 controller: 'GameManagementPermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, GameManagementPermitApplication) {
                         return GameManagementPermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -139,7 +140,7 @@ angular.module('app.harvestpermit.application.gamemanagement.summary', ['app.met
         }
 
         function confirmSend() {
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
                 'harvestpermit.wizard.summary.sendConfirmation.title',
                 'harvestpermit.wizard.summary.sendConfirmation.body');
         }

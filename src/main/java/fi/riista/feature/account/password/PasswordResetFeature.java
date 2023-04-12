@@ -1,7 +1,6 @@
 package fi.riista.feature.account.password;
 
 import com.github.jknack.handlebars.Handlebars;
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.RuntimeEnvironmentUtil;
@@ -15,7 +14,8 @@ import fi.riista.feature.mail.MailService;
 import fi.riista.feature.mail.token.EmailToken;
 import fi.riista.feature.mail.token.EmailTokenService;
 import fi.riista.feature.mail.token.EmailTokenType;
-import fi.riista.util.Localiser;
+import fi.riista.util.F;
+import fi.riista.util.Locales;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class PasswordResetFeature {
@@ -75,7 +76,7 @@ public class PasswordResetFeature {
      * @param email Specifies the user(s) who will receive password renewal link.
      */
     @Transactional
-    public void sendPasswordResetEmail(final String email, final HttpServletRequest request) {
+    public void sendPasswordResetEmail(final String email, final Optional<String> langOpt, final HttpServletRequest request) {
         LOG.debug("Send password renewal link to '{}'", email);
 
         // There can be multiple users with the same email
@@ -94,7 +95,11 @@ public class PasswordResetFeature {
         // Log account activity
         accountAuditService.auditPasswordResetRequest(user, request);
 
-        final Locale userLocale = MoreObjects.firstNonNull(user.getLocale(), LocaleContextHolder.getLocale());
+        final Locale userLocale = F.firstNonNull(
+                user.getLocale(),
+                langOpt.map(Locales::getLocaleByLanguageCode).orElse(null),
+                LocaleContextHolder.getLocale());
+
         final String subject = messageSource.getMessage("account.password.reset.mail.subject", null, userLocale);
 
         final URI passwordResetLink = UriComponentsBuilder.fromUri(runtimeEnvironmentUtil.getBackendBaseUri())
@@ -112,12 +117,14 @@ public class PasswordResetFeature {
                 .withFrom(mailService.getDefaultFromAddress())
                 .addRecipient(email)
                 .withSubject(subject)
-                .appendHandlebarsBody(handlebars, selectTemplate(), params)
+                .appendHandlebarsBody(handlebars, selectTemplate(userLocale), params)
                 .build());
     }
 
-    private static String selectTemplate() {
-        return Localiser.select(TEMPLATE_PASSWORD_RESET, TEMPLATE_PASSWORD_RESET_SV);
+    private static String selectTemplate(final Locale locale) {
+        return Locales.isSwedish(locale)
+                ? TEMPLATE_PASSWORD_RESET_SV
+                : TEMPLATE_PASSWORD_RESET;
     }
 
     @Transactional

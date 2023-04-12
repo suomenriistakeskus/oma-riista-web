@@ -7,9 +7,9 @@ import com.querydsl.core.group.GroupBy;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.BooleanPath;
+import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.EnumPath;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.DateTimePath;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
@@ -24,11 +24,12 @@ import fi.riista.feature.organization.QOrganisation;
 import fi.riista.sql.SQAdditionalCalendarEvent;
 import fi.riista.sql.SQCalendarEvent;
 import fi.riista.sql.SQOrganisation;
-import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import io.vavr.Tuple2;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -41,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.util.Optional.ofNullable;
+import static fi.riista.util.DateUtil.toDateNullSafe;
 import static java.util.stream.Collectors.toList;
 
 @Repository
@@ -243,6 +244,26 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
                 }).collect(toList());
     }
 
+    @Transactional(propagation = Propagation.MANDATORY, readOnly = true, noRollbackFor = RuntimeException.class)
+    @Override
+    public Tuple2<Integer, Integer> countAttemptResults(final Organisation organisation,
+                                      final LocalDate beginDate,
+                                      final LocalDate endDate,
+                                      final CalendarEventType type) {
+        final QCalendarEvent EVENT = QCalendarEvent.calendarEvent;
+        final QOrganisation ORGANISATION = QOrganisation.organisation;
+
+        final Tuple result = jpaQueryFactory.select(EVENT.passedAttempts.sum(), EVENT.failedAttempts.sum())
+                .from(EVENT)
+                .join(EVENT.organisation, ORGANISATION)
+                .where(ORGANISATION.eq(organisation)
+                        .and(EVENT.date.between(toDateNullSafe(beginDate), toDateNullSafe(endDate)))
+                        .and(EVENT.calendarEventType.eq(type)))
+                .fetchOne();
+
+        return io.vavr.Tuple.of(result.get(EVENT.passedAttempts.sum()), result.get(EVENT.failedAttempts.sum()));
+    }
+
     private Map<CalendarEventType, Long> doCountEventTypes(final Organisation organisation,
                                                            final LocalDate beginDate,
                                                            final LocalDate endDate,
@@ -288,10 +309,10 @@ public class CalendarEventRepositoryImpl implements CalendarEventRepositoryCusto
 
         Timestamp beginTimestamp = parameters.getBegin() == null
                 ? null
-                : new Timestamp(DateUtil.toDateNullSafe(parameters.getBegin()).getTime());
+                : new Timestamp(toDateNullSafe(parameters.getBegin()).getTime());
         Timestamp endTimestamp = parameters.getEnd() == null
                 ? null
-                : new Timestamp(DateUtil.toDateNullSafe(parameters.getEnd()).getTime());
+                : new Timestamp(toDateNullSafe(parameters.getEnd()).getTime());
 
         return datePath.between(beginTimestamp, endTimestamp);
     }

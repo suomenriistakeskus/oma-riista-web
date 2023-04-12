@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.deportation.period', ['app.metadat
                 templateUrl: 'harvestpermit/applications/deportation/period/period.html',
                 controller: 'DeportationPermitWizardPeriodController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesPeriod: function (DeportationPermitApplication, applicationId) {
                         return DeportationPermitApplication.getSpeciesPeriod({id: applicationId}).$promise;

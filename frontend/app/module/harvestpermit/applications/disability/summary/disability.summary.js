@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.disability.summary', ['app.metadat
                 templateUrl: 'harvestpermit/applications/disability/summary/summary.html',
                 controller: 'DisabilityPermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, DisabilityPermitApplication) {
                         return DisabilityPermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -139,7 +140,7 @@ angular.module('app.harvestpermit.application.disability.summary', ['app.metadat
         }
 
         function confirmSend() {
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
                 'harvestpermit.wizard.summary.sendConfirmation.title',
                 'harvestpermit.wizard.summary.sendConfirmation.body');
         }

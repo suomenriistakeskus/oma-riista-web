@@ -1,6 +1,7 @@
 package fi.riista.feature.organization.occupation;
 
 import fi.riista.feature.common.repository.BaseRepository;
+import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.Organisation_;
@@ -23,6 +24,8 @@ import static java.util.Collections.singleton;
 
 public interface OccupationRepository extends BaseRepository<Occupation, Long>, OccupationRepositoryCustom {
 
+    String AND_ORGANISATION_NOT_DELETED = " AND o.organisation.lifecycleFields.deletionTime IS NULL";
+    String AND_ORGANISATION_ACTIVE = AND_ORGANISATION_NOT_DELETED + " AND o.organisation.active = TRUE";
     String AND_NOT_DELETED = " AND o.lifecycleFields.deletionTime IS NULL";
     String AND_ACTIVE = AND_NOT_DELETED + " AND CURRENT_DATE BETWEEN COALESCE(o.beginDate, CURRENT_DATE) AND COALESCE(o.endDate, CURRENT_DATE)";
 
@@ -33,18 +36,19 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
     List<Occupation> findActiveByPerson(@Param("person") Person person);
 
     @Query("SELECT o FROM #{#entityName} o" +
-            " INNER JOIN FETCH o.organisation" +
+            " INNER JOIN FETCH o.organisation org" +
             " WHERE o.person = :person" +
             " AND o.occupationType = :type" +
             " AND :date BETWEEN COALESCE(o.beginDate, :date) AND COALESCE(o.endDate, :date)" +
-            AND_NOT_DELETED)
+            AND_NOT_DELETED +
+            AND_ORGANISATION_NOT_DELETED)
     List<Occupation> findActiveByPersonAndOccupationTypeAndDate(@Param("person") Person person,
                                                                 @Param("type") OccupationType occupationType,
                                                                 @Param("date") LocalDate date);
 
-    @Query("SELECT o FROM #{#entityName} o INNER JOIN FETCH o.organisation WHERE o.person = :person" + AND_ACTIVE
-            + " AND o.organisation.active = TRUE"
-            + " AND (o.occupationType <> 'RYHMAN_METSASTYKSENJOHTAJA' OR o.organisation.huntingYear = :huntingYear)")
+    @Query("SELECT o FROM #{#entityName} o INNER JOIN FETCH o.organisation org WHERE o.person = :person" + AND_ACTIVE
+            + AND_ORGANISATION_ACTIVE
+            + " AND (o.occupationType <> 'RYHMAN_METSASTYKSENJOHTAJA' OR org.huntingYear = :huntingYear)")
     List<Occupation> findOccupationsForRoleMapping(@Param("person") Person person, @Param("huntingYear") int huntingYear);
 
     @Query("SELECT o FROM #{#entityName} o WHERE o.organisation = :org" + AND_NOT_DELETED)
@@ -81,7 +85,8 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
             " INNER JOIN FETCH o.organisation org" +
             " WHERE o.person = :person" +
             " AND org.organisationType IN :orgTypes" +
-            AND_ACTIVE)
+            AND_ACTIVE +
+            AND_ORGANISATION_ACTIVE)
     List<Occupation> findActiveByPersonAndOrganisationTypes(@Param("person") Person person,
                                                             @Param("orgTypes") Set<OrganisationType> type);
 
@@ -89,7 +94,8 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
             " INNER JOIN FETCH o.organisation org" +
             " WHERE o.person IN :persons" +
             " AND org.organisationType = :orgType" +
-            AND_ACTIVE)
+            AND_ACTIVE +
+            AND_ORGANISATION_ACTIVE)
     List<Occupation> findActiveByPersonsAndOrganisationType(@Param("persons") Set<Person> person,
                                                             @Param("orgType") OrganisationType type);
 
@@ -109,6 +115,28 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
             " ORDER BY o.beginDate ASC, o.endDate ASC")
     List<Occupation> findNotDeletedByParentOrganisationAndPerson(@Param("parent") Organisation organisation,
                                                                  @Param("person") Person person);
+
+    @Query("SELECT o FROM #{#entityName} o" +
+            " INNER JOIN FETCH o.organisation org" +
+            " INNER JOIN org.harvestPermit permit" +
+            " WHERE permit = :permit" +
+            " AND o.occupationType = :occupationType" +
+            AND_ACTIVE +
+            " ORDER BY o.beginDate ASC, o.endDate ASC")
+    List<Occupation> findActiveByHarvestPermitAndOccupationType(@Param("permit") HarvestPermit permit,
+                                                                @Param("occupationType") OccupationType occupationType);
+
+    @Query("SELECT o FROM #{#entityName} o" +
+            " INNER JOIN FETCH o.organisation org" +
+            " INNER JOIN org.harvestPermit permit" +
+            " WHERE o.person = :person" +
+            " AND permit = :permit" +
+            " AND o.occupationType = :occupationType" +
+            AND_ACTIVE +
+            " ORDER BY o.beginDate ASC, o.endDate ASC")
+    List<Occupation> findActiveByHarvestPermitAndPersonAndOccupationType(@Param("permit") HarvestPermit permit,
+                                                                         @Param("person") Person person,
+                                                                         @Param("occupationType") OccupationType occupationType);
 
     @Query("SELECT o from #{#entityName} o" +
             " INNER JOIN FETCH o.person p" +
@@ -178,4 +206,14 @@ public interface OccupationRepository extends BaseRepository<Occupation, Long>, 
 
         return findAll(constraint);
     }
+
+    @Query("SELECT o FROM #{#entityName} o" +
+            " WHERE o.organisation = :org" +
+            " AND o.occupationType = :type" +
+            " AND COALESCE(o.beginDate, :beginDate) <= :endDate" +
+            " AND COALESCE(o.endDate, :endDate) >= :beginDate")
+    List<Occupation> findByOrganisationAndTypeAndBetweenDates(@Param("org") Organisation organisation,
+                                                              @Param("type") OccupationType occupationType,
+                                                              @Param("beginDate") LocalDate beginDate,
+                                                              @Param("endDate") LocalDate endDate);
 }

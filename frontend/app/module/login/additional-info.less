@@ -1,0 +1,207 @@
+.r-login-additional-info-background {
+  background-image: url('../images/additional-info-bg.jpg');
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
+}
+
+.r-login-additional-info-container {
+  padding: 0 20px;
+
+  h2 {
+    color: white;
+    margin: 20px 0 30px;
+    font-size: 24px;
+  }
+
+  .r-feed-container {
+    background-color: white;
+    background: rgba(255, 255, 255, 0);
+    padding: 0 20px;
+
+    .r-feed-logo-container {
+      height: 40px;
+      margin-bottom: 5px;
+    }
+
+    @media(min-width: @screen-sm-min) {
+      .r-feed-logo-container::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        height: 1px;
+        width: 90%;
+        border-bottom: rgba(255, 255, 255, 0.31) 1px solid;
+      }
+    }
+    .r-riista-feed-title-logo {
+      height: 30px;
+      background: url('../images/riistakeskus-logo.png') no-repeat;
+    }
+
+    .r-metsastaja-feed-title-logo {
+      height: 30px;
+      background: url('../images/metsastaja-lehti-logo.png') no-repeat;
+      transform: translateY(4px);
+    }
+
+    .r-feed-container-horizontal-separator {
+      border-bottom: 1px solid white;
+      height: 1px;
+      width: 100%;
+      opacity: 31%;
+    }
+
+    .r-feed-list {
+      font-family: @font-family-open-sans;
+      font-weight: bold;
+      font-size: 16px;
+      line-height: 22px;
+      text-align: left;
+      list-style: none;
+
+      padding: 10px 15px 10px 0;
+
+      li {
+        margin-bottom: 16px;
+      }
+
+      a {
+        color: white;
+      }
+
+      a:hover {
+        text-decoration: none;
+      }
+    }
+
+    .r-ext-link-button-container {
+      text-align: left;
+
+      div {
+        display: inline-block;
+      }
+
+      .r-ext-link-info-button {
+        display: block;
+        text-align: left;
+
+        .r-riista-logo {
+          height: 31px;
+          width: 31px;
+          background: transparent url('../images/riistakeskus-tunnus.png') no-repeat 0px center;
+          background-size: contain;
+          text-indent: -10000px;
+          float: left;
+        }
+
+        .r-metsastaja-logo {
+          width: 31px;
+          background: transparent url('../images/metsastajalehti-tunnus.png') no-repeat 0px center;
+          background-size: contain;
+          text-indent: -10000px;
+          float: left;
+        }
+
+        .r-riista-button-title {
+          height: 31px;
+          line-height: 31px;
+          margin-left: 10px;
+          font-family: @font-family-open-sans;
+          font-weight: bold;
+          font-size: 12px;
+        }
+
+        .r-metsastaja-button-title {
+          margin-left: 10px;
+          font-family: @font-family-open-sans;
+          font-weight: bold;
+          font-size: 12px;
+        }
+
+        @media(max-width: @screen-xs-max) {
+          .r-metsastaja-logo {
+            height: 40px;
+          }
+
+          .r-metsastaja-button-title {
+            height: 20px;
+            line-height: 20px;
+          }
+        }
+
+        @media(min-width: @screen-sm-min) {
+          .r-metsastaja-logo {
+            height: 31px;
+          }
+
+          .r-metsastaja-button-title {
+            height: 31px;
+            line-height: 31px;
+          }
+        }
+      }
+
+      .r-ext-link-info-button:hover {
+        opacity: 50%;
+      }
+    }
+
+
+
+    @media(max-width: @screen-xs-max) {
+      .r-feed-container-horizontal-separator {
+        width: 95%;
+      }
+
+      .r-ext-link-button-container {
+        margin: 10px 0 20px 0;
+
+        div {
+          display: block;
+        }
+
+        .r-ext-link-info-button {
+          .r-riista-button-title {
+            margin-left: 40px;
+          }
+
+          .r-metsastaja-button-title {
+            margin-left: 40px;
+          }
+        }
+      }
+    }
+
+    @media(min-width: @screen-sm-min) {
+      .r-ext-link-button-container {
+        margin: 20px 0 0 -15px;
+      }
+    }
+  }
+
+  @media(max-width: @screen-sm-max) {
+    .r-feed-container {
+      padding: 0 5px;
+      width: 100%;
+    }
+  }
+}
+
+@media(min-width: @screen-sm-min) {
+  .r-login-additional-info-container {
+    padding: 35px 20px 35px;
+    width: 95%;
+    margin: 0 auto;
+  }
+}
+
+@media(max-width: @screen-xs-max) {
+  .r-login-additional-info-container {
+    padding: 15px 0 15px 0;
+
+    h3 {
+      margin-left: 5px;
+    }
+  }
+}

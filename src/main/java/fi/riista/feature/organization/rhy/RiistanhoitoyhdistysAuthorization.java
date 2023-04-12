@@ -11,14 +11,15 @@ import javax.annotation.Resource;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
 import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA;
+import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.SRVA_YHTEYSHENKILO;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
+import static fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyModeratorPermission.CREATE_NOMINATION_DECISION;
+import static fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission.LIST_GAME_DAMAGE_INSPECTION_EVENTS;
+import static fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission.LIST_HUNTING_CONTROL_EVENTS;
 import static fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission.LIST_SRVA;
 import static fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission.VIEW_SHOOTING_TEST_EVENTS;
 import static fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission.VIEW_SHOOTING_TEST_EVENTS_BY_YEAR;
-import static fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission.LIST_HUNTING_CONTROL_EVENTS;
-import static fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyPermission.LIST_GAME_DAMAGE_INSPECTION_EVENTS;
-import static fi.riista.feature.organization.rhy.RiistanhoitoyhdistysAuthorization.RhyModeratorPermission.CREATE_NOMINATION_DECISION;
 import static fi.riista.security.EntityPermission.READ;
 import static fi.riista.security.EntityPermission.UPDATE;
 
@@ -46,7 +47,7 @@ public class RiistanhoitoyhdistysAuthorization extends AbstractEntityAuthorizati
         allow(LIST_SRVA, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, SRVA_YHTEYSHENKILO);
         allow(VIEW_SHOOTING_TEST_EVENTS, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, AMPUMAKOKEEN_VASTAANOTTAJA);
         allow(VIEW_SHOOTING_TEST_EVENTS_BY_YEAR, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA);
-        allow(LIST_HUNTING_CONTROL_EVENTS, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA);
+        allow(LIST_HUNTING_CONTROL_EVENTS, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, METSASTYKSENVALVOJA);
         allow(LIST_GAME_DAMAGE_INSPECTION_EVENTS, ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA);
         allow(CREATE_NOMINATION_DECISION, ROLE_ADMIN, ROLE_MODERATOR);
     }

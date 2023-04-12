@@ -15,8 +15,8 @@ public class PropertyGeometryLookupFeature {
     private GISPropertyGeometryRepository propertyGeometryRepository;
 
     @Transactional(readOnly = true)
-    public FeatureCollection findByPoint(final double lat, final double lng) {
-        return propertyGeometryRepository.findIntersectingWithPoint(lat, lng, GISUtils.SRID.WGS84);
+    public FeatureCollection findByPoint(final double lat, final double lng, final boolean withWaterArea) {
+        return propertyGeometryRepository.findIntersectingWithPoint(lat, lng, withWaterArea, GISUtils.SRID.WGS84);
     }
 
     @Transactional(readOnly = true)
@@ -25,8 +25,8 @@ public class PropertyGeometryLookupFeature {
     }
 
     @Transactional(readOnly = true)
-    public FeatureCollection findById(Long id) {
-        return propertyGeometryRepository.findOne(id, GISUtils.SRID.WGS84);
+    public FeatureCollection findById(final Long id, final boolean withWaterArea) {
+        return propertyGeometryRepository.findOne(id, withWaterArea, GISUtils.SRID.WGS84);
     }
 
     @Transactional(readOnly = true)

@@ -1,0 +1,33 @@
+<table class="table table-striped table-condensed r-application-schedule-table">
+    <thead>
+    <tr>
+        <th class="col-xs-1"></th>
+        <th class="col-xs-4" translate="jht.applicationSchedule.category"></th>
+        <th class="col-xs-2" translate="jht.applicationSchedule.beginTime"></th>
+        <th class="col-xs-2" translate="jht.applicationSchedule.endTime"></th>
+        <th class="col-xs-2" translate="jht.applicationSchedule.instructions"></th>
+        <th class="col-xs-1"></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr ng-repeat="schedule in $ctrl.schedules track by schedule.id">
+        <td ng-switch="schedule.activeOverride" class="r-application-schedule-state-icon">
+            <span ng-switch-when="true" class="fa fa-2x fa-unlock text-primary"></span>
+            <span ng-switch-when="false" class="fa fa-2x fa-lock text-danger"></span>
+            <span ng-switch-default class="fa fa-2x fa-hourglass"></span>
+        </td>
+        <td>
+            <span translate="harvestpermit.wizard.summary.permitCategory.{{schedule.category}}"></span>
+        </td>
+        <td ng-class="$ctrl.hasScheduledTimePassed(schedule) ? 'text-danger' : 'text'" ng-bind="schedule.beginTime | date:'d.M.yyyy HH:mm'"></td>
+        <td ng-class="$ctrl.hasScheduledTimePassed(schedule) ? 'text-danger' : 'text'" ng-bind="schedule.endTime | date:'d.M.yyyy HH:mm'"></td>
+        <td ng-bind="schedule.instructions | rI18nNameFilter" style="white-space: pre-line"></td>
+        <td class="text-right r-table-actions-cell">
+            <button type="button" ng-click="$ctrl.edit(schedule)" class="btn btn-link">
+                <span class="glyphicon glyphicon-edit" title="{{'event.button.edit' | translate}}"></span>
+            </button>
+        </td>
+    </tr>
+    </tbody>
+</table>

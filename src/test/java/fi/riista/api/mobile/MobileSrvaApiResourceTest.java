@@ -1,7 +1,7 @@
 package fi.riista.api.mobile;
 
-import fi.riista.feature.gamediary.mobile.MobileSrvaCrudFeature;
-import fi.riista.feature.gamediary.mobile.MobileSrvaEventDTO;
+import fi.riista.feature.gamediary.mobile.srva.MobileSrvaCrudFeature;
+import fi.riista.feature.gamediary.mobile.srva.MobileSrvaEventDTO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;

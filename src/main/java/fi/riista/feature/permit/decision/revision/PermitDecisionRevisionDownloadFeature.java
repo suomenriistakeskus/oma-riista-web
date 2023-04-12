@@ -15,6 +15,7 @@ import fi.riista.feature.permit.zip.OmaRiistaDecisionAttachmentsZipBuilder;
 import fi.riista.feature.storage.FileDownloadService;
 import fi.riista.feature.storage.FileStorageService;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
+import fi.riista.feature.storage.metadata.PersistentFileMetadataRepository;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.validation.FinnishHuntingPermitNumberValidator;
@@ -55,7 +56,7 @@ public class PermitDecisionRevisionDownloadFeature {
     private PermitDecisionAttachmentRepository permitDecisionAttachmentRepository;
 
     @Resource
-    private PermitDecisionRevisionAttachmentRepository permitDecisionRevisionAttachmentRepository;
+    private PersistentFileMetadataRepository persistentFileMetadataRepository;
 
     @Resource
     private PermitClientUriFactory permitClientUriFactory;
@@ -180,7 +181,7 @@ public class PermitDecisionRevisionDownloadFeature {
 
         final int decisionNumber = DocumentNumberUtil.extractOrderNumber(documentNumber);
         final OmaRiistaDecisionAttachmentsZip attachmentsZip = new OmaRiistaDecisionAttachmentsZipBuilder(fileStorageService, locale)
-                .withAttachments(permitDecisionRevisionAttachmentRepository.findLatestPublicDecisionAttachmentsPdf(decisionNumber))
+                .withAttachments(persistentFileMetadataRepository.findLatestPublicDecisionAttachmentsPdf(decisionNumber))
                 .withDecisionNumber(documentNumber)
                 .build();
 

@@ -30,6 +30,7 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.QGroupHuntingDay;
 import fi.riista.feature.organization.OrganisationType;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
 import fi.riista.feature.permit.decision.QPermitDecision;
@@ -215,6 +216,8 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
 
     /**
      * Filter criteria includes:
+     * - If harvest is linked to hunting club, it is included
+     * Else:
      * - If harvest is linked to groups hunting day, it is included always
      * Otherwise:
      * - Person must have occupation in given club
@@ -230,11 +233,19 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
                                                                          final Interval interval,
                                                                          final Set<Integer> mooselike) {
         final SQHarvest harvest = SQHarvest.harvest;
-        final BooleanExpression predicate1 = harvest.groupHuntingDayId.isNull()
+
+        final BooleanExpression huntingClubSelectedPredicate = harvest.huntingClubId.isNotNull()
+                .and(harvest.huntingClubId.eq(huntingClub.getId()))
+                .and(harvest.pointOfTime.goe(new Timestamp(interval.getStartMillis())))
+                .and(harvest.pointOfTime.lt(new Timestamp(interval.getEndMillis())));;
+
+        final BooleanExpression huntingAreaPredicate = harvest.huntingClubId.isNull()
+                .and(harvest.groupHuntingDayId.isNull())
                 .and(harvest.harvestId.in(harvestOfClubMemberInsideClubHuntingArea(
                         huntingClub.getId(), interval, huntingYear, mooselike)));
 
-        final BooleanExpression predicate2 = harvest.groupHuntingDayId.isNotNull()
+        final BooleanExpression huntingDayPredicate = harvest.huntingClubId.isNull()
+                .and(harvest.groupHuntingDayId.isNotNull())
                 .and(harvest.groupHuntingDayId.in(harvestLinkedToClubHuntingDay(huntingClub.getId(), huntingYear)))
                 .and(harvest.pointOfTime.goe(new Timestamp(interval.getStartMillis())))
                 .and(harvest.pointOfTime.lt(new Timestamp(interval.getEndMillis())));
@@ -244,7 +255,7 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
 
         return sqlQueryFactory.from(harvest)
                 .select(keyPath, valuePath)
-                .where(predicate1.or(predicate2))
+                .where(huntingClubSelectedPredicate.or(huntingAreaPredicate).or(huntingDayPredicate))
                 .groupBy(keyPath)
                 .transform(GroupBy.groupBy(keyPath).as(valuePath));
     }
@@ -399,7 +410,9 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
         return jpqlQueryFactory.selectFrom(HARVEST)
                 .innerJoin(HARVEST.harvestPermit, PERMIT)
                 .innerJoin(HARVEST.species, SPECIES)
-                .where(PERMIT.id.in(permits).and(SPECIES.officialCode.eq(speciesCode)))
+                .where(PERMIT.id.in(permits)
+                        .and(SPECIES.officialCode.eq(speciesCode))
+                        .and(HARVEST.harvestReportState.eq(HarvestReportState.APPROVED)))
                 .transform(GroupBy.groupBy(PERMIT.id).as(GroupBy.sum(HARVEST.amount)));
     }
 
@@ -421,7 +434,8 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
                 .innerJoin(HARVEST.harvestQuota, QUOTA)
                 .innerJoin(QUOTA.harvestArea, AREA)
                 .where(SPECIES.officialCode.eq(speciesCode)
-                        .and(HARVEST.pointOfTime.between(huntingYearStart, huntingYearEnd)))
+                        .and(HARVEST.pointOfTime.between(huntingYearStart, huntingYearEnd))
+                        .and(HARVEST.harvestReportState.eq(HarvestReportState.APPROVED)))
                 .groupBy(AREA.nameFinnish)
                 .transform(GroupBy.groupBy(AREA.nameFinnish).as(HARVEST.amount.sum()))
                 .entrySet().stream()
@@ -449,5 +463,17 @@ public class HarvestRepositoryImpl implements HarvestRepositoryCustom {
                 .transform(GroupBy.groupBy(AREA.nameFinnish).as(GroupBy.sum(QUOTA.quota)))
                 .entrySet().stream()
                 .collect(Collectors.toMap(e -> HarvestArea.HarvestAreaDetailedType.getByName(e.getKey()), Map.Entry::getValue));
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public List<Long> getHarvestIdsWhereOnlyAuthor(final Person person) {
+        final QHarvest HARVEST = QHarvest.harvest;
+
+        return jpqlQueryFactory.select(HARVEST.id)
+                .from(HARVEST)
+                .where(HARVEST.author.eq(person))
+                .where(HARVEST.actualShooter.ne(person))
+                .fetch();
     }
 }

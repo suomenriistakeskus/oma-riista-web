@@ -21,21 +21,18 @@
             </div>
 
             <div class="row">
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="totalHuntingArea" class="control-label col-xs-6">
+                        <label for="totalHuntingArea" class="control-label col-sm-6">
                             <span translate="club.hunting.huntingSummary.totalHuntingArea"></span>
-                            <small ng-show="$ctrl.isTotalHuntingAreaRequired()"
-                                   class="glyphicon glyphicon-asterisk text-danger"></small>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="totalHuntingArea" id="totalHuntingArea"
                                        min="0" ng-max="$ctrl.huntingSummary.permitAreaSize" step="1"
                                        class="form-control no-spinner"
-                                       ng-model="$ctrl.huntingSummary.totalHuntingArea"
-                                       ng-required="$ctrl.isTotalHuntingAreaRequired()"/>
+                                       ng-model="$ctrl.huntingSummary.totalHuntingArea"/>
                                 <span class="input-group-addon" translate="global.hectares"></span>
                             </div>
 
@@ -48,22 +45,19 @@
                     </div>
                 </div>
 
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="remainingPopulationInTotalArea" class="control-label col-xs-6">
+                        <label for="remainingPopulationInTotalArea" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.remainingPopulationInTotalArea"></span>
-                            <small ng-show="$ctrl.isRemainingPopulationForTotalAreaRequired()"
-                                   class="glyphicon glyphicon-asterisk text-danger"></small>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="remainingPopulationInTotalArea"
                                        id="remainingPopulationInTotalArea"
                                        min="0" max="99999" step="1"
                                        class="form-control no-spinner"
-                                       ng-model="$ctrl.huntingSummary.remainingPopulationInTotalArea"
-                                       ng-required="$ctrl.isRemainingPopulationForTotalAreaRequired()"/>
+                                       ng-model="$ctrl.huntingSummary.remainingPopulationInTotalArea"/>
                                 <span class="input-group-addon" translate="global.pcs"></span>
                             </div>
 
@@ -78,22 +72,19 @@
             </div>
 
             <div class="row">
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="effectiveHuntingArea" class="control-label col-xs-6">
+                        <label for="effectiveHuntingArea" class="control-label col-sm-6">
                             <span translate="club.hunting.huntingSummary.effectiveHuntingArea"></span>
-                            <small class="glyphicon glyphicon-asterisk text-danger"
-                                   ng-show="$ctrl.isEffectiveHuntingAreaRequired()"></small>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="effectiveHuntingArea" id="effectiveHuntingArea"
                                        min="0" ng-max="$ctrl.getMaxForEffectiveHuntingArea()" step="1"
                                        class="form-control no-spinner"
                                        ng-model="$ctrl.huntingSummary.effectiveHuntingArea"
-                                       ng-disabled="$ctrl.huntingSummary.effectiveHuntingAreaPercentage"
-                                       ng-required="$ctrl.isEffectiveHuntingAreaRequired()"/>
+                                       ng-disabled="$ctrl.huntingSummary.effectiveHuntingAreaPercentage"/>
                                 <span class="input-group-addon" translate="global.hectares"></span>
                             </div>
 
@@ -106,22 +97,19 @@
                     </div>
                 </div>
 
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="remainingPopulationInEffectiveArea" class="control-label col-xs-6">
+                        <label for="remainingPopulationInEffectiveArea" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.remainingPopulationInEffectiveArea"></span>
-                            <small class="glyphicon glyphicon-asterisk text-danger"
-                                   ng-show="$ctrl.isRemainingPopulationForEffectiveAreaRequired()"></small>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="remainingPopulationInEffectiveArea"
                                        id="remainingPopulationInEffectiveArea"
                                        min="0" ng-max="$ctrl.getMaxForRemainingPopulationInEffectiveArea()" step="1"
                                        class="form-control no-spinner"
-                                       ng-model="$ctrl.huntingSummary.remainingPopulationInEffectiveArea"
-                                       ng-required="$ctrl.isRemainingPopulationForEffectiveAreaRequired()"/>
+                                       ng-model="$ctrl.huntingSummary.remainingPopulationInEffectiveArea"/>
                                 <span class="input-group-addon" translate="global.pcs"></span>
                             </div>
 
@@ -136,17 +124,17 @@
             </div>
 
             <div class="row">
-                <strong class="col-xs-offset-2 col-xs-2" translate="global.or"></strong>
+                <strong class="col-sm-offset-2 col-sm-2" translate="global.or"></strong>
             </div>
 
             <div class="row">
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="effectiveHuntingAreaPercentage" class="control-label col-xs-6">
+                        <label for="effectiveHuntingAreaPercentage" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.effectiveHuntingAreaPercentage"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="effectiveHuntingAreaPercentage"
                                        id="effectiveHuntingAreaPercentage"
@@ -169,16 +157,14 @@
             </div>
 
             <div class="form-group" show-errors>
-                <label class="control-label col-xs-3" for="huntingAreaTypeSelect">
+                <label class="control-label col-sm-3" for="huntingAreaTypeSelect">
                     <span class="text-right" translate="club.hunting.mooseHuntingSummary.huntingAreaType"></span>
-                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
 
-                <div class="col-xs-3">
+                <div class="col-sm-3">
                     <select name="huntingAreaTypeSelect" id="huntingAreaTypeSelect"
                             class="form-control"
                             ng-model="$ctrl.huntingSummary.huntingAreaType"
-                            required
                             ng-options="('club.hunting.mooseHuntingSummary.huntingAreaTypes.' + t | translate) for t in $ctrl.areaTypes">
                         <option disabled value=""></option>
                     </select>
@@ -198,13 +184,13 @@
             <hr class="invisible">
 
             <div class="row">
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="numberOfDrownedMooses" class="control-label col-xs-6">
+                        <label for="numberOfDrownedMooses" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.numberOfDrownedMooses"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="numberOfDrownedMooses" id="numberOfDrownedMooses"
                                        min="0" max="9999" step="1"
@@ -222,11 +208,11 @@
                     </div>
 
                     <div class="form-group" show-errors>
-                        <label for="numberOfMoosesKilledByBear" class="control-label col-xs-6">
+                        <label for="numberOfMoosesKilledByBear" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesKilledByBear"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="numberOfMoosesKilledByBear" id="numberOfMoosesKilledByBear"
                                        min="0" max="9999" step="1"
@@ -244,11 +230,11 @@
                     </div>
 
                     <div class="form-group" show-errors>
-                        <label for="numberOfMoosesKilledByWolf" class="control-label col-xs-6">
+                        <label for="numberOfMoosesKilledByWolf" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesKilledByWolf"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="numberOfMoosesKilledByWolf" id="numberOfMoosesKilledByWolf"
                                        min="0" max="9999" step="1"
@@ -266,11 +252,11 @@
                     </div>
 
                     <div class="form-group" show-errors>
-                        <label for="numberOfMoosesKilledInTrafficAccident" class="control-label col-xs-6">
+                        <label for="numberOfMoosesKilledInTrafficAccident" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesKilledInTrafficAccident"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="numberOfMoosesKilledInTrafficAccident"
                                        id="numberOfMoosesKilledInTrafficAccident"
@@ -289,13 +275,13 @@
                     </div>
                 </div>
 
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="numberOfMoosesKilledByPoaching" class="control-label col-xs-6">
+                        <label for="numberOfMoosesKilledByPoaching" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesKilledByPoaching"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="numberOfMoosesKilledByPoaching"
                                        id="numberOfMoosesKilledByPoaching"
@@ -314,11 +300,11 @@
                     </div>
 
                     <div class="form-group" show-errors>
-                        <label for="numberOfMoosesKilledInRutFight" class="control-label col-xs-6">
+                        <label for="numberOfMoosesKilledInRutFight" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesKilledInRutFight"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="numberOfMoosesKilledInRutFight"
                                        id="numberOfMoosesKilledInRutFight"
@@ -337,11 +323,11 @@
                     </div>
 
                     <div class="form-group" show-errors>
-                        <label for="numberOfStarvedMooses" class="control-label col-xs-6">
+                        <label for="numberOfStarvedMooses" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.numberOfStarvedMooses"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="numberOfStarvedMooses" id="numberOfStarvedMooses"
                                        min="0" max="9999" step="1"
@@ -359,11 +345,11 @@
                     </div>
 
                     <div class="form-group" show-errors>
-                        <label for="numberOfMoosesDeceasedByOtherReason" class="control-label col-xs-6">
+                        <label for="numberOfMoosesDeceasedByOtherReason" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.numberOfMoosesDeceasedByOtherReason"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="numberOfMoosesDeceasedByOtherReason"
                                        id="numberOfMoosesDeceasedByOtherReason"
@@ -382,11 +368,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="control-label col-xs-6">
+                        <label class="control-label col-sm-6">
                             <span translate="global.total"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group">
                                 <input type="number" name="numberOfMoosesDeceasedTotal" id="numberOfMoosesDeceasedTotal"
                                        class="form-control no-spinner"
@@ -400,13 +386,13 @@
             </div>
 
             <div class="row">
-                <div class="col-xs-12">
+                <div class="col-sm-12">
                     <div class="form-group">
-                        <label for="causeOfDeath" class="control-label col-xs-3">
+                        <label for="causeOfDeath" class="control-label col-sm-3">
                             <span translate="club.hunting.mooseHuntingSummary.causeOfDeath"></span>
                         </label>
 
-                        <div class="col-xs-9">
+                        <div class="col-sm-9">
                             <input type="text" name="causeOfDeath" id="causeOfDeath"
                                    class="form-control"
                                    ng-model="$ctrl.huntingSummary.causeOfDeath"/>
@@ -421,22 +407,19 @@
                 <h4 translate="club.hunting.mooseHuntingSummary.mooseObservationsTitle"></h4>
 
                 <div class="row" ng-class="{ 'has-error': huntingSummaryForm.observationPolicyAdhered.$invalid }">
-                    <label class="col-xs-8 control-label">
+                    <label class="col-sm-8 control-label">
                         <span translate="club.hunting.mooseHuntingSummary.adherenceToObservationPolicyText"></span>
-                        <small class="glyphicon glyphicon-asterisk text-danger"></small>
                     </label>
 
-                    <div class="col-xs-4">
+                    <div class="col-sm-4">
                         <div class="btn-group btn-group-justified">
                             <label class="btn btn-default"
-                                   required
                                    uib-btn-radio="false"
                                    ng-model="$ctrl.huntingSummary.observationPolicyAdhered">
                                 <span translate="global.no"></span>
                             </label>
 
                             <label class="btn btn-default"
-                                   required
                                    uib-btn-radio="true"
                                    ng-model="$ctrl.huntingSummary.observationPolicyAdhered">
                                 <span translate="global.yes"></span>
@@ -488,13 +471,13 @@
             <h4 translate="club.hunting.mooseHuntingSummary.otherObservationsTitle"></h4>
 
             <div class="row">
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="mooseHeatBeginDate" class="control-label col-xs-6">
+                        <label for="mooseHeatBeginDate" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.mooseHeatBeginDate"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group r-dropdown-align-right"
                                  ng-controller="DatePickerController">
 
@@ -524,13 +507,13 @@
                     </div>
                 </div>
 
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="mooseHeatEndDate" class="control-label col-xs-6">
+                        <label for="mooseHeatEndDate" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.mooseHeatEndDate"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group r-dropdown-align-right"
                                  ng-controller="DatePickerController">
 
@@ -562,13 +545,13 @@
             </div>
 
             <div class="row">
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="mooseFawnBeginDate" class="control-label col-xs-6">
+                        <label for="mooseFawnBeginDate" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.mooseFawnBeginDate"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group r-dropdown-align-right"
                                  ng-controller="DatePickerController">
 
@@ -598,13 +581,13 @@
                     </div>
                 </div>
 
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="form-group" show-errors>
-                        <label for="mooseFawnEndDate" class="control-label col-xs-6">
+                        <label for="mooseFawnEndDate" class="control-label col-sm-6">
                             <span translate="club.hunting.mooseHuntingSummary.mooseFawnEndDate"></span>
                         </label>
 
-                        <div class="col-xs-6">
+                        <div class="col-sm-6">
                             <div class="input-group r-dropdown-align-right"
                                  ng-controller="DatePickerController">
 
@@ -638,22 +621,19 @@
             <hr>
 
             <div class="form-group">
-                <label class="col-xs-8 control-label">
+                <label class="col-sm-8 control-label">
                     <span translate="club.hunting.mooseHuntingSummary.deerFliesAppeared"></span>
-                    <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
 
-                <div class="col-xs-4">
+                <div class="col-sm-4">
                     <div class="btn-group btn-group-justified">
                         <label class="btn btn-default"
-                               required
                                uib-btn-radio="false"
                                ng-model="$ctrl.huntingSummary.deerFliesAppeared">
                             <span translate="global.no"></span>
                         </label>
 
                         <label class="btn btn-default"
-                               required
                                uib-btn-radio="true"
                                ng-model="$ctrl.huntingSummary.deerFliesAppeared">
                             <span translate="global.yes"></span>
@@ -664,11 +644,11 @@
 
             <div ng-if="$ctrl.huntingSummary.deerFliesAppeared">
                 <div class="form-group" show-errors>
-                    <label for="numberOfAdultMoosesHavingFlies" class="control-label col-xs-8">
+                    <label for="numberOfAdultMoosesHavingFlies" class="control-label col-sm-8">
                         <span translate="club.hunting.mooseHuntingSummary.numberOfAdultMoosesHavingFlies"></span>
                     </label>
 
-                    <div class="col-xs-4">
+                    <div class="col-sm-4">
                         <div class="input-group">
                             <input type="number" name="numberOfAdultMoosesHavingFlies"
                                    id="numberOfAdultMoosesHavingFlies"
@@ -687,11 +667,11 @@
                 </div>
 
                 <div class="form-group" show-errors>
-                    <label for="numberOfYoungMoosesHavingFlies" class="control-label col-xs-8">
+                    <label for="numberOfYoungMoosesHavingFlies" class="control-label col-sm-8">
                         <span translate="club.hunting.mooseHuntingSummary.numberOfYoungMoosesHavingFlies"></span>
                     </label>
 
-                    <div class="col-xs-4">
+                    <div class="col-sm-4">
                         <div class="input-group">
                             <input type="number" name="numberOfYoungMoosesHavingFlies"
                                    id="numberOfYoungMoosesHavingFlies"
@@ -710,11 +690,11 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="control-label col-xs-8" for="deerFlyGrowthTrendSelect"
+                    <label class="control-label col-sm-8" for="deerFlyGrowthTrendSelect"
                            translate="club.hunting.mooseHuntingSummary.trendOfDeerFlyPopulationGrowth">
                     </label>
 
-                    <div class="col-xs-4">
+                    <div class="col-sm-4">
                         <select name="deerFlyGrowthTrendSelect" id="deerFlyGrowthTrendSelect"
                                 class="form-control"
                                 ng-model="$ctrl.huntingSummary.trendOfDeerFlyPopulationGrowth"
@@ -729,13 +709,13 @@
                 <hr>
 
                 <div class="row">
-                    <div class="col-xs-6">
+                    <div class="col-sm-6">
                         <div class="form-group" show-errors>
-                            <label for="dateOfFirstDeerFlySeen" class="control-label col-xs-6">
+                            <label for="dateOfFirstDeerFlySeen" class="control-label col-sm-6">
                                 <span translate="club.hunting.mooseHuntingSummary.dateOfFirstDeerFlySeen"></span>
                             </label>
 
-                            <div class="col-xs-6">
+                            <div class="col-sm-6">
                                 <div class="input-group r-dropdown-align-right"
                                      ng-controller="DatePickerController">
 
@@ -765,13 +745,13 @@
                         </div>
                     </div>
 
-                    <div class="col-xs-6">
+                    <div class="col-sm-6">
                         <div class="form-group" show-errors>
-                            <label for="dateOfLastDeerFlySeen" class="control-label col-xs-6">
+                            <label for="dateOfLastDeerFlySeen" class="control-label col-sm-6">
                                 <span translate="club.hunting.mooseHuntingSummary.dateOfLastDeerFlySeen"></span>
                             </label>
 
-                            <div class="col-xs-6">
+                            <div class="col-sm-6">
                                 <div class="input-group r-dropdown-align-right"
                                      ng-controller="DatePickerController">
 
@@ -809,12 +789,12 @@
             <hr class="invisible"/>
 
             <div class="form-group" show-errors>
-                <label for="huntingEndDate" class="control-label col-xs-8">
+                <label for="huntingEndDate" class="control-label col-sm-8">
                     <span translate="club.hunting.huntingSummary.huntingEndDate"></span>
                     <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
 
-                <div class="col-xs-4">
+                <div class="col-sm-4">
                     <div class="input-group r-dropdown-align-right"
                          ng-controller="DatePickerController">
 

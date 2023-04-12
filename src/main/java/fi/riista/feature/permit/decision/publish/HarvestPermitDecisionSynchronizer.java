@@ -1,14 +1,19 @@
 package fi.riista.feature.permit.decision.publish;
 
+import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.common.decision.GrantStatus;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
+import fi.riista.feature.permit.PermitAlertLogging;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
 import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmountRepository;
 import fi.riista.util.F;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,10 +25,17 @@ import javax.annotation.Resource;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static fi.riista.util.F.mapNullable;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 @Service
 public class HarvestPermitDecisionSynchronizer {
@@ -45,11 +57,26 @@ public class HarvestPermitDecisionSynchronizer {
     @Resource
     private PermitDecisionSpeciesAmountRepository permitDecisionSpeciesAmountRepository;
 
+    @Resource
+    private ActiveUserService activeUserService;
+
     private Map<Integer, List<PermitDecisionSpeciesAmount>> groupDecisionSpeciesByYear(
             final @Nonnull PermitDecision permitDecision) {
         // Do not filter by hasGrantedSpecies in this stage to enable revoking certain species
-        return permitDecisionSpeciesAmountRepository.findByPermitDecision(permitDecision).stream()
+        final Map<Integer, List<PermitDecisionSpeciesAmount>> map = permitDecisionSpeciesAmountRepository.findByPermitDecision(permitDecision).stream()
                 .collect(groupingBy(PermitDecisionSpeciesAmount::getPermitYear, toList()));
+
+        map.entrySet().forEach(e-> {
+            final int distinctSpeciesCount = e.getValue().stream()
+                    .map(PermitDecisionSpeciesAmount::getGameSpecies)
+                    .map(GameSpecies::getId)
+                    .collect(toSet()).size();
+            if (distinctSpeciesCount != e.getValue().size()) {
+                LOG.warn("{} Duplicate species for permit year {}", PermitAlertLogging.PERMIT_ALERT_PREFIX, e.getKey());
+            }
+        });
+
+        return map;
     }
 
     private static boolean hasGrantedSpecies(final List<PermitDecisionSpeciesAmount> speciesAmounts) {
@@ -71,6 +98,48 @@ public class HarvestPermitDecisionSynchronizer {
                 removePermits(existingPermits);
                 break;
         }
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public HarvestPermitDTO createNewAnnualPermit(final PermitDecision permitDecision, final int permitYear) {
+        checkArgument(permitDecision.isAnnualUnprotectedBird(), "Only annual permits supported");
+        checkArgument(permitDecision.getDecisionType() == PermitDecision.DecisionType.HARVEST_PERMIT,
+                "Only harvest permit decisions supported");
+
+        final List<PermitDecisionSpeciesAmount> decisionAmounts =
+                permitDecisionSpeciesAmountRepository.findByPermitDecision(permitDecision);
+
+        checkArgument(hasGrantedSpecies(decisionAmounts), "Decision has no granted species");
+
+        final HarvestPermit latestPermit =
+                harvestPermitRepository.findByPermitNumber(permitDecision.createPermitNumber(permitYear - 1));
+
+        checkArgument(latestPermit != null, "Invalid permit year, no permit exists for previous year");
+        checkArgument(latestPermit.isHarvestReportApproved(), "Only finished permits can be renewed");
+
+        final String permitNumber = permitDecision.createPermitNumber(permitYear);
+        final HarvestPermit harvestPermit = doCreatePermit(permitDecision, permitNumber);
+
+        final List<HarvestPermitSpeciesAmount> amounts = latestPermit.getSpeciesAmounts().stream()
+                .map(spa -> {
+                    final HarvestPermitSpeciesAmount newAmount = new HarvestPermitSpeciesAmount();
+                    newAmount.setHarvestPermit(harvestPermit);
+
+                    newAmount.setGameSpecies(spa.getGameSpecies());
+                    newAmount.setSpecimenAmount(spa.getSpecimenAmount());
+                    newAmount.setBeginDate(spa.getBeginDate().plusYears(1));
+                    newAmount.setEndDate(spa.getEndDate().plusYears(1));
+                    newAmount.setBeginDate2(mapNullable(spa.getBeginDate2(), bd2 -> bd2.plusYears(1)));
+                    newAmount.setEndDate2(mapNullable(spa.getEndDate2(), ed2 -> ed2.plusYears(1)));
+                    return newAmount;
+                })
+                .collect(toList());
+
+        harvestPermitRepository.save(harvestPermit);
+        harvestPermitSpeciesAmountRepository.saveAll(amounts);
+
+        return HarvestPermitDTO.create(harvestPermit, amounts, emptySet(), emptyList(),
+                activeUserService.requireActiveUser(), permitDecision.getGrantStatus(), permitDecision);
     }
 
     private void doSynchronize(final PermitDecision permitDecision, final List<HarvestPermit> existingPermits) {

@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.lawsectionten.population', ['app.m
                 templateUrl: 'harvestpermit/applications/lawsectionten/population/population.html',
                 controller: 'DerogationPermitWizardPopulationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesPopulationList: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.getSpeciesPopulation({id: applicationId}).$promise;

@@ -1,5 +1,6 @@
 package fi.riista.feature.gamediary.srva;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import fi.riista.feature.gamediary.GameDiaryEntryDTO;
 import fi.riista.feature.gamediary.GameDiaryEntryType;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodDTO;
@@ -30,8 +31,12 @@ public abstract class SrvaEventDTOBase extends GameDiaryEntryDTO {
 
         dto.setEventName(entity.getEventName());
         dto.setEventType(entity.getEventType());
+        dto.setEventTypeDetail(entity.getEventTypeDetail());
+        dto.setOtherEventTypeDetailDescription(entity.getOtherEventTypeDetailDescription());
+        dto.setDeportationOrderNumber(entity.getDeportationOrderNumber());
         dto.setTotalSpecimenAmount(entity.getTotalSpecimenAmount());
         dto.setEventResult(entity.getEventResult());
+        dto.setEventResultDetail(entity.getEventResultDetail());
         dto.setOtherMethodDescription(entity.getOtherMethodDescription());
         dto.setOtherTypeDescription(entity.getOtherTypeDescription());
         dto.setTimeSpent(entity.getTimeSpent());
@@ -88,6 +93,22 @@ public abstract class SrvaEventDTOBase extends GameDiaryEntryDTO {
 
     @Valid
     private SrvaEventApproverDTO approverInfo;
+
+    // SRVA V2 fields
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String deportationOrderNumber;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private SrvaEventTypeDetailsEnum eventTypeDetail;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String otherEventTypeDetailDescription;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private SrvaEventResultDetailsEnum eventResultDetail;
 
     @AssertTrue
     protected boolean isExclusiveGameSpeciesCodeOrOtherSpeciesDescription() {
@@ -227,6 +248,38 @@ public abstract class SrvaEventDTOBase extends GameDiaryEntryDTO {
 
     public void setApproverInfo(SrvaEventApproverDTO approverInfo) {
         this.approverInfo = approverInfo;
+    }
+
+    public String getDeportationOrderNumber() {
+        return deportationOrderNumber;
+    }
+
+    public void setDeportationOrderNumber(final String deportationOrderNumber) {
+        this.deportationOrderNumber = deportationOrderNumber;
+    }
+
+    public SrvaEventTypeDetailsEnum getEventTypeDetail() {
+        return eventTypeDetail;
+    }
+
+    public void setEventTypeDetail(final SrvaEventTypeDetailsEnum eventTypeDetail) {
+        this.eventTypeDetail = eventTypeDetail;
+    }
+
+    public String getOtherEventTypeDetailDescription() {
+        return otherEventTypeDetailDescription;
+    }
+
+    public void setOtherEventTypeDetailDescription(final String otherEventTypeDetailDescription) {
+        this.otherEventTypeDetailDescription = otherEventTypeDetailDescription;
+    }
+
+    public SrvaEventResultDetailsEnum getEventResultDetail() {
+        return eventResultDetail;
+    }
+
+    public void setEventResultDetail(final SrvaEventResultDetailsEnum eventResultDetail) {
+        this.eventResultDetail = eventResultDetail;
     }
 
 }

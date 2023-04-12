@@ -42,7 +42,7 @@ public class LocalFolderFileStorage implements FileStorageSpi {
             LOG.info("File local storage folder: {}", storageFolderPath);
 
             this.storageBasePath = Paths.get(storageFolderPath);
-        } else if (!runtimeEnvironmentUtil.isProductionEnvironment()) {
+        } else if (!runtimeEnvironmentUtil.isAwsEnvironment()) {
             LOG.warn("Using temporary folder");
             this.storageBasePath = Files.createTempDirectory("omariista").toAbsolutePath();
         } else {

@@ -1,11 +1,20 @@
-<button class="btn btn-primary pull-right"
-        ng-if="$ctrl.club.canEdit"
-        ng-click="$ctrl.addMembersBulk()">
-    <span class="glyphicon glyphicon-plus"></span> &nbsp;
-    <span translate="club.genericMember.button.invite"></span>
-</button>
+<p class="pull-right">
+    <button class="btn btn-primary"
+            ng-if="$ctrl.club.canEdit"
+            ng-click="$ctrl.addMembersBulk()">
+        <span class="glyphicon glyphicon-plus"></span> &nbsp;
+        <span translate="club.genericMember.button.invite"></span>
+    </button>
+    <button class="btn btn-info"
+            ng-if="$ctrl.club.canEdit"
+            ng-click="$ctrl.exportMembers()">
+        <span class="glyphicon glyphicon-export"></span>
 
-<div ng-if="$ctrl.invitations.length">
+        <span translate="club.genericMember.button.exportToExcel"></span>
+    </button>
+</p>
+
+<div ng-if="$ctrl.invitations.length" class="table-responsive">
     <h3>
         <span translate="club.genericMember.titleInvite"></span>
         <span class="text-muted">({{ $ctrl.invitations.length }})</span>
@@ -28,3 +37,4 @@
         members="$ctrl.members"
         can-edit="$ctrl.club.canEdit">
 </club-member-list>
+

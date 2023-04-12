@@ -1,6 +1,5 @@
 package fi.riista.config;
 
-import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
@@ -37,8 +36,6 @@ public class AsyncConfig extends AsyncConfigurerSupport {
         @Override
         public void handleUncaughtException(final Throwable ex, final Method method, final Object... params) {
             LOG.error(String.format("Unexpected error occurred invoking async method '%s'.", method), ex);
-
-            Sentry.capture(ex);
         }
     }
 }

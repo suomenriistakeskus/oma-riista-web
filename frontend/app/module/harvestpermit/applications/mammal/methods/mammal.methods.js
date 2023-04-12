@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mammal.methods', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/mammal/methods/methods.html',
                 controller: 'DerogationPermitWizardMethodsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     forbiddenMethods: function (MammalPermitApplication, applicationId) {
                         return MammalPermitApplication.getCurrentDeviationJustification({id: applicationId}).$promise;

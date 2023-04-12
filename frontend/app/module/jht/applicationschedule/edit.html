@@ -1,0 +1,164 @@
+<form name="applicationScheduleForm" role="form" class="form form-horizontal r-event-form" ng-submit="$ctrl.save()">
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="jht.applicationSchedule.editTitle"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="r-application-schedules-modal-title">
+            <h5 translate="harvestpermit.wizard.summary.permitCategory.{{$ctrl.schedule.category}}"></h5>
+        </div>
+
+        <div class="form-group row" show-errors>
+            <label for="activeOverride" class="col-xs-3 control-label">
+                <span translate="jht.applicationSchedule.activeOverride"></span>
+            </label>
+
+            <div class="col-xs-9">
+                <select class="form-control"
+                        name="activeOverride" id="activeOverride"
+                        ng-model="$ctrl.activeOverride"
+                        ng-options="('jht.applicationSchedule.activeOverrideTypes.'+o|translate) for o in $ctrl.activeOverrideTypes"
+                        ng-change="$ctrl.stateChanged()">
+                </select>
+            </div>
+        </div>
+
+        <div ng-if="$ctrl.activeOverride === 'SCHEDULED'">
+            <div class="form-group row" show-errors>
+                <label for="beginDate" class="col-xs-3 control-label">
+                    <span translate="jht.applicationSchedule.beginTime"></span>
+                </label>
+
+                <div class="col-xs-5">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" class="form-control"
+                               name="beginDate" id="beginDate"
+                               ng-model="$ctrl.beginDate"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               ng-required="$ctrl.activeOverride === 'SCHEDULED'"/>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+
+                    <div class="help-block has-error"
+                         ng-messages="applicationScheduleForm.beginDate.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+
+                <label for="beginTime" class="col-xs-1 control-label">
+                    <span class="text-capitalize" translate="global.timeOfDayAbbreviation"></span>
+                </label>
+
+                <div class="col-xs-3">
+                    <input type="text" class="form-control"
+                           name="beginTime" id="beginTime"
+                           finnish-time
+                           ng-required="$ctrl.activeOverride === 'SCHEDULED'"
+                           ng-model="$ctrl.beginTime"/>
+
+                    <div class="help-block has-error"
+                         ng-messages="applicationScheduleForm.beginTime.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-group row" show-errors>
+                <label for="endDate" class="col-xs-3 control-label">
+                    <span translate="jht.applicationSchedule.endTime"></span>
+                </label>
+
+                <div class="col-xs-5">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" class="form-control"
+                               name="endDate" id="endDate"
+                               ng-model="$ctrl.endDate"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               ng-required="$ctrl.activeOverride === 'SCHEDULED'"/>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+
+                    <div class="help-block has-error"
+                         ng-messages="applicationScheduleForm.endDate.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+
+                </div>
+
+                <label for="endTime" class="col-xs-1 control-label">
+                    <span class="text-capitalize" translate="global.timeOfDayAbbreviation"></span>
+                </label>
+
+                <div class="col-xs-3">
+                    <input type="text" class="form-control"
+                           name="endTime" id="endTime"
+                           finnish-time
+                           ng-model="$ctrl.endTime"
+                           ng-required="$ctrl.activeOverride === 'SCHEDULED'"/>
+
+                    <div class="help-block has-error"
+                         ng-messages="applicationScheduleForm.endTime.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div ng-if="$ctrl.isTimeRangeInvalid()" class="col-xs-offset-3 text-danger r-application-schedules-invalid-time">
+                <span translate="jht.applicationSchedule.scheduleInvalid"></span>
+            </div>
+
+        </div>
+
+        <div class="form-group row" show-errors>
+            <label for="instructionsFi" class="col-xs-3 control-label">
+                <span>Ohjeteksti (suomeksi)</span>
+            </label>
+
+            <div class="col-xs-9">
+                <textarea name="instructionsFi" id="instructionsFi"
+                          class="form-control"
+                          rows="3"
+                          ng-model="$ctrl.schedule.instructions.fi"
+                          spellcheck="false"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group row" show-errors>
+            <label for="instructionsSv" class="col-xs-3 control-label">
+                <span>Anvisning (på svenska)</span>
+            </label>
+
+            <div class="col-xs-9">
+                <textarea name="instructionsSv" id="instructionsSv"
+                          class="form-control"
+                          rows="3"
+                          ng-model="$ctrl.schedule.instructions.sv"
+                          spellcheck="false"></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()" translate="global.button.cancel"></button>
+        <button type="submit"
+                class="btn btn-primary"
+                ng-disabled="applicationScheduleForm.$invalid || $ctrl.isScheduleStateInvalid() ||$ctrl.isTimeRangeInvalid()"
+                translate="global.button.save"></button>
+    </div>
+
+</form>

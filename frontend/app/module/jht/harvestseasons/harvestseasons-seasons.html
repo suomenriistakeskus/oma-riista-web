@@ -1,0 +1,50 @@
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+        <tr>
+            <th class="col-xs-2" translate="jht.harvestSeason.list.species"></th>
+            <th class="col-xs-3" translate="jht.harvestSeason.list.harvestSeason"></th>
+            <th class="col-xs-6">
+                <div translate="jht.harvestSeason.list.reportingDate.row1"></div>
+                <div translate="jht.harvestSeason.list.reportingDate.row2"></div>
+            </th>
+            <th class="col-xs-1"></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr ng-repeat="season in $ctrl.seasons | orderBy: 'species.name':false:$ctrl.speciesSort track by season.id">
+            <td ng-bind="season.species.name | rI18nNameFilter | capitalize"></td>
+            <td>
+                <div ng-if="season.beginDate">
+                    <span>{{season.beginDate | date:'d.M.yyyy'}} - {{season.endDate | date:'d.M.yyyy'}}</span>
+                </div>
+                <div ng-if="season.beginDate2">
+                    <span>{{season.beginDate2 | date:'d.M.yyyy'}} - {{season.endDate2 | date:'d.M.yyyy'}}</span>
+                </div>
+            </td>
+            <td>
+                <div ng-if="season.endOfReportingDate">
+                    <span>{{season.endOfReportingDate | date:'d.M.yyyy'}}</span>
+                </div>
+                <div ng-if="season.endOfReportingDate2">
+                    <span>{{season.endOfReportingDate2 | date:'d.M.yyyy'}}</span>
+                </div>
+            </td>
+            <td class="text-center r-table-actions-cell">
+                <div class="r-btn-placeholder">
+                    <button type="button" ng-click="$ctrl.edit({season: season})" class="btn btn-link">
+                        <span class="glyphicon glyphicon-edit" title="{{'event.button.edit' | translate}}"></span>
+                    </button>
+                </div>
+                <div class="r-btn-placeholder">
+                    <button type="button" class="btn btn-link"
+                            ng-click="$ctrl.remove({season: season})">
+                            <span class="glyphicon glyphicon-remove" title="{{'event.button.remove' | translate}}"></span>
+                    </button>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

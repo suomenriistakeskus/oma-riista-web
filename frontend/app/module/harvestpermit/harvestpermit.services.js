@@ -5,7 +5,8 @@ angular.module('app.harvestpermit.services', ['ngResource'])
     .constant('PermitCategories', ['MOOSELIKE', 'MOOSELIKE_NEW', 'BIRD',
         'LARGE_CARNIVORE_BEAR', 'LARGE_CARNIVORE_LYNX', 'LARGE_CARNIVORE_LYNX_PORONHOITO', 'LARGE_CARNIVORE_WOLF',
         'MAMMAL', 'NEST_REMOVAL', 'LAW_SECTION_TEN', 'WEAPON_TRANSPORTATION',
-        'DISABILITY', 'DOG_DISTURBANCE', 'DOG_UNLEASH', 'DEPORTATION', 'RESEARCH', 'IMPORTING', 'GAME_MANAGEMENT'])
+        'DISABILITY', 'DOG_DISTURBANCE', 'DOG_UNLEASH', 'DEPORTATION', 'RESEARCH', 'IMPORTING', 'GAME_MANAGEMENT',
+        'EUROPEAN_BEAVER', 'PARTRIDGE'])
     .constant('DecisionTypes', ['HARVEST_PERMIT', 'CANCEL_APPLICATION', 'IGNORE_APPLICATION', 'CANCEL_ANNUAL_RENEWAL'])
     .constant('DecisionGrantStatus', ['UNCHANGED', 'RESTRICTED', 'REJECTED'])
     .constant('AppealStatus', ['INITIATED', 'IGNORED', 'UNCHANGED', 'REPEALED', 'PARTIALLY_REPEALED', 'RETREATMENT'])
@@ -89,6 +90,15 @@ angular.module('app.harvestpermit.services', ['ngResource'])
         };
     })
 
+    .service('AnnualPermitPdfUrl', function () {
+        this.getRenewalPdf = function (permitId) {
+            return '/api/v1/decision/annual/' + permitId + '/print/pdf';
+        };
+        this.getHarvestReportPdf = function (permitId) {
+            return '/api/v1/decision/annual/' + permitId + '/print/harvest-report';
+        };
+    })
+
     .service('HarvestPermitAttachmentUrl', function () {
         this.get = function (permitId, attachmentId) {
             return '/api/v1/harvestpermit/' + permitId + '/attachment/' + attachmentId;
@@ -114,6 +124,11 @@ angular.module('app.harvestpermit.services', ['ngResource'])
                 isArray: true,
                 url: 'api/v1/harvestpermit/mypermits'
             },
+            listWithHuntingClubGroups: {
+                method: 'GET',
+                isArray: true,
+                url: 'api/v1/harvestpermit/with-hunting-club-groups'
+            },
             listMetsahallitusPermits: {
                 method: 'GET',
                 isArray: true,
@@ -138,7 +153,8 @@ angular.module('app.harvestpermit.services', ['ngResource'])
                 isArray: true
             },
             search: {method: 'POST', isArray: true, url: 'api/v1/harvestpermit/admin/search'},
-            rhySearch: {method: 'POST', isArray: true, url: 'api/v1/harvestpermit/rhy/search'}
+            rhySearch: {method: 'POST', isArray: true, url: 'api/v1/harvestpermit/rhy/search'},
+            moderatePeriods: {method: 'POST', url: 'api/v1/harvestpermit/moderate/period'}
         });
     })
 
@@ -255,14 +271,14 @@ angular.module('app.harvestpermit.services', ['ngResource'])
 
     .service('HarvestPermitCategoryType',
         function (ActiveRoleService, ModeratorPrivileges) {
-            var otherHarvestPermitTypes = ['LAW_SECTION_TEN'];
+            var otherHarvestPermitTypes = ['LAW_SECTION_TEN', 'EUROPEAN_BEAVER','PARTRIDGE'];
             var damageBasedDerogations = ['BIRD', 'MAMMAL', 'NEST_REMOVAL'];
             var otherDerogations = ['LARGE_CARNIVORE_BEAR', 'LARGE_CARNIVORE_LYNX', 'LARGE_CARNIVORE_LYNX_PORONHOITO',
                 'LARGE_CARNIVORE_WOLF'];
             var otherPermitTypes = ['WEAPON_TRANSPORTATION', 'DISABILITY', 'DEPORTATION', 'RESEARCH', 'IMPORTING', 'GAME_MANAGEMENT'];
             var dogEventPermitTypes = ['DOG_UNLEASH', 'DOG_DISTURBANCE'];
 
-            this.getMooseTypes = function(list) {
+            this.getMooseTypes = function (list) {
                 return _.filter(list, _.matchesProperty('category', 'MOOSELIKE'));
             };
 
@@ -342,10 +358,10 @@ angular.module('app.harvestpermit.services', ['ngResource'])
         function (ActiveRoleService, ModeratorPrivileges, PermitTypes) {
             this.hasSpeciesAmounts = function (permitTypeCode) {
                 return !_.includes([PermitTypes.WEAPON_TRANSPORTATION_BASED,
-                                       PermitTypes.DISABILITY_BASED,
-                                       PermitTypes.DOG_DISTURBANCE_BASED,
-                                       PermitTypes.DOG_UNLEASH_BASED],
-                                   permitTypeCode);
+                        PermitTypes.DISABILITY_BASED,
+                        PermitTypes.DOG_DISTURBANCE_BASED,
+                        PermitTypes.DOG_UNLEASH_BASED],
+                    permitTypeCode);
             };
 
             this.hasPermission = function (permitTypeCode) {

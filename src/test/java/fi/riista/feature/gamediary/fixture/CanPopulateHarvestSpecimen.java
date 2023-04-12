@@ -115,6 +115,8 @@ public interface CanPopulateHarvestSpecimen extends ValueGeneratorMixin {
                 populateExtensionFieldsForMooseWithSpecVersion5(obj, specimenType);
                 break;
             case _8:
+            case _9:
+            case _10:
                 if (getSpecimenOps().getHuntingYear() >= 2020) {
                     populateExtensionFieldsForMooseWithSpecVersion8(obj, specimenType);
                 } else {
@@ -142,6 +144,8 @@ public interface CanPopulateHarvestSpecimen extends ValueGeneratorMixin {
                 obj.setWeight(weight());
                 break;
             case _8:
+            case _9:
+            case _10:
                 if (getSpecimenOps().getHuntingYear() >= 2020) {
                     obj.setWeight(null);
                     populateExtensionFieldsForRoeDeerWithSpecVersion8(obj, specimenType);
@@ -172,6 +176,8 @@ public interface CanPopulateHarvestSpecimen extends ValueGeneratorMixin {
                 populateExtensionFieldsForPermitBasedDeerWithSpecVersion4(obj, specimenType);
                 break;
             case _8:
+            case _9:
+            case _10:
                 obj.setWeight(null);
                 if (getSpecimenOps().getHuntingYear() >= 2020) {
                     populateExtensionFieldsForWhiteTailedDeerWithSpecVersion8(obj, specimenType);
@@ -204,6 +210,8 @@ public interface CanPopulateHarvestSpecimen extends ValueGeneratorMixin {
                 populateExtensionFieldsForPermitBasedDeerWithSpecVersion4(obj, specimenType);
                 break;
             case _8:
+            case _9:
+            case _10:
                 obj.setWeight(null);
                 if (getSpecimenOps().getHuntingYear() >= 2020) {
                     populateExtensionFieldsForOtherDeerWithSpecVersion8(obj, specimenType);

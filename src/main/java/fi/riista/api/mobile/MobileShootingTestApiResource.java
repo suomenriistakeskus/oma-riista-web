@@ -1,6 +1,7 @@
 package fi.riista.api.mobile;
 
 import fi.riista.feature.common.dto.IdRevisionDTO;
+import fi.riista.feature.shootingtest.HunterNumberSearchDTO;
 import fi.riista.feature.shootingtest.ParticipantPaymentUpdateDTO;
 import fi.riista.feature.shootingtest.ShootingTestAttemptCrudFeature;
 import fi.riista.feature.shootingtest.ShootingTestAttemptDTO;
@@ -8,6 +9,7 @@ import fi.riista.feature.shootingtest.ShootingTestCalendarEventDTO;
 import fi.riista.feature.shootingtest.ShootingTestFeature;
 import fi.riista.feature.shootingtest.ShootingTestParticipantDTO;
 import fi.riista.feature.shootingtest.ShootingTestParticipantDetailsDTO;
+import fi.riista.feature.shootingtest.SsnSearchDTO;
 import fi.riista.feature.shootingtest.official.ShootingTestOfficialFeature;
 import fi.riista.feature.shootingtest.official.ShootingTestOfficialOccupationDTO;
 import fi.riista.feature.shootingtest.official.ShootingTestOfficialsDTO;
@@ -127,18 +129,33 @@ public class MobileShootingTestApiResource {
         return registrationFeature.findFinnishHunterByHunterNumber(eventId, hunterNumber);
     }
 
-    @PostMapping(value = "/event/{eventId:\\d+}/findhunter/hunternumber")
+    @PostMapping(value = "/event/{eventId:\\d+}/findhunter/hunternumber", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE })
     public ShootingTestRegistrationPersonSearchDTO findPersonByHunterNumberForRegistration(@PathVariable final long eventId,
                                                                                            @RequestParam final String hunterNumber) {
 
         return registrationFeature.findHunterByHunterNumber(eventId, hunterNumber);
     }
 
-    @PostMapping(value = "/event/{eventId:\\d+}/findperson/ssn")
+    @PostMapping(value = "/event/{eventId:\\d+}/findperson/ssn", consumes = { MediaType.APPLICATION_FORM_URLENCODED_VALUE })
     public ShootingTestRegistrationPersonSearchDTO findFinnishPersonBySsnForRegistration(@PathVariable final long eventId,
                                                                                          @RequestParam final String ssn) {
 
         return registrationFeature.findFinnishHunterBySsn(eventId, ssn);
+    }
+
+    // New mobile implementation uses these search methods with data on payload
+    @PostMapping(value = "/event/{eventId:\\d+}/findhunter/hunternumber", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    public ShootingTestRegistrationPersonSearchDTO findPersonByHunterNumberForRegistration(@PathVariable final long eventId,
+                                                                                           @RequestBody @Valid final HunterNumberSearchDTO hunterNumberDTO) {
+
+        return registrationFeature.findHunterByHunterNumber(eventId, hunterNumberDTO.getHunterNumber());
+    }
+
+    @PostMapping(value = "/event/{eventId:\\d+}/findperson/ssn", consumes = { MediaType.APPLICATION_JSON_VALUE })
+    public ShootingTestRegistrationPersonSearchDTO findFinnishPersonBySsnForRegistration(@PathVariable final long eventId,
+                                                                                         @RequestBody @Valid final SsnSearchDTO ssnDTO) {
+
+        return registrationFeature.findFinnishHunterBySsn(eventId, ssnDTO.getSsn());
     }
 
     // TODO Will be removed after an adequate base of mobile app installations is capable of adding foreign hunters.

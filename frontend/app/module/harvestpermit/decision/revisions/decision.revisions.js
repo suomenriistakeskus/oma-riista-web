@@ -13,6 +13,9 @@ angular.module('app.harvestpermit.decision.revisions', [])
                 revisions: function (PermitDecision, decisionId) {
                     return PermitDecision.getRevisions({id: decisionId}).$promise;
                 },
+                requestLinks: function (PermitDecision, decisionId) {
+                    return PermitDecision.listInformationRequestLinks({id: decisionId}).$promise;
+                },
                 decisionSpeciesAmounts: function (PermitDecisionSpecies, decisionId) {
                     return PermitDecisionSpecies.getSpecies({decisionId: decisionId}).$promise;
                 },
@@ -24,22 +27,29 @@ angular.module('app.harvestpermit.decision.revisions', [])
                 }
 
             },
-            controller: function ($state, PermitDecision, NotificationService,
+            controller: function ($state, PermitDecision, NotificationService, ActiveRoleService, ModeratorPrivileges,
                                   FormPostService, GameSpeciesCodes, PermitDecisionAdditionalAttachmentsModal,
-                                  decisionId, decision, revisions, decisionSpeciesAmounts, diaryParameters, decisionAttachments) {
+                                  PermitDecisionAnnualRenewalModal,
+                                  PermitDecisionSendInformationRequestLinkModal,
+                                  PermitDecisionDeactivateInformationRequestLinkModal, PermitTypes,
+                                  decisionId, decision, revisions, requestLinks, decisionSpeciesAmounts,
+                                  diaryParameters, decisionAttachments) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
                     $ctrl.decision = decision;
                     $ctrl.revisions = _.orderBy(revisions, ['id'], ['desc']);
                     $ctrl.permits = decision.permits || [];
-                    $ctrl.reversePermits = decision.permitTypeCode === '346'; // Reverse permits for annually renewed
+                    $ctrl.isAnnualPermit = decision.permitTypeCode === PermitTypes.ANNUAL_UNPROTECTED_BIRD;
+                    $ctrl.requestLinks = _.orderBy(requestLinks, ['id'], ['desc']);
+
                     $ctrl.mooselikeSpeciesCodes = _.chain(decisionSpeciesAmounts)
                         .map('gameSpeciesCode')
                         .filter(GameSpeciesCodes.isPermitBasedMooselike)
                         .value();
                     $ctrl.showHarvestReports =
                         (decision.harvestPermitCategory === 'BIRD' || decision.harvestPermitCategory === 'MAMMAL') &&
+                        !$ctrl.isAnnualPermit && // Harvest reports for annual permits in separate dialog
                         decision.status === 'PUBLISHED' &&
                         decision.decisionType === 'HARVEST_PERMIT' &&
                         decision.grantStatus !== 'REJECTED';
@@ -62,6 +72,12 @@ angular.module('app.harvestpermit.decision.revisions', [])
 
                 $ctrl.openAttachmentEditor = function () {
                     PermitDecisionAdditionalAttachmentsModal.open(decisionId).then(function () {
+                        $state.reload();
+                    });
+                };
+
+                $ctrl.openRenewalDialog = function () {
+                    PermitDecisionAnnualRenewalModal.open($ctrl.decision).then(function () {
                         $state.reload();
                     });
                 };
@@ -139,6 +155,19 @@ angular.module('app.harvestpermit.decision.revisions', [])
 
                 $ctrl.moveToPermit = function (id) {
                     $state.go('permitmanagement.dashboard', {permitId: id});
+                };
+                $ctrl.openInformationRequestLinkSendingModal = function () {
+                    PermitDecisionSendInformationRequestLinkModal.open(decision).then(function () {
+                        $state.reload();
+                    });
+                };
+                $ctrl.openInformationRequestLinkDeactivationModal = function (link) {
+                    PermitDecisionDeactivateInformationRequestLinkModal.open(link, decisionId).then(function () {
+                        $state.reload();
+                    });
+                };
+                $ctrl.hasInformationRequestLinkHandlingPermission = function () {
+                    return ActiveRoleService.isPrivilegedModerator(ModeratorPrivileges.informationRequestLinkHandler);
                 };
             }
         });
@@ -261,6 +290,185 @@ angular.module('app.harvestpermit.decision.revisions', [])
                     $ctrl.decisionAttachments = res;
                     $ctrl.attachmentChanged = false;
                     $ctrl.activeTabIndex = 0;
+                });
+            }
+        }
+    })
+    .service('PermitDecisionSendInformationRequestLinkModal', function ($uibModal) {
+        this.open = function (decision) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/decision/revisions/send-information-request-link.html',
+                controllerAs: '$ctrl',
+                controller: ModalController,
+                size: 'lg',
+                resolve: {
+                    decision: decision,
+                }
+            }).result;
+        };
+
+        function ModalController($uibModalInstance, $scope, $translate, $timeout,
+                                 PermitDecision, PermitDecisionAttachmentService,
+                                 decision) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.fields = {
+                    recipientName: null,
+                    recipientEmail: null,
+                    linkType: null,
+                    title: $translate.instant('harvestpermit.wizard.summary.permitType.' + decision.permitTypeCode),
+                    description: null
+                };
+                $ctrl.decision = decision;
+
+                $ctrl.types = [
+                    'APPLICATION',
+                    'DECISION',
+                    'APPLICATION_AND_DECISION'
+                ];
+            };
+
+            $ctrl.selectLinkType = function (type) {
+                $ctrl.fields.linkType = type;
+            };
+
+            $ctrl.cancel = function () {
+                $uibModalInstance.dismiss('cancel');
+            };
+
+            $ctrl.canSubmit = function () {
+                return $ctrl.fields.recipientName &&
+                    $ctrl.fields.recipientEmail;
+            };
+
+            $ctrl.submit = function () {
+                PermitDecision.createInformationRequestLink({id: decision.id}, $ctrl.fields).$promise.then(function () {
+                    $uibModalInstance.close();
+                }, function (err) {
+                    $uibModalInstance.dismiss(err);
+                });
+            };
+        }
+    })
+    .service('PermitDecisionDeactivateInformationRequestLinkModal', function ($uibModal) {
+        this.open = function (link, decisionId) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/decision/revisions/deactivate-information-request-link.html',
+                controllerAs: '$ctrl',
+                controller: ModalController,
+                size: 'md',
+                resolve: {
+                    decisionId: _.constant(decisionId),
+                    linkId: _.constant(link.id),
+                }
+            }).result;
+        };
+
+        function ModalController($uibModalInstance, $scope, $timeout,
+                                 PermitDecision, PermitDecisionAttachmentService,
+                                 decisionId, linkId) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.fields = {
+                    recipientName: null,
+                    recipientEmail: null,
+                    description: null
+                };
+            };
+
+            $ctrl.cancel = function () {
+                $uibModalInstance.dismiss('cancel');
+            };
+
+            $ctrl.deactivate = function () {
+                PermitDecision.deleteInformationRequestLink({
+                    id: decisionId,
+                    linkId: linkId
+                }, $ctrl.fields).$promise.then(function () {
+                    $uibModalInstance.close();
+                }, function (err) {
+                    $uibModalInstance.dismiss(err);
+                });
+            };
+        }
+    })
+    .service('PermitDecisionAnnualRenewalModal', function ($uibModal) {
+        this.open = function (decision) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/decision/revisions/annual-renewal.html',
+                controllerAs: '$ctrl',
+                controller: ModalController,
+                size: 'md',
+                resolve: {
+                    decisionId: _.constant(decision.id),
+                    existingPermits: _.constant(decision.permits),
+                    isRenewable: function (PermitDecisionRenewal) {
+                        return PermitDecisionRenewal.isRenewable({id: decision.id}).$promise.then(function (value) {
+                            return value.value;
+                        });
+                    },
+                }
+            }).result;
+        };
+
+        function ModalController($uibModalInstance, $scope, $timeout, $translate, AnnualPermitPdfUrl,
+                                 ConfirmationDialogService, FormPostService, NotificationService, PermitDecision,
+                                 PermitDecisionRenewal, decisionId, existingPermits, isRenewable) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.decisionId = decisionId;
+                $ctrl.existingPermits = existingPermits;
+                $ctrl.isRenewable = isRenewable;
+                $ctrl.permitYear = _.chain(existingPermits)
+                    .map(function (p) {
+                        return _.split(p.permitNumber, '-', 1)[0];
+                    })
+                    .map(_.parseInt)
+                    .max()
+                    .value() + 1;
+                $ctrl.createdPermit = null;
+            };
+
+            $ctrl.close = function () {
+                if (!!$ctrl.createdPermit) {
+                    $uibModalInstance.close($ctrl.createdPermit);
+                } else {
+                    $uibModalInstance.dismiss('cancel');
+                }
+            };
+
+            $ctrl.renewPermit = function () {
+                var title = $translate.instant('decision.annualRenewal.createForNextYear');
+                var body = $translate.instant('decision.annualRenewal.confirmation');
+                ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(title, body).then(function () {
+                    PermitDecisionRenewal.createPermitForHuntingYear({
+                        id: decisionId,
+                        permitYear: $ctrl.permitYear
+                    }, {}).$promise.then(function (permit) {
+                        NotificationService.showMessage('decision.annualRenewal.permitCreated', 'success');
+                        $ctrl.createdPermit = permit;
+                        reloadPermits();
+                    }, NotificationService.showDefaultFailure);
+                });
+            };
+
+            $ctrl.printPdf = function (permit) {
+                FormPostService.submitFormUsingBlankTarget(AnnualPermitPdfUrl.getRenewalPdf(permit.id));
+            };
+
+            $ctrl.printHarvestReportForms = function (permit) {
+                FormPostService.submitFormUsingBlankTarget(AnnualPermitPdfUrl.getHarvestReportPdf(permit.id));
+            };
+
+            function reloadPermits() {
+                PermitDecision.get({id: $ctrl.decisionId}).$promise.then(function (decision) {
+                    $ctrl.existingPermits = decision.permits;
+                });
+                PermitDecisionRenewal.isRenewable({id: $ctrl.decisionId}).$promise.then(function (value) {
+                    $ctrl.isRenewable = value.value;
                 });
             }
         }

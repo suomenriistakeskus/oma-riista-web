@@ -204,10 +204,12 @@ public class PermitDecisionRevisionFeature {
         return permitDecisionRevisionRepository.save(decisionRevision);
     }
 
-    private void createAttachments(final PermitDecisionRevision decisionRevision,
+    // Package private for testing
+    /* package*/ void createAttachments(final PermitDecisionRevision decisionRevision,
                                    final List<PermitDecisionAttachment> attachments) {
         permitDecisionRevisionAttachmentRepository.saveAll(attachments.stream()
                 .filter(a -> !a.isDeleted())
+                .filter(a -> a.getOrderingNumber() != null)
                 .map(a -> new PermitDecisionRevisionAttachment(decisionRevision, a))
                 .collect(Collectors.toList()));
     }
@@ -384,7 +386,7 @@ public class PermitDecisionRevisionFeature {
         // Damage based permits may have other mammals granted so species amounts must be
         // checked for those.
         return PermitTypeCode.CARNIVORE_PERMIT_CODES.contains(permitTypeCode)
-                && (permitTypeCode != MAMMAL_DAMAGE_BASED || hasCarnivoreSpecies(permitDecision) );
+                && (permitTypeCode != MAMMAL_DAMAGE_BASED || hasCarnivoreSpecies(permitDecision));
     }
 
     private boolean hasCarnivoreSpecies(final PermitDecision permitDecision) {

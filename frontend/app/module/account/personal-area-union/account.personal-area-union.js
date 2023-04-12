@@ -69,7 +69,7 @@ angular
         },
         controller: function (PersonalAreaUnionFormModal, PersonalAreaUnionAddPartnerAreaModal,
                               HarvestPermitAddPartnerAreaErrorModal, PersonalAreaUnions,
-                              MapPdfModal, TranslatedBlockUI, PersonalAreaUnionProcessingModal) {
+                              MapPdfModal, TranslatedBlockUI, FormPostService, PersonalAreaUnionProcessingModal) {
             var $ctrl = this;
 
             $ctrl.edit = function (area) {
@@ -120,8 +120,12 @@ angular
                 );
             };
 
-            $ctrl.printArea = function (area) {
-                MapPdfModal.printArea('/api/v1/account/area-union/' + area.id + '/print');
+            $ctrl.printAreaMap = function (area) {
+                MapPdfModal.printArea('/api/v1/account/area-union/' + area.id + '/print-map');
+            };
+
+            $ctrl.printAreaPartners = function (area) {
+                FormPostService.submitFormUsingBlankTarget('/api/v1/account/area-union/' + area.id + '/print-partners', null);
             };
 
             $ctrl.lockArea = function (area) {

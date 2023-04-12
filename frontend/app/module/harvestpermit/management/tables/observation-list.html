@@ -1,0 +1,25 @@
+<table class="observation-summary">
+    <thead>
+    <th class="observation-summary-item-title" translate="club.permit.tables.adultMale"></th>
+    <th class="observation-summary-item-title" translate="club.permit.tables.adultFemaleNoCalfs"></th>
+    <th class="observation-summary-item-title" translate="club.permit.tables.adultFemaleOneCalf"></th>
+    <th class="observation-summary-item-title" translate="club.permit.tables.adultFemaleTwoCalfs"></th>
+    <th class="observation-summary-item-title" translate="club.permit.tables.adultFemaleThreeCalfs"></th>
+    <th ng-if="::!$ctrl.isMoose" class="observation-summary-item-title" translate="club.permit.tables.adultFemaleFourCalfs"></th>
+    <th class="observation-summary-item-title" translate="club.permit.tables.solitaryCalf"></th>
+    <th class="observation-summary-item-title" translate="club.permit.tables.unknown"></th>
+    </thead>
+    <tbody>
+    <tr>
+
+    <td class="observation-summary-item-value" ng-bind="::$ctrl.observationSummary.adultMale"></td>
+    <td class="observation-summary-item-value" ng-bind="::$ctrl.observationSummary.adultFemaleNoCalfs"></td>
+    <td class="observation-summary-item-value" ng-bind="::$ctrl.observationSummary.adultFemaleOneCalf"></td>
+    <td class="observation-summary-item-value" ng-bind="::$ctrl.observationSummary.adultFemaleTwoCalfs"></td>
+    <td class="observation-summary-item-value" ng-bind="::$ctrl.observationSummary.adultFemaleThreeCalfs"></td>
+    <td ng-if="::!$ctrl.isMoose" class="observation-summary-item-value" ng-bind="::$ctrl.observationSummary.adultFemaleFourCalfs"></td>
+    <td class="observation-summary-item-value" ng-bind="::$ctrl.observationSummary.solitaryCalf"></td>
+    <td class="observation-summary-item-value" ng-bind="::$ctrl.observationSummary.unknown"></td>
+    </tr>
+    </tbody>
+</table>

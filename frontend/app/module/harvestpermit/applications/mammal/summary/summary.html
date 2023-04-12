@@ -1,26 +1,8 @@
 <form name="summaryForm">
-    <div class="row">
-        <div class="col-xs-4">
+    <div class="row decisionSummaryRow">
+        <div class="col-sm-4">
             <h4 translate="harvestpermit.wizard.summary.delivery.decisionRecipient"></h4>
-        </div>
-        <div class="col-xs-4">
-            <h4 translate="harvestpermit.wizard.summary.delivery.title"></h4>
 
-            <p>
-                <span class="text-muted" translate="harvestpermit.wizard.summary.delivery.instructions"></span>
-            </p>
-        </div>
-
-        <div class="col-xs-4">
-            <h4 translate="harvestpermit.wizard.summary.decisionLanguage"></h4>
-        </div>
-
-
-    </div>
-
-    <div class="row">
-
-        <div class="col-xs-4">
             <harvest-permit-application-summary-delivery-address
                     application="$ctrl.application"></harvest-permit-application-summary-delivery-address>
 
@@ -31,14 +13,22 @@
                ng-show="$ctrl.deliveryAddressMissing()">
                 <span translate="harvestpermit.wizard.summary.delivery.deliveryAddressMissing"></span></p>
         </div>
-        <div class="col-xs-4">
+        <div class="col-sm-4">
+            <h4 translate="harvestpermit.wizard.summary.delivery.title"></h4>
+
+            <p>
+                <span class="text-muted spacer" translate="harvestpermit.wizard.summary.delivery.instructions"></span>
+            </p>
+
             <permit-application-delivery-select
                     on-select-method="$ctrl.setDeliveryByMail(sendByMail)"
                     delivery-by-mail="$ctrl.application.deliveryByMail">
             </permit-application-delivery-select>
         </div>
 
-        <div class="col-xs-4">
+        <div class="col-sm-4">
+            <h4 translate="harvestpermit.wizard.summary.decisionLanguage"></h4>
+
             <permit-application-language-select on-select-language="$ctrl.setDecisionLanguage(lang)"
                                                 selected-language="$ctrl.application.decisionLanguage">
 
@@ -49,14 +39,14 @@
     </div>
 
     <div class="row">
-        <div class="col-xs-4">
+        <div class="col-sm-4">
             <h4 translate="harvestpermit.wizard.summary.notification.title"></h4>
 
             <p class="text-muted" translate="harvestpermit.wizard.summary.notification.instructions"></p>
         </div>
     </div>
     <div class="row">
-        <div class="col-xs-4">
+        <div class="col-sm-4">
             <div class="form-group" show-errors>
                 <input type="text" class="form-control" name="email1"
                        ng-model="$ctrl.application.email1"
@@ -84,11 +74,11 @@
 
     </div>
     <div class="row" ng-if="$ctrl.showSubmitDate">
-        <div class="col-xs-6 text-right">
+        <div class="col-sm-6 text-right">
             <span translate="harvestpermit.wizard.summary.submitDate"></span>
             <span class="text-danger fa fa-asterisk"></span>
         </div>
-        <div class="col-xs-3">
+        <div class="col-sm-3">
             <div class="input-group"
                  ng-controller="DatePickerController">
 

@@ -14,6 +14,8 @@ import javax.xml.bind.annotation.XmlType;
  * &lt;simpleType name="observationType"&gt;
  *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}token"&gt;
  *     &lt;enumeration value="NAKO"/&gt;
+ *     &lt;enumeration value="POIKUE"/&gt;
+ *     &lt;enumeration value="PARI"/&gt;
  *     &lt;enumeration value="JALKI"/&gt;
  *     &lt;enumeration value="ULOSTE"/&gt;
  *     &lt;enumeration value="AANI"/&gt;
@@ -60,6 +62,8 @@ import javax.xml.bind.annotation.XmlType;
 public enum COBS_ObservationType {
 
     NAKO,
+    POIKUE,
+    PARI,
     JALKI,
     ULOSTE,
     AANI,

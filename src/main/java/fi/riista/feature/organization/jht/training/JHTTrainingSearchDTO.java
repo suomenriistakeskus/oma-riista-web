@@ -1,5 +1,6 @@
 package fi.riista.feature.organization.jht.training;
 
+import fi.riista.feature.common.training.TrainingType;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.validation.FinnishHunterNumber;
 import fi.riista.validation.FinnishSocialSecurityNumber;
@@ -30,7 +31,7 @@ public class JHTTrainingSearchDTO {
     @NotNull
     private OccupationType occupationType;
 
-    private JHTTraining.TrainingType trainingType;
+    private TrainingType trainingType;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String trainingLocation;
@@ -82,11 +83,11 @@ public class JHTTrainingSearchDTO {
         this.occupationType = occupationType;
     }
 
-    public JHTTraining.TrainingType getTrainingType() {
+    public TrainingType getTrainingType() {
         return trainingType;
     }
 
-    public void setTrainingType(final JHTTraining.TrainingType trainingType) {
+    public void setTrainingType(final TrainingType trainingType) {
         this.trainingType = trainingType;
     }
 

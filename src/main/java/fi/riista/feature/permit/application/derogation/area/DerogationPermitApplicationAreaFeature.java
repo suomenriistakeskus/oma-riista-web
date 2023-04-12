@@ -107,7 +107,7 @@ public class DerogationPermitApplicationAreaFeature {
             final MapPdfModel model = personalAreaUnionPrintService.getModel(personalAreaUnion,
                     MapPdfParameters.Overlay.NONE,
                     application.getLocale());
-            mapPdfData = personalAreaUnionPrintService.createPdf(personalAreaUnion, application.getLocale(),
+            mapPdfData = personalAreaUnionPrintService.createPdf(personalAreaUnion.getHarvestPermitArea(), application.getLocale(),
                     model, createPdfParameters(model));
         } else {
             final MapPdfModel model = createMapPdfModel(dto.getExternalId(), application.getLocale());

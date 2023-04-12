@@ -210,7 +210,7 @@ input[type=checkbox].r-non-labeled-checkbox {
   background-color: #fafafa;
 
   .btn {
-    min-width: 110px;
+    min-width: 105px;
   }
 }
 
@@ -305,7 +305,7 @@ input[type=checkbox].r-non-labeled-checkbox {
 }
 
 .nav-tabs-riista > li > a {
-  color: #555;
+  color: @r-info-box-text-grey;
   background-color: @table-bg-accent;
   text-transform: uppercase;
   font-family: @font-family-sans-serif;
@@ -541,4 +541,36 @@ select.r-currency {
 
 .no-padding {
   padding: 0 !important;
+}
+
+.r-mobile-notification {
+  display: none;
+}
+
+@media (max-width: @screen-xs-max) {
+
+  .r-mobile-notification {
+    position: fixed;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+
+    height: 100%;
+    width: 100%;
+
+    text-align: center;
+    padding: 21px;
+    background-color: rgba(255, 255, 255, .9);
+
+    .description {
+      width: 100%;
+      margin: 0 0 18px 0;
+    }
+    .btn {
+      min-width: 218px;
+      margin: 0 auto;
+    }
+  }
 }

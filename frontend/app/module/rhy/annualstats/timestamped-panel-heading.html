@@ -1,6 +1,15 @@
 <div class="panel-heading">
     <div class="panel-title">
-        <div class="timestamped-panel-heading-title" translate="{{::$ctrl.titleKey}}"></div>
+        <div class="timestamped-panel-heading-title">
+            <div>
+                <span class="fa fa-warning" ng-if="$ctrl.hasWarningSign"></span>
+                <span translate="{{::$ctrl.titleKey}}"></span>
+            </div>
+            <div ng-if="$ctrl.titleSecondRowKey" class="timestamped-panel-heading-title-second-row">
+                <span class="fa fa-info-circle"></span>
+                <span translate="{{::$ctrl.titleSecondRowKey}}"></span>
+            </div>
+        </div>
         <div class="timestamped-panel-heading-timestamp"
              uib-tooltip="{{ 'global.lastModified' | translate }}" tooltip-popup-delay="0" tooltip-placement="top">
 

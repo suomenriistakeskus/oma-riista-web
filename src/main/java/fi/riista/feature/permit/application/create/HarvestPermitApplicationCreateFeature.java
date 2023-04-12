@@ -153,6 +153,8 @@ public class HarvestPermitApplicationCreateFeature {
                 nestRemovalPermitApplicationRepository.save(NestRemovalPermitApplication.create(application));
                 break;
             case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 lawSectionTenPermitApplicationRepository.save(LawSectionTenPermitApplication.create(application));
                 break;
             case WEAPON_TRANSPORTATION:

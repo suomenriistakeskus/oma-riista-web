@@ -58,6 +58,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static fi.riista.feature.gamediary.summary.AdminGameSummaryPredicates.createHarvestPredicate;
+import static fi.riista.feature.gamediary.summary.AdminGameSummaryPredicates.createObservationPredicate;
+import static fi.riista.feature.gamediary.summary.AdminGameSummaryPredicates.createSrvaPredicate;
+import static fi.riista.feature.gamediary.summary.AdminGameSummaryPredicates.organisationPredicate;
+
 @Component
 public class AdminGameDiarySummaryExcelFeature {
 
@@ -94,9 +99,6 @@ public class AdminGameDiarySummaryExcelFeature {
     @Resource
     private RiistanhoitoyhdistysNameService riistanhoitoyhdistysNameService;
 
-    @Resource
-    private RiistanhoitoyhdistysRepository riistanhoitoyhdistysRepository;
-
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -131,85 +133,6 @@ public class AdminGameDiarySummaryExcelFeature {
                 harvestDTOList, observationDTOList, srvaEventDTOList);
     }
 
-    private BooleanBuilder createSrvaPredicate(final Interval interval,
-                                               final GameSpecies gameSpecies,
-                                               final OrganisationType organisationType,
-                                               final String organisationOfficialCode) {
-        final QSrvaEvent SRVA = QSrvaEvent.srvaEvent;
-
-        return new BooleanBuilder()
-                .and(organisationPredicate(SRVA.rhy, organisationType, organisationOfficialCode))
-                .and(interval != null ? SRVA.pointOfTime.between(
-                        interval.getStart(),
-                        interval.getEnd()) : null)
-                .and(gameSpecies != null ? SRVA.species.eq(gameSpecies) : null);
-    }
-
-    @Nonnull
-        /*package*/ BooleanBuilder createHarvestPredicate(final Interval interval,
-                                                          final GameSpecies gameSpecies,
-                                                          final OrganisationType organisationType,
-                                                          final String organisationOfficialCode,
-                                                          final boolean harvestReportOnly,
-                                                          final boolean officialHarvestOnly) {
-        final QHarvest HARVEST = QHarvest.harvest;
-        return new BooleanBuilder()
-                .and(harvestReportOnly
-                        ? HARVEST.harvestReportState.isNotNull()
-                        .and(HARVEST.harvestReportState.ne(HarvestReportState.REJECTED))
-                        : HARVEST.harvestReportState.isNull()
-                        .or(HARVEST.harvestReportState.ne(HarvestReportState.REJECTED)))
-                .and(officialHarvestOnly
-                        ? HARVEST.harvestReportState.eq(HarvestReportState.APPROVED)
-                        .or(HARVEST.huntingDayOfGroup.isNotNull())
-                        : null)
-                .and(organisationPredicate(HARVEST.rhy, organisationType, organisationOfficialCode))
-                .and(interval != null ? HARVEST.pointOfTime.between(
-                        interval.getStart(),
-                        interval.getEnd()) : null)
-                .and(gameSpecies != null ? HARVEST.species.eq(gameSpecies) : null);
-    }
-
-    @Nonnull
-    private BooleanBuilder createObservationPredicate(final Interval interval,
-                                                      final GameSpecies gameSpecies,
-                                                      final OrganisationType organisationType,
-                                                      final String organisationOfficialCode) {
-        final QObservation OBSERVATION = QObservation.observation;
-        return new BooleanBuilder()
-                .and(organisationPredicate(OBSERVATION.rhy, organisationType, organisationOfficialCode))
-                .and(interval != null ? OBSERVATION.pointOfTime.between(
-                        interval.getStart(),
-                        interval.getEnd()) : null)
-                .and(gameSpecies != null ? OBSERVATION.species.eq(gameSpecies) : null);
-    }
-
-    private Predicate organisationPredicate(final QRiistanhoitoyhdistys RHY,
-                                            final OrganisationType organisationType,
-                                            final String organisationOfficialCode) {
-        if (StringUtils.hasText(organisationOfficialCode)) {
-            if (organisationType == OrganisationType.RHY) {
-                return RHY.eq(riistanhoitoyhdistysRepository.findByOfficialCode(organisationOfficialCode));
-            } else if (organisationType == OrganisationType.RKA) {
-                return RHY.in(rkaSubQuery(organisationOfficialCode));
-            }
-        }
-
-        // Inside Finland
-        return RHY.isNotNull();
-    }
-
-    private static JPQLQuery<Riistanhoitoyhdistys> rkaSubQuery(final String officialCode) {
-        final QOrganisation RKA = new QOrganisation("rka");
-        final QRiistanhoitoyhdistys RHY = new QRiistanhoitoyhdistys("rka_rhy");
-
-        return JPAExpressions.selectFrom(RHY)
-                .where(RHY.organisationType.eq(OrganisationType.RHY),
-                        RHY.parentOrganisation.eq(
-                                JPAExpressions.selectFrom(RKA).where(
-                                        RKA.organisationType.eq(OrganisationType.RKA),
-                                        RKA.officialCode.eq(officialCode))));
-    }
 
     /*package*/ List<HarvestDTO> loadHarvest(final Predicate predicate) {
         final List<HarvestDTO> result = new LinkedList<>();
@@ -222,8 +145,7 @@ public class AdminGameDiarySummaryExcelFeature {
                     JpaSort.of(Sort.Direction.ASC, Harvest_.id));
             final Slice<Harvest> slice = harvestRepository.findAllAsSlice(predicate, pageRequest);
 
-            // TODO Update to currently supported HarvestSpecVersion.
-            result.addAll(adminSummaryHarvestDTOTransformer.apply(slice.getContent(), HarvestSpecVersion._7));
+            result.addAll(adminSummaryHarvestDTOTransformer.apply(slice.getContent(), HarvestSpecVersion.MOST_RECENT));
 
             entityManager.clear();
 

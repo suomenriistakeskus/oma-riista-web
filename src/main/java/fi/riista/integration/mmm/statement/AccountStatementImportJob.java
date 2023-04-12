@@ -3,7 +3,6 @@ package fi.riista.integration.mmm.statement;
 import fi.riista.config.quartz.QuartzScheduledJob;
 import fi.riista.config.quartz.RunAsAdminJob;
 import fi.riista.feature.permit.invoice.payment.InvoicePaymentLineFeature;
-import io.sentry.Sentry;
 import org.quartz.DisallowConcurrentExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,9 +37,6 @@ public class AccountStatementImportJob extends RunAsAdminJob {
                     numSuccessfullyImported++;
                 } catch (final AccountStatementImportException e) {
                     LOG.error("Exception while importing account statement from file '{}'", statement.getFilename(), e);
-
-                    // XXX Log import exceptions for now, may later turn out to be unnecessary...
-                    Sentry.capture(e);
                 }
             }
 
@@ -50,14 +46,12 @@ public class AccountStatementImportJob extends RunAsAdminJob {
                 paymentLineFeature.createInvoicePaymentLinesFromAccountTransfers();
             } catch (final Exception e) {
                 LOG.error("Exception while associating account transfers with invoices", e);
-                Sentry.capture(e);
             }
 
             LOG.info("Done.");
 
         } catch (final Exception e) {
             LOG.error("Account statement import job threw exception", e);
-            Sentry.capture(e);
         }
     }
 }

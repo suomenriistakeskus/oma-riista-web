@@ -50,6 +50,10 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
  *         &lt;element name="result" type="{http://riista.fi/integration/common/export/2018/10}SRVAEventResult" minOccurs="0"/&gt;
  *         &lt;element name="numberOfParticipants" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="numberOfWorkHours" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
+ *         &lt;element name="deportationOrderNumber" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="eventTypeDetail" type="{http://riista.fi/integration/common/export/2018/10}SRVAEventTypeDetailsEnum" minOccurs="0"/&gt;
+ *         &lt;element name="otherEventTypeDetailDescription" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="eventResultDetail" type="{http://riista.fi/integration/common/export/2018/10}SRVAEventResultDetailsEnum" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -74,7 +78,11 @@ import org.jvnet.jaxb2_commons.locator.util.LocatorUtils;
     "otherMethodDescription",
     "result",
     "numberOfParticipants",
-    "numberOfWorkHours"
+    "numberOfWorkHours",
+    "deportationOrderNumber",
+    "eventTypeDetail",
+    "otherEventTypeDetailDescription",
+    "eventResultDetail"
 })
 public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
 {
@@ -105,6 +113,12 @@ public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
     protected CEV_SRVAEventResult result;
     protected Integer numberOfParticipants;
     protected Integer numberOfWorkHours;
+    protected String deportationOrderNumber;
+    @XmlSchemaType(name = "token")
+    protected CEV_SRVAEventTypeDetailsEnum eventTypeDetail;
+    protected String otherEventTypeDetailDescription;
+    @XmlSchemaType(name = "token")
+    protected CEV_SRVAEventResultDetailsEnum eventResultDetail;
 
     /**
      * Gets the value of the srvaEventId property.
@@ -455,6 +469,102 @@ public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
         this.numberOfWorkHours = value;
     }
 
+    /**
+     * Gets the value of the deportationOrderNumber property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getDeportationOrderNumber() {
+        return deportationOrderNumber;
+    }
+
+    /**
+     * Sets the value of the deportationOrderNumber property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setDeportationOrderNumber(String value) {
+        this.deportationOrderNumber = value;
+    }
+
+    /**
+     * Gets the value of the eventTypeDetail property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CEV_SRVAEventTypeDetailsEnum }
+     *     
+     */
+    public CEV_SRVAEventTypeDetailsEnum getEventTypeDetail() {
+        return eventTypeDetail;
+    }
+
+    /**
+     * Sets the value of the eventTypeDetail property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CEV_SRVAEventTypeDetailsEnum }
+     *     
+     */
+    public void setEventTypeDetail(CEV_SRVAEventTypeDetailsEnum value) {
+        this.eventTypeDetail = value;
+    }
+
+    /**
+     * Gets the value of the otherEventTypeDetailDescription property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getOtherEventTypeDetailDescription() {
+        return otherEventTypeDetailDescription;
+    }
+
+    /**
+     * Sets the value of the otherEventTypeDetailDescription property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setOtherEventTypeDetailDescription(String value) {
+        this.otherEventTypeDetailDescription = value;
+    }
+
+    /**
+     * Gets the value of the eventResultDetail property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link CEV_SRVAEventResultDetailsEnum }
+     *     
+     */
+    public CEV_SRVAEventResultDetailsEnum getEventResultDetail() {
+        return eventResultDetail;
+    }
+
+    /**
+     * Sets the value of the eventResultDetail property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link CEV_SRVAEventResultDetailsEnum }
+     *     
+     */
+    public void setEventResultDetail(CEV_SRVAEventResultDetailsEnum value) {
+        this.eventResultDetail = value;
+    }
+
     public CEV_SRVAEvent withSrvaEventId(long value) {
         setSrvaEventId(value);
         return this;
@@ -538,6 +648,26 @@ public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
 
     public CEV_SRVAEvent withNumberOfWorkHours(Integer value) {
         setNumberOfWorkHours(value);
+        return this;
+    }
+
+    public CEV_SRVAEvent withDeportationOrderNumber(String value) {
+        setDeportationOrderNumber(value);
+        return this;
+    }
+
+    public CEV_SRVAEvent withEventTypeDetail(CEV_SRVAEventTypeDetailsEnum value) {
+        setEventTypeDetail(value);
+        return this;
+    }
+
+    public CEV_SRVAEvent withOtherEventTypeDetailDescription(String value) {
+        setOtherEventTypeDetailDescription(value);
+        return this;
+    }
+
+    public CEV_SRVAEvent withEventResultDetail(CEV_SRVAEventResultDetailsEnum value) {
+        setEventResultDetail(value);
         return this;
     }
 
@@ -630,6 +760,26 @@ public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
             Integer theNumberOfWorkHours;
             theNumberOfWorkHours = this.getNumberOfWorkHours();
             strategy.appendField(locator, this, "numberOfWorkHours", buffer, theNumberOfWorkHours, (this.numberOfWorkHours!= null));
+        }
+        {
+            String theDeportationOrderNumber;
+            theDeportationOrderNumber = this.getDeportationOrderNumber();
+            strategy.appendField(locator, this, "deportationOrderNumber", buffer, theDeportationOrderNumber, (this.deportationOrderNumber!= null));
+        }
+        {
+            CEV_SRVAEventTypeDetailsEnum theEventTypeDetail;
+            theEventTypeDetail = this.getEventTypeDetail();
+            strategy.appendField(locator, this, "eventTypeDetail", buffer, theEventTypeDetail, (this.eventTypeDetail!= null));
+        }
+        {
+            String theOtherEventTypeDetailDescription;
+            theOtherEventTypeDetailDescription = this.getOtherEventTypeDetailDescription();
+            strategy.appendField(locator, this, "otherEventTypeDetailDescription", buffer, theOtherEventTypeDetailDescription, (this.otherEventTypeDetailDescription!= null));
+        }
+        {
+            CEV_SRVAEventResultDetailsEnum theEventResultDetail;
+            theEventResultDetail = this.getEventResultDetail();
+            strategy.appendField(locator, this, "eventResultDetail", buffer, theEventResultDetail, (this.eventResultDetail!= null));
         }
         return buffer;
     }
@@ -777,6 +927,42 @@ public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
                 return false;
             }
         }
+        {
+            String lhsDeportationOrderNumber;
+            lhsDeportationOrderNumber = this.getDeportationOrderNumber();
+            String rhsDeportationOrderNumber;
+            rhsDeportationOrderNumber = that.getDeportationOrderNumber();
+            if (!strategy.equals(LocatorUtils.property(thisLocator, "deportationOrderNumber", lhsDeportationOrderNumber), LocatorUtils.property(thatLocator, "deportationOrderNumber", rhsDeportationOrderNumber), lhsDeportationOrderNumber, rhsDeportationOrderNumber, (this.deportationOrderNumber!= null), (that.deportationOrderNumber!= null))) {
+                return false;
+            }
+        }
+        {
+            CEV_SRVAEventTypeDetailsEnum lhsEventTypeDetail;
+            lhsEventTypeDetail = this.getEventTypeDetail();
+            CEV_SRVAEventTypeDetailsEnum rhsEventTypeDetail;
+            rhsEventTypeDetail = that.getEventTypeDetail();
+            if (!strategy.equals(LocatorUtils.property(thisLocator, "eventTypeDetail", lhsEventTypeDetail), LocatorUtils.property(thatLocator, "eventTypeDetail", rhsEventTypeDetail), lhsEventTypeDetail, rhsEventTypeDetail, (this.eventTypeDetail!= null), (that.eventTypeDetail!= null))) {
+                return false;
+            }
+        }
+        {
+            String lhsOtherEventTypeDetailDescription;
+            lhsOtherEventTypeDetailDescription = this.getOtherEventTypeDetailDescription();
+            String rhsOtherEventTypeDetailDescription;
+            rhsOtherEventTypeDetailDescription = that.getOtherEventTypeDetailDescription();
+            if (!strategy.equals(LocatorUtils.property(thisLocator, "otherEventTypeDetailDescription", lhsOtherEventTypeDetailDescription), LocatorUtils.property(thatLocator, "otherEventTypeDetailDescription", rhsOtherEventTypeDetailDescription), lhsOtherEventTypeDetailDescription, rhsOtherEventTypeDetailDescription, (this.otherEventTypeDetailDescription!= null), (that.otherEventTypeDetailDescription!= null))) {
+                return false;
+            }
+        }
+        {
+            CEV_SRVAEventResultDetailsEnum lhsEventResultDetail;
+            lhsEventResultDetail = this.getEventResultDetail();
+            CEV_SRVAEventResultDetailsEnum rhsEventResultDetail;
+            rhsEventResultDetail = that.getEventResultDetail();
+            if (!strategy.equals(LocatorUtils.property(thisLocator, "eventResultDetail", lhsEventResultDetail), LocatorUtils.property(thatLocator, "eventResultDetail", rhsEventResultDetail), lhsEventResultDetail, rhsEventResultDetail, (this.eventResultDetail!= null), (that.eventResultDetail!= null))) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -861,6 +1047,26 @@ public class CEV_SRVAEvent implements Equals2, HashCode2, ToString2
             Integer theNumberOfWorkHours;
             theNumberOfWorkHours = this.getNumberOfWorkHours();
             currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "numberOfWorkHours", theNumberOfWorkHours), currentHashCode, theNumberOfWorkHours, (this.numberOfWorkHours!= null));
+        }
+        {
+            String theDeportationOrderNumber;
+            theDeportationOrderNumber = this.getDeportationOrderNumber();
+            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "deportationOrderNumber", theDeportationOrderNumber), currentHashCode, theDeportationOrderNumber, (this.deportationOrderNumber!= null));
+        }
+        {
+            CEV_SRVAEventTypeDetailsEnum theEventTypeDetail;
+            theEventTypeDetail = this.getEventTypeDetail();
+            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "eventTypeDetail", theEventTypeDetail), currentHashCode, theEventTypeDetail, (this.eventTypeDetail!= null));
+        }
+        {
+            String theOtherEventTypeDetailDescription;
+            theOtherEventTypeDetailDescription = this.getOtherEventTypeDetailDescription();
+            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "otherEventTypeDetailDescription", theOtherEventTypeDetailDescription), currentHashCode, theOtherEventTypeDetailDescription, (this.otherEventTypeDetailDescription!= null));
+        }
+        {
+            CEV_SRVAEventResultDetailsEnum theEventResultDetail;
+            theEventResultDetail = this.getEventResultDetail();
+            currentHashCode = strategy.hashCode(LocatorUtils.property(locator, "eventResultDetail", theEventResultDetail), currentHashCode, theEventResultDetail, (this.eventResultDetail!= null));
         }
         return currentHashCode;
     }

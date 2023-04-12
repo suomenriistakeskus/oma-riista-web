@@ -5,7 +5,6 @@ import fi.riista.feature.permit.decision.pdf.PermitDecisionPdfFeature;
 import fi.riista.feature.permit.decision.pdf.PermitDecisionPdfFileDTO;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.MediaTypeExtras;
-import io.sentry.Sentry;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.slf4j.Logger;
@@ -80,7 +79,6 @@ public class PermitDecisionPdfController {
 
         } catch (Exception ex) {
             LOG.error("Could not generate PDF", ex);
-            Sentry.capture(ex);
         }
     }
 }

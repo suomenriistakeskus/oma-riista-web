@@ -12,22 +12,29 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping(value = "/api/v1/")
+@RequestMapping(value = "/api/")
 public class SrvaExportApiResource {
 
     @Resource
     private SrvaExportFeature feature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "export/srva/rvr", method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
-    public String getSrvaRvrExportData() {
-        return feature.exportRVR();
+    @RequestMapping(value = "v1/export/srva/rvr", method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
+    public String getSrvaRvrExportDataV1(final @RequestParam(required = false) Integer calendarYear) {
+        return feature.exportRVRV1Xml(Optional.ofNullable(calendarYear));
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "anon/srva", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "v2/export/srva/rvr", method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
+    public String getSrvaRvrExportDataV2(final @RequestParam(required = false) Integer calendarYear) {
+        return feature.exportRVRV2Xml(Optional.ofNullable(calendarYear));
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @RequestMapping(value = "v1/anon/srva", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public List<SrvaPublicExportDTO> getSrvaPublicExportData(final @RequestParam int calendarYear) {
         return feature.exportPublic(calendarYear);
     }

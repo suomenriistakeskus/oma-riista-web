@@ -1,0 +1,100 @@
+<form name="form" role="form" class="form form-horizontal r-event-form" ng-submit="$ctrl.submit()">
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="decision.revision.informationRequestLinkModal.title"></h3>
+    </div>
+
+    <div class="modal-body" style="min-height: 480px;">
+        <div class="form-group row">
+            <label for="recipientName" class="col-xs-4 control-label">
+                <span translate="decision.revision.informationRequestLinkModal.linkContains"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <div class="radio" ng-repeat="type in $ctrl.types track by $index">
+                    <label>
+                        <input type="radio"
+                               ng-model="$ctrl.fields.linkType"
+                               ng-value="type"
+                               required
+                               focus-me
+                               ng-click="$ctrl.selectLinkType(type)">
+                        <span translate="decision.revision.{{type}}"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="recipientName" class="col-xs-4 control-label">
+                <span translate="decision.revision.informationRequestLinkModal.recipientName"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input type="text" name="recipientName" id="recipientName"
+                       class="form-control"
+                       ng-model="$ctrl.fields.recipientName"
+                       ng-model-options="{ debounce : { 'default' : 500, blur : 0 } }"
+                       maxlength="255"
+                       required
+                       autocomplete="off"/>
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="recipientEmail" class="col-xs-4 control-label">
+                <span translate="decision.revision.informationRequestLinkModal.recipientEmail"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input type="email" name="recipientEmail" id="recipientEmail"
+                       class="form-control"
+                       autocomplete="off"
+                       ng-model="$ctrl.fields.recipientEmail"
+                       required
+                       ng-disabled="processing">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="info" class="col-xs-4 control-label">
+                <span translate="decision.revision.informationRequestLinkModal.mailTitle"></span>
+            </label>
+
+            <div name="info"
+                 id="info"
+                 class="col-xs-8 r-information-request-link-model-notes"
+                 ng-if="!!$ctrl.decision.permitTypeCode"
+                 ng-bind="$ctrl.fields.title"
+            >
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <label for="description" class="col-xs-4 control-label"
+                   translate="decision.revision.informationRequestLinkModal.description"></label>
+
+            <div class="col-xs-8">
+                        <textarea class="form-control"
+                                  name="description" id="description"
+                                  spellcheck="false"
+                                  rows="10"
+                                  ng-model="$ctrl.fields.description">
+                        </textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.submit()"
+                ng-disabled="form.$invalid || !$ctrl.canSubmit()"
+                translate="global.button.submit"></button>
+    </div>
+</form>

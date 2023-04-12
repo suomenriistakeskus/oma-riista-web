@@ -27,6 +27,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -111,7 +112,7 @@ public class SrvaPdfFeature {
         final Set<SrvaSpecimenDTO> specimens = srvaSpecimenRepository.findByEventOrderById(event).stream()
                 .map(SrvaSpecimenDTO::create)
                 .collect(Collectors.toSet());
-        final String rhy = event.getRhy().getNameFinnish();
+        final String rhy = locale.getLanguage().equals("sv") ? event.getRhy().getNameSwedish() : event.getRhy().getNameFinnish();
         final PersonWithNameDTO approver = F.mapNullable(event.getApproverAsPerson(), PersonWithNameDTO::create);
         final String activeUser =
                 F.mapNullable(activeUserService.requireActiveUser(), p -> p.getFirstName() + " " + p.getLastName());
@@ -163,7 +164,7 @@ public class SrvaPdfFeature {
                 "maasto2",
                 area,
                 null);
-        final String mapFinland64Encoded= Base64.getEncoder().encodeToString(mapFinland);
+        final String mapFinland64Encoded = Base64.getEncoder().encodeToString(mapFinland);
 
         final SrvaEventReportDTO reportDTO = SrvaEventReportDTO.create(event, methods, author, species, specimens, rhy,
                 approver, activeUser, isModerator, imageURLs, map64Encoded, mapFinland64Encoded, locale.getLanguage());
@@ -206,22 +207,37 @@ public class SrvaPdfFeature {
         }
 
         final String url = getRemoteUri(runtimeEnvironmentUtil.getMapExportEndpoint(), width, height, background);
-        return callRemoteService(url, featureCollection);
-    }
 
-    private byte[] callRemoteService(final String url, final FeatureCollection features) {
         try {
-            final HttpHeaders requestHeaders = new HttpHeaders();
-            requestHeaders.setAccept(Collections.singletonList(MediaType.IMAGE_PNG));
-            requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-            requestHeaders.set("Accept-Encoding", "gzip");
+            return callRemoteService(url, featureCollection);
 
-            final HttpEntity<FeatureCollection> requestEntity = new HttpEntity<>(features, requestHeaders);
-            return restTemplate.exchange(url, HttpMethod.POST, requestEntity, byte[].class).getBody();
         } catch (final Exception ex) {
-            LOG.error("Failed to get map");
+            if (ex instanceof ResourceAccessException) {
+                LOG.warn("Resource access exception occurred, retrying once.");
+                delayBeforeRetry();
+                return callRemoteService(url, featureCollection);
+            }
+            LOG.error("Failed to get map", ex);
             throw new RuntimeException("Failed to get map");
         }
     }
 
+    private byte[] callRemoteService(final String url, final FeatureCollection features) {
+        final HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setAccept(Collections.singletonList(MediaType.IMAGE_PNG));
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.set("Accept-Encoding", "gzip");
+
+        final HttpEntity<FeatureCollection> requestEntity = new HttpEntity<>(features, requestHeaders);
+        return restTemplate.exchange(url, HttpMethod.POST, requestEntity, byte[].class).getBody();
+
+    }
+
+    private void delayBeforeRetry() {
+        try {
+            Thread.sleep(500);
+        } catch (final InterruptedException ie) {
+            LOG.warn("Sleep interrupted.");
+        }
+    }
 }

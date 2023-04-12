@@ -32,12 +32,19 @@
     border-bottom: #9d9d9d;
   }
 
+  .r-dropdown-align-right {
+    button {
+      height: 40px;
+      box-shadow: none;
+    }
+  }
+
   .alert {
-    background-color: #F7F7F7;
+    background-color: @r-info-box-bg-white;
     border-color: @table-border-color;
-    margin: 0px 0 20px;
+    margin: 0 0 20px;
     padding: 15px 15px 10px;
-    color: #555;
+    color: @r-info-box-text-grey;
     overflow: auto;
 
     .alert-content {
@@ -45,8 +52,10 @@
     }
 
     .alert-title {
-      font-size: 18px;
+      display: none;
+      font-size: 24px;
       font-weight: bold;
+      margin: 0 0 15px 0;
     }
 
     .fa-info-circle {
@@ -103,4 +112,57 @@
   }
 }
 
+@media (max-width: @screen-xs-max) {
+  .harvestregistry-container {
 
+    .alert {
+      background: none;
+      border: none;
+      padding: 15px 0 10px;
+
+      .alert-content {
+        margin-left: 0;
+
+      }
+
+      .alert-title {
+        display: block;
+      }
+
+      .fa-info-circle {
+        display: none;
+      }
+    }
+    .input-group[class*=col-] {
+      padding-right: 15px;
+      padding-left: 15px;
+    }
+    .species-select-button {
+      margin: 0;
+      > div {
+        padding:0;
+      }
+    }
+    .xs-clear-horizontal-margin {
+      margin-left:0;
+      margin-right: 0;
+    }
+
+  }
+}
+@media(min-width: @screen-sm-min) and (max-width: @screen-sm-max) {
+  .harvestregistry-container {
+    .input-group[class*=col-] {
+      padding-right: 15px;
+      padding-left: 15px;
+    }
+    .species-select-button {
+      margin: 0;
+      > div {
+        padding:0;
+      }
+    }
+
+  }
+
+}

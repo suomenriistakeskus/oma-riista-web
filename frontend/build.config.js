@@ -36,7 +36,8 @@ module.exports = {
     vendorFiles: {
         fonts: [
             '../node_modules/bootstrap/dist/fonts/*',
-            '../node_modules/font-awesome/fonts/*'
+            '../node_modules/font-awesome/fonts/*',
+            './vendor/google/fonts/*'
         ],
         other: [
             '../node_modules/lodash/lodash.min.js',
@@ -101,6 +102,7 @@ module.exports = {
             '../node_modules/ng-idle/angular-idle.min.js',
             '../node_modules/diff/dist/diff.min.js',
             '../node_modules/angular-file-saver/dist/angular-file-saver.bundle.min.js',
+            './vendor/c3/*.js',
             // This must be the last dependency due to packaging issues
             '../node_modules/select2/select2.js'
         ]

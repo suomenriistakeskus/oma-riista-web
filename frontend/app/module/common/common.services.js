@@ -86,6 +86,44 @@ angular.module('app.common.services', [])
             };
         };
 
+        /**
+         * Determine the mobile operating system.
+         * This function returns one of 'iOS', 'Android', 'Windows Phone', or 'unknown'.
+         *
+         * @returns {String}
+         */
+        var getMobileOperatingSystem = function () {
+            var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+            // Windows Phone must come first because its UA also contains "Android"
+            if (/windows phone/i.test(userAgent)) {
+                return "windows";
+            }
+
+            if (/android/i.test(userAgent)) {
+                return "android";
+            }
+
+            // iOS detection from: http://stackoverflow.com/a/9039885/177710
+            if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                return "ios";
+            }
+
+            return "unknown";
+        };
+
+        var goToStore = function() {
+            var system = getMobileOperatingSystem();
+            if(system === 'android') {
+                window.location.replace('market://details?id=fi.riista.mobile');
+            } else if (system === 'ios') {
+                window.location.replace('https://apps.apple.com/fi/app/oma-riista/id912777656?l=fi');
+            } else {
+                // window.alert($translate.instant('gamediary.mobileNotification.unknownOperatingSystem'));
+                window.alert('Unknown OS.');
+            }
+        };
+
         return {
             dateToString: dateToString,
             dateTimeToString: dateTimeToString,
@@ -93,7 +131,9 @@ angular.module('app.common.services', [])
             dateWithinRange: dateWithinRange,
             toMoment: toMoment,
             parseDateAndTime: parseDateAndTime,
-            wrapToFunction: wrapToFunction
+            wrapToFunction: wrapToFunction,
+            getMobileOperatingSystem: getMobileOperatingSystem,
+            goToStore: goToStore
         };
     })
 
@@ -324,11 +364,11 @@ angular.module('app.common.services', [])
         };
     })
     .service('ConfirmationDialogService', function ($q, $uibModal) {
-        this.showConfimationDialogWithPrimaryAccept = function (titleKey, bodyKey) {
+        this.showConfirmationDialogWithPrimaryAccept = function (titleKey, bodyKey) {
             return doShow(titleKey, bodyKey, 'common/confirm-default-accept.html');
         };
 
-        this.showConfimationDialogWithPrimaryReject = function (titleKey, bodyKey) {
+        this.showConfirmationDialogWithPrimaryReject = function (titleKey, bodyKey) {
             return doShow(titleKey, bodyKey, 'common/confirm-default-reject.html');
         };
 

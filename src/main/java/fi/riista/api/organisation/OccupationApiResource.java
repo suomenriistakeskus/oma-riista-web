@@ -6,8 +6,9 @@ import fi.riista.feature.organization.OrganisationCrudFeature;
 import fi.riista.feature.organization.OrganisationDTO;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.occupation.Occupation;
-import fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRuleMapping;
+import fi.riista.feature.organization.occupation.OccupationBoardRepresentationRole;
 import fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRule;
+import fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRuleMapping;
 import fi.riista.feature.organization.occupation.OccupationCrudFeature;
 import fi.riista.feature.organization.occupation.OccupationDTO;
 import fi.riista.feature.organization.occupation.OccupationExcelView;
@@ -157,5 +158,11 @@ public class OccupationApiResource {
     @GetMapping(value = "/occupation/contact-info-visibility-rules")
     public ImmutableMap<OrganisationType, ImmutableMap<OccupationType, OccupationContactInfoVisibilityRule>> listContactInfoVisibilityRules() {
         return OccupationContactInfoVisibilityRuleMapping.listAll();
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "{orgId:\\d+}/boardRepresentationRoles")
+    public List<OccupationBoardRepresentationRole> getBoardRepresentationRoles(@PathVariable final long orgId) {
+        return occupationCrudFeature.getApplicableBoardRepresentationRoles(orgId);
     }
 }

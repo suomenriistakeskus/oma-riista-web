@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mooselike.attachments', ['app.meta
                 templateUrl: 'harvestpermit/applications/mooselike/attachments/attachments.html',
                 controller: 'MooselikePermitWizardAttachmentsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     attachments: function (HarvestPermitApplications, applicationId) {
                         return HarvestPermitApplications.getAttachments({id: applicationId}).$promise;

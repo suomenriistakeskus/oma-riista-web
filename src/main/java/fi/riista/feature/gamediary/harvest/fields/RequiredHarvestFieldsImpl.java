@@ -3,9 +3,44 @@ package fi.riista.feature.gamediary.harvest.fields;
 import com.google.common.collect.ImmutableSet;
 import fi.riista.feature.gamediary.HasGameSpeciesCode;
 import fi.riista.feature.gamediary.harvest.HarvestReportingType;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.HuntingMethod;
 
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_AMERICAN_MINK;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BADGER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BLUE_FOX;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BROWN_HARE;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_CANADIAN_BEAVER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_DOMESTICATED_CAT;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_ERMINE;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_EUROPEAN_BEAVER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_EUROPEAN_POLECAT;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_FALLOW_DEER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_GREY_SEAL;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_HARBOUR_SEAL;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_LYNX;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOUNTAIN_HARE;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MUFFLON;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MUSKRAT;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_NUTRIA;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_OTTER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_PINE_MARTEN;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RABBIT;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RACCOON;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RACCOON_DOG;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RED_DEER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RED_FOX;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RED_SQUIRREL;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_RINGED_SEAL;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_ROE_DEER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_SIKA_DEER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WILD_BOAR;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WILD_FOREST_REINDEER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WOLF;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WOLVERINE;
 import static fi.riista.feature.gamediary.harvest.HarvestReportingType.BASIC;
 import static fi.riista.feature.gamediary.harvest.HarvestReportingType.HUNTING_DAY;
 import static fi.riista.feature.gamediary.harvest.HarvestReportingType.PERMIT;
@@ -24,9 +59,10 @@ public class RequiredHarvestFieldsImpl {
                                                  final int gameSpeciesCode,
                                                  final HuntingMethod huntingMethod,
                                                  final HarvestReportingType reportingType,
-                                                 final boolean isClientSupportFor2020Fields) {
+                                                 final HarvestSpecVersion specVersion,
+                                                 final boolean withPermit) {
 
-        return new SpecimenImpl(huntingYear, gameSpeciesCode, huntingMethod, reportingType, isClientSupportFor2020Fields);
+        return new SpecimenImpl(huntingYear, gameSpeciesCode, huntingMethod, reportingType, specVersion, withPermit);
     }
 
     public static class ReportImpl implements RequiredHarvestFields.Report, HasGameSpeciesCode {
@@ -134,30 +170,58 @@ public class RequiredHarvestFieldsImpl {
         // {mufloni,saksanhirvi,japaninpeura,halli,susi,ahma,karhu,hirvi,kuusipeura,valkohäntäpeura,metsäpeura,
         // villisika,saukko,ilves}
         static final ImmutableSet<Integer> PERMIT_MANDATORY_AGE = ImmutableSet
-                .of(47774, 47476, 47479, 47282, 46549, 47212, 47348, 47503, 47484, 47629, 200556, 47926, 47169, 46615);
+                .of(
+                        OFFICIAL_CODE_MUFFLON,
+                        OFFICIAL_CODE_RED_DEER,
+                        OFFICIAL_CODE_SIKA_DEER,
+                        OFFICIAL_CODE_GREY_SEAL,
+                        OFFICIAL_CODE_WOLF,
+                        OFFICIAL_CODE_WOLVERINE,
+                        OFFICIAL_CODE_BEAR,
+                        OFFICIAL_CODE_MOOSE,
+                        OFFICIAL_CODE_FALLOW_DEER,
+                        OFFICIAL_CODE_WHITE_TAILED_DEER,
+                        OFFICIAL_CODE_WILD_FOREST_REINDEER,
+                        OFFICIAL_CODE_WILD_BOAR,
+                        OFFICIAL_CODE_OTTER,
+                        OFFICIAL_CODE_LYNX);
+
 
         // {villisika,saukko,ilves,piisami,rämemajava,"tarhattu naali",pesukarhu,hilleri,kirjohylje,mufloni,
         // saksanhirvi,japaninpeura,halli,susi,"villiintynyt kissa",metsäjänis,rusakko,orava,kanadanmajava,kettu,
         // kärppä,näätä,minkki,villikani,supikoira,mäyrä,itämerennorppa,euroopanmajava,ahma,karhu,metsäkauris,hirvi,
         // kuusipeura,valkohäntäpeura,metsäpeura}
         static final ImmutableSet<Integer> PERMIT_MANDATORY_GENDER = ImmutableSet
-                .of(47926, 47169, 46615, 48537, 50336, 46542, 47329, 47240, 47305, 47774, 47476, 47479, 47282, 46549,
-                        53004, 50106, 50386, 48089, 48250, 46587, 47230, 47223, 47243, 50114, 46564, 47180, 200555,
-                        48251, 47212, 47348, 47507, 47503, 47484, 47629, 200556);
+                .of(
+                        OFFICIAL_CODE_WILD_BOAR, OFFICIAL_CODE_OTTER, OFFICIAL_CODE_LYNX,
+                        OFFICIAL_CODE_MUSKRAT, OFFICIAL_CODE_NUTRIA, OFFICIAL_CODE_BLUE_FOX,
+                        OFFICIAL_CODE_RACCOON, OFFICIAL_CODE_EUROPEAN_POLECAT, OFFICIAL_CODE_HARBOUR_SEAL,
+                        OFFICIAL_CODE_MUFFLON, OFFICIAL_CODE_RED_DEER, OFFICIAL_CODE_SIKA_DEER,
+                        OFFICIAL_CODE_GREY_SEAL, OFFICIAL_CODE_WOLF, OFFICIAL_CODE_DOMESTICATED_CAT,
+                        OFFICIAL_CODE_MOUNTAIN_HARE, OFFICIAL_CODE_BROWN_HARE, OFFICIAL_CODE_RED_SQUIRREL,
+                        OFFICIAL_CODE_CANADIAN_BEAVER, OFFICIAL_CODE_RED_FOX, OFFICIAL_CODE_ERMINE,
+                        OFFICIAL_CODE_PINE_MARTEN, OFFICIAL_CODE_AMERICAN_MINK, OFFICIAL_CODE_RABBIT,
+                        OFFICIAL_CODE_RACCOON_DOG, OFFICIAL_CODE_BADGER, OFFICIAL_CODE_RINGED_SEAL,
+                        OFFICIAL_CODE_EUROPEAN_BEAVER, OFFICIAL_CODE_WOLVERINE, OFFICIAL_CODE_BEAR,
+                        OFFICIAL_CODE_ROE_DEER, OFFICIAL_CODE_MOOSE, OFFICIAL_CODE_FALLOW_DEER,
+                        OFFICIAL_CODE_WHITE_TAILED_DEER, OFFICIAL_CODE_WILD_FOREST_REINDEER);
 
         // {halli,susi,saukko,ilves,ahma,karhu}
         static final ImmutableSet<Integer> PERMIT_MANDATORY_WEIGHT = ImmutableSet
-                .of(47282, 46549, 47169, 46615, 47212, 47348);
+                .of(OFFICIAL_CODE_GREY_SEAL, OFFICIAL_CODE_WOLF, OFFICIAL_CODE_OTTER, OFFICIAL_CODE_LYNX, OFFICIAL_CODE_WOLVERINE, OFFICIAL_CODE_BEAR);
 
         // {karhu,metsäkauris,halli,villisika, norppa}
         private static final ImmutableSet<Integer> SEASON_COMMON_MANDATORY = ImmutableSet
-                .of(47348, 47507, 47282, 47926, OFFICIAL_CODE_RINGED_SEAL);
+                .of(OFFICIAL_CODE_BEAR, OFFICIAL_CODE_ROE_DEER, OFFICIAL_CODE_GREY_SEAL, OFFICIAL_CODE_WILD_BOAR, OFFICIAL_CODE_RINGED_SEAL);
+
 
         private final int huntingYear;
         private final int gameSpeciesCode;
         private final HarvestReportingType reportingType;
         private final HuntingMethod huntingMethod;
         private final boolean fields2020Enabled;
+        private final HarvestSpecVersion specVersion;
+        private final boolean withPermit;
 
         private final boolean associatedToHuntingDay;
 
@@ -165,13 +229,18 @@ public class RequiredHarvestFieldsImpl {
                                  final int gameSpeciesCode,
                                  final HuntingMethod huntingMethod,
                                  final HarvestReportingType reportingType,
-                                 final boolean isClientSupportFor2020Fields) {
+                                 final HarvestSpecVersion specVersion,
+                                 final boolean withPermit) {
+
+            final boolean isClientSupportFor2020Fields = specVersion.supportsAntlerFields2020();
 
             this.huntingYear = huntingYear;
             this.gameSpeciesCode = gameSpeciesCode;
             this.reportingType = reportingType;
             this.huntingMethod = huntingMethod;
             this.fields2020Enabled = isClientSupportFor2020Fields && huntingYear >= 2020;
+            this.specVersion = specVersion;
+            this.withPermit = withPermit;
 
             this.associatedToHuntingDay = reportingType == HUNTING_DAY;
         }
@@ -184,7 +253,15 @@ public class RequiredHarvestFieldsImpl {
         @Override
         public RequiredHarvestSpecimenField getAge() {
             if (isMooseOrDeerRequiringPermitForHunting()) {
-                return associatedToHuntingDay ? RequiredHarvestSpecimenField.YES : RequiredHarvestSpecimenField.VOLUNTARY;
+                if (this.specVersion.supportsMandatoryAgeAndGenderFieldsForMooselikeHarvest()) {
+                    // hunter must give gender and age for mooselike harvest
+                    return withPermit ? RequiredHarvestSpecimenField.VOLUNTARY : RequiredHarvestSpecimenField.YES;
+
+                } else {
+                    // old way
+                    return associatedToHuntingDay ? RequiredHarvestSpecimenField.YES : RequiredHarvestSpecimenField.VOLUNTARY;
+
+                }
             }
 
             return getRequirement(PERMIT_MANDATORY_AGE, gameSpeciesCode);
@@ -193,7 +270,15 @@ public class RequiredHarvestFieldsImpl {
         @Override
         public RequiredHarvestSpecimenField getGender() {
             if (isMooseOrDeerRequiringPermitForHunting()) {
-                return associatedToHuntingDay ? RequiredHarvestSpecimenField.YES : RequiredHarvestSpecimenField.VOLUNTARY;
+                if (this.specVersion.supportsMandatoryAgeAndGenderFieldsForMooselikeHarvest()) {
+                    // hunter must give gender and age for mooselike harvest
+
+                    return withPermit ? RequiredHarvestSpecimenField.VOLUNTARY : RequiredHarvestSpecimenField.YES;
+
+                } else {
+                    // old way
+                    return associatedToHuntingDay ? RequiredHarvestSpecimenField.YES : RequiredHarvestSpecimenField.VOLUNTARY;
+                }
             }
 
             return getRequirement(PERMIT_MANDATORY_GENDER, gameSpeciesCode);

@@ -5,7 +5,6 @@ import fi.riista.config.Constants;
 import fi.riista.config.DataSourceConfig;
 import fi.riista.config.JPAConfig;
 import fi.riista.config.LiquibaseConfig;
-import fi.riista.config.PapertrailConfig;
 import fi.riista.config.SerializationConfig;
 import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.organization.person.ProcessDeceasedPersonFeature;
@@ -53,7 +52,6 @@ public class MetsastajaRekisteriImportCli {
             FileStorageServiceImpl.class,
             ProcessDeceasedPersonFeature.class,
             SerializationConfig.class,
-            PapertrailConfig.class,
             InnofactorImportConfig.class
     })
     public static class CmdBatchJobRunnerContext {

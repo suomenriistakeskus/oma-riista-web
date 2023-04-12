@@ -174,6 +174,8 @@ public class HarvestPermitApplicationValidationService {
                 NestRemovalPermitApplicationValidator.validateContent(application, nestRemovalPermitApplication, beaverDamDerogationReasons);
                 break;
             case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 final LawSectionTenPermitApplication lawSectionTenPermitApplication =
                         lawSectionTenPermitApplicationRepository.findByHarvestPermitApplication(application);
                 LawSectionTenPermitApplicationValidator.validateContent(application, lawSectionTenPermitApplication);
@@ -296,6 +298,8 @@ public class HarvestPermitApplicationValidationService {
                 NestRemovalPermitApplicationValidator.validateForSending(application, nestRemovalPermitApplication, beaverDamDerogationReasons);
                 break;
             case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 final LawSectionTenPermitApplication lawSectionTenPermitApplication =
                         lawSectionTenPermitApplicationRepository.findByHarvestPermitApplication(application);
                 LawSectionTenPermitApplicationValidator.validateForSending(application, lawSectionTenPermitApplication);
@@ -419,6 +423,8 @@ public class HarvestPermitApplicationValidationService {
                 NestRemovalPermitApplicationValidator.validateForAmend(application, nestRemovalPermitApplication, nestRemovalDerogationReasons);
                 break;
             case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 final LawSectionTenPermitApplication lawSectionTenPermitApplication =
                         lawSectionTenPermitApplicationRepository.findByHarvestPermitApplication(application);
                 LawSectionTenPermitApplicationValidator.validateForAmend(application, lawSectionTenPermitApplication);

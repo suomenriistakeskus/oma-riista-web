@@ -212,9 +212,8 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
             var totalHuntingArea = parseInt(form.totalHuntingArea.$viewValue, 10);
             var effectiveHuntingArea = parseInt(form.effectiveHuntingArea.$viewValue, 10);
 
-            return !_.isFinite(totalHuntingArea) && !_.isFinite(effectiveHuntingArea) ||
-                totalHuntingArea > summary.permitAreaSize ||
-                effectiveHuntingArea > summary.permitAreaSize;
+            return (_.isFinite(totalHuntingArea) && totalHuntingArea > summary.permitAreaSize) ||
+                (_.isFinite(effectiveHuntingArea) && effectiveHuntingArea > summary.permitAreaSize);
         };
 
         $ctrl.getTotalNumberOfDeadMooses = function () {
@@ -223,32 +222,6 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
                     return $ctrl.huntingSummary[fieldName];
                 })
                 .sum();
-        };
-
-        $ctrl.isTotalHuntingAreaRequired = function () {
-            return !_.isFinite($ctrl.huntingSummary.effectiveHuntingArea);
-        };
-
-        $ctrl.isEffectiveHuntingAreaRequired = function () {
-            return !_.isFinite($ctrl.huntingSummary.effectiveHuntingAreaPercentage) && !_.isFinite($ctrl.huntingSummary.totalHuntingArea);
-        };
-
-        $ctrl.isRemainingPopulationForTotalAreaRequired = function () {
-            var summary = $ctrl.huntingSummary;
-
-            return !_.isFinite(summary.effectiveHuntingArea) && !_.isFinite(summary.effectiveHuntingAreaPercentage) ||
-                !_.isFinite(summary.remainingPopulationInEffectiveArea) &&
-                _.isFinite(summary.totalHuntingArea) &&
-                (_.isFinite(summary.effectiveHuntingArea) || _.isFinite(summary.effectiveHuntingAreaPercentage));
-        };
-
-        $ctrl.isRemainingPopulationForEffectiveAreaRequired = function () {
-            var summary = $ctrl.huntingSummary;
-
-            return !_.isFinite(summary.totalHuntingArea) ||
-                !_.isFinite(summary.remainingPopulationInTotalArea) &&
-                _.isFinite(summary.totalHuntingArea) &&
-                (_.isFinite(summary.effectiveHuntingArea) || _.isFinite(summary.effectiveHuntingAreaPercentage));
         };
 
         $ctrl.getMaxForEffectiveHuntingArea = function () {
@@ -286,7 +259,7 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
         };
 
         $ctrl.isValidForFinalSubmit = function (form) {
-            return form.$valid && isHuntingAreaAndRemainingPopulationDefined();
+            return form.$valid;
         };
 
         $ctrl.updateDateConstraints = function () {
@@ -299,22 +272,6 @@ angular.module('app.moosepermit.moosehuntingsummary', [])
             $ctrl.dateOfFirstDeerFlySeenMax = $ctrl.dateOfLastDeerFlySeen || $ctrl.endDate;
             $ctrl.dateOfLastDeerFlySeenMin = $ctrl.dateOfFirstDeerFlySeen || $ctrl.beginDate;
         };
-
-        function isHuntingAreaAndRemainingPopulationDefined() {
-            var summary = $ctrl.huntingSummary;
-
-            var isDefined = function (value) {
-                return value !== undefined && value !== null;
-            };
-
-            var totalAreaDefined = isDefined(summary.totalHuntingArea);
-
-            return totalAreaDefined && isDefined(summary.remainingPopulationInTotalArea) ||
-                isDefined(summary.remainingPopulationInEffectiveArea) && (
-                    isDefined(summary.effectiveHuntingArea) ||
-                    totalAreaDefined && isDefined(summary.effectiveHuntingAreaPercentage)
-                );
-        }
 
         function getAppearanceKey(species) {
             return species.key + 'Appearance';

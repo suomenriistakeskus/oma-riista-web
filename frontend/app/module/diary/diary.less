@@ -81,9 +81,11 @@
           .col1 {
             .make-xs-column(1, 0);
           }
+
           .col2 {
             .make-xs-column(5, 0);
           }
+
           .col3 {
             .make-xs-column(6, 0);
             text-align: right;
@@ -107,15 +109,19 @@
             .make-xs-column(2, 0);
             margin: -8px 0;
           }
+
           .col2 {
             .make-xs-column(5, 0);
           }
+
           .col3 {
             .make-xs-column(2, 0);
           }
+
           .col4 {
             .make-xs-column(2, 0);
           }
+
           .col5 {
             .make-xs-column(1, 0);
           }
@@ -153,6 +159,7 @@
 
 .r-gamediary-entry-show-image {
   margin-top: 10px;
+
   img {
     .center-block;
   }
@@ -188,4 +195,10 @@
   overflow: auto;
   max-height: 250px;
   margin-top: 20px;
+}
+
+@media (max-width: @screen-xs-max) {
+  .r-gamediary-layout {
+    display: none;
+  }
 }

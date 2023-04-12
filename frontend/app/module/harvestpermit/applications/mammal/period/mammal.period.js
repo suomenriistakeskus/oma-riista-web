@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mammal.period', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/mammal/period/period.html',
                 controller: 'MammalPermitWizardPeriodController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesPeriodList: function (MammalPermitApplication, applicationId) {
                         return MammalPermitApplication.listSpeciesPeriods({id: applicationId}).$promise;

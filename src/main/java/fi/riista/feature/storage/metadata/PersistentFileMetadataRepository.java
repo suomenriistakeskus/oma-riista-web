@@ -4,5 +4,5 @@ import fi.riista.feature.common.repository.BaseRepository;
 
 import java.util.UUID;
 
-public interface PersistentFileMetadataRepository extends BaseRepository<PersistentFileMetadata, UUID> {
+public interface PersistentFileMetadataRepository extends BaseRepository<PersistentFileMetadata, UUID>, PersistentFileMetadataRepositoryCustom{
 }

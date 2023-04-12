@@ -95,10 +95,10 @@ public class ObservationFeature_MooseDataCardTest extends ObservationFeatureTest
             final Person originalAuthor = huntingFixt.clubContact;
             final Person newAuthor = huntingFixt.groupMember;
 
-            final LocalDate today = today();
-            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(huntingFixt.group, today);
+            final LocalDate huntingDate = new LocalDate(2022, 8, 2);
+            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(huntingFixt.group, huntingDate);
             final GroupHuntingDay huntingDay2 =
-                    model().newGroupHuntingDay(huntingFixt.group, today.minusDays(1));
+                    model().newGroupHuntingDay(huntingFixt.group, huntingDate.minusDays(1));
 
             createObservationMetaF(species, MOOSE_HUNTING, NAKO)
                     .withMooselikeAmountFieldsAs(YES)

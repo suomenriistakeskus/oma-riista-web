@@ -1,16 +1,16 @@
 package fi.riista.util.i18n;
 
-import liquibase.util.csv.opencsv.CSVReader;
+import liquibase.util.csv.CSVReader;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+
+import static liquibase.util.csv.CSVReader.DEFAULT_QUOTE_CHARACTER;
 
 public final class LocalisationImportFromCSV {
 
@@ -27,15 +27,13 @@ public final class LocalisationImportFromCSV {
         FileUtils.writeStringToFile(new File(output), outputJson, StandardCharsets.UTF_8);
     }
 
-    private static Map<String, String> readCsv(File file) throws IOException {
+    private static Map<String, String> readCsv(File file) throws Exception {
         final Map<String, String> map = new LinkedHashMap<>();
 
         try (final Reader bf = new FileReader(file);
-                final CSVReader reader = new CSVReader(bf, ';')) {
+                final CSVReader reader = new CSVReader(bf, ';', DEFAULT_QUOTE_CHARACTER)) {
 
-            final List<String[]> lines = reader.readAll();
-
-            for (final String[] line : lines) {
+            for (String[] line = reader.readNext(); line != null; line = reader.readNext()) {
                 if (line.length != 2) {
                     throw new IllegalArgumentException();
                 }

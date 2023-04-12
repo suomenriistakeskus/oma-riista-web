@@ -7,14 +7,52 @@
             <li active-if-state-includes="reporting.contacts">
                 <a ui-sref="reporting.contacts.occupation" translate="reporting.menu.contacts"></a>
             </li>
-            <li active-if-state-includes="reporting.announcements">
+            <li  ng-if="::!$ctrl.isAuthorizedForFrontpageNews" ui-sref-active="active">
                 <a ui-sref="reporting.announcements" translate="announcements.list.title"></a>
+            </li>
+            <li ng-if="::$ctrl.isAuthorizedForFrontpageNews" class="dropdown" active-if-state-includes="reporting.announcements"
+                uib-dropdown dropdown-append-to-body>
+                <a uib-dropdown-toggle>
+                    <span translate="announcements.list.title"></span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
+                    <li ui-sref-active="active">
+                        <a ui-sref="reporting.announcements" ui-sref-opts="{inherit: false}">
+                            <span translate="announcements.list.title"></span>
+                        </a>
+                    </li>
+                    <li ui-sref-active="active">
+                        <a ui-sref="reporting.news" ui-sref-opts="{inherit: false}">
+                            <span translate="news.nav"></span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li active-if-state-includes="reporting.club">
                 <a ui-sref="reporting.club" translate="reporting.menu.clubs"></a>
             </li>
-            <li active-if-state-includes="reporting.srvaMap">
+            <li ng-if="::!$ctrl.isAuthorizedForHuntingControlMap" active-if-state-includes="reporting.srvaMap">
                 <a ui-sref="reporting.srvaMap" translate="rhy.menu.srva"></a>
+            </li>
+            <li ng-if="::$ctrl.isAuthorizedForHuntingControlMap" class="dropdown" active-if-state-includes="reporting.srvaMap,reporting.huntingcontrol"
+                uib-dropdown dropdown-append-to-body>
+                <a uib-dropdown-toggle>
+                    <span translate="reporting.menu.map"></span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
+                    <li ui-sref-active="active">
+                        <a ui-sref="reporting.srvaMap" ui-sref-opts="{inherit: false}">
+                            <span translate="rhy.menu.srva"></span>
+                        </a>
+                    </li>
+                    <li ui-sref-active="active">
+                        <a ui-sref="reporting.huntingcontrol" ui-sref-opts="{inherit: false}">
+                            <span translate="reporting.menu.huntingcontrol"></span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li active-if-state-includes="reporting.moosepermitstatistics">
                 <a ui-sref="reporting.moosepermitstatistics" translate="reporting.menu.moosePermitStatistics"></a>

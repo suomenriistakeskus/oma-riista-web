@@ -1,4 +1,4 @@
-<div class="alert alert-info">
+<div class="alert alert-info wizard-info">
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
@@ -9,13 +9,13 @@
 
 <form name="speciesPeriodForm" r-force-show-errors-check-validity>
     <div class="row">
-        <div class="col-xs-2">
+        <div class="col-sm-2">
             <div class="form-control-static" style="padding-top: 30px">
                 <strong ng-bind="$ctrl.speciesPeriod.gameSpeciesCode | translateSpeciesCode | uppercase"></strong>
             </div>
         </div>
 
-        <div class="col-xs-3">
+        <div class="col-sm-3">
             <div class="form-group" show-errors>
                 <label class="control-label" for="beginDate"
                        translate="harvestpermit.wizard.period.beginDate"></label>
@@ -48,7 +48,7 @@
             </div>
         </div>
 
-        <div class="col-xs-3">
+        <div class="col-sm-3">
             <div class="form-group" show-errors>
                 <label class="control-label" for="endDate"
                        translate="harvestpermit.wizard.period.endDate"></label>
@@ -81,7 +81,7 @@
             </div>
         </div>
 
-        <div class="col-xs-3" style="padding-top: 25px">
+        <div class="col-sm-3" style="padding-top: 25px">
             <div ng-show="$ctrl.isIntervalTooLong()">
                     <span class="text-danger"
                           translate="harvestpermit.wizard.gameManagement.period.tooLongPeriodInfo"></span>
@@ -90,7 +90,7 @@
     </div>
 
     <div class="row">
-        <div class="col-xs-6 col-xs-offset-2">
+        <div class="col-sm-6 col-sm-offset-2">
             <div class="form-group" show-errors>
                 <label class="control-label"
                        for="additionalPeriodInfo"
@@ -99,13 +99,14 @@
                 <textarea class="form-control" rows="2"
                           name="additionalPeriodInfo"
                           id="additionalPeriodInfo"
-                          ng-model="$ctrl.speciesPeriod.additionalPeriodInfo"></textarea>
+                          ng-model="$ctrl.speciesPeriod.additionalPeriodInfo"
+                          spellcheck="false"></textarea>
             </div>
         </div>
     </div>
 
     <div class="row">
-        <div class="col-md-6 col-md-offset-2">
+        <div class="col-sm-6 col-sm-offset-2">
             <div class="form-group" show-errors>
                 <label for="validityYears" translate="harvestpermit.wizard.period.validityYears"></label>
                 <select name="validityYears" id="validityYears"

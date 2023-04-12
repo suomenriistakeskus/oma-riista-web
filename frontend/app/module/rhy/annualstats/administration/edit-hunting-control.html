@@ -9,12 +9,12 @@
 
     <div class="modal-body">
         <div class="form-group" show-errors>
-            <label for="events" class="control-label">
-                <span translate="rhy.annualStats.administration.huntingControl.form.events"></span>
+            <label for="subsidized" class="control-label">
+                <span translate="rhy.annualStats.administration.huntingControl.form.events.subsidized"></span>
             </label>
 
             <div class="form-control-wrapper input-group">
-                <input type="number" name="events" id="events"
+                <input type="number" name="subsidized" id="subsidized"
                        min="0" max="99999" step="1"
                        class="form-control no-spinner"
                        ng-model="$ctrl.data.huntingControlEvents"/>
@@ -25,7 +25,27 @@
             </div>
 
             <p class="help-block"
-               ng-show="huntingControlForm.events.$invalid"
+               ng-show="huntingControlForm.subsidized.$invalid"
+               translate="global.messages.invalid"></p>
+        </div>
+        <div class="form-group" show-errors>
+            <label for="nonSubsidized" class="control-label">
+                <span translate="rhy.annualStats.administration.huntingControl.form.events.nonSubsidized"></span>
+            </label>
+
+            <div class="form-control-wrapper input-group">
+                <input type="number" name="nonSubsidized" id="nonSubsidized"
+                       min="0" max="99999" step="1"
+                       class="form-control no-spinner"
+                       ng-model="$ctrl.data.nonSubsidizableHuntingControlEvents"/>
+
+                <div class="input-group-addon">
+                    <span translate="global.pcs"></span>
+                </div>
+            </div>
+
+            <p class="help-block"
+               ng-show="huntingControlForm.nonSubsidized.$invalid"
                translate="global.messages.invalid"></p>
         </div>
 

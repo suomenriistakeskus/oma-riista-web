@@ -169,7 +169,7 @@ angular.module('app.diary.srva', [])
 
         $scope.getUrl = DiaryImageService.getUrl;
 
-        $scope.maxSpecimenCount = DiaryEntrySpecimenFormService.getMaxSpecimenCountForObservation();
+        $scope.maxSpecimenCount = DiaryEntrySpecimenFormService.getMaxSpecimenCountForSrva();
 
         $scope.viewState = {
             date: null,
@@ -211,10 +211,31 @@ angular.module('app.diary.srva', [])
             return event ? event.types : [];
         };
 
+        $scope.getSrvaEventTypeDetails = function (srvaEventName, srvaEventType) {
+            if (!$scope.srvaEntry.gameSpeciesCode) {
+                return [];
+            }
+
+            var event = findSrvaEvent(srvaEventName);
+            return event && event.typeDetails ?
+                _.chain(event.typeDetails[srvaEventType])
+                    .filter(function (detailType) {
+                        return _.isEmpty(detailType.speciesCodes) || _.includes(detailType.speciesCodes, $scope.srvaEntry.gameSpeciesCode);
+                    })
+                    .map(function (detailType) {
+                        return detailType.detailType;
+                    })
+                    .value() : [];
+        };
 
         $scope.getSrvaResults = function (srvaEventName) {
             var event = findSrvaEvent(srvaEventName);
             return event ? event.results : [];
+        };
+
+        $scope.getSrvaResultDetails = function (srvaEventName, srvaResult) {
+            var event = findSrvaEvent(srvaEventName);
+            return event && event.resultDetails ? event.resultDetails[srvaResult] : [];
         };
 
         $scope.showOtherMethodDescription = function () {
@@ -232,6 +253,46 @@ angular.module('app.diary.srva', [])
 
             if (!show) {
                 $scope.srvaEntry.otherTypeDescription = null;
+            }
+
+            return show;
+        };
+
+        $scope.showTypeDetailDescription = function () {
+            var show = _.isEqual("OTHER", $scope.srvaEntry.eventTypeDetail);
+
+            if (!show) {
+                $scope.srvaEntry.otherEventTypeDetailDescription = null;
+            }
+
+            return show;
+        };
+
+        $scope.showDeportationOrderNumber = function () {
+            var show = _.isEqual("DEPORTATION", $scope.srvaEntry.eventName);
+
+            if (!show) {
+                $scope.srvaEntry.deportationOrderNumber = null;
+            }
+
+            return show;
+        };
+
+        $scope.showTypeDetails = function () {
+            var show = _.includes(["ANIMAL_NEAR_HOUSES_AREA", "ANIMAL_AT_FOOD_DESTINATION"], $scope.srvaEntry.eventType);
+
+            if (!show) {
+                $scope.srvaEntry.eventTypeDetail = null;
+            }
+
+            return show;
+        };
+
+        $scope.showResultDetails = function () {
+            var show = _.isEqual("ANIMAL_DEPORTED", $scope.srvaEntry.eventResult);
+
+            if (!show) {
+                $scope.srvaEntry.eventResultDetail = null;
             }
 
             return show;
@@ -280,9 +341,23 @@ angular.module('app.diary.srva', [])
             return $scope.srvaEntry.gameSpeciesCode !== SrvaOtherSpeciesService.getOtherSpeciesCode() || $scope.srvaEntry.otherSpeciesDescription;
         };
 
+        $scope.isValidTypeAndDetail = function () {
+            if (!$scope.srvaEntry.eventType) {
+                return false;
+            }
+
+            var isDeporatation = _.isEqual("DEPORTATION", $scope.srvaEntry.eventName);
+            var isTypeOther = _.isEqual("OTHER", $scope.srvaEntry.eventType);
+            if (isDeporatation && !isTypeOther) {
+                return !_.isNil($scope.srvaEntry.eventTypeDetail);
+            }
+
+            return _.isNil($scope.srvaEntry.eventTypeDetail);
+        };
+
         $scope.isValid = function () {
             return $scope.srvaEntry.eventName &&
-                $scope.srvaEntry.eventType &&
+                $scope.isValidTypeAndDetail() &&
                 $scope.isValidGameSpeciesCode($scope.srvaEntry.gameSpeciesCode) &&
                 $scope.isValidOtherSpeciesDescription() &&
                 $scope.srvaEntry.geoLocation.latitude &&
@@ -298,7 +373,26 @@ angular.module('app.diary.srva', [])
             $scope.srvaEntry.methods = null;
         };
 
-        $scope.resetOtherSpeciesDescription = function () {
+        $scope.checkSpeciesDependentFields = function () {
+            if ($scope.srvaEntry.eventName && $scope.srvaEntry.eventTypeDetail) {
+                var event = findSrvaEvent($scope.srvaEntry.eventName);
+                var typeDetailSpeciesRestrictions = _.chain(event.typeDetails[$scope.srvaEntry.eventType])
+                    .filter(function (typeDetail) {
+                        return _.isEqual(typeDetail.detailType, $scope.srvaEntry.eventTypeDetail);
+                    })
+                    .filter(function (typeDetail) {
+                        return !_.isNil(typeDetail.speciesCodes);
+                    })
+                    .map(function (typeDetail) {
+                        return typeDetail.speciesCodes;
+                    })
+                    .flatten()
+                    .value();
+                if (!_.isEmpty(typeDetailSpeciesRestrictions) && !_.includes(typeDetailSpeciesRestrictions, $scope.srvaEntry.gameSpeciesCode)) {
+                    $scope.srvaEntry.eventTypeDetail = null;
+                }
+            }
+
             $scope.srvaEntry.otherSpeciesDescription = null;
         };
 

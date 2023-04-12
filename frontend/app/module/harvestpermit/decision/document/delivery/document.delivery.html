@@ -2,6 +2,22 @@
                                 section-id="$ctrl.sectionId">
 </permit-decision-section-header>
 
+<div class="row">
+    <div class="col-xs-12 permit-decision-delivery-automatic-delivery-deduction-selection"
+         ng-switch="::!!$ctrl.decision.automaticDeliveryDeduction">
+        <strong translate="decision.delivery.automaticDeliveryDeduction"></strong>
+        &nbsp;
+        <label ng-switch-when="true" class="text-primary">
+            <strong translate="global.yes"></strong>
+            <span class="fa fa-check"></span>
+        </label>
+        <label ng-switch-when="false" class="text-danger">
+            <strong translate="global.no"></strong>
+            <span class="fa fa-exclamation-triangle"></span>
+        </label>
+    </div>
+</div>
+
 <div class="panel panel-decision">
     <div class="panel-heading">
         <div class="row">

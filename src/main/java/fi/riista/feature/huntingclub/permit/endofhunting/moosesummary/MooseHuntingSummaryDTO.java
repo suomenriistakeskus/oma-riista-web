@@ -120,16 +120,8 @@ public class MooseHuntingSummaryDTO extends BaseEntityDTO<Long> {
     @AssertTrue
     public boolean isAllRequiredFieldsForFinalSubmit() {
         return !huntingFinished ||
-                F.allNotNull(observationPolicyAdhered, whiteTailedDeerAppearance,
-                        roeDeerAppearance, wildForestReindeerAppearance, fallowDeerAppearance, wildBoarAppearance,
-                        beaverAppearance
-                ) && F.allNotNull(
-                        whiteTailedDeerAppearance.getAppeared(),
-                        roeDeerAppearance.getAppeared(),
-                        wildForestReindeerAppearance.getAppeared(),
-                        fallowDeerAppearance.getAppeared(),
-                        wildBoarAppearance.getAppeared(),
-                        beaverAppearance.getAppeared()
+                F.allNotNull(whiteTailedDeerAppearance, roeDeerAppearance, wildForestReindeerAppearance,
+                        fallowDeerAppearance, wildBoarAppearance, beaverAppearance
                 );
     }
 
@@ -137,16 +129,7 @@ public class MooseHuntingSummaryDTO extends BaseEntityDTO<Long> {
     public boolean isEffectiveHuntingAreaGivenUnambiguously() {
         return F.anyNull(effectiveHuntingArea, effectiveHuntingAreaPercentage);
     }
-
-    @AssertTrue
-    public boolean isHuntingAreaAndRemainingPopulationPresentWhenHuntingFinished() {
-        return !huntingFinished ||
-                totalHuntingArea != null && remainingPopulationInTotalArea != null ||
-                remainingPopulationInEffectiveArea != null &&
-                        (effectiveHuntingArea != null ||
-                                totalHuntingArea != null && effectiveHuntingAreaPercentage != null);
-    }
-
+    
     @AssertTrue
     public boolean isDeerFlyDataGivenCorrectly() {
         return !Boolean.FALSE.equals(deerFliesAppeared) || F.allNull(

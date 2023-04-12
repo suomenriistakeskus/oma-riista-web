@@ -43,8 +43,20 @@
     </div>
 
     <div class="main-column">
+        <div ng-if="$ctrl.visiblePoiMarkers.length > 0" class="map-overlay-poi-marker-toggle-button-container">
+            <club-poi-map-marker-hide-switch hide-markers="$ctrl.hidePoiMarkers"
+                                             on-change="$ctrl.hidePoiMarkersChanged()">
+        </div>
         <club-area-list-map
                 initial-view-bounds="$ctrl.rhyBounds"
-                feature-collection="$ctrl.featureCollection"></club-area-list-map>
+                feature-collection="$ctrl.featureCollection"
+                poi-locations="$ctrl.visiblePoiMarkers"
+                hide-markers="$ctrl.hidePoiMarkers"></club-area-list-map>
     </div>
+</div>
+<div class="r-mobile-notification">
+    <p class="description" translate=global.mobileNotification.description></p>
+    <button type="button" class="btn btn-primary" ng-show="showStoreButton()" ng-click="goToStore()">
+        <span translate=global.mobileNotification.openApp></span>
+    </button>
 </div>

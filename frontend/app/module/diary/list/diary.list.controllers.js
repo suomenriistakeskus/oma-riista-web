@@ -48,7 +48,7 @@ angular.module('app.diary.list.controllers', ['ngResource'])
                                                  MapDefaults, MapState, MapBounds, WGS84, GIS, Markers,
                                                  DiaryListService, DiaryListMarkerService, DiaryListSpeciesService,
                                                  DiaryEntries, DiaryEntryService, SrvaOtherSpeciesService,
-                                                 viewState, parameters) {
+                                                 AccountBeingUnregisteredNotifier, viewState, parameters) {
         $scope.state = viewState;
         $scope.parameters = parameters;
         $scope.mapState = MapState.get();
@@ -207,7 +207,17 @@ angular.module('app.diary.list.controllers', ['ngResource'])
             FormPostService.submitFormUsingBlankTarget('/api/v1/gamediary/excel', {});
         };
 
+        $scope.goToStore = function () {
+            Helpers.goToStore();
+        };
+        $scope.showStoreButton = function () {
+            var system = Helpers.getMobileOperatingSystem();
+            return system === 'android' || system === 'ios';
+        };
+
+
         MapState.updateMapBounds(null, MapBounds.getBoundsOfFinland(), false);
 
         searchBackend();
+        AccountBeingUnregisteredNotifier.notifyAccountUnregistration();
     });

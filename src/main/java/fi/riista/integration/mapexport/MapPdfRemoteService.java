@@ -1,9 +1,9 @@
 package fi.riista.integration.mapexport;
 
 import fi.riista.feature.RuntimeEnvironmentUtil;
+import fi.riista.feature.permit.application.PrintApplicationApproachMapFeatureCollection;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.MediaTypeExtras;
-import io.sentry.Sentry;
 import org.geojson.FeatureCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +52,31 @@ public class MapPdfRemoteService {
                 .toASCIIString();
     }
 
-    private static int zoomLayer(double[] bbox, final MapPdfParameters parameters) {
+    private static String getConflictRemoteUri(final URI baseUri) {
+        return UriComponentsBuilder.fromUri(baseUri)
+                .path("/conflict-map")
+                .build()
+                .toUri()
+                .toASCIIString();
+    }
+
+    private static String getApproachMapRemoteUri(final URI baseUri) {
+        return UriComponentsBuilder.fromUri(baseUri)
+                .path("/approach-map")
+                .build()
+                .toUri()
+                .toASCIIString();
+    }
+
+    public static int zoomLayer(double[] bbox, final MapPdfParameters parameters) {
+        final MapPdfParameters.PaperSize paperSize = parameters.getPaperSize();
+        final double paperWidth = paperSize.getWidth(parameters.getPaperOrientation());
+        final double paperHeight = paperSize.getHeight(parameters.getPaperOrientation());
+
+        return zoomLayer(bbox, paperWidth, paperHeight);
+    }
+
+    public static int zoomLayer(double[] bbox, double mapWidth, double mapHeight) {
         if (bbox == null || bbox.length != 4) {
             throw new IllegalArgumentException("Area bounding box is invalid");
         }
@@ -61,13 +85,8 @@ public class MapPdfRemoteService {
         final double areaHeight = Math.abs(bbox[3] - bbox[1]);
 
         // Hard-coded map margins from mapexport service
-
-        final MapPdfParameters.PaperSize paperSize = parameters.getPaperSize();
-        final double paperWidth = paperSize.getWidth(parameters.getPaperOrientation());
-        final double paperHeight = paperSize.getHeight(parameters.getPaperOrientation());
-
-        final double mapWidthPx = (paperWidth - PAPER_LEFT_RIGHT_MARGIN) / INCH_IN_METERS * MAP_SOURCE_DPI;
-        final double mapHeightPx = (paperHeight - PAPER_TOP_BOTTOM_MARGIN) / INCH_IN_METERS * MAP_SOURCE_DPI;
+        final double mapWidthPx = calculateMapWidthInPixels(mapWidth);
+        final double mapHeightPx = calculateMapHeightInPixels(mapHeight);
         final double resolution = Math.max(areaWidth / mapWidthPx, areaHeight / mapHeightPx);
 
         // For ETRS-TM35FIN following applies
@@ -82,6 +101,14 @@ public class MapPdfRemoteService {
         } else {
             return (int) zoom;
         }
+    }
+
+    public static double calculateMapWidthInPixels(final double mapWidth) {
+        return (mapWidth - PAPER_LEFT_RIGHT_MARGIN) / INCH_IN_METERS * MAP_SOURCE_DPI;
+    }
+
+    public static double calculateMapHeightInPixels(final double mapHeight) {
+        return (mapHeight - PAPER_TOP_BOTTOM_MARGIN) / INCH_IN_METERS * MAP_SOURCE_DPI;
     }
 
     @Resource
@@ -110,8 +137,6 @@ public class MapPdfRemoteService {
         } catch (final Exception ex) {
             LOG.error("Area printing has failed with " + parameters.toString(), ex);
 
-            Sentry.capture(ex);
-
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .contentType(MediaTypeExtras.TEXT_PLAIN_UTF8)
                     .body("Kartan tulostus epäonnistui. Yritä myöhemmin uudelleen");
@@ -125,12 +150,55 @@ public class MapPdfRemoteService {
     }
 
     private byte[] callRemoteService(final String url, final FeatureCollection features) {
+        // Retry once to improve fault tolerance
+        try {
+            return doCallRemoteService(url, features);
+        } catch (final Exception e) {
+            waitForRetry(500);
+            return doCallRemoteService(url, features);
+        }
+    }
+
+    private <TYPE> byte[] doCallRemoteService(String url, TYPE features) {
+        final HttpEntity<TYPE> requestEntity = new HttpEntity<>(features, getRequestHeaders());
+        return restTemplate.exchange(url, HttpMethod.POST, requestEntity, byte[].class).getBody();
+    }
+
+    public byte[] renderConflictPdf(final PrintApplicationApproachMapFeatureCollection model) {
+        final String url = getConflictRemoteUri(runtimeEnvironmentUtil.getMapExportEndpoint());
+        return callRemoteApproachMapService(url, model);
+    }
+
+    public byte[] renderApproachMapPdf(final PrintApplicationApproachMapFeatureCollection model) {
+        final String url = getApproachMapRemoteUri(runtimeEnvironmentUtil.getMapExportEndpoint());
+        return callRemoteApproachMapService(url, model);
+    }
+
+    private byte[] callRemoteApproachMapService(final String url, final PrintApplicationApproachMapFeatureCollection features) {
+
+        // Retry once to improve fault tolerance
+        try {
+            return doCallRemoteService(url, features);
+        } catch (final Exception e) {
+            waitForRetry(500);
+            return doCallRemoteService(url, features);
+        }
+    }
+
+    private static HttpHeaders getRequestHeaders() {
         final HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setAccept(Collections.singletonList(MediaTypeExtras.APPLICATION_PDF));
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.set("Accept-Encoding", "gzip");
 
-        final HttpEntity<FeatureCollection> requestEntity = new HttpEntity<>(features, requestHeaders);
-        return restTemplate.exchange(url, HttpMethod.POST, requestEntity, byte[].class).getBody();
+        return requestHeaders;
+    }
+
+    private void waitForRetry(final long milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (final InterruptedException e) {
+            LOG.error("Sleep interrupted", e);
+        }
     }
 }

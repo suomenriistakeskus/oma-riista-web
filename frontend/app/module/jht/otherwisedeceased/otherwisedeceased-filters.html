@@ -1,28 +1,18 @@
 <ng-form>
 
-    <!-- year -->
-
-    <div class="form-group">
-        <label for="yearFilter" translate="jht.otherwiseDeceased.filters.year"></label>
-        <select class="form-control"
-                name="yearFilter" id="yearFilter"
-                ng-model="$ctrl.filter.year"
-                ng-change="$ctrl.changeYear()"
-                ie10-optgroup-fix>
-            <option ng-repeat="y in $ctrl.availableYears" value="{{y}}">{{y}}</option>
-        </select>
-    </div>
-
     <!-- begin date -->
 
-    <div class="form-group">
+    <div class="form-group" show-errors>
         <label for="beginDateFilter" translate="jht.otherwiseDeceased.filters.beginDate"></label>
         <div class="input-group r-dropdown-align-left" id="beginDateFilter" ng-controller="DatePickerController">
             <input type="text" class="form-control"
+                   required
                    name="beginDateFilter" id="beginDateFilterInput"
                    uib-datepicker-popup is-open="isDatePickerOpen"
-                   datepicker-options="$ctrl.beginDateOptions"
                    ng-model="$ctrl.filter.beginDate"
+                   datepicker-append-to-body="true"
+                   date-between-min-max
+                   max-date="$ctrl.filter.endDate"
                    ng-change="$ctrl.onFilterChange()">
 
             <span class="input-group-btn">
@@ -35,14 +25,17 @@
 
     <!-- end date -->
 
-    <div class="form-group">
+    <div class="form-group" show-errors>
         <label for="endDateFilter" translate="jht.otherwiseDeceased.filters.endDate"></label>
         <div class="input-group r-dropdown-align-left" id="endDateFilter" ng-controller="DatePickerController">
             <input type="text" class="form-control"
+                   required
                    name="endDateFilter" id="endDateFilterInput"
                    uib-datepicker-popup is-open="isDatePickerOpen"
-                   datepicker-options="$ctrl.endDateOptions"
                    ng-model="$ctrl.filter.endDate"
+                   datepicker-append-to-body="true"
+                   date-between-min-max
+                   min-date="$ctrl.filter.beginDate"
                    ng-change="$ctrl.onFilterChange()">
 
             <span class="input-group-btn">

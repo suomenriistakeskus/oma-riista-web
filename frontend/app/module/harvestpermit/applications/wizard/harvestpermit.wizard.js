@@ -55,6 +55,10 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                     return 'nestremoval';
                 case 'LAW_SECTION_TEN':
                     return 'lawsectionten';
+                case 'EUROPEAN_BEAVER':
+                    return 'europeanbeaver';
+                case 'PARTRIDGE':
+                    return 'partridge';
                 case 'WEAPON_TRANSPORTATION':
                     return 'weapontransportation';
                 case 'DISABILITY':
@@ -100,6 +104,8 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                 case 'nestremoval':
                     return NestRemovalPermitApplication.getFullDetails({id: applicationId}).$promise;
                 case 'lawsectionten':
+                case 'europeanbeaver':
+                case 'partridge':
                     return LawSectionTenPermitApplication.getFullDetails({id: applicationId}).$promise;
                 case 'weapontransportation':
                     return WeaponTransportationPermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -288,6 +294,10 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                         return GameSpeciesCodes.EUROPEAN_BEAVER;
                     case 'LAW_SECTION_TEN':
                         return 'section10';
+                    case 'EUROPEAN_BEAVER':
+                        return GameSpeciesCodes.EUROPEAN_BEAVER;
+                    case 'PARTRIDGE':
+                        return GameSpeciesCodes.PARTRIDGE;
                     case 'WEAPON_TRANSPORTATION':
                         return 'weapon_transportation';
                     case 'DISABILITY':
@@ -320,6 +330,8 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                     case 'LARGE_CARNIVORE_WOLF':
                     case 'MAMMAL':
                     case 'NEST_REMOVAL':
+                    case 'EUROPEAN_BEAVER':
+                    case 'PARTRIDGE':
                         return 'elainlajikuvat';
                     case 'DOG_UNLEASH':
                     case 'DOG_DISTURBANCE':
@@ -337,24 +349,6 @@ angular.module('app.harvestpermit.application.wizard', ['app.metadata'])
                 }
             }
 
-        }
-    })
-    .component('applicationTypeLargeCarnivoreLynx', {
-        templateUrl: 'harvestpermit/applications/wizard/application-type-lynx.html',
-        bindings: {
-            type: '<',
-            onSelectType: '&'
-        },
-        controllerAs: '$ctrl',
-        controller: function (ActiveRoleService, isProductionEnvironment) {
-            var $ctrl = this;
-
-            $ctrl.$onInit = function () {
-                var isModerator = ActiveRoleService.isModerator();
-                $ctrl.isActive = function () {
-                    return isModerator || $ctrl.type.active || !isProductionEnvironment;
-                };
-            };
         }
     })
     .controller('HarvestPermitWizardTypeController', function ($state, $window, HarvestPermitApplications,

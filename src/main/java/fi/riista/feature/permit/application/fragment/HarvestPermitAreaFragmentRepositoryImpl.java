@@ -20,20 +20,52 @@ import java.util.Map;
 @Repository
 public class HarvestPermitAreaFragmentRepositoryImpl implements HarvestPermitAreaFragmentRepository {
 
-    private static final String QUERY_FRAGMENTS = "" +
+    private static final String QUERY_FRAGMENTS_STRICT_BY_LAND_AREA = "" +
+            "WITH total_water AS (" +
+            "      SELECT SUM(st_area(v.geom)) AS area_size" +
+            "      FROM vesialue AS v" +
+            "      JOIN zone AS z ON st_intersects(z.geom, v.geom)" +
+            "      WHERE z.zone_id = :zoneId" +
+            " ), fragments AS (" +
+            "      SELECT" +
+            "   polygons.geom AS geom," +
+            "   ST_Area(polygons.geom) AS area_size," +
+            "   ST_Geohash(ST_Transform(ST_PointOnSurface(polygons.geom), 4326), 8) AS hash" +
+            "      FROM (" +
+            "         SELECT (ST_Dump(zone.geom)).geom AS geom" +
+            "         FROM zone" +
+            "         WHERE zone.zone_id = :zoneId" +
+            "      ) polygons, total_water" +
+            "      WHERE (ST_Area(polygons.geom) - total_water.area_size) <= :maxFragmentSize" +
+            "  ), water AS (" +
+            "      SELECT f.hash, ST_Intersection(va.geom, f.geom) AS geom" +
+            "      FROM fragments f JOIN vesialue va ON ST_Intersects(va.geom, f.geom)" +
+            "  ), water_area AS (" +
+            "      SELECT water.hash, SUM(ST_Area(water.geom)) AS area_size" +
+            "      FROM water" +
+            "      GROUP BY water.hash" +
+            "  )" +
+            "  SELECT" +
+            "     fragments.hash                             AS hash," +
+            "     fragments.area_size                        AS area_size," +
+            "     fragments.geom                             AS geom," +
+            "     fragments.area_size - COALESCE(water_area.area_size,0) AS land_area_size" +
+            "  FROM fragments" +
+            "  LEFT JOIN water_area ON (water_area.hash = fragments.hash)" +
+            "  WHERE " +
+            "    fragments.area_size - COALESCE(water_area.area_size, 0) BETWEEN :minFragmentSize AND :maxFragmentSize";
+
+    private static final String QUERY_FRAGMENTS_BY_HASHES =
+            QUERY_FRAGMENTS_STRICT_BY_LAND_AREA +
+                    " AND ST_Geohash(ST_Transform(ST_PointOnSurface(fragments.geom), 4326), 8) IN (:hashes) ";
+
+    private static final String QUERY_FRAGMENTS_WITH_LOCATION = "" +
             " SELECT" +
             "   polygons.geom AS geom," +
             "   ST_Area(polygons.geom) AS area_size," +
             "   ST_Geohash(ST_Transform(ST_PointOnSurface(polygons.geom), 4326), 8) AS hash" +
             " FROM (SELECT (ST_Dump(zone.geom)).geom AS geom FROM zone WHERE zone.zone_id = :zoneId) polygons" +
-            " WHERE ST_Area(polygons.geom) BETWEEN :minFragmentSize AND :maxFragmentSize";
-
-    private static final String QUERY_FRAGMENTS_BY_HASHES =
-            QUERY_FRAGMENTS +
-                    " AND ST_Geohash(ST_Transform(ST_PointOnSurface(polygons.geom), 4326), 8) IN (:hashes) ";
-
-    private static final String QUERY_FRAGMENTS_WITH_LOCATION = QUERY_FRAGMENTS +
-            " AND ST_Contains(polygons.geom, ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), " +
+            " WHERE ST_Contains(polygons.geom, ST_Transform(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326), " +
             "3067))";
 
     private static MapSqlParameterSource toJdbcParams(final HarvestPermitAreaFragmentQueryParams queryParams,
@@ -61,14 +93,14 @@ public class HarvestPermitAreaFragmentRepositoryImpl implements HarvestPermitAre
     private NamedParameterJdbcOperations jdbcOperations;
 
     @Autowired
-    public void setDataSource(DataSource dataSource) {
+    public void setDataSource(final DataSource dataSource) {
         this.jdbcOperations = new NamedParameterJdbcTemplate(dataSource);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<HarvestPermitAreaFragmentSizeDTO> getFragmentSize(final HarvestPermitAreaFragmentQueryParams params) {
-        final String query = params.hasLocation() ? QUERY_FRAGMENTS_WITH_LOCATION : QUERY_FRAGMENTS;
+        final String query = params.hasLocation() ? QUERY_FRAGMENTS_WITH_LOCATION : QUERY_FRAGMENTS_STRICT_BY_LAND_AREA;
         return queryFragmentSize(query, params, null);
     }
 
@@ -133,7 +165,7 @@ public class HarvestPermitAreaFragmentRepositoryImpl implements HarvestPermitAre
             final HarvestPermitAreaFragmentQueryParams params) {
 
         final String sql = "WITH fragments AS (" +
-                (params.hasLocation() ? QUERY_FRAGMENTS_WITH_LOCATION : QUERY_FRAGMENTS) +
+                (params.hasLocation() ? QUERY_FRAGMENTS_WITH_LOCATION : QUERY_FRAGMENTS_STRICT_BY_LAND_AREA) +
                 // 1. Break fragment geometry in smaller parts for intersection calculation
                 "), spliced_fragments AS (" +
                 "         SELECT hash AS hash, " +
@@ -146,12 +178,24 @@ public class HarvestPermitAreaFragmentRepositoryImpl implements HarvestPermitAre
                 "           ST_Intersection(pa.geom, f.geom) AS geom" +
                 "    FROM spliced_fragments f JOIN palstaalue pa" +
                 "    ON (pa.geom && f.geom AND ST_Intersects(pa.geom,f.geom))" +
-                // 3. Calculate total area size group by MML kiinteistö grouping by fragment hash and palstatunnus
+                // 3. Calculate water area size by palsta
+                "), palsta_water_area AS (" +
+                "   SELECT pa.hash AS hash," +
+                "          pa.tunnus AS tunnus," +
+                "          ST_Intersection(pa.geom, wa.geom) AS geom" +
+                "   FROM palsta_area pa JOIN vesialue wa" +
+                "   ON (pa.geom && wa.geom AND ST_Intersects(ST_CollectionExtract(pa.geom, 3),wa.geom))" +
+                // 4. Calculate total area size group by MML kiinteistö grouping by fragment hash and palstatunnus
                 "), property_size AS (" +
-                "    SELECT pa.hash, pa.tunnus, SUM(ST_Area(pa.geom)) AS area_size" +
+                "    SELECT pa.hash," +
+                "           pa.tunnus," +
+                "           SUM(ST_Area(pa.geom)) AS area_size," +
+                "           SUM(ST_Area(pwa.geom)) AS water_area_size" +
                 "    FROM palsta_area pa" +
+                "    LEFT JOIN palsta_water_area pwa" +
+                "    ON pa.hash = pwa.hash AND pa.tunnus = pwa.tunnus" +
                 "    GROUP BY pa.hash, pa.tunnus" +
-                // 4. Calculate count of intersecting valtionmaa geometries grouped by MML kiinteistö
+                // 5. Calculate count of intersecting valtionmaa geometries grouped by MML kiinteistö
                 "), property_metsahallitus AS (" +
                 "    SELECT pa.hash, pa.tunnus, COUNT(valtionmaa.gid) AS amount" +
                 "    FROM palsta_area pa JOIN valtionmaa " +
@@ -163,6 +207,7 @@ public class HarvestPermitAreaFragmentRepositoryImpl implements HarvestPermitAre
                 "  ps.tunnus AS property_identifier," +
                 "  kn.nimi AS property_name," +
                 "  ps.area_size AS property_area_size," +
+                "  ps.water_area_size AS property_water_area_size," +
                 "  COALESCE(pm.amount, 0) > 0 AS metsahallitus" +
                 " FROM property_size ps" +
                 " LEFT JOIN property_metsahallitus pm ON (ps.hash = pm.hash AND ps.tunnus = pm.tunnus)" +
@@ -176,6 +221,7 @@ public class HarvestPermitAreaFragmentRepositoryImpl implements HarvestPermitAre
                         rs.getLong("property_identifier"),
                         rs.getString("property_name"),
                         rs.getDouble("property_area_size"),
+                        rs.getDouble("property_water_area_size"),
                         rs.getBoolean("metsahallitus")));
 
         return rows.stream().collect(Collect.nullSafeGroupingBy(HarvestPermitAreaFragmentPropertyDTO::getHash));

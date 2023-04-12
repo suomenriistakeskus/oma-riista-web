@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mooselike.partners', ['app.metadat
                 templateUrl: 'harvestpermit/applications/mooselike/partners/partners.html',
                 controller: 'MooselikePermitWizardPartnersController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     partners: function (MooselikePermitApplicationAreaPartners, applicationId) {
                         return MooselikePermitApplicationAreaPartners.query({

@@ -155,7 +155,7 @@
                 $ctrl.isBatchApproveButtonDisabled = $ctrl.approvableStatistics.length === 0;
 
                 $ctrl.isExportSubsidyAllocationButtonVisible =
-                    ($ctrl.year > 2017 && $ctrl.year <= 2020) && $ctrl.activeState === RhyAnnualStatisticsState.APPROVED;
+                    ($ctrl.year > 2017 && $ctrl.year <= 2022) && $ctrl.activeState === RhyAnnualStatisticsState.APPROVED;
 
                 // TODO Switch to outcommented logic.
                 $ctrl.isExportSubsidyAllocationButtonDisabled = $ctrl.unsentStatistics.length > 0;

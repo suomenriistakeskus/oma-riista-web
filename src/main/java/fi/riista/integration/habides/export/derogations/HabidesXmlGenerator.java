@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.usage.PermitUsage;
 import fi.riista.feature.organization.rhy.MergedRhyMapping;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.PermitTypeCode;
@@ -11,6 +12,7 @@ import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReason;
 import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethod;
 import fi.riista.util.F;
+import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -287,24 +289,51 @@ public final class HabidesXmlGenerator {
                 .withLang("en")
                 .withUserIdentity("FIMMM");
 
+        int counter = 1;
+
         for (final HarvestPermitSpeciesAmount amount : amounts) {
             final Long permitId = amount.getHarvestPermit().getId();
             final Long decisionId = amount.getHarvestPermit().getPermitDecision().getId();
             final Long applicationId = amount.getHarvestPermit().getPermitDecision().getApplication().getId();
 
             final HabidesDerogationEntityDTO actuallyTaken = new HabidesDerogationEntityDTO();
-            final HabidesNestRemovalAmount nestEggConstructionAmount =
-                    nestEggConstructionAmounts.getOrDefault(permitId, new HabidesNestRemovalAmount(null, null, null));
-            final HabidesPermitUsage permitUsage =
-                    permitUsages.getOrDefault(permitId, new HabidesPermitUsage(null, null));
 
-            final Float harvestAmount = Optional.ofNullable(harvestAmounts.get(permitId)).map(Integer::floatValue).orElse(null);
-            final Float usageSpecimenAmount = Optional.ofNullable(permitUsage.getSpecimenAmount()).map(Integer::floatValue).orElse(null);
-            actuallyTaken.setIndividuals(Optional.ofNullable(harvestAmount).orElse(usageSpecimenAmount));
+            final Float harvestAmount = F.mapNullable(harvestAmounts.get(permitId), Integer::floatValue);
+            final Float usageSpecimenAmount = Optional.ofNullable(permitUsages.get(permitId))
+                    .map(HabidesPermitUsage::getSpecimenAmount)
+                    .map(Integer::floatValue)
+                    .orElse(null);
+            final Float individuals = Optional.ofNullable(harvestAmount).orElse(usageSpecimenAmount);
+            if (amount.getSpecimenAmount() != null && individuals == null) {
+                actuallyTaken.setIndividuals(0.f);
+            } else {
+                actuallyTaken.setIndividuals(individuals);
+            }
 
-            actuallyTaken.setEggs(Optional.ofNullable(nestEggConstructionAmount.getEggAmount()).orElseGet(permitUsage::getEggAmount));
-            actuallyTaken.setNests(nestEggConstructionAmount.getNestAmount());
-            actuallyTaken.setBreeding(nestEggConstructionAmount.getConstructionAmount());
+            final HabidesNestRemovalAmount nestEggConstructionAmount = nestEggConstructionAmounts.get(permitId);
+            final Integer usageEggAmount = F.mapNullable(permitUsages.get(permitId), HabidesPermitUsage::getEggAmount);
+            final Integer eggs = Optional.ofNullable(nestEggConstructionAmount)
+                    .map(HabidesNestRemovalAmount::getEggAmount)
+                    .orElse(usageEggAmount);
+            if (amount.getEggAmount() != null && eggs == null) {
+                actuallyTaken.setEggs(0);
+            } else {
+                actuallyTaken.setEggs(eggs);
+            }
+
+            final Integer nests = F.mapNullable(nestEggConstructionAmount, HabidesNestRemovalAmount::getNestAmount);
+            if (amount.getNestAmount() != null && nests == null) {
+                actuallyTaken.setNests(0);
+            } else {
+                actuallyTaken.setNests(nests);
+            }
+
+            final Integer constructions = F.mapNullable(nestEggConstructionAmount, HabidesNestRemovalAmount::getConstructionAmount);
+            if (amount.getConstructionAmount() != null && constructions == null) {
+                actuallyTaken.setBreeding(0);
+            } else {
+                actuallyTaken.setBreeding(constructions);
+            }
 
             final String location = locations.get(applicationId);
             final List<PermitDecisionForbiddenMethod> methodList =
@@ -320,7 +349,8 @@ public final class HabidesXmlGenerator {
                             methodList,
                             location,
                             nutsAreas,
-                            authorities));
+                            authorities,
+                            counter++));
         }
 
         return derogations;
@@ -335,7 +365,8 @@ public final class HabidesXmlGenerator {
             final List<PermitDecisionForbiddenMethod> methods,
             final String location,
             final Map<String, String> nutsAreas,
-            final Map<Long, String> authorities) {
+            final Map<Long, String> authorities,
+            final int counter) {
 
         final DERO_Derogation derogation = f.createDERO_Derogation();
 
@@ -344,7 +375,8 @@ public final class HabidesXmlGenerator {
         final Riistanhoitoyhdistys rhy = permit.getRhy();
         final String authorityName = authorities.get(rhy.getRiistakeskuksenAlue().getId());
         final boolean isBirdPermitSpecies = GameSpecies.isBirdPermitSpecies(species.getOfficialCode());
-        final String reference = isBirdPermitSpecies ? "FIMMM-B-1-" : "FIMMM-H-1-";
+        final String counterStr = StringUtils.leftPad(Integer.toString(counter), 3, '0');
+        final String reference = (isBirdPermitSpecies ? "FIMMM-B-" : "FIMMM-H-") + counterStr + "-";
         final DERO_DirectiveType directive = isBirdPermitSpecies ? DERO_DirectiveType.HTTP_ROD_EIONET_EUROPA_EU_OBLIGATIONS_276 :
                 DERO_DirectiveType.HTTP_ROD_EIONET_EUROPA_EU_OBLIGATIONS_268;
         final String rhyOfficialCode = MergedRhyMapping.translateIfMerged(rhy.getOfficialCode());
@@ -403,14 +435,17 @@ public final class HabidesXmlGenerator {
             final PermitDecision decision,
             final List<PermitDecisionForbiddenMethod> methods,
             final int speciesCode) {
-        DERO_DerogationJustificationsType justifications = f.createDERO_DerogationJustificationsType()
-                .withDerogationJustification(DerogationJustificationsType.REPRODUCTIVE_SEASON.label);
+        final DERO_DerogationJustificationsType justifications = f.createDERO_DerogationJustificationsType();
 
-        final boolean isForbiddenMethodJustification = methods.stream()
-                .filter(method -> isForbiddenMethodJustification(method, speciesCode)).findAny().isPresent();
+        if (GameSpecies.isBirdPermitSpecies(speciesCode)) {
+            justifications.withDerogationJustification(DerogationJustificationsType.REPRODUCTIVE_SEASON.label);
 
-        if (decision.isLegalSection32() || isForbiddenMethodJustification) {
-            justifications.withDerogationJustification(DerogationJustificationsType.TRANSPORT_OR_FORBIDDEN_METHOD.label);
+            final boolean isForbiddenMethodJustification = methods.stream()
+                    .filter(method -> isForbiddenMethodJustification(method, speciesCode)).findAny().isPresent();
+
+            if (decision.isLegalSection32() || isForbiddenMethodJustification) {
+                justifications.withDerogationJustification(DerogationJustificationsType.TRANSPORT_OR_FORBIDDEN_METHOD.label);
+            }
         }
 
         return justifications;

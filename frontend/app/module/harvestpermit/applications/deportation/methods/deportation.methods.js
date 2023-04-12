@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.deportation.methods', ['app.metada
                 templateUrl: 'harvestpermit/applications/deportation/methods/methods.html',
                 controller: 'DerogationPermitWizardMethodsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     forbiddenMethods: function (DeportationPermitApplication, applicationId) {
                         return DeportationPermitApplication.getCurrentDeviationJustification({id: applicationId}).$promise;

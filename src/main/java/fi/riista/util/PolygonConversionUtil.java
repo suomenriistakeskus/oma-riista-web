@@ -4,6 +4,7 @@ import org.geojson.GeoJsonObject;
 import org.geojson.Geometry;
 import org.geojson.GeometryCollection;
 import org.geojson.LngLatAlt;
+import org.geojson.MultiPoint;
 import org.geojson.MultiPolygon;
 import org.geojson.Point;
 import org.geojson.Polygon;
@@ -67,6 +68,8 @@ public class PolygonConversionUtil {
             return javaMultiPolygonToGeoJson(org.locationtech.jts.geom.MultiPolygon.class.cast(geometry));
         } else if (geometry instanceof org.locationtech.jts.geom.Polygon) {
             return javaPolygonToGeoJson(org.locationtech.jts.geom.Polygon.class.cast(geometry));
+        } else if (geometry instanceof org.locationtech.jts.geom.MultiPoint) {
+            return javaMultiPointToGeoJson(org.locationtech.jts.geom.MultiPoint.class.cast(geometry));
         } else if (geometry instanceof org.locationtech.jts.geom.GeometryCollection) {
             return javaGeometryCollectionToGeoJson(org.locationtech.jts.geom.GeometryCollection.class.cast(geometry));
         } else if (geometry instanceof org.locationtech.jts.geom.Point) {
@@ -206,6 +209,25 @@ public class PolygonConversionUtil {
         }
 
         return geometryCollection;
+    }
+
+    // Java: MultiPoint
+    private static MultiPoint javaMultiPointToGeoJson(final org.locationtech.jts.geom.MultiPoint geometry) {
+        final MultiPoint multiPoint = new MultiPoint();
+
+        for (int i = 0; i < geometry.getNumGeometries(); i++) {
+            final org.locationtech.jts.geom.Geometry subGeometry = geometry.getGeometryN(i);
+
+            if (subGeometry instanceof org.locationtech.jts.geom.Point) {
+                final LngLatAlt point = Arrays.stream(subGeometry.getCoordinates())
+                        .map(c -> new LngLatAlt(c.getOrdinate(Coordinate.X), c.getOrdinate(Coordinate.Y)))
+                        .findFirst().orElse(null);
+
+                multiPoint.add(point);
+            }
+        }
+
+        return multiPoint;
     }
 
     private PolygonConversionUtil() {

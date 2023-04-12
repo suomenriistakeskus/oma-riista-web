@@ -132,7 +132,7 @@ public class PermitDecisionFeature {
         final List<String> allowedTypeCodes = asList(FORBIDDEN_METHODS, FOWL_AND_UNPROTECTED_BIRD, MAMMAL_DAMAGE_BASED);
         checkState(allowedTypeCodes.contains(decision.getPermitTypeCode()));
 
-        if (forbiddenMethods){
+        if (forbiddenMethods) {
             decision.setPermitTypeCode(FORBIDDEN_METHODS);
         } else {
             final HarvestPermitApplication application = decision.getApplication();
@@ -144,6 +144,14 @@ public class PermitDecisionFeature {
         decision.getCompleteStatus().setPayment(false);
 
         generateAndUpdateDecisionText(decision);
+    }
+
+    @Transactional
+    public void updateAutomaticDeliveryDeduction(final long id, final boolean enabled) {
+        final PermitDecision decision = requireEntityService.requirePermitDecision(id, EntityPermission.UPDATE);
+        decision.assertEditableBy(activeUserService.requireActiveUser());
+
+        decision.setAutomaticDeliveryDeduction(enabled);
     }
 
     private void generateAndUpdateDecisionText(final PermitDecision decision) {

@@ -66,6 +66,10 @@ import org.joda.time.DateTime;
  *         &lt;element name="eventResult" type="{http://riista.fi/integration/srva/rvr}srvaResultEnum" minOccurs="0"/&gt;
  *         &lt;element name="personCount" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
  *         &lt;element name="timeSpent" type="{http://www.w3.org/2001/XMLSchema}int" minOccurs="0"/&gt;
+ *         &lt;element name="deportationOrderNumber" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="eventTypeDetail" type="{http://riista.fi/integration/srva/rvr}srvaEventTypeDetailsEnum" minOccurs="0"/&gt;
+ *         &lt;element name="otherEventTypeDetailDescription" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="eventResultDetail" type="{http://riista.fi/integration/srva/rvr}srvaEventResultDetailsEnum" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -95,7 +99,11 @@ import org.joda.time.DateTime;
     "description",
     "eventResult",
     "personCount",
-    "timeSpent"
+    "timeSpent",
+    "deportationOrderNumber",
+    "eventTypeDetail",
+    "otherEventTypeDetailDescription",
+    "eventResultDetail"
 })
 public class RVR_SrvaEvent {
 
@@ -136,6 +144,12 @@ public class RVR_SrvaEvent {
     protected RVR_SrvaResultEnum eventResult;
     protected Integer personCount;
     protected Integer timeSpent;
+    protected String deportationOrderNumber;
+    @XmlSchemaType(name = "token")
+    protected RVR_SrvaEventTypeDetailsEnum eventTypeDetail;
+    protected String otherEventTypeDetailDescription;
+    @XmlSchemaType(name = "token")
+    protected RVR_SrvaEventResultDetailsEnum eventResultDetail;
 
     /**
      * Gets the value of the id property.
@@ -591,6 +605,102 @@ public class RVR_SrvaEvent {
      */
     public void setTimeSpent(Integer value) {
         this.timeSpent = value;
+    }
+
+    /**
+     * Gets the value of the deportationOrderNumber property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getDeportationOrderNumber() {
+        return deportationOrderNumber;
+    }
+
+    /**
+     * Sets the value of the deportationOrderNumber property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setDeportationOrderNumber(String value) {
+        this.deportationOrderNumber = value;
+    }
+
+    /**
+     * Gets the value of the eventTypeDetail property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link RVR_SrvaEventTypeDetailsEnum }
+     *     
+     */
+    public RVR_SrvaEventTypeDetailsEnum getEventTypeDetail() {
+        return eventTypeDetail;
+    }
+
+    /**
+     * Sets the value of the eventTypeDetail property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link RVR_SrvaEventTypeDetailsEnum }
+     *     
+     */
+    public void setEventTypeDetail(RVR_SrvaEventTypeDetailsEnum value) {
+        this.eventTypeDetail = value;
+    }
+
+    /**
+     * Gets the value of the otherEventTypeDetailDescription property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getOtherEventTypeDetailDescription() {
+        return otherEventTypeDetailDescription;
+    }
+
+    /**
+     * Sets the value of the otherEventTypeDetailDescription property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setOtherEventTypeDetailDescription(String value) {
+        this.otherEventTypeDetailDescription = value;
+    }
+
+    /**
+     * Gets the value of the eventResultDetail property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link RVR_SrvaEventResultDetailsEnum }
+     *     
+     */
+    public RVR_SrvaEventResultDetailsEnum getEventResultDetail() {
+        return eventResultDetail;
+    }
+
+    /**
+     * Sets the value of the eventResultDetail property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link RVR_SrvaEventResultDetailsEnum }
+     *     
+     */
+    public void setEventResultDetail(RVR_SrvaEventResultDetailsEnum value) {
+        this.eventResultDetail = value;
     }
 
 

@@ -75,9 +75,9 @@ public class HarvestFeature_MooseDataCardTest extends HarvestFeatureTestBase
         withMooseHuntingGroupFixture(f -> {
             f.group.setFromMooseDataCard(true);
 
-            final LocalDate today = today();
-            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, today);
-            final GroupHuntingDay huntingDay2 = model().newGroupHuntingDay(f.group, today.minusDays(1));
+            final LocalDate huntingDate = new LocalDate(2022, 8, 2);
+            final GroupHuntingDay huntingDay = model().newGroupHuntingDay(f.group, huntingDate);
+            final GroupHuntingDay huntingDay2 = model().newGroupHuntingDay(f.group, huntingDate.minusDays(1));
 
             final Person originalAuthor = f.clubContact;
             final Person newAuthor = f.groupMember;

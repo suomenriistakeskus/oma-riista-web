@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.dogunleash.summary', ['app.metadat
                 templateUrl: 'harvestpermit/applications/dogunleash/summary/summary.html',
                 controller: 'DogUnleashSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, DogUnleashApplication) {
                         return DogUnleashApplication.getFullDetails({id: applicationId}).$promise;
@@ -139,7 +140,7 @@ angular.module('app.harvestpermit.application.dogunleash.summary', ['app.metadat
         }
 
         function confirmSend() {
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
                 'harvestpermit.wizard.summary.sendConfirmation.title',
                 'harvestpermit.wizard.summary.sendConfirmation.body');
         }

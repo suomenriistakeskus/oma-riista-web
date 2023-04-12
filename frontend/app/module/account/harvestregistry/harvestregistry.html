@@ -1,16 +1,25 @@
 <div class="harvestregistry-container">
     <div class="row">
 
+        <div class="col-md-9 col-md-push-3">
 
-        <div class="col-xs-3">
+            <div class="alert alert-info">
+                <span class="fa fa-info-circle"></span>
+                <div class="alert-title" translate="harvestRegistry.infoTitle"></div>
+                <div class="alert-content">
+                    <p translate="harvestRegistry.infoText"></p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-md-pull-9">
             <form name="accountHarvestRegistryForm">
                 <div class="form-group" show-errors>
                     <div class="row">
 
-                        <label class="control-label col-xs-5 form-control-static" for="beginDate"
+                        <label class="control-label col-xs-12 col-sm-5 form-control-static" for="beginDate"
                                translate="global.beginDate"></label>
 
-                        <div class="input-group r-dropdown-align-right col-xs-7"
+                        <div class="input-group r-dropdown-align-right col-xs-12 col-sm-7"
                              ng-controller="DatePickerController">
 
                             <input type="text" name="beginDate"
@@ -40,10 +49,10 @@
                 </div>
                 <div class="form-group" show-errors>
                     <div class="row">
-                        <label class="control-label col-xs-5 form-control-static" for="endDate"
+                        <label class="control-label col-xs-12 col-sm-5 form-control-static" for="endDate"
                                translate="global.endDate"></label>
 
-                        <div class="input-group r-dropdown-align-right col-xs-7"
+                        <div class="input-group r-dropdown-align-right col-xs-12 col-sm-7"
                              ng-controller="DatePickerController">
 
                             <input type="text" name="endDate"
@@ -73,34 +82,37 @@
                 </div>
                 <hr class="invisible">
                 <div class="form-group">
-
                     <div class="btn-group btn-group-justified">
-                        <div class="row">
-                            <label class="btn col-xs-10 col-xs-offset-1"
-                                   ng-class="{'btn-default': !$ctrl.allSpecies, 'btn-primary': $ctrl.allSpecies}"
-                                   ng-model="$ctrl.allSpecies"
-                                   ng-change="$ctrl.filtersChanged(accountHarvestRegistryForm)"
-                                   uib-btn-radio="true">
-                                <span translate="harvestRegistry.allSpecies"></span>
-                            </label>
+                        <div class="row species-select-button">
+                            <div class="col-xs-12">
+                                <label class="btn btn-block"
+                                       ng-class="{'btn-default': !$ctrl.allSpecies, 'btn-primary': $ctrl.allSpecies}"
+                                       ng-model="$ctrl.allSpecies"
+                                       ng-change="$ctrl.filtersChanged(accountHarvestRegistryForm)"
+                                       uib-btn-radio="true">
+                                    <span translate="harvestRegistry.allSpecies"></span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="row">
-                            <label class="btn col-xs-10 col-xs-offset-1"
-                                   ng-class="{'btn-default': $ctrl.allSpecies, 'btn-primary': !$ctrl.allSpecies}"
-                                   ng-model="$ctrl.allSpecies"
-                                   ng-change="$ctrl.filtersChanged(accountHarvestRegistryForm)"
-                                   uib-btn-radio="false">
-                                <span translate="harvestRegistry.selectSpecies"></span>
-                            </label>
+                        <div class="row species-select-button">
+                            <div class="col-xs-12">
+                                <label class="btn btn-block"
+                                       ng-class="{'btn-default': $ctrl.allSpecies, 'btn-primary': !$ctrl.allSpecies}"
+                                       ng-model="$ctrl.allSpecies"
+                                       ng-change="$ctrl.filtersChanged(accountHarvestRegistryForm)"
+                                       uib-btn-radio="false">
+                                    <span translate="harvestRegistry.selectSpecies"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </form>
-            <div ng-if="!$ctrl.allSpecies" class="row">
+            <div ng-if="!$ctrl.allSpecies">
                 <form name="addSpeciesForm">
-                    <div class="row">
-                        <div class=" col-xs-10 col-xs-offset-1">
-                            <div class="form-group">
+                    <div class="form-group">
+                        <div class="row">
+                            <div class=" col-xs-12 xs-clear-horizontal-margin">
                                 <select class="form-control"
                                         name="selectedSpeciesCode"
                                         id="selectedSpeciesCode"
@@ -126,7 +138,7 @@
                 </div>
                 <div class="row">
                     <div ng-if="$ctrl.selectedSpecies.length > 0"
-                         class="col-xs-10 col-xs-offset-1">
+                         class="col-xs-12">
                         <label class="btn btn-block btn-primary" ng-click="$ctrl.clearSpecies()">
                             <span translate="harvestRegistry.deselectAllSpecies"></span>
                         </label>
@@ -134,15 +146,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xs-9">
-
-            <div class="alert alert-info">
-                <span class="fa fa-info-circle"></span>
-                <div class="alert-content">
-                    <p translate="harvestRegistry.infoText"></p>
-                </div>
-            </div>
-
+        <div class="col-xs-12 col-md-offset-3 col-md-9">
             <slice-pager slice="$ctrl.slice" load-page="$ctrl.searchPage(page)"></slice-pager>
             <div ng-if="$ctrl.slice" ng-repeat="item in $ctrl.slice.content track by item.id">
                 <account-harvest-registry-item item="item"></account-harvest-registry-item>

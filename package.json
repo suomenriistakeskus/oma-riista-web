@@ -10,8 +10,11 @@
     "type": "git",
     "url": "https://github.com/suomenriistakeskus/oma-riista-web.git"
   },
+  "engines": {
+    "node": "11.15.0"
+  },
   "dependencies": {
-    "angular": "1.7.9",
+    "angular": "1.8.2",
     "angular-block-ui": "0.2.0",
     "angular-bootstrap-show-errors": "2.3.0",
     "angular-cache": "4.6.0",
@@ -29,10 +32,10 @@
     "angular-resource": "1.7.8",
     "angular-sanitize": "1.7.8",
     "angular-simple-logger": "0.1.7",
-    "angular-translate": "2.18.1",
-    "angular-translate-handler-log": "2.18.1",
-    "angular-translate-loader-static-files": "2.18.1",
-    "angular-translate-storage-local": "2.18.1",
+    "angular-translate": "2.19.0",
+    "angular-translate-handler-log": "2.19.0",
+    "angular-translate-loader-static-files": "2.19.0",
+    "angular-translate-storage-local": "2.19.0",
     "angular-ui-bootstrap": "2.5.0",
     "angular-ui-mask": "1.5.1",
     "angular-ui-router": "0.4.2",

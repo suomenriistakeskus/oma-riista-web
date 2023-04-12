@@ -1,5 +1,7 @@
 package fi.riista.feature.harvestpermit.report.paper;
 
+import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.permit.application.DeliveryAddress;
 import fi.riista.feature.permit.decision.PermitDecision;
@@ -19,13 +21,28 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 public class PermitHarvestReportModel {
-    public static PermitHarvestReportModel create(final PermitDecision permitDecision,
-                                                  final List<PermitDecisionSpeciesAmount> speciesAmountList) {
+    public static PermitHarvestReportModel createFromDecision(final PermitDecision permitDecision,
+                                                              final List<PermitDecisionSpeciesAmount> speciesAmountList) {
         final List<String> recipientAddress = buildRecipientAddressLines(permitDecision);
         final List<SpeciesAndPermitNumber> speciesList = buildSpeciesList(permitDecision, speciesAmountList);
 
         return new PermitHarvestReportModel(speciesList, recipientAddress,
                 permitDecision.getLocale(), permitDecision.getPermitTypeCode());
+    }
+
+    public static PermitHarvestReportModel createFromPermit(final HarvestPermit permit,
+                                                            final List<HarvestPermitSpeciesAmount> speciesAmountList) {
+        final PermitDecision decision = permit.getPermitDecision();
+        final List<String> recipientAddress = buildRecipientAddressLines(decision);
+
+        final List<SpeciesAndPermitNumber> speciesList = speciesAmountList.stream()
+                .filter(spa -> spa.getSpecimenAmount() > 0)
+                .map(spa -> new SpeciesAndPermitNumber(
+                        spa.getGameSpecies().getOfficialCode(), permit.getPermitNumber(), permit.getPermitYear()))
+                .sorted(comparing(SpeciesAndPermitNumber::getGameSpeciesCode))
+                .collect(toList());
+
+        return new PermitHarvestReportModel(speciesList, recipientAddress, decision.getLocale(), permit.getPermitTypeCode());
     }
 
     private static List<SpeciesAndPermitNumber> buildSpeciesList(

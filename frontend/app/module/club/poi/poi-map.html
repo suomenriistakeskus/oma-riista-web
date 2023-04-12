@@ -1,0 +1,16 @@
+<leaflet class="r-cursor-arrow"
+         id="clubPoiMap"
+         defaults="$ctrl.mapDefaults"
+         layers="$ctrl.mapDefaults.mmlLayers"
+         controls="$ctrl.mapDefaults.controls"
+         lf-center="$ctrl.mapState.center"
+         bounds="$ctrl.mapState.viewBounds"
+         event-broadcast="$ctrl.mapEvents"
+         leaflet-vector-layer="$ctrl.vectorLayer"
+         r-geolocation-listener="$ctrl.clickLocation"
+         r-geolocation-editable="$ctrl.editable"
+         r-viewport-height
+         geojson="$ctrl.geojson"
+         width="100%">
+    <marker-cluster id="clubPoiMarkers" leaflet-markers="$ctrl.markers"></marker-cluster>
+</leaflet>

@@ -35,9 +35,12 @@ public class AccountTransferBatch extends LifecycleEntity<Long> {
     @Column(unique = true)
     private String filename;
 
-    // May be null but must be unique
-    @Column(unique = true)
+    // May be null but must be unique when combined with fileNumber
+    @Column
     private LocalDate filenameDate;
+
+    @Column
+    private Integer fileNumber;
 
     // For Hibernate
     AccountTransferBatch() {
@@ -47,9 +50,18 @@ public class AccountTransferBatch extends LifecycleEntity<Long> {
                                 @Nullable final String filename,
                                 @Nullable final LocalDate filenameDate) {
 
+        this(statementDate, filename, filenameDate, 0);
+    }
+
+    public AccountTransferBatch(@Nonnull final LocalDate statementDate,
+                                @Nullable final String filename,
+                                @Nullable final LocalDate filenameDate,
+                                @Nonnull final Integer fileNumber) {
+
         this.statementDate = requireNonNull(statementDate);
         this.filename = filename;
         this.filenameDate = filenameDate;
+        this.fileNumber = requireNonNull(fileNumber);
     }
 
     // Accessors -->
@@ -90,5 +102,13 @@ public class AccountTransferBatch extends LifecycleEntity<Long> {
 
     public void setStatementDate(final LocalDate statementDate) {
         this.statementDate = statementDate;
+    }
+
+    public Integer getFileNumber() {
+        return fileNumber;
+    }
+
+    public void setFileNumber(final Integer fileNumber) {
+        this.fileNumber = fileNumber;
     }
 }

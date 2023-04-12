@@ -16,7 +16,14 @@
                                            download-pdf="$ctrl.downloadPdf()">
             </decisision-revision-selection>
         </div>
-        <div class="col-xs-5 text-right" ng-switch="::$ctrl.permits.length">
+        <div class="col-xs-2 text-right">
+            <button class="btn btn-default"
+                    ng-if="::$ctrl.isAnnualPermit"
+                    ng-click="$ctrl.openRenewalDialog()">
+                <span translate="decision.annualRenewal.createForNextYear"></span>
+            </button>
+        </div>
+        <div class="col-xs-3 text-right" ng-switch="::$ctrl.permits.length">
             <div ng-switch-when="0"></div>
             <div ng-switch-when="1">
                 <button class="btn btn-default"
@@ -30,7 +37,7 @@
                     <span translate="decision.revision.permitMenu"></span>
                     <span class="caret"></span>
                     <ul class="dropdown-menu " uib-dropdown-menu>
-                        <li ng-repeat="p in $ctrl.permits | orderBy:'permitNumber':($ctrl.reversePermits) track by p.id">
+                        <li ng-repeat="p in $ctrl.permits | orderBy:'permitNumber':($ctrl.isAnnualPermit) track by p.id">
                             <a ng-click="$ctrl.moveToPermit(p.id)">
                                 <span ng-bind="::p.permitNumber"></span>
                                 <span class="fa fa-fw fa-chevron-right"></span>
@@ -236,6 +243,54 @@
                     <td ng-bind="r.name"></td>
                     <td ng-bind="r.email"></td>
                     <td ng-bind="r.sentDate | date:'d.M.yyyy HH:mm'"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div ng-if="$ctrl.otherReceivers.length > 0">
+        <hr>
+        <div class="row">
+            <div class="col-xs-6">
+                <h4 translate="decision.revision.recipientsInformationRequest"></h4>
+            </div>
+
+            <div class="col-xs-6 text-right">
+                <button class="btn btn-primary"
+                        ng-if="$ctrl.hasInformationRequestLinkHandlingPermission()"
+                        ng-click="$ctrl.openInformationRequestLinkSendingModal()">
+                    <span translate="decision.revision.sendApplicationAndDecisionToInformationRequester"></span>
+                    <span class="fa fa-fw fa-chevron-right"></span>
+                </button>
+            </div>
+        </div>
+
+
+        <div class="table-responsive">
+            <table class="table table-condensed">
+                <thead>
+                <tr>
+                    <th class="col-xs-2" translate="decision.revision.linkType"></th>
+                    <th class="col-xs-2" translate="decision.revision.recipientName"></th>
+                    <th class="col-xs-2" translate="decision.revision.recipientEmail"></th>
+                    <th class="col-xs-2" translate="decision.revision.linkOpenedCount"></th>
+                    <th class="col-xs-4" colspan="2" translate="decision.revision.recipientSent"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="r in $ctrl.requestLinks track by r.id">
+                    <td translate="decision.revision.{{r.linkType}}"></td>
+                    <td ng-bind="r.recipientName"></td>
+                    <td ng-bind="r.recipientEmail"></td>
+                    <td ng-bind="r.linkOpenedCount"></td>
+                    <td ng-bind="r.creationTime | date:'d.M.yyyy HH:mm'"></td>
+                    <td class="text-right">
+                        <button class="btn btn-danger btn-small"
+                                ng-if="$ctrl.hasInformationRequestLinkHandlingPermission()"
+                                ng-click="$ctrl.openInformationRequestLinkDeactivationModal(r)">
+                            <span translate="decision.revision.deactivateInformationRequestLink"></span>
+                        </button>
+                    </td>
                 </tr>
                 </tbody>
             </table>

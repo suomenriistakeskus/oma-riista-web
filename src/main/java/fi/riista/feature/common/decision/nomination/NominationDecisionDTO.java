@@ -45,9 +45,12 @@ public class NominationDecisionDTO extends BaseEntityDTO<Long> {
     private NominationDecisionCompleteStatus completeStatus;
     private LocalDate proposalDate;
 
+    private boolean canDelete;
+
     public static NominationDecisionDTO create(final @Nonnull NominationDecision decision,
                                                final @Nonnull NominationDecisionDocument document,
-                                               final boolean userIsHandler) {
+                                               final boolean userIsHandler,
+                                               final boolean canDelete) {
         final NominationDecisionDTO dto = new NominationDecisionDTO();
 
 
@@ -80,6 +83,8 @@ public class NominationDecisionDTO extends BaseEntityDTO<Long> {
 
         dto.setNominationDecisionNumber(decision.createDocumentNumber());
         dto.setProposalDate(decision.getProposalDate());
+
+        dto.setCanDelete(canDelete);
 
         return dto;
     }
@@ -246,5 +251,13 @@ public class NominationDecisionDTO extends BaseEntityDTO<Long> {
 
     public void setProposalDate(final LocalDate proposalDate) {
         this.proposalDate = proposalDate;
+    }
+
+    public boolean isCanDelete() {
+        return canDelete;
+    }
+
+    public void setCanDelete(final boolean canDelete) {
+        this.canDelete = canDelete;
     }
 }

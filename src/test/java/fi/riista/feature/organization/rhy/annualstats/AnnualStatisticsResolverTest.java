@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.calendar.CalendarEvent;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEvent;
 import fi.riista.feature.shootingtest.ShootingTestEvent;
 import fi.riista.feature.shootingtest.ShootingTestParticipant;
 import fi.riista.test.EmbeddedDatabaseTest;
@@ -16,6 +17,10 @@ import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKO
 import static fi.riista.feature.organization.calendar.CalendarEventType.METSASTAJATUTKINTO;
 import static fi.riista.feature.organization.calendar.CalendarEventType.METSASTYKSENVALVOJA_KOULUTUS;
 import static fi.riista.feature.organization.calendar.CalendarEventType.VUOSIKOKOUS;
+import static fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventStatus.ACCEPTED;
+import static fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventStatus.ACCEPTED_SUBSIDIZED;
+import static fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventStatus.PROPOSED;
+import static fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventStatus.REJECTED;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.UNQUALIFIED;
 import static fi.riista.feature.shootingtest.ShootingTestType.MOOSE;
 import static org.junit.Assert.assertEquals;
@@ -175,4 +180,67 @@ public class AnnualStatisticsResolverTest extends EmbeddedDatabaseTest {
             assertEquals(1, getResolver(rhy, eventDate.getYear()).getShootingTestQualifiedCount(MOOSE));
         });
     }
+
+    @Test
+    public void testGetHuntingControlEventCount_subsidizable() {
+        withRhy(rhy -> {
+            createHuntingControlEvents(rhy);
+            assertEquals(2, getResolver(rhy, DateUtil.currentYear()).getHuntingControlEventCount());
+        });
+    }
+
+    @Test
+    public void testGetNonSubsidizableHuntingControlEventCount() {
+        withRhy(rhy -> {
+            createHuntingControlEvents(rhy);
+            assertEquals(1, getResolver(rhy, DateUtil.currentYear()).getNonSubsidizableHuntingControlEventCount());
+        });
+    }
+
+    @Test
+    public void testGetHuntingControlCustomersCount() {
+        withRhy(rhy -> {
+            createHuntingControlEvents(rhy);
+            assertEquals(9, getResolver(rhy, DateUtil.currentYear()).getHuntingControlCustomersCount());
+        });
+    }
+
+    @Test
+    public void testGetHuntingControlProofOrdersCount() {
+        withRhy(rhy -> {
+            createHuntingControlEvents(rhy);
+            assertEquals(12, getResolver(rhy, DateUtil.currentYear()).getHuntingControlProofOrdersCount());
+        });
+    }
+
+    private void createHuntingControlEvents(final Riistanhoitoyhdistys rhy) {
+        // Subsidizable events
+        final HuntingControlEvent newSubsidizableEvent = model().newHuntingControlEvent(rhy);
+        newSubsidizableEvent.setStatus(ACCEPTED_SUBSIDIZED);
+        newSubsidizableEvent.setCustomers(1);
+        newSubsidizableEvent.setProofOrders(2);
+        final HuntingControlEvent oldSubsidizableEvent = model().newHuntingControlEvent(rhy);
+        oldSubsidizableEvent.setStatus(null);
+        oldSubsidizableEvent.setCustomers(3);
+        oldSubsidizableEvent.setProofOrders(4);
+
+        // Non subsidizable event
+        final HuntingControlEvent nonSubsidizableEvent = model().newHuntingControlEvent(rhy);
+        nonSubsidizableEvent.setStatus(ACCEPTED);
+        nonSubsidizableEvent.setCustomers(5);
+        nonSubsidizableEvent.setProofOrders(6);
+
+        // Not to be shown in statistics
+        final HuntingControlEvent rejectedEvent = model().newHuntingControlEvent(rhy);
+        rejectedEvent.setStatus(REJECTED);
+        rejectedEvent.setCustomers(7);
+        rejectedEvent.setProofOrders(8);
+        final HuntingControlEvent proposedEvent = model().newHuntingControlEvent(rhy);
+        proposedEvent.setStatus(PROPOSED);
+        proposedEvent.setCustomers(9);
+        proposedEvent.setProofOrders(10);
+
+        persistInNewTransaction();
+    }
+
 }

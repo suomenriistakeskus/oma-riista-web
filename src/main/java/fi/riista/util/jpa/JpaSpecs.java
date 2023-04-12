@@ -358,6 +358,31 @@ public final class JpaSpecs {
     }
 
     @Nonnull
+    public static <T extends LifecycleEntity<? extends Serializable>> Specification<T> modificationTimeAfter(
+            @Nonnull final DateTime dateTime) {
+        Objects.requireNonNull(dateTime);
+
+        return (root, query, cb) -> {
+            final Path<DateTime> dateField =
+                    root.get(LifecycleEntity_.lifecycleFields).get(EntityLifecycleFields_.modificationTime);
+            return cb.greaterThan(dateField, dateTime);
+        };
+    }
+
+    @Nonnull
+    public static <T extends LifecycleEntity<? extends Serializable>> Specification<T> modificationTimeEqual(
+            @Nonnull final DateTime dateTime) {
+        Objects.requireNonNull(dateTime);
+
+        return (root, query, cb) -> {
+            final Path<DateTime> dateField =
+                    root.get(LifecycleEntity_.lifecycleFields).get(EntityLifecycleFields_.modificationTime);
+            return cb.equal(dateField, dateTime);
+        };
+    }
+
+
+    @Nonnull
     public static <T extends LifecycleEntity<? extends Serializable>> Specification<T> dateFieldBefore(
             @Nonnull final SingularAttribute<? super T, DateTime> dateAttribute, @Nonnull final DateTime before) {
 

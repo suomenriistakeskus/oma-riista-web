@@ -1,5 +1,9 @@
 package fi.riista.feature.announcement.notification;
 
+import static com.google.firebase.messaging.MessagingErrorCode.INVALID_ARGUMENT;
+import static com.google.firebase.messaging.MessagingErrorCode.UNREGISTERED;
+import static java.util.Collections.singletonMap;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -13,28 +17,23 @@ import com.google.firebase.messaging.MulticastMessage;
 import com.google.firebase.messaging.Notification;
 import com.google.firebase.messaging.SendResponse;
 import fi.riista.config.jackson.CustomJacksonObjectMapper;
+import fi.riista.feature.announcement.show.MobileAnnouncementDTO;
 import fi.riista.feature.push.MobileClientDevice;
 import fi.riista.feature.push.MobileClientDeviceRepository;
 import fi.riista.integration.fcm.FcmMulticastSender;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import javax.annotation.Resource;
 import org.joda.time.Days;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-
-import static com.google.firebase.messaging.MessagingErrorCode.INVALID_ARGUMENT;
-import static com.google.firebase.messaging.MessagingErrorCode.UNREGISTERED;
-import static java.util.Collections.singletonMap;
-import static org.apache.commons.lang.StringUtils.abbreviate;
 
 @Service
 public class AnnouncementPushNotificationService {
@@ -44,8 +43,8 @@ public class AnnouncementPushNotificationService {
 
     // Maximum notification message payload size is 2kB
     // Maximum data payload size is 4kB
-    private static final int MAX_BODY_LENGTH = 500;
-    private static final int MAX_SUBJECT_LENGTH = 200;
+    static final int MAX_BODY_LENGTH = 500;
+    static final int MAX_SUBJECT_LENGTH = 200;
     private static int NOTIFICATION_TTL_DAYS = 7;
 
     private static final String KEY_DATA_ANNOUNCEMENT = "announcement";
@@ -82,14 +81,15 @@ public class AnnouncementPushNotificationService {
                 .putHeader(APNS_EXPIRATION_HEADER, apnsExpiration)
                 .build();
 
+        final MobileAnnouncementDTO announcementAbbreviated = dto.getAnnouncement().copyAbbreviated(MAX_SUBJECT_LENGTH, MAX_BODY_LENGTH);
         final Notification notification = Notification.builder()
-                .setTitle(abbreviate(dto.getAnnouncement().getSubject(), MAX_SUBJECT_LENGTH))
-                .setBody(abbreviate(dto.getAnnouncement().getBody(), MAX_BODY_LENGTH))
+                .setTitle(announcementAbbreviated.getSubject())
+                .setBody(announcementAbbreviated.getBody())
                 .build();
 
         final String dataPayload;
         try {
-            dataPayload = objectMapper.writeValueAsString(dto.getAnnouncement());
+            dataPayload = objectMapper.writeValueAsString(announcementAbbreviated);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

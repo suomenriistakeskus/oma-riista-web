@@ -2,6 +2,7 @@ package fi.riista.feature.huntingclub.members;
 
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.HuntingClubSubtype;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.members.rhy.RhyClubOccupationDTO;
 import fi.riista.feature.organization.occupation.Occupation;
@@ -9,14 +10,22 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.F;
 import org.junit.Test;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.function.Function;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
+@RunWith(Theories.class)
 public class HuntingClubContactFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
@@ -99,6 +108,41 @@ public class HuntingClubContactFeatureTest extends EmbeddedDatabaseTest {
                 assertOccupations(huntingClubContactFeature.listRhyContacts(rhy2.getId()), contact2);
             });
         }));
+    }
+
+    @Theory
+    public void testListRhyHuntingLeaders_clubSubtype(final HuntingClubSubtype subtype) {
+        withRhy(rhy -> {
+            final int huntingYear = 2021;
+
+            final HarvestPermit permit = model().newHarvestPermit(rhy);
+            final HuntingClub club = model().newHuntingClub(rhy);
+            club.setSubtype(subtype);
+            final Occupation leader = createGroupAndLeader(huntingYear, permit, club);
+
+            onSavedAndAuthenticated(createNewModerator(), () -> {
+                final List<RhyClubOccupationDTO> occupations = huntingClubContactFeature.listRhyHuntingLeaders(rhy.getId(), huntingYear);
+                assertThat(occupations, hasSize(1));
+                assertOccupations(occupations, leader);
+                assertThat(occupations.get(0).getClubSubtype(), is(equalTo(club.getSubtype())));
+            });
+        });
+    }
+
+    @Theory
+    public void testListRhyContacts_clubSubtype(final HuntingClubSubtype subtype) {
+        withRhy(rhy -> {
+            final HuntingClub club = model().newHuntingClub(rhy);
+            club.setSubtype(subtype);
+            final Occupation contact = model().newHuntingClubMember(club, OccupationType.SEURAN_YHDYSHENKILO);
+
+            onSavedAndAuthenticated(createNewModerator(), () -> {
+                final List<RhyClubOccupationDTO> occupations = huntingClubContactFeature.listRhyContacts(rhy.getId());
+                assertThat(occupations, hasSize(1));
+                assertOccupations(occupations, contact);
+                assertThat(occupations.get(0).getClubSubtype(), is(equalTo(club.getSubtype())));
+            });
+        });
     }
 
     private Occupation createGroupAndLeader(int huntingYear, HarvestPermit permit, HuntingClub club) {

@@ -2,25 +2,15 @@
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
     <suppress>
         <notes><![CDATA[
-        newrelic-agent false positives due to the instrumentation package (see issue #781)
-        ]]></notes>
-        <filePath regex="true">.*newrelic.jar[\\\/]instrumentation.*\.jar</filePath>
-        <cpe regex="true">.*</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
    h2 is only used in testing, cannot update to 1.4.200 since it does not work with the newest version of h2gis
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/com\.h2database/h2@.*$</packageUrl>
+        <vulnerabilityName>CVE-2021-23463</vulnerabilityName>
         <vulnerabilityName>CVE-2018-14335</vulnerabilityName>
         <vulnerabilityName>CVE-2018-10054</vulnerabilityName>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   The artifact mentioned in the CVE is not in project dependency tree
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/com\.papertrailapp/logback\-syslog4j@.*$</packageUrl>
-        <cve>CVE-2017-5929</cve>
+        <vulnerabilityName>CVE-2021-42392</vulnerabilityName>
+        <vulnerabilityName>CVE-2022-23221</vulnerabilityName>
+        <vulnerabilityName>CWE-94: Improper Control of Generation of Code ('Code Injection')</vulnerabilityName>
     </suppress>
     <suppress>
         <notes><![CDATA[
@@ -29,11 +19,33 @@
         <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-messaging@.*$</packageUrl>
         <cve>CVE-2020-5421</cve>
     </suppress>
+    <suppress until="2022-10-01Z">
+        <notes><![CDATA[
+   Check status of https://github.com/spring-projects/spring-security/issues/8980
+   See also discussion: https://github.com/jeremylong/DependencyCheck/issues/4528
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-security\-crypto@.*$</packageUrl>
+        <cve>CVE-2020-5408</cve>
+    </suppress>
     <suppress>
         <notes><![CDATA[
    google-http-client-apache-v2-1.39.2 falsely flagged for CVE-2020-13956
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/com\.google\.http\-client/google\-http\-client\-apache\-v2@.*$</packageUrl>
         <cve>CVE-2020-13956</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        False positive, does not affect version 3.x.x
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework\.batch/spring\-batch\-core@.*$</packageUrl>
+        <cve>CVE-2020-5411</cve>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        False positive. See https://github.com/spring-projects/spring-framework/issues/24434#issuecomment-744519525
+        ]]></notes>
+        <packageUrl regex="true">^pkg:maven/org\.springframework/spring\-web@.*$</packageUrl>
+        <cve>CVE-2016-1000027</cve>
     </suppress>
 </suppressions>

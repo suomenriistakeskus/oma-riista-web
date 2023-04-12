@@ -2,15 +2,156 @@
 // -------------------------
 
 body > .wrapper > .main-content > .r-login-container {
+
   background: transparent;
-  max-width: 700px;
+  width: 80%;
+  max-width: 900px;
+  min-height: 0px;
   padding: 0;
-  margin: 0 auto;
+  margin: 0 auto 104px;
   border: 0;
-  color: @r-light;
+  color: white;
+
+  .r-login-title-row {
+    margin: 33px auto 33px auto;
+  }
+
+  .r-login-title-row-left {
+    height: 51px;
+    line-height: 51px;
+    margin: 0;
+
+    .r-login-logo {
+      margin-right: 19px;
+      display: inline-block;
+    }
+
+    .r-login-main-title {
+      overflow:visible;
+      font-family: @font-family-roboto-slab;
+      font-size: 18px;
+      letter-spacing: 0;
+      white-space: nowrap;
+      color: white;
+      display: inline-block;
+      margin-right: 14px;
+    }
+
+    .r-login-vertical-separator {
+      border-left: 1px solid white;
+      height: 25px;
+      margin-top: 13px;
+      display: inline;
+      margin-right: 14px;
+    }
+
+    .r-login-sub-title {
+      display: inline-block;
+      line-height: 22px;
+      vertical-align: middle;
+      overflow: visible;
+      font-family: @font-family-open-sans;
+      font-weight: bold;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      color: white;
+    }
+  }
+
+  .r-login-title-row-left > * {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .r-login-title-row-right {
+    line-height: 51px;
+    text-align: right;
+
+    .r-login-title-languages > * {
+      padding: 0;
+      display: inline;
+    }
+  }
+
+  .r-login-title-row-right > * {
+    padding-left: 0;
+    padding-right: 0;
+    overflow: visible;
+    font-family: @font-family-open-sans;
+    font-weight: bold;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    color: white;
+  }
+
+  @media(max-width: @screen-sm-max) {
+    .r-login-title-row-right {
+      line-height: 25px;
+      padding-right: 15px;
+
+      .r-login-title-languages > * {
+        margin-left: 10px;
+      }
+
+      .r-login-title-languages > *:first-child {
+        margin-left: 0;
+      }
+    }
+
+    .r-login-title-row-right > * {
+      text-align: right;
+    }
+  }
+
+  @media(max-width: @screen-xs-max) {
+    .r-login-title-row-left {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .r-login-title-row-left > * {
+      display: inline-block;
+    }
+
+    .r-login-title-row-right {
+      padding-right: 0;
+    }
+
+    .r-login-title-row-right > * {
+      text-align: center;
+    }
+  }
+
+  @media(min-width: @screen-md-min) {
+    .r-login-title-row-right {
+      line-height: 51px;
+      margin-right: 20px;
+
+      .r-login-title-languages > * {
+        margin-left: 10px;
+      }
+
+      .r-login-title-languages > *:first-child {
+        margin-left: 0;
+      }
+    }
+
+    .r-login-title-row-right > * {
+      text-align: right;
+      margin-left: 15px;
+      display: inline;
+    }
+
+    .r-login-title-row-right > *:first-child {
+      margin-left: 0;
+    }
+
+  }
 
   a {
-    color: @r-light;
+    color: white;
   }
 
   .growl-container a {
@@ -18,46 +159,40 @@ body > .wrapper > .main-content > .r-login-container {
     text-decoration: underline;
   }
 
-  .r-login-logo {
-    display: block;
-    width: 154px;
-    height: 138px;
-    margin: 20px auto 0;
-    background: transparent url('../images/oma-riista-logo-white.svg') no-repeat -18px top;
-    background-size: contain;
-    text-indent: -10000px;
+  .r-login-title-right {
+    float: right;
+    margin-right: 35px;
   }
 
-  .r-login-main-title {
-    display: block;
-    width: 100%;
-    margin-top: 1px;
-    overflow:visible;
-    font-family: @font-family-roboto-slab;
-    font-size: 48px;
-    line-height: 48px;
-    letter-spacing: -1px;
-    font-weight: 400;
-    font-style: normal;
-    text-shadow: 0 0 3px #000;
-    text-align: center;
-    white-space: nowrap;
-    color: #fff;
-  }
-
-  .r-login-sub-title {
-    display: block;
-    width: 100%;
+  .r-login-title-right > * {
+    display: inline-block;
     overflow: visible;
-    text-align: center;
-    margin: 15px auto 20px;
+    font-family: @font-family-open-sans;
     font-weight: bold;
-    font-size: 12px;
+    font-size: 11px;
+    line-height: 15px;
     text-transform: uppercase;
-    text-shadow: 0 0 3px #000;
-    letter-spacing: 1px;
+    letter-spacing: 0;
+    vertical-align: middle;
+    margin-left: 13px;
+    color: white;
   }
 
+  .r-login-faq {
+    margin-right: 29px;
+  }
+
+  .r-login-instructions {
+    margin-right: 30px;
+  }
+
+  .r-login-tab-container {
+    padding: 0 35px 0 35px;
+
+    .r-login-tab:hover {
+      opacity: 50%;
+    }
+  }
   .nav.nav-tabs {
     border: 0;
     margin-bottom: 1px;
@@ -71,18 +206,27 @@ body > .wrapper > .main-content > .r-login-container {
   .nav > li > a {
     margin-right: 5px;
     border: 0;
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: @r-green;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    color: white;
+  }
+  .nav > li > div {
+    margin-right: 5px;
+    border: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    position: relative;
+    display: block;
+    padding: 12px 17px;
+    cursor: auto;
+    color: white;
   }
   .nav > li:last-child > a {
     margin-right: 0;
   }
   .nav > li.active > a {
-    background-color: rgba(0, 0, 0, 0.6);
-  }
-  .nav > li > a:focus,
-  .nav > li > a:hover,
-  .nav > li.active > a:focus,
-  .nav > li.active > a:hover {
     background-color: rgba(0, 0, 0, 0.6);
   }
 
@@ -93,12 +237,39 @@ body > .wrapper > .main-content > .r-login-container {
     border: 0;
     border-top-right-radius: 0px;
     padding: 5px 15px 5px 15px;
-    margin-bottom: 15px;
-    input {
-      margin-bottom: 5px;
+    margin-bottom: 0px;
+    input[type=checkbox] {
+      margin-left: -18px;
+      transform: scale(1.5);
     }
     .form-group {
-      margin-bottom: 5px;
+      margin-bottom: 13px;
+    }
+    label {
+      margin-top: 16px;
+    }
+    .r-login-checkbox {
+      margin-top: 0px;
+    }
+    .r-login-fa-question {
+      color: @r-green;
+      font-weight: bold;
+      font-size: 22px;
+      vertical-align: middle;
+      background-color: white;
+      text-align: center;
+      clip-path: circle(45%);
+    }
+    .r-login-question-link {
+      vertical-align: middle;
+    }
+    .r-login-question-container {
+      padding-top: 0px;
+      padding-bottom: 0px;
+    }
+
+    .login-button:hover {
+      opacity: 50%;
     }
   }
 
@@ -130,14 +301,81 @@ body > .wrapper > .main-content > .r-login-container {
   }
 }
 
-body > .wrapper > .main-content > .r-twitter-feed-container {
+body > .wrapper > .main-content > .r-news-container {
   background-color: #fff;
+  opacity: 90%;
+  margin-top: 0;
   margin-bottom: 20px;
-  min-height: 0;
-  max-width: 700px;
+  width: 95%;
+  border-radius: 5px 5px 0 0;
+  border: none;
+  text-align: left;
+  padding: 40px;
+  font-family: @font-family-open-sans;
+  font-size: 12px;
+  line-height: 17px;
 
-  h3 {
-    margin-top: 0px;
-    margin-bottom: 0px;
+  h2 {
+    font-weight: bold;
+    font-size: 24px;
+    line-height: 28px;
+    color: #4a4a4a;
+    margin: 30px 0 20px;
+  }
+
+  hr {
+    border-top-color: #d4d4d4;
+  }
+
+  .r-news-item {
+    margin-bottom: 50px;
+    font-size: 14px;
+    line-height: 23px;
+
+    h3 {
+      font-family: "Open Sans", sans-serif;
+      font-size: 18px;
+      color: #444444;
+      line-height: 24px;
+      margin-top: 0;
+    }
+  }
+
+  .r-news-item-right {
+    padding-left: 40px;
+  }
+}
+
+@media(max-width: @screen-sm-max) {
+  body > .wrapper > .main-content > .r-login-container {
+    width: 100%;
+    margin-bottom: 20px;
+
+    .r-login-tab-container {
+      padding: 0 15px
+    }
+  }
+
+  body > .wrapper > .main-content > .r-news-container {
+    width: auto;
+    padding: 0 15px;
+
+    .r-news-item {
+      margin-bottom: 20px;
+    }
+
+    .r-news-item-right {
+      padding-left: 15px;
+    }
+  }
+}
+
+@media(max-width: @screen-xs-max) {
+  body > .wrapper > .main-content > .r-login-container > .r-login-tab-container {
+    padding: 0 5px
+  }
+
+  body > .wrapper > .main-content > .r-news-container {
+    padding: 0 5px;
   }
 }

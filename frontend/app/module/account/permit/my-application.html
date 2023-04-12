@@ -6,7 +6,7 @@
         </div>
 
         <div class="permit-header-content">
-            <p>
+            <p class="main-header">
                 <strong ng-if="::($ctrl.application.status == 'ACTIVE')"
                         ng-bind="::$ctrl.application.applicationNumber"></strong>
                 <span translate="harvestpermit.mine.applications.permitCategory.{{$ctrl.application.harvestPermitCategory}}"></span>
@@ -125,7 +125,7 @@
 
             <div class="btn-group"
                  ng-if="::($ctrl.application.status === 'ACTIVE')"
-                 uib-dropdown dropdown-append-to-body>
+                 uib-dropdown>
                 <button type="button" class="btn btn-default" uib-dropdown-toggle
                         ng-disabled="$ctrl.actionDisabled()">
                     <span translate="harvestpermit.mine.applications.download"></span>

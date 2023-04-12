@@ -4,316 +4,419 @@
     <h3 ng-if="$ctrl.event.id" class="modal-title" translate="rhy.huntingControlEvent.titleEdit"></h3>
 </div>
 
-<div class="modal-body">
+<div class="modal-body r-huntingcontrolevent">
 
-        <div class="form-horizontal">
+    <div class="form-horizontal">
 
-            <ng-form name="eventForm">
-                <div class="form-group row" show-errors>
-                    <label for="title" class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.title"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
+        <ng-form name="eventForm">
 
-                    <div class="col-xs-9">
-                        <input type="text" class="form-control"
-                               name="title" id="title"
-                               ng-model="$ctrl.event.title"
-                               required/>
-                    </div>
-                </div>
-
-                <div class="form-group row" show-errors>
-                    <label for="inspectorCount" class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.inspectorCount"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-2">
-                        <input type="number" class="form-control"
-                               name="inspectorCount" id="inspectorCount"
-                               number
-                               step="1"
-                               min="0"
-                               ng-model="$ctrl.event.inspectorCount"
-                               required/>
-                    </div>
-                </div>
-
-                <div class="form-group row" show-errors>
-                    <label for="cooperationType" class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.cooperation"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-9">
-                        <select class="form-control"
-                                name="cooperationType" id="cooperationType"
-                                ng-model="$ctrl.event.cooperationType"
-                                ng-options="('rhy.huntingControlEvent.cooperationType.'+o|translate) for o in $ctrl.cooperationTypes"
-                                required></select>
-                    </div>
-                </div>
-
-                <div class="form-group row" show-errors>
-                    <label for="wolfTerritory" class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.wolfTerritory"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-2">
-                        <select class="form-control"
-                                name="wolfTerritory" id="wolfTerritory"
-                                ng-model="$ctrl.event.wolfTerritory"
-                                ng-options="(o === true ? 'global.yes' : 'global.no'|translate) for o in $ctrl.wolfTerritory"
-                                required></select>
-                    </div>
-                </div>
-
-                <div class="form-group row" show-errors>
-                    <label class="control-label col-xs-3" for="inspectors">
-                        <span translate="rhy.huntingControlEvent.inspectors"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-9">
-                        <textarea class="form-control" name="inspectors" id="inspectors"
-                                  required
-                                  rows="3"
-                                  minlength="2"
-                                  maxlength="255"
-                                  ng-model="$ctrl.event.inspectors"></textarea>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.formLocation"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-9">
-                        <leaflet class="r-cursor-pointer"
-                                 id="map"
-                                 defaults="$ctrl.leaflet.mapDefaults"
-                                 layers="$ctrl.leaflet.mapDefaults.mmlLayers"
-                                 controls="$ctrl.leaflet.mapDefaults.controls"
-                                 bounds="$ctrl.leaflet.bounds"
-                                 geojson="$ctrl.leaflet.mapFeatures"
-                                 geojson-watch-options="$ctrl.leaflet.mapDefaults.geojsonWatchOptions"
-                                 r-geolocation-marker="$ctrl.event.geoLocation"
-                                 r-geolocation-marker-force-finland="true"
-                                 r-geolocation-editable="true"
-                                 height="400px">
-                        </leaflet>
-                        <div r-geolocation-input="$ctrl.event.geoLocation"></div>
-                        <div class="alert alert-danger"
-                             ng-if="!$ctrl.inRhyArea"
-                             translate="rhy.huntingControlEvent.notInRhyArea"></div>
-                    </div>
-                </div>
-
-                <div class="form-group row" show-errors>
-                    <label for="date" class="col-xs-3 control-label">
-                        <span translate="global.date"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-9">
-                        <div class="input-group" ng-controller="DatePickerController">
-                            <input type="text" class="form-control"
-                                   name="date" id="date"
-                                   ng-model="$ctrl.event.date"
-                                   required
-                                   uib-datepicker-popup is-open="isDatePickerOpen"/>
-
-                            <span class="input-group-btn">
-                                <button type="button" class="btn btn-default" tabindex="-1"
-                                        ng-click="toggleDatePopup($event)">
-                                    <span class="glyphicon glyphicon-calendar"></span>
-                                </button>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group row" ng-if="$ctrl.isDateTooFarInThePast()">
-                    <label class="col-xs-3 control-label">
-                    </label>
-                    <div name="pastAlert" id="pastAlert" class="col-xs-9">
-                        <div class="alert alert-danger" translate="rhy.huntingControlEvent.dateTooFarInThePast"></div>
-                    </div>
-                </div>
-
-                <div class="form-group row" ng-if="$ctrl.isDateInTheFuture()">
-                    <label class="col-xs-3 control-label">
-                    </label>
-                    <div name="futureAlert" id="futureAlert" class="col-xs-9">
-                        <div class="alert alert-danger" translate="rhy.huntingControlEvent.dateInTheFuture"></div>
-                    </div>
-                </div>
-
-                <div class="form-group row" show-errors>
-                    <label for="beginTime" class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.beginTime"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-2">
-                        <input type="text" class="form-control"
-                               name="beginTime" id="beginTime"
-                               finnish-time
-                               ng-model="$ctrl.event.beginTime"
-                               ng-change="$ctrl.onDurationChanged()"
-                               ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
-                               required/>
-                    </div>
-                </div>
-
-                <div class="form-group row" show-errors>
-                    <label for="endTime" class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.endTime"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-2">
-                        <input type="text" class="form-control"
-                               name="endTime" id="endTime"
-                               finnish-time
-                               ng-model="$ctrl.event.endTime"
-                               ng-change="$ctrl.onDurationChanged()"
-                               ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
-                               required/>
-                    </div>
-                </div>
-
-                <div class="form-group row" ng-if="!$ctrl.isBeginTimeBeforeEndTime()">
-                    <label class="col-xs-3 control-label"></label>
-                    <div name="endTimeAlert" id="endTimeAlert" class="col-xs-9">
-                        <div class="alert alert-danger" translate="rhy.huntingControlEvent.endTimeBeforeBeginTime"></div>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <label class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.duration"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div name="duration"
-                         id="duration"
-                         class="col-xs-2 r-huntingcontrolevent-computed-value"
-                         ng-bind="$ctrl.durationText">
-                    </div>
-                </div>
-
-                <div class="form-group row" show-errors>
-                    <label class="control-label col-xs-3" for="description">
-                        <span translate="rhy.huntingControlEvent.description"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-9">
-                        <textarea class="form-control" name="description" id="description"
-                                  required
-                                  rows="2"
-                                  minlength="5"
-                                  maxlength="255"
-                                  ng-model="$ctrl.event.description"></textarea>
-                    </div>
-                </div>
-
-                <div class="form-group row" show-errors>
-                    <label for="customers" class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.customers"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-2">
-                        <input type="number" class="form-control"
-                               name="customers" id="customers"
-                               number
-                               step="1"
-                               min="0"
-                               ng-model="$ctrl.event.customers"
-                               required/>
-                    </div>
-                </div>
-
-                <div class="form-group row" show-errors>
-                    <label for="proofOrders" class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.proofOrders"></span>
-                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
-                    </label>
-
-                    <div class="col-xs-2">
-                        <input type="number" class="form-control"
-                               name="proofOrders" id="proofOrders"
-                               number
-                               step="1"
-                               min="0"
-                               ng-model="$ctrl.event.proofOrders"
-                               required/>
-                    </div>
-                </div>
-
-                <div class="form-group row" ng-if="$ctrl.event.attachments.length > 0">
-                    <label class="col-xs-3 control-label">
-                        <span translate="rhy.huntingControlEvent.attachments"></span>
-                    </label>
-
-                    <div class="col-xs-9 table-responsive">
-                        <table class="col-xs-12 table table-striped table-condensed" id="attachments">
-                            <thead>
-                            <tr>
-                                <th translate="rhy.huntingControlEvent.filename"></th>
-                                <th></th>
-                            </tr>
-                            </thead>
-
-                            <tbody>
-                            <tr ng-repeat="attachment in $ctrl.event.attachments" track by attachment.id>
-                                <td>
-                                    <a ng-click="$ctrl.downloadAttachment(attachment.id)" ng-bind="attachment.fileName"></a>
-                                </td>
-                                <td class="text-right r-table-actions-cell">
-                                    <button type="button" ng-click="$ctrl.removeAttachment(attachment.id)" class="btn btn-link" ng-if="!event.lockedAsPastStatistics">
-                                        <span class="glyphicon glyphicon-remove" title="{{'event.button.remove' | translate}}"></span>
-                                    </button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-            </ng-form>
-
-            <div class="form-group row">
-                <label class="control-label col-xs-3">
-                    <span ng-if="!$ctrl.event.attachments || $ctrl.event.attachments.length === 0" translate="rhy.huntingControlEvent.attachments"></span>
-                </label>
+            <div class="form-group row" show-errors ng-if="!!$ctrl.event.title && !$ctrl.event.eventType">
+                <label for="title" class="col-xs-3 control-label" translate="rhy.huntingControlEvent.title"></label>
 
                 <div class="col-xs-9">
-                    <form method="post" enctype="multipart/form-data"
-                          class="dropzone"
-                          ng-dropzone
-                          dropzone="$ctrl.dropzone"
-                          dropzone-config="$ctrl.dropzoneConfig"
-                          event-handlers="$ctrl.dropzoneEventHandlers">
-                        <input type="hidden" spring-csrf-cookie/>
-
-                        <div class="dz-message" translate="rhy.huntingControlEvent.uploadAttachments"></div>
-                    </form>
+                    <input readonly type="text" class="form-control"
+                           name="title" id="title"
+                           ng-model="$ctrl.event.title"/>
                 </div>
             </div>
 
+            <div class="form-group row" show-errors>
+                <label for="cooperationType" class="col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.type">
+                </label>
+
+                <div class="col-xs-9">
+                    <select class="form-control"
+                            name="eventType" id="eventType"
+                            ng-model="$ctrl.event.eventType"
+                            ng-options="('rhy.huntingControlEvent.eventType.'+o|translate) for o in $ctrl.eventTypes"
+                            required></select>
+                </div>
+            </div>
+
+            <!--
+
+                    Date and duration
+
+            -->
+            <div class="form-group row" show-errors>
+                <label for="date" class="col-xs-3 control-label mandatory-field"
+                       translate="global.date"></span>
+                </label>
+
+                <div class="col-sm-3 col-xs-9">
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input type="text" class="form-control"
+                               name="date" id="date"
+                               ng-model="$ctrl.event.date"
+                               ng-change="$ctrl.dateChanged()"
+                               required
+                               uib-datepicker-popup is-open="isDatePickerOpen"/>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+
+                <label for="beginTime" class="col-sm-1 col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.beginTime">
+                </label>
+
+                <div class="col-sm-2 col-xs-9">
+                    <input type="text" class="form-control"
+                           name="beginTime" id="beginTime"
+                           finnish-time
+                           ng-model="$ctrl.event.beginTime"
+                           ng-change="$ctrl.onDurationChanged()"
+                           ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
+                           required/>
+                </div>
+
+                <label for="endTime" class="col-sm-1 col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.endTime">
+                </label>
+
+                <div class="col-sm-2 col-xs-9">
+                    <input type="text" class="form-control"
+                           name="endTime" id="endTime"
+                           finnish-time
+                           ng-model="$ctrl.event.endTime"
+                           ng-change="$ctrl.onDurationChanged()"
+                           ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
+                           required/>
+                </div>
+            </div>
+
+            <div class="form-group row" ng-if="$ctrl.isDateTooFarInThePast()">
+                <label class="col-xs-3 control-label"></label>
+                <div name="pastAlert" id="pastAlert" class="col-xs-9">
+                    <div class="alert alert-danger" translate="rhy.huntingControlEvent.dateTooFarInThePast"></div>
+                </div>
+            </div>
+
+            <div class="form-group row" ng-if="$ctrl.isDateInTheFuture()">
+                <label class="col-xs-3 control-label"></label>
+                <div name="futureAlert" id="futureAlert" class="col-xs-9">
+                    <div class="alert alert-danger" translate="rhy.huntingControlEvent.dateInTheFuture"></div>
+                </div>
+            </div>
+
+            <div class="form-group row" ng-if="!$ctrl.isBeginTimeBeforeEndTime()">
+                <label class="col-xs-3 control-label"></label>
+                <div name="endTimeAlert" id="endTimeAlert" class="col-xs-9">
+                    <div class="alert alert-danger" translate="rhy.huntingControlEvent.endTimeBeforeBeginTime"></div>
+                </div>
+            </div>
+
+            <div class="form-group row" ng-if="!$ctrl.allAvailableGameWardens.activeNomination">
+                <label class="col-xs-3 control-label"></label>
+                <div name="noNominationAlert" id="noNominationAlert" class="col-xs-9">
+                    <div class="alert alert-danger" translate="rhy.huntingControlEvent.noNomination"></div>
+                </div>
+            </div>
+
+            <div class="form-group row">
+                <label class="col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.duration">
+                </label>
+
+                <div name="duration"
+                     id="duration"
+                     class="col-xs-2 r-huntingcontrolevent-computed-value"
+                     ng-bind="$ctrl.durationText">
+                </div>
+            </div>
+
+            <!--
+
+                    inspectors / game wardens
+
+            -->
+            <div class="form-group row" show-errors>
+                <label for="inspectors" class="col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.inspectors">
+                </label>
+
+                <div class="col-xs-9">
+                    <select class="form-control"
+                            name="inspectors" id="inspectors"
+                            ng-model="$ctrl.gameWarden"
+                            ng-options="i as (i.firstName + ' ' + i.lastName) for i in $ctrl.availableGameWardens track by i.id"
+                            ng-change="$ctrl.selectGameWarden()"
+                            ng-disabled="!$ctrl.event.date">
+                        <option translate="{{$ctrl.selectGameWardenText()}}" disabled></option>
+                    </select>
+
+                    <span ng-repeat="gameWarden in $ctrl.event.inspectors | orderBy: '+lastName' track by gameWarden.id">
+                        <span class="r-badge-green">
+                            <span ng-bind="gameWarden.firstName"></span>
+                            <span ng-bind="gameWarden.lastName"></span>
+                            <span class="fa fa-times" ng-click="$ctrl.deselectGameWarden(gameWarden.id)"></span>
+                        </span>&nbsp;
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group row" ng-if="$ctrl.selfNotSelectedAsInspector()">
+                <label class="col-xs-3 control-label"></label>
+                <div name="selfNotSelectedAlert" id="selfNotSelectedAlert" class="col-xs-9">
+                    <div class="alert alert-warning" translate="rhy.huntingControlEvent.selfNotSelected"></div>
+                </div>
+            </div>
+
+            <!--
+
+                    inspector count
+
+            -->
+            <div class="form-group row"> <!--show-errors> -->
+                <label for="inspectorCount" class="col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.inspectorCount">
+                </label>
+
+                <div name="inspectorCount" id="inspectorCount"
+                     class="col-xs-2 r-huntingcontrolevent-computed-value"
+                     ng-bind="$ctrl.event.inspectorCount">
+                </div>
+            </div>
+
+            <!--
+
+                    co-operation
+
+            -->
+            <div class="form-group row" show-errors>
+                <label for="cooperationType" class="col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.cooperation">
+                </label>
+
+                <div class="col-xs-9">
+                    <select class="form-control"
+                            name="cooperationType" id="cooperationType"
+                            ng-model="$ctrl.cooperationType"
+                            ng-options="('rhy.huntingControlEvent.cooperationType.'+o|translate) for o in $ctrl.cooperationTypes track by o"
+                            ng-change="$ctrl.selectCooperation()">
+                        <option translate="global.button.select" disabled></option>
+                    </select>
+
+                    <span ng-repeat="coop in $ctrl.event.cooperationTypes | orderBy:'+' track by coop">
+                        <span class="r-badge-green">
+                            <span translate="rhy.huntingControlEvent.cooperationType.{{coop}}"></span>
+                            <span class="fa fa-times" ng-click="$ctrl.deselectCooperation(coop)"></span>
+                        </span>&nbsp;
+                    </span>
+                </div>
+            </div>
+
+            <!--
+
+                    Other participants
+
+            -->
+            <div class="form-group row" show-errors>
+                <label class="control-label col-xs-3" for="otherParticipants"
+                       translate="rhy.huntingControlEvent.otherParticipants">
+                </label>
+
+                <div class="col-xs-9">
+                    <textarea class="form-control" name="otherParticipants" id="otherParticipants"
+                              rows="3"
+                              minlength="2"
+                              maxlength="255"
+                              ng-model="$ctrl.event.otherParticipants"></textarea>
+                </div>
+            </div>
+
+            <!--
+
+                    Wolf territory
+
+            -->
+            <div class="form-group row" show-errors>
+                <label for="wolfTerritory" class="col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.wolfTerritory">
+                </label>
+
+                <div class="col-sm-2 col-xs-9">
+                    <select class="form-control"
+                            name="wolfTerritory" id="wolfTerritory"
+                            ng-model="$ctrl.event.wolfTerritory"
+                            ng-options="(o === true ? 'global.yes' : 'global.no'|translate) for o in $ctrl.wolfTerritory"
+                            required></select>
+                </div>
+            </div>
+
+            <!--
+
+                    Map
+
+            -->
+            <div class="form-group row">
+                <label class="col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.formLocation">
+                </label>
+
+                <div class="col-xs-9">
+                    <leaflet class="r-cursor-pointer"
+                             id="map"
+                             defaults="$ctrl.leaflet.mapDefaults"
+                             layers="$ctrl.leaflet.mapDefaults.mmlLayers"
+                             controls="$ctrl.leaflet.mapDefaults.controls"
+                             bounds="$ctrl.leaflet.bounds"
+                             geojson="$ctrl.leaflet.mapFeatures"
+                             geojson-watch-options="$ctrl.leaflet.mapDefaults.geojsonWatchOptions"
+                             r-geolocation-marker="$ctrl.event.geoLocation"
+                             r-geolocation-marker-force-finland="true"
+                             r-geolocation-editable="true"
+                             height="400px">
+                    </leaflet>
+                    <div r-geolocation-input="$ctrl.event.geoLocation"></div>
+                    <div class="alert alert-danger"
+                         ng-if="!$ctrl.inRhyArea"
+                         translate="rhy.huntingControlEvent.notInRhyArea"></div>
+                </div>
+            </div>
+
+            <div class="form-group row" show-errors>
+                <label class="control-label col-xs-3" for="locationDescription"
+                       translate="rhy.huntingControlEvent.locationDescription">
+                </label>
+
+                <div class="col-xs-9">
+                    <textarea class="form-control" name="locationDescription" id="locationDescription"
+                              rows="2"
+                              minlength="5"
+                              maxlength="255"
+                              ng-model="$ctrl.event.locationDescription"></textarea>
+                </div>
+            </div>
+
+            <div class="form-group row" show-errors>
+                <label class="control-label col-xs-3" for="description"
+                       translate="rhy.huntingControlEvent.description"
+                       ng-class="{'mandatory-field' : $ctrl.event.eventType === 'OTHER'}">
+                </label>
+
+                <div class="col-xs-9">
+                    <textarea class="form-control" name="description" id="description"
+                              rows="2"
+                              minlength="5"
+                              maxlength="255"
+                              ng-model="$ctrl.event.description"
+                              ng-required="$ctrl.event.eventType === 'OTHER'"
+                              ></textarea>
+                </div>
+            </div>
+
+            <div class="form-group row" show-errors>
+                <label for="customers" class="col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.customers">
+                </label>
+
+                <div class="col-sm-2 col-xs-9">
+                    <input type="number" class="form-control"
+                           name="customers" id="customers"
+                           number
+                           step="1"
+                           min="0"
+                           ng-model="$ctrl.event.customers"
+                           required/>
+                </div>
+            </div>
+
+            <div class="form-group row" show-errors>
+                <label for="proofOrders" class="col-xs-3 control-label mandatory-field"
+                       translate="rhy.huntingControlEvent.proofOrders">
+                </label>
+
+                <div class="col-sm-2 col-xs-9">
+                    <input type="number" class="form-control"
+                           name="proofOrders" id="proofOrders"
+                           number
+                           step="1"
+                           min="0"
+                           ng-model="$ctrl.event.proofOrders"
+                           required/>
+                </div>
+            </div>
+
+            <div class="form-group row" ng-if="$ctrl.event.attachments.length > 0">
+                <label class="col-xs-3 control-label">
+                    <span translate="rhy.huntingControlEvent.attachments"></span>
+                </label>
+
+                <div class="col-xs-9 table-responsive">
+                    <r-hunting-controller-event-attachments attachments="$ctrl.event.attachments"
+                                                            can-delete="true"
+                                                            on-delete="$ctrl.reloadAttachments()">
+                    </r-hunting-controller-event-attachments>
+                </div>
+            </div>
+
+            <!--
+
+                Change log
+
+            -->
+            <div class="form-group row" ng-if="$ctrl.event.id" show-errors>
+                <label class="col-xs-3 control-label" ng-class="{'mandatory-field': $ctrl.isReasonForChangeMandatory()}"
+                       translate="rhy.huntingControlEvent.reasonForChange">
+                </label>
+
+                <div class="col-xs-9">
+                    <textarea class="form-control" rows="2" ng-required="$ctrl.isReasonForChangeMandatory()"
+                              name="reasonForChange" id="reasonForChange"
+                              ng-model="$ctrl.event.reasonForChange">
+                    </textarea>
+                    <div class="help-block has-error"
+                         ng-messages="eventForm.reasonForChange.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+
+
+        </ng-form>
+
+        <div class="form-group row">
+            <label class="control-label col-xs-3">
+                <span ng-if="!$ctrl.event.attachments || $ctrl.event.attachments.length === 0"
+                      translate="rhy.huntingControlEvent.attachments"></span>
+            </label>
+
+            <!--
+                Class add-with-click is a workaround for showing text after inserted attachment(s)
+                AND opening dialog when clicked.
+
+                See also dropzoneConfig.clickable.
+            -->
+            <div class="col-xs-9">
+                <form method="post" enctype="multipart/form-data"
+                      class="dropzone add-with-click"
+                      ng-dropzone
+                      dropzone="$ctrl.dropzone"
+                      dropzone-config="$ctrl.dropzoneConfig"
+                      event-handlers="$ctrl.dropzoneEventHandlers">
+                    <input type="hidden" spring-csrf-cookie/>
+
+                    <div class="text-center add-with-click" translate="rhy.huntingControlEvent.uploadAttachments"></div>
+                </form>
+                <div ng-if="$ctrl.errors.text" class="alert alert-danger">
+                    {{ $ctrl.errors.text }}
+                </div>
+            </div>
         </div>
 
+    </div>
 </div>
 
 <div class="modal-footer">
     <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()" translate="global.button.cancel"></button>
-    <button type="button" class="btn btn-primary" ng-click="$ctrl.save()" ng-disabled="!eventForm.$valid || !$ctrl.isFormValid()" translate="global.button.save"></button>
+    <button type="button" class="btn btn-primary" ng-click="$ctrl.save()"
+            ng-disabled="!eventForm.$valid || !$ctrl.isFormValid()" translate="global.button.save"></button>
 </div>
 

@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.bird.applicant', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/bird/applicant/applicant.html',
                 controller: 'BirdPermitWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

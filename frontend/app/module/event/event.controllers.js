@@ -123,7 +123,8 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
         })
 
     .controller('EventFormController',
-        function ($scope, $uibModalInstance, Events, venues, eventTypes, orgId, event, Helpers, ActiveRoleService) {
+        function ($scope, $uibModalInstance, Events, venues, eventTypes, orgId, event, Helpers, ActiveRoleService,
+                  RhyAnnualStatisticsService) {
             $scope.venues = venues;
 
             var findVenue = function (venue) {
@@ -249,9 +250,33 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 return $scope.viewState.event.calendarEventType === 'METSASTAJAKURSSI';
             };
 
+            $scope.isShootingTraining = function () {
+                return $scope.viewState.event.calendarEventType === 'AMPUMAKOULUTUS';
+            };
+
             $scope.isInRowEditMode = function () {
                 return $scope.viewState.editedEvent !== null;
             };
+
+            $scope.getDuration = function (e) {
+                var duration = '0:00';
+                if (e.beginTime && e.endTime) {
+                    var begin = Helpers.toMoment(e.beginTime, 'HH:mm');
+                    var end = Helpers.toMoment(e.endTime, 'HH:mm');
+
+                    var d = moment.duration(end.diff(begin));
+                    if (d > 0) {
+                        duration = moment.utc(d.asMilliseconds()).format('HH:mm');
+                    }
+                }
+
+                return duration;
+            };
+
+            $scope.durationChanged = function () {
+                $scope.viewState.duration = $scope.getDuration($scope.viewState.event);
+            };
+            $scope.durationChanged();
 
             $scope.cancelEditEvent = function () {
                 $scope.viewState.editedEvent = null;
@@ -290,6 +315,11 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 return true;
             };
 
+            $scope.isAttemptsShown = function () {
+                var e = $scope.viewState.event;
+                return e && e.calendarEventType === 'METSASTAJATUTKINTO';
+            };
+
             $scope.onSelectionChange = function () {
                 $scope.viewState.event.publicVisibility = $scope.eventDefaultVisibility[$scope.viewState.event.calendarEventType];
             };
@@ -308,15 +338,7 @@ angular.module('app.event.controllers', ['ui.router', 'app.event.services'])
                 }
 
                 var e = $scope.viewState.event;
-
-                if (e.date) {
-                    var eventYear = Helpers.toMoment(e.date).year();
-                    if (eventYear < moment().subtract(15, 'days').year()) {
-                        return true;
-                    }
-                }
-
-                return false;
+                return e.date && RhyAnnualStatisticsService.hasDeadlinePassed(e.date);
             };
 
             $scope.isDateInvalid = function () {

@@ -96,7 +96,7 @@ function add_version_to_eb {
     local APP_VERSION="$1"
     local S3_BUCKET_KEY="${APP_NAME}/${APP_VERSION}"
     local VERSION_LABEL="app-${APP_VERSION}"
-    local DESCRIPTION="${CI_COMMIT_TITLE} - ${GITLAB_USER_LOGIN}"
+    local DESCRIPTION="${CI_COMMIT_TITLE:0:100} - ${GITLAB_USER_LOGIN}"
 
     [[ -z "$APP_VERSION" ]] && return $APP_VERSION_MISSING
 

@@ -94,6 +94,15 @@ public class MobileObservationFeature_DeerHuntingDayTest extends MobileObservati
                     .withMooselikeAmountFieldsAs(Required.YES)
                     .consumeBy(obsMeta -> {
 
+                        // Also latest metadata is required to exists, otherwise validation in observation feature will fail
+                        if (!version.isMostRecent()) {
+                            createObservationMetaF(fixture.species, ObservationSpecVersion.MOST_RECENT, DEER_HUNTING, NAKO)
+                                    .forMobile()
+                                    .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
+                                    .withMooselikeAmountFieldsAs(Required.YES)
+                                    .build();
+                        }
+
                         onSavedAndAuthenticated(createUser(randomGuy), () -> {
 
                             final MobileObservationDTO inputDto = obsMeta.dtoBuilder()
@@ -124,6 +133,15 @@ public class MobileObservationFeature_DeerHuntingDayTest extends MobileObservati
                 .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
                 .withMooselikeAmountFieldsAs(Required.YES)
                 .consumeBy(obsMeta -> {
+
+                    // Also latest metadata is required to exists, otherwise validation in observation feature will fail
+                    if (!version.isMostRecent()) {
+                        createObservationMetaF(fixture.species, ObservationSpecVersion.MOST_RECENT, DEER_HUNTING, NAKO)
+                                .forMobile()
+                                .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
+                                .withMooselikeAmountFieldsAs(Required.YES)
+                                .build();
+                    }
 
                     onSavedAndAuthenticated(createUser(author), () -> {
 
@@ -285,6 +303,20 @@ public class MobileObservationFeature_DeerHuntingDayTest extends MobileObservati
                     .withGroupHuntingDay(huntingDay)
                     .consumeBy((obsMeta, obsFixt) -> {
 
+                        // Also latest metadata is required to exists, otherwise validation in observation feature will fail
+                        if (!version.isMostRecent()) {
+                            createObservationMetaF(fixture.species, ObservationSpecVersion.MOST_RECENT, DEER_HUNTING, NAKO)
+                                    .forMobile()
+                                    .withDeerHuntingTypeFieldsAs(YES, VOLUNTARY)
+                                    .withMooselikeAmountFieldsAs(Required.YES)
+                                    .createObservationFixture()
+                                    .withGeoLocation(fixture.zoneCentroid)
+                                    .withDeerHuntingType(DOG_HUNTING)
+                                    .withAuthor(fixture.groupLeader)
+                                    .withGroupHuntingDay(huntingDay)
+                                    .build();
+                        }
+
                         onSavedAndAuthenticated(createUser(fixture.groupLeader), () -> {
 
                             MockTimeProvider.mockTime(DateUtil.now().getMillis() + observationAge);
@@ -337,6 +369,12 @@ public class MobileObservationFeature_DeerHuntingDayTest extends MobileObservati
                         createObservationMetaF(anotherSpecies, version, NORMAL, NAKO)
                                 .forMobile()
                                 .consumeBy(anotherObsMeta -> {
+
+                                    if (!version.isMostRecent()) {
+                                        createObservationMetaF(anotherSpecies, ObservationSpecVersion.MOST_RECENT, NORMAL, NAKO)
+                                            .forMobile()
+                                            .build();
+                                    }
 
                                     onSavedAndAuthenticated(createUser(author), () -> {
 

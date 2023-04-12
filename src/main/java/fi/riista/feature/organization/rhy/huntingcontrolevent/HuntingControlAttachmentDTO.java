@@ -9,6 +9,8 @@ public class HuntingControlAttachmentDTO {
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String fileName;
 
+    private boolean isImage;
+
     public HuntingControlAttachmentDTO() {}
 
     public static HuntingControlAttachmentDTO create(final HuntingControlAttachment attachment) {
@@ -16,6 +18,9 @@ public class HuntingControlAttachmentDTO {
 
         dto.setId(attachment.getId());
         dto.setFileName(attachment.getAttachmentMetadata().getOriginalFilename());
+
+        final String contentType = attachment.getAttachmentMetadata().getContentType().toLowerCase();
+        dto.setImage(contentType.startsWith("image") || contentType.startsWith("jpeg"));
 
         return dto;
     }
@@ -34,5 +39,13 @@ public class HuntingControlAttachmentDTO {
 
     public void setFileName(final String fileName) {
         this.fileName = fileName;
+    }
+
+    public boolean isImage() {
+        return isImage;
+    }
+
+    public void setImage(final boolean image) {
+        isImage = image;
     }
 }

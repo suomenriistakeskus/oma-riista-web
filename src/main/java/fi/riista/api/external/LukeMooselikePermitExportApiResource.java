@@ -43,6 +43,13 @@ public class LukeMooselikePermitExportApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
+    @RequestMapping(value = "/vhp/batchconfig", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public LED_Permits getWhiteTailedDeerHarvestsWithBatchSize(@RequestParam("huntingYear") final int huntingYear,
+                                                               @RequestParam("batchSize") final int batchSize) {
+        return deerFeature.exportDeer(huntingYear, batchSize);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/vhp/xml", method = RequestMethod.GET, produces = MediaType.APPLICATION_XML_VALUE)
     public String getWhiteTailedDeerHarvestsXml(@RequestParam("huntingYear") final int huntingYear) {
         return deerFeature.exportDeerXml(huntingYear);

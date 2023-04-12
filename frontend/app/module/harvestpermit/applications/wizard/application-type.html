@@ -3,18 +3,11 @@
          height="192"/>
 </div>
 
-<div class="col-md-6 col-xs-12" style="margin-bottom: 20px">
+<div class="col-md-6 col-xs-12" style="margin-bottom: 20px; white-space: pre-line">
     <p>
         <strong>{{'harvestpermit.mine.applications.permitCategory.' + $ctrl.type.category| translate}}</strong>
     </p>
-    <div ng-switch="$ctrl.type.begin != null && $ctrl.type.end != null">
-        <div ng-switch-when="true">
-            <span translate="harvestpermit.new.applicationPeriod"></span><br/>
-            <span>{{$ctrl.type.begin|date:'d.M.'}} - {{$ctrl.type.end|date:'d.M.yyyy'}}</span>
-            <span translate="global.timeOfDayAbbreviation"></span>
-            <span>{{$ctrl.type.end|date:'HH.mm'}}</span>
-        </div>
-        <hr ng-switch-when="false" class="invisible"/>
+    <div ng-bind="$ctrl.type.instructions | rI18nNameFilter">
     </div>
     <hr class="invisible"/>
     <button ng-if="$ctrl.isActive()"

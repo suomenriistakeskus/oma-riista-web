@@ -1,5 +1,7 @@
 package fi.riista.feature.account.mobile;
 
+import com.fasterxml.jackson.annotation.JsonSetter;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.Email;
@@ -19,8 +21,9 @@ public class MobileRegisterAccountDTO {
         return email;
     }
 
+    @JsonSetter("email")
     public void setEmail(String email) {
-        this.email = email;
+        this.email = StringUtils.trim(email);
     }
 
     public String getLang() {

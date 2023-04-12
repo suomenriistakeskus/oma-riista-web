@@ -1,12 +1,12 @@
 package fi.riista.feature.permit.application.dogevent.disturbance;
 
 import fi.riista.feature.permit.application.dogevent.DogEventDisturbanceContact;
+import fi.riista.validation.PhoneNumber;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.annotation.Nonnull;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
@@ -48,7 +48,7 @@ public class DogEventDisturbanceContactDTO implements Serializable {
 
     @NotBlank
     @Size(max = 255)
-    @Pattern(regexp = "[+]?[ 0-9]+")
+    @PhoneNumber
     private String phone;
 
     // Accessors

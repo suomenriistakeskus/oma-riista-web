@@ -73,6 +73,8 @@ import static fi.riista.feature.shootingtest.ShootingTestType.BEAR;
 import static fi.riista.feature.shootingtest.ShootingTestType.BOW;
 import static fi.riista.util.DateUtil.today;
 import static java.util.Objects.requireNonNull;
+import static org.joda.time.DateTimeConstants.SATURDAY;
+import static org.joda.time.DateTimeConstants.SUNDAY;
 
 @Component
 public class AnnualStatisticsService {
@@ -225,6 +227,11 @@ public class AnnualStatisticsService {
             copy.setHunterExamEvents(resolver.getEventTypeCount(METSASTAJATUTKINTO));
         }
 
+        if (!copy.isHunterExamAttemptResultsOverridden()) {
+            copy.setPassedHunterExams(resolver.getPassedHunterExams());
+            copy.setFailedHunterExams(resolver.getFailedHunterExams());
+        }
+
         return copy;
     }
 
@@ -335,6 +342,7 @@ public class AnnualStatisticsService {
 
         if (!copy.isHuntingControlEventsOverridden()) {
             copy.setHuntingControlEvents(resolver.getHuntingControlEventCount());
+            copy.setNonSubsidizableHuntingControlEvents(resolver.getNonSubsidizableHuntingControlEventCount());
         }
         if (!copy.isHuntingControlCustomersOverridden()) {
             copy.setHuntingControlCustomers(resolver.getHuntingControlCustomersCount());
@@ -853,7 +861,22 @@ public class AnnualStatisticsService {
         updateGroup(statistics, statistics.getOrCreateMetsahallitus(), group);
     }
 
-    private static boolean isRefreshable(final RhyAnnualStatistics statistics) {
+    // RHY annual statistics (and affecting events) are editable until 16th of January the next year
+    public static boolean hasDeadlinePassed(final LocalDate date) {
+        final LocalDate today = today();
+        final LocalDate deadline = new LocalDate(today.getYear(), 1, 15);
+        switch (deadline.getDayOfWeek()) {
+            case SATURDAY:
+                return date.getYear() < today.minusDays(17).getYear();
+            case SUNDAY:
+                return date.getYear() < today.minusDays(16).getYear();
+            default:
+                return date.getYear() < today.minusDays(15).getYear();
+        }
+    }
+
+    // Package private for testing
+    /*private*/ static boolean isRefreshable(final RhyAnnualStatistics statistics) {
         return statistics.isNew() || statistics.isUpdateableByCoordinator();
     }
 

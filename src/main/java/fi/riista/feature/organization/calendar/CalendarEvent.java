@@ -2,6 +2,7 @@ package fi.riista.feature.organization.calendar;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.organization.Organisation;
+import fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsService;
 import fi.riista.util.DateUtil;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
@@ -19,6 +20,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -26,7 +28,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import static fi.riista.util.DateUtil.today;
+import static fi.riista.feature.organization.calendar.CalendarEventType.METSASTAJAKURSSI;
 
 @Entity
 @Access(value = AccessType.FIELD)
@@ -84,6 +86,14 @@ public class CalendarEvent extends LifecycleEntity<Long> {
     @Column(nullable = false)
     private boolean remoteEvent;
 
+    @Column
+    @Min(0)
+    private Integer passedAttempts;
+
+    @Column
+    @Min(0)
+    private Integer failedAttempts;
+
     public CalendarEvent() {
     }
 
@@ -98,13 +108,9 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         this.nonSubsidizable = false;
     }
 
-    @Transient
-    public boolean isLockedAsPastCalendarEvent() {
-        if (calendarEventType == null || calendarEventType.isShootingTest()) {
-            return false;
-        }
-
-        return today().isAfter(getDateAsLocalDate()) && participants != null && participants > 0;
+    @AssertTrue
+    public boolean isEndTimeValid() {
+        return calendarEventType != METSASTAJAKURSSI || endTime != null;
     }
 
     @Transient
@@ -112,10 +118,9 @@ public class CalendarEvent extends LifecycleEntity<Long> {
         if (calendarEventType == null) {
             return false;
         }
-        final LocalDate today = today();
         final LocalDate eventDate = getDateAsLocalDate();
 
-        return eventDate.getYear() < today.minusDays(15).getYear();
+        return AnnualStatisticsService.hasDeadlinePassed(eventDate);
     }
 
     public LocalDate getDateAsLocalDate() {
@@ -244,5 +249,21 @@ public class CalendarEvent extends LifecycleEntity<Long> {
 
     public void setRemoteEvent(final boolean remoteEvent) {
         this.remoteEvent = remoteEvent;
+    }
+
+    public Integer getPassedAttempts() {
+        return passedAttempts;
+    }
+
+    public void setPassedAttempts(final Integer passedAttempts) {
+        this.passedAttempts = passedAttempts;
+    }
+
+    public Integer getFailedAttempts() {
+        return failedAttempts;
+    }
+
+    public void setFailedAttempts(final Integer failedAttempts) {
+        this.failedAttempts = failedAttempts;
     }
 }

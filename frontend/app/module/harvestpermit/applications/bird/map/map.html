@@ -1,10 +1,11 @@
-<div class="alert alert-info">
+<div class="alert alert-info wizard-info">
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
         <p translate="harvestpermit.wizard.bird.map.instructions"></p>
     </div>
 </div>
+
 
 <form name="protectedAreaForm" r-force-show-errors-check-validity>
     <div class="form-group" show-errors>
@@ -130,7 +131,8 @@
 
         <textarea class="form-control" name="descriptionOfRights" id="descriptionOfRights" rows="6"
                   ng-model="$ctrl.protectedAreaInfo.descriptionOfRights"
-                  required>
+                  required
+                  spellcheck="false">
                 </textarea>
 
         <p class="help-block has-error"

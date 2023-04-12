@@ -26,7 +26,15 @@ public class MailMessageBounce extends BaseEntity<Long> {
     }
 
     public enum BounceSubType {
-        General, MailboxFull, ContentRejected, Suppressed, Undetermined
+        General,
+        MailboxFull,
+        ContentRejected,
+        NoEmail,
+        Suppressed,
+        OnAccountSuppressionList,
+        MessageTooLarge,
+        AttachmentRejected,
+        Undetermined
     }
 
     private Long id;

@@ -66,6 +66,7 @@ public class HuntingClubAreaImportFeature {
         zone.setExcludedGeom(null);
         zone.setComputedAreaSize(-1);
         zone.setWaterAreaSize(-1);
+        zone.setStatusPending();
 
         // Make sure modification time is updated
         zone.setModificationTimeToCurrentTime();
@@ -92,8 +93,6 @@ public class HuntingClubAreaImportFeature {
 
         zoneRepository.saveAndFlush(zone);
         zoneRepository.updateExternalFeatures(zone.getId(), srid, dtoList);
-        zoneRepository.calculateCombinedGeometry(zone.getId());
-        zoneRepository.calculateAreaSize(zone.getId(), false);
     }
 
     private static Optional<HuntingClubAreaImportFeatureDTO> processFeature(final Feature feature,

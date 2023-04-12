@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.weapontransportation.applicant', [
                 templateUrl: 'harvestpermit/applications/weapontransportation/applicant/applicant.html',
                 controller: 'WeaponTransportationWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

@@ -1,0 +1,65 @@
+<div class="table-responsive">
+    <table class="table table-condensed">
+        <thead>
+        <tr>
+            <th class="col-xs-2" translate="jht.harvestSeason.list.species"></th>
+            <th class="col-xs-3" translate="jht.harvestSeason.list.harvestSeason"></th>
+            <th class="col-xs-2">
+                <div translate="jht.harvestSeason.list.reportingDate.row1"></div>
+                <div translate="jht.harvestSeason.list.reportingDate.row2"></div>
+            </th>
+            <th class="col-xs-3" translate="jht.harvestSeason.list.area"></th>
+            <th class="col-xs-1" translate="jht.harvestSeason.list.quota"></th>
+            <th class="col-xs-1"></th>
+
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr ng-repeat="season in $ctrl.seasons | orderBy: 'species.name':false:$ctrl.speciesSort track by $index">
+            <td ng-bind="season.species.name | rI18nNameFilter | capitalize"></td>
+            <td>
+                <div ng-if="season.beginDate">
+                    <span>{{season.beginDate | date:'d.M.yyyy'}} - {{season.endDate | date:'d.M.yyyy'}}</span>
+                </div>
+                <div ng-if="season.beginDate2">
+                    <span>{{season.beginDate2 | date:'d.M.yyyy'}} - {{season.endDate2 | date:'d.M.yyyy'}}</span>
+                </div>
+            </td>
+            <td>
+                <div ng-if="season.endOfReportingDate">
+                    <span>{{season.endOfReportingDate | date:'d.M.yyyy'}}</span>
+                </div>
+                <div ng-if="season.endOfReportingDate2">
+                    <span>{{season.endOfReportingDate2 | date:'d.M.yyyy'}}</span>
+                </div>
+            </td>
+            <td>
+                <table>
+                    <tbody>
+                    <tr class="unbordered" ng-repeat="quota in season.quotas track by $index">
+                        <td ng-bind="quota.harvestArea | rI18nNameFilter"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td>
+                <table>
+                    <tbody>
+                    <tr class="unbordered" ng-repeat="quota in season.quotas track by $index">
+                        <td ng-bind="quota.quota"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+            <td class="text-center r-table-actions-cell">
+                <div class="r-btn-placeholder">
+                    <button type="button" ng-click="$ctrl.edit({season: season})" class="btn btn-link">
+                        <span class="glyphicon glyphicon-edit" title="{{'global.button.edit' | translate}}"></span>
+                    </button>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

@@ -1,6 +1,7 @@
 package fi.riista.feature.largecarnivorereport;
 
 import com.google.common.collect.ImmutableSet;
+import fi.riista.feature.common.entity.Municipality;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -9,9 +10,10 @@ import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEventDTO;
 import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
 import fi.riista.feature.gamediary.srva.SrvaEventTypeEnum;
+import fi.riista.feature.gamediary.srva.SrvaResultEnum;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.report.HarvestReportState;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.person.Person;
@@ -25,6 +27,7 @@ import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.LocalisedString;
@@ -38,9 +41,11 @@ import org.junit.runner.RunWith;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -59,6 +64,7 @@ import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LARGE_CARNIV
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.MAMMAL;
 import static fi.riista.feature.harvestpermit.HarvestPermitCategory.RESEARCH;
 import static fi.riista.feature.permit.PermitTypeCode.MAMMAL_DAMAGE_BASED;
+import static fi.riista.util.DateUtil.now;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -90,18 +96,21 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
     private Riistanhoitoyhdistys rhy;
     private RiistakeskuksenAlue rka2;
     private Riistanhoitoyhdistys rhy2;
+    private Municipality municipality;
 
-    private final Map<Integer, HarvestPermitApplication> derogationApplications = new HashMap<>();
-    private final Map<Integer, HarvestPermitApplicationSpeciesAmount> derogationSpeciesAmounts = new HashMap<>();
-    private final Map<Integer, PermitDecision> derogationDecisions = new HashMap<>();
-    private final Map<Integer, HarvestPermit> derogationPermits = new HashMap<>();
-    private final Map<Integer, HarvestPermitSpeciesAmount> derogationPermitSpeciesAmounts = new HashMap<>();
+    private Person harvestReportAuthor;
+
+    private final Map<Integer, List<HarvestPermitApplication>> derogationApplications = new HashMap<>();
+    private final Map<HarvestPermitApplication, HarvestPermitApplicationSpeciesAmount> derogationSpeciesAmounts = new HashMap<>();
+    private final Map<HarvestPermitApplication, PermitDecision> derogationDecisions = new HashMap<>();
+    private final Map<HarvestPermitApplication, HarvestPermit> derogationPermits = new HashMap<>();
+    private final Map<HarvestPermitApplication, PermitDecisionSpeciesAmount> derogationDecisionSpeciesAmounts = new HashMap<>();
 
     private final List<HarvestPermitApplication> stockMgmtApplications = new ArrayList<>();
     private final Map<HarvestPermitApplication, HarvestPermitApplicationSpeciesAmount> stockMgmtSpeciesAmounts = new HashMap<>();
     private final Map<HarvestPermitApplication, PermitDecision> stockMgmtDecisions = new HashMap<>();
     private final Map<HarvestPermitApplication, HarvestPermit> stockMgmtPermits = new HashMap<>();
-    private final Map<HarvestPermitApplication, HarvestPermitSpeciesAmount> stockMgmtPermitSpeciesAmounts = new HashMap<>();
+    private final Map<HarvestPermitApplication, PermitDecisionSpeciesAmount> stockMgmtDecisionSpeciesAmounts = new HashMap<>();
     private final Map<HarvestPermitApplication, Integer> stockMgmtHarvestAmounts = new HashMap<>();
     private final Map<HarvestPermitApplication, Riistanhoitoyhdistys> stockMgmtRhys = new HashMap<>();
 
@@ -111,13 +120,13 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
     private final Map<Integer, HarvestPermitApplicationSpeciesAmount> deportationSpeciesAmounts = new HashMap<>();
     private final Map<Integer, PermitDecision> deportationDecisions = new HashMap<>();
     private final Map<Integer, HarvestPermit> deportationPermits  = new HashMap<>();
-    private final Map<Integer, HarvestPermitSpeciesAmount> deportationPermitSpeciesAmounts = new HashMap<>();
+    private final Map<Integer, PermitDecisionSpeciesAmount> deportationDecisionSpeciesAmounts = new HashMap<>();
 
     private final Map<Integer, HarvestPermitApplication> researchApplications = new HashMap<>();
     private final Map<Integer, HarvestPermitApplicationSpeciesAmount> researchSpeciesAmounts = new HashMap<>();
     private final Map<Integer, PermitDecision> researchDecisions = new HashMap<>();
     private final Map<Integer, HarvestPermit> researchPermits  = new HashMap<>();
-    private final Map<Integer, HarvestPermitSpeciesAmount> researchPermitSpeciesAmounts = new HashMap<>();
+    private final Map<Integer, PermitDecisionSpeciesAmount> researchDecisionSpeciesAmounts = new HashMap<>();
 
     private final Map<Integer, SrvaEvent> srvaEvents = new HashMap<>();
 
@@ -131,10 +140,14 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
         rka2 = model().newRiistakeskuksenAlue();
         rhy2 = model().newRiistanhoitoyhdistys(rka2);
 
+        municipality = model().newMunicipality();
+
         REPORT_SPECIES.forEach(speciesCode -> {
             final GameSpecies species = model().newGameSpecies(speciesCode);
             gameSpecies.put(speciesCode, species);
         });
+
+        harvestReportAuthor = model().newPerson();
 
         createDerogations();
 
@@ -155,33 +168,79 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
 
             final HarvestPermitApplication derogationApplication =
                     model().newHarvestPermitApplication(rhy, null, emptyList(), MAMMAL);
-            derogationApplications.put(speciesCode, derogationApplication);
+            derogationApplications.put(speciesCode, new ArrayList<>(Arrays.asList(derogationApplication)));
+
+            // Application without published decision (no permit)
+            final HarvestPermitApplication derogationApplication2 =
+                    model().newHarvestPermitApplication(rhy, null, emptyList(), MAMMAL);
+            derogationApplications.get(speciesCode).add(derogationApplication2);
+
+            persistInNewTransaction();
 
             final HarvestPermitApplicationSpeciesAmount derogationSpa =
                     model().newHarvestPermitApplicationSpeciesAmount(derogationApplication, species, 1.0f);
             derogationSpa.setBeginDate(new LocalDate(2021, 1, 1));
             derogationSpa.setEndDate(new LocalDate(2021, 1, 16));
-            derogationSpeciesAmounts.put(speciesCode, derogationSpa);
+            derogationSpeciesAmounts.put(derogationApplication, derogationSpa);
 
             final PermitDecision derogationDecision = model().newPermitDecision(derogationApplication);
             derogationDecision.setDecisionType(PermitDecision.DecisionType.HARVEST_PERMIT);
             derogationDecision.setLockedDate(DateUtil.toDateTimeNullSafe(new LocalDate(2021, 1, 1)));
-            derogationDecisions.put(speciesCode, derogationDecision);
+            derogationDecisions.put(derogationApplication, derogationDecision);
+
+            final PermitDecisionSpeciesAmount derogationDecisionSpa =
+                    model().newPermitDecisionSpeciesAmount(derogationDecision, species, 1.0f);
+            derogationDecisionSpa.setBeginDate(new LocalDate(2021, 1, 1));
+            derogationDecisionSpa.setEndDate(new LocalDate(2021, 1, 7));
+            derogationDecisionSpa.setBeginDate2(new LocalDate(2021, 1, 9));
+            derogationDecisionSpa.setEndDate2(new LocalDate(2021, 1, 16));
+            derogationDecisionSpeciesAmounts.put(derogationApplication, derogationDecisionSpa);
 
             final HarvestPermit derogationPermit =
                     model().newHarvestPermit(rhy, permitNumber(), MAMMAL_DAMAGE_BASED, derogationDecision);
-            derogationPermits.put(speciesCode, derogationPermit);
-
-            final HarvestPermitSpeciesAmount derogationPermitSpa =
-                    model().newHarvestPermitSpeciesAmount(derogationPermit, species, 1.0f);
-            derogationPermitSpa.setBeginDate(new LocalDate(2021, 1, 1));
-            derogationPermitSpa.setEndDate(new LocalDate(2021, 1, 7));
-            derogationPermitSpa.setBeginDate2(new LocalDate(2021, 1, 9));
-            derogationPermitSpa.setEndDate2(new LocalDate(2021, 1, 16));
-            derogationPermitSpeciesAmounts.put(speciesCode, derogationPermitSpa);
+            derogationPermits.put(derogationApplication, derogationPermit);
 
             final Harvest derogationHarvest = model().newHarvest(derogationPermit, species);
             derogationHarvest.setAmount(1);
+            derogationHarvest.setHarvestReportState(HarvestReportState.APPROVED);
+            derogationHarvest.setHarvestReportDate(now());
+            derogationHarvest.setHarvestReportAuthor(harvestReportAuthor);
+            derogationHarvest.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
+
+            // Must not be part of results
+            final Harvest derogationHarvest2 = model().newHarvest(derogationPermit, species);
+            derogationHarvest2.setAmount(1);
+            derogationHarvest2.setHarvestReportState(HarvestReportState.REJECTED);
+            derogationHarvest2.setHarvestReportDate(now());
+            derogationHarvest2.setHarvestReportAuthor(harvestReportAuthor);
+            derogationHarvest2.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
+
+            // Must not be part of results
+            final Harvest derogationHarvest3 = model().newHarvest(derogationPermit, species);
+            derogationHarvest3.setAmount(1);
+            derogationHarvest3.setHarvestReportState(HarvestReportState.SENT_FOR_APPROVAL);
+            derogationHarvest3.setHarvestReportDate(now());
+            derogationHarvest3.setHarvestReportAuthor(harvestReportAuthor);
+            derogationHarvest3.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
+
+            final HarvestPermitApplicationSpeciesAmount derogationSpa2 =
+                    model().newHarvestPermitApplicationSpeciesAmount(derogationApplication2, species, 1.0f);
+            derogationSpa2.setBeginDate(new LocalDate(2021, 2, 2));
+            derogationSpa2.setEndDate(new LocalDate(2021, 4, 3));
+            derogationSpeciesAmounts.put(derogationApplication2, derogationSpa2);
+
+            final PermitDecision derogationDecision2 = model().newPermitDecision(derogationApplication2);
+            derogationDecision.setDecisionType(PermitDecision.DecisionType.HARVEST_PERMIT);
+            derogationDecision.setLockedDate(DateUtil.toDateTimeNullSafe(new LocalDate(2021, 1, 1)));
+            derogationDecisions.put(derogationApplication2, derogationDecision2);
+
+            final PermitDecisionSpeciesAmount derogationDecisionSpa2 =
+                    model().newPermitDecisionSpeciesAmount(derogationDecision2, species, 1.0f);
+            derogationDecisionSpa2.setBeginDate(new LocalDate(2021, 2, 2));
+            derogationDecisionSpa2.setEndDate(new LocalDate(2021, 2, 15));
+            derogationDecisionSpa2.setBeginDate2(new LocalDate(2021, 3, 9));
+            derogationDecisionSpa2.setEndDate2(new LocalDate(2021, 4, 3));
+            derogationDecisionSpeciesAmounts.put(derogationApplication2, derogationDecisionSpa2);
         });
     }
 
@@ -227,22 +286,30 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
             stockMgmtDecision.setLockedDate(DateUtil.toDateTimeNullSafe(new LocalDate(2021, 2, 1)));
             stockMgmtDecisions.put(stockMgmtApplication, stockMgmtDecision);
 
+            final PermitDecisionSpeciesAmount stockMgmtDecisionSpeciesAmount =
+                    model().newPermitDecisionSpeciesAmount(stockMgmtDecision, species, 3.0f);
+            stockMgmtDecisionSpeciesAmount.setBeginDate(new LocalDate(2021, 2, 1));
+            stockMgmtDecisionSpeciesAmount.setEndDate(new LocalDate(2021, 2, 6));
+            stockMgmtDecisionSpeciesAmount.setBeginDate2(new LocalDate(2021, 2, 8));
+            stockMgmtDecisionSpeciesAmount.setEndDate2(new LocalDate(2021, 2, 14));
+            stockMgmtDecisionSpeciesAmounts.put(stockMgmtApplication, stockMgmtDecisionSpeciesAmount);
+
             final HarvestPermit stockMgmtPermit =
                     model().newHarvestPermit(rhy, permitNumber(), permitTypeCode, stockMgmtDecision);
             stockMgmtPermits.put(stockMgmtApplication, stockMgmtPermit);
 
-            final HarvestPermitSpeciesAmount stockMgmtPermitSpeciesAmount =
-                    model().newHarvestPermitSpeciesAmount(stockMgmtPermit, species, 3.0f);
-            stockMgmtPermitSpeciesAmount.setBeginDate(new LocalDate(2021, 2, 1));
-            stockMgmtPermitSpeciesAmount.setEndDate(new LocalDate(2021, 2, 6));
-            stockMgmtPermitSpeciesAmount.setBeginDate2(new LocalDate(2021, 2, 8));
-            stockMgmtPermitSpeciesAmount.setEndDate2(new LocalDate(2021, 2, 14));
-            stockMgmtPermitSpeciesAmounts.put(stockMgmtApplication, stockMgmtPermitSpeciesAmount);
-
             final Harvest stockMgmtHarvest1 = model().newHarvest(stockMgmtPermit, species);
             stockMgmtHarvest1.setAmount(1);
+            stockMgmtHarvest1.setHarvestReportState(HarvestReportState.APPROVED);
+            stockMgmtHarvest1.setHarvestReportDate(now());
+            stockMgmtHarvest1.setHarvestReportAuthor(harvestReportAuthor);
+            stockMgmtHarvest1.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
             final Harvest stockMgmtHarvest2 = model().newHarvest(stockMgmtPermit, species);
             stockMgmtHarvest2.setAmount(2);
+            stockMgmtHarvest2.setHarvestReportState(HarvestReportState.APPROVED);
+            stockMgmtHarvest2.setHarvestReportDate(now());
+            stockMgmtHarvest2.setHarvestReportAuthor(harvestReportAuthor);
+            stockMgmtHarvest2.setStateAcceptedToHarvestPermit(Harvest.StateAcceptedToHarvestPermit.ACCEPTED);
             stockMgmtHarvestAmounts.put(stockMgmtApplication, 3);
 
             final HarvestPermitApplicationSpeciesAmount stockMgmtApplicationSpeciesAmount2 =
@@ -256,19 +323,15 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
             stockMgmtDecision2.setLockedDate(DateUtil.toDateTimeNullSafe(new LocalDate(2021, 3, 15)));
             stockMgmtDecisions.put(stockMgmtApplication2, stockMgmtDecision2);
 
+            final PermitDecisionSpeciesAmount stockMgmtDecisionSpeciesAmount2 =
+                    model().newPermitDecisionSpeciesAmount(stockMgmtDecision2, species, 0);
+            stockMgmtDecisionSpeciesAmount2.setBeginDate(new LocalDate(2021, 3, 15));
+            stockMgmtDecisionSpeciesAmount2.setEndDate(new LocalDate(2021, 3, 20));
+            stockMgmtDecisionSpeciesAmounts.put(stockMgmtApplication2, stockMgmtDecisionSpeciesAmount2);
+
             final HarvestPermit stockMgmtPermit2 =
                     model().newHarvestPermit(rhy, permitNumber(), permitTypeCode, stockMgmtDecision2);
             stockMgmtPermits.put(stockMgmtApplication2, stockMgmtPermit2);
-
-            final HarvestPermitSpeciesAmount stockMgmtPermitSpeciesAmount2 =
-                    model().newHarvestPermitSpeciesAmount(stockMgmtPermit2, species, 2.0f);
-            stockMgmtPermitSpeciesAmount2.setBeginDate(new LocalDate(2021, 3, 15));
-            stockMgmtPermitSpeciesAmount2.setEndDate(new LocalDate(2021, 3, 20));
-            stockMgmtPermitSpeciesAmounts.put(stockMgmtApplication2, stockMgmtPermitSpeciesAmount2);
-
-            final Harvest stockMgmtHarvest3 = model().newHarvest(stockMgmtPermit2, species);
-            stockMgmtHarvest3.setAmount(1);
-            stockMgmtHarvestAmounts.put(stockMgmtApplication2, 1);
         });
     }
 
@@ -291,15 +354,15 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
             deportationDecision.setLockedDate(DateUtil.toDateTimeNullSafe(new LocalDate(2021, 3, 1)));
             deportationDecisions.put(speciesCode, deportationDecision);
 
+            final PermitDecisionSpeciesAmount deportationDecisionSpa =
+                    model().newPermitDecisionSpeciesAmount(deportationDecision, species, 5.0f);
+            deportationDecisionSpa.setBeginDate(new LocalDate(2021, 3, 1));
+            deportationDecisionSpa.setEndDate(new LocalDate(2021, 3, 7));
+            deportationDecisionSpeciesAmounts.put(speciesCode, deportationDecisionSpa);
+
             final HarvestPermit deportationPermit =
                     model().newHarvestPermit(rhy, permitNumber(), PermitTypeCode.DEPORTATION, deportationDecision);
             deportationPermits.put(speciesCode, deportationPermit);
-
-            final HarvestPermitSpeciesAmount deportationPermitSpa =
-                    model().newHarvestPermitSpeciesAmount(deportationPermit, species, 5.0f);
-            deportationPermitSpa.setBeginDate(new LocalDate(2021, 3, 1));
-            deportationPermitSpa.setEndDate(new LocalDate(2021, 3, 7));
-            deportationPermitSpeciesAmounts.put(speciesCode, deportationPermitSpa);
         });
     }
 
@@ -322,6 +385,12 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
             researchDecision.setLockedDate(DateUtil.toDateTimeNullSafe(new LocalDate(2021, 3, 1)));
             researchDecisions.put(speciesCode, researchDecision);
 
+            final PermitDecisionSpeciesAmount researchDecisionSpa =
+                    model().newPermitDecisionSpeciesAmount(researchDecision, species, 5.0f);
+            researchDecisionSpa.setBeginDate(new LocalDate(2021, 3, 1));
+            researchDecisionSpa.setEndDate(new LocalDate(2021, 3, 7));
+            researchDecisionSpeciesAmounts.put(speciesCode, researchDecisionSpa);
+
             final HarvestPermit researchPermit =
                     model().newHarvestPermit(rhy, permitNumber(), PermitTypeCode.DEPORTATION, researchDecision);
             final Person researchPermitHolder = model().newPerson(rhy);
@@ -329,12 +398,6 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
             researchPermitHolder.setLastName("Holder1");
             researchPermit.setPermitHolder(PermitHolder.createHolderForPerson(researchPermitHolder));
             researchPermits.put(speciesCode, researchPermit);
-
-            final HarvestPermitSpeciesAmount researchPermitSpa =
-                    model().newHarvestPermitSpeciesAmount(researchPermit, species, 5.0f);
-            researchPermitSpa.setBeginDate(new LocalDate(2021, 3, 1));
-            researchPermitSpa.setEndDate(new LocalDate(2021, 3, 7));
-            researchPermitSpeciesAmounts.put(speciesCode, researchPermitSpa);
         });
     }
 
@@ -347,6 +410,8 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
             event.setEventName(some(SrvaEventNameEnum.class));
             event.setEventType(some(SrvaEventTypeEnum.getBySrvaEvent(event.getEventName())));
             event.setPointOfTime(DateUtil.toDateTimeNullSafe(new LocalDate(2021, 3, 1)));
+            final SrvaResultEnum result = some(SrvaResultEnum.class);
+            event.setEventResult(result != SrvaResultEnum.UNDUE_ALARM ? result : SrvaResultEnum.ANIMAL_TERMINATED);
             srvaEvents.put(speciesCode, event);
         });
     }
@@ -364,7 +429,8 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
                     species,
                     rhy,
                     rka,
-                    false);
+                    false,
+                    municipality);
             otherwiseDeceasedMap.put(speciesCode, otherwiseDeceased);
         });
     }
@@ -375,39 +441,46 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
             runInTransaction(() -> {
                 final List<LargeCarnivorePermitInfoDTO> derogations =
                         feature.getPermitInfo(MAMMAL, speciesCode, 2020);
-                assertThat(derogations, hasSize(1));
+                assertThat(derogations, hasSize(2));
 
-                final LargeCarnivorePermitInfoDTO derogation = derogations.get(0);
+                derogations.forEach(derogation -> {
+                    final List<HarvestPermitApplication> expectedApplicationList = derogationApplications.get(speciesCode)
+                            .stream()
+                            .filter(e -> Objects.equals(e.getApplicationNumber(), derogation.getApplicationNumber()))
+                            .collect(Collectors.toList());
+                    assertThat(expectedApplicationList, hasSize(1));
 
-                final HarvestPermitApplication expectedApplication = derogationApplications.get(speciesCode);
-                assertThat(derogation.getApplicationNumber(), is(equalTo(expectedApplication.getApplicationNumber())));
+                    final HarvestPermitApplication expectedApplication = expectedApplicationList.get(0);
+                    assertThat(derogation.getApplicationNumber(), is(equalTo(expectedApplication.getApplicationNumber())));
 
-                final HarvestPermit expectedPermit = derogationPermits.get(speciesCode);
-                assertThat(derogation.getPermitNumber(), is(equalTo(expectedPermit.getPermitNumber())));
+                    final PermitDecision expectedDecision = derogationDecisions.get(expectedApplication);
+                    assertThat(derogation.getDecisionType(), is(equalTo(expectedDecision.getDecisionType())));
+                    assertThat(derogation.getDecisionTime(), is(equalTo(expectedDecision.getLockedDate())));
 
-                final PermitDecision expectedDecision = derogationDecisions.get(speciesCode);
-                assertThat(derogation.getDecisionType(), is(equalTo(expectedDecision.getDecisionType())));
-                assertThat(derogation.getDecisionTime(), is(equalTo(expectedDecision.getLockedDate())));
+                    final PermitDecisionSpeciesAmount expectedDecisionSpa =
+                            derogationDecisionSpeciesAmounts.get(expectedApplication);
+                    assertThat(derogation.getBeginDate(), is(equalTo(expectedDecisionSpa.getBeginDate())));
+                    assertThat(derogation.getEndDate(), is(equalTo(expectedDecisionSpa.getEndDate())));
+                    assertThat(derogation.getBeginDate2(), is(equalTo(expectedDecisionSpa.getBeginDate2())));
+                    assertThat(derogation.getEndDate2(), is(equalTo(expectedDecisionSpa.getEndDate2())));
 
-                final HarvestPermitSpeciesAmount expectedPermitSpa =
-                        derogationPermitSpeciesAmounts.get(speciesCode);
-                assertThat(derogation.getBeginDate(), is(equalTo(expectedPermitSpa.getBeginDate())));
-                assertThat(derogation.getEndDate(), is(equalTo(expectedPermitSpa.getEndDate())));
-                assertThat(derogation.getBeginDate2(), is(equalTo(expectedPermitSpa.getBeginDate2())));
-                assertThat(derogation.getEndDate2(), is(equalTo(expectedPermitSpa.getEndDate2())));
+                    final HarvestPermitApplicationSpeciesAmount expectedApplicationSpa =
+                            derogationSpeciesAmounts.get(expectedApplication);
+                    assertThat(derogation.getApplied(), is(equalTo(expectedApplicationSpa.getSpecimenAmount())));
 
-                final HarvestPermitApplicationSpeciesAmount expectedApplicationSpa =
-                        derogationSpeciesAmounts.get(speciesCode);
-                assertThat(derogation.getApplied(), is(equalTo(expectedApplicationSpa.getSpecimenAmount())));
+                    assertThat(derogation.getGranted(), is(equalTo(expectedDecisionSpa.getSpecimenAmount())));
 
-                assertThat(derogation.getGranted(), is(equalTo(expectedPermitSpa.getSpecimenAmount())));
+                    assertThat(derogation.getRhy(), is(equalTo(LocalisedString.of(rhy.getNameFinnish(), rhy.getNameSwedish()))));
 
-                assertThat(derogation.getHarvests(), is(equalTo(1)));
+                    assertThat(derogation.getRka(), is(equalTo(LocalisedString.of(rka.getNameFinnish(), rka.getNameSwedish()))));
+                    assertThat(derogation.isOnReindeerArea(), is(false));
 
-                assertThat(derogation.getRhy(), is(equalTo(LocalisedString.of(rhy.getNameFinnish(), rhy.getNameSwedish()))));
-
-                assertThat(derogation.getRka(), is(equalTo(LocalisedString.of(rka.getNameFinnish(), rka.getNameSwedish()))));
-                assertThat(derogation.isOnReindeerArea(), is(false));
+                    if (derogation.getPermitNumber() != null) {
+                        final HarvestPermit expectedPermit = derogationPermits.get(expectedApplication);
+                        assertThat(derogation.getPermitNumber(), is(equalTo(expectedPermit.getPermitNumber())));
+                        assertThat(derogation.getHarvests(), is(equalTo(1)));
+                    }
+                });
             });
         });
     }
@@ -452,18 +525,18 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
                     assertThat(stockMgmtInfo.getDecisionType(), is(equalTo(expectedDecision.getDecisionType())));
                     assertThat(stockMgmtInfo.getDecisionTime(), is(equalTo(expectedDecision.getLockedDate())));
 
-                    final HarvestPermitSpeciesAmount expectedPermitSpa =
-                            stockMgmtPermitSpeciesAmounts.get(expectedApplication);
-                    assertThat(stockMgmtInfo.getBeginDate(), is(equalTo(expectedPermitSpa.getBeginDate())));
-                    assertThat(stockMgmtInfo.getEndDate(), is(equalTo(expectedPermitSpa.getEndDate())));
-                    assertThat(stockMgmtInfo.getBeginDate2(), is(equalTo(expectedPermitSpa.getBeginDate2())));
-                    assertThat(stockMgmtInfo.getEndDate2(), is(equalTo(expectedPermitSpa.getEndDate2())));
+                    final PermitDecisionSpeciesAmount expectedDecisionSpa =
+                            stockMgmtDecisionSpeciesAmounts.get(expectedApplication);
+                    assertThat(stockMgmtInfo.getBeginDate(), is(equalTo(expectedDecisionSpa.getBeginDate())));
+                    assertThat(stockMgmtInfo.getEndDate(), is(equalTo(expectedDecisionSpa.getEndDate())));
+                    assertThat(stockMgmtInfo.getBeginDate2(), is(equalTo(expectedDecisionSpa.getBeginDate2())));
+                    assertThat(stockMgmtInfo.getEndDate2(), is(equalTo(expectedDecisionSpa.getEndDate2())));
 
                     final HarvestPermitApplicationSpeciesAmount expectedApplicationSpa =
                             stockMgmtSpeciesAmounts.get(expectedApplication);
                     assertThat(stockMgmtInfo.getApplied(), is(equalTo(expectedApplicationSpa.getSpecimenAmount())));
 
-                    assertThat(stockMgmtInfo.getGranted(), is(equalTo(expectedPermitSpa.getSpecimenAmount())));
+                    assertThat(stockMgmtInfo.getGranted(), is(equalTo(expectedDecisionSpa.getSpecimenAmount())));
 
                     assertThat(stockMgmtInfo.getHarvests(), is(equalTo(stockMgmtHarvestAmounts.get(expectedApplication))));
 
@@ -497,18 +570,18 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
                 assertThat(deporation.getDecisionType(), is(equalTo(expectedDecision.getDecisionType())));
                 assertThat(deporation.getDecisionTime(), is(equalTo(expectedDecision.getLockedDate())));
 
-                final HarvestPermitSpeciesAmount expectedPermitSpa =
-                        deportationPermitSpeciesAmounts.get(speciesCode);
-                assertThat(deporation.getBeginDate(), is(equalTo(expectedPermitSpa.getBeginDate())));
-                assertThat(deporation.getEndDate(), is(equalTo(expectedPermitSpa.getEndDate())));
-                assertThat(deporation.getBeginDate2(), is(equalTo(expectedPermitSpa.getBeginDate2())));
-                assertThat(deporation.getEndDate2(), is(equalTo(expectedPermitSpa.getEndDate2())));
+                final PermitDecisionSpeciesAmount expectedDecisionSpa =
+                        deportationDecisionSpeciesAmounts.get(speciesCode);
+                assertThat(deporation.getBeginDate(), is(equalTo(expectedDecisionSpa.getBeginDate())));
+                assertThat(deporation.getEndDate(), is(equalTo(expectedDecisionSpa.getEndDate())));
+                assertThat(deporation.getBeginDate2(), is(equalTo(expectedDecisionSpa.getBeginDate2())));
+                assertThat(deporation.getEndDate2(), is(equalTo(expectedDecisionSpa.getEndDate2())));
 
                 final HarvestPermitApplicationSpeciesAmount expectedApplicationSpa =
                         deportationSpeciesAmounts.get(speciesCode);
                 assertThat(deporation.getApplied(), is(equalTo(expectedApplicationSpa.getSpecimenAmount())));
 
-                assertThat(deporation.getGranted(), is(equalTo(expectedPermitSpa.getSpecimenAmount())));
+                assertThat(deporation.getGranted(), is(equalTo(expectedDecisionSpa.getSpecimenAmount())));
 
                 assertThat(deporation.getRhy(), is(equalTo(LocalisedString.of(rhy.getNameFinnish(), rhy.getNameSwedish()))));
 
@@ -538,18 +611,18 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
                 assertThat(research.getDecisionType(), is(equalTo(expectedDecision.getDecisionType())));
                 assertThat(research.getDecisionTime(), is(equalTo(expectedDecision.getLockedDate())));
 
-                final HarvestPermitSpeciesAmount expectedPermitSpa =
-                        researchPermitSpeciesAmounts.get(speciesCode);
-                assertThat(research.getBeginDate(), is(equalTo(expectedPermitSpa.getBeginDate())));
-                assertThat(research.getEndDate(), is(equalTo(expectedPermitSpa.getEndDate())));
-                assertThat(research.getBeginDate2(), is(equalTo(expectedPermitSpa.getBeginDate2())));
-                assertThat(research.getEndDate2(), is(equalTo(expectedPermitSpa.getEndDate2())));
+                final PermitDecisionSpeciesAmount expectedDecisionSpa =
+                        researchDecisionSpeciesAmounts.get(speciesCode);
+                assertThat(research.getBeginDate(), is(equalTo(expectedDecisionSpa.getBeginDate())));
+                assertThat(research.getEndDate(), is(equalTo(expectedDecisionSpa.getEndDate())));
+                assertThat(research.getBeginDate2(), is(equalTo(expectedDecisionSpa.getBeginDate2())));
+                assertThat(research.getEndDate2(), is(equalTo(expectedDecisionSpa.getEndDate2())));
 
                 final HarvestPermitApplicationSpeciesAmount expectedApplicationSpa =
                         researchSpeciesAmounts.get(speciesCode);
                 assertThat(research.getApplied(), is(equalTo(expectedApplicationSpa.getSpecimenAmount())));
 
-                assertThat(research.getGranted(), is(equalTo(expectedPermitSpa.getSpecimenAmount())));
+                assertThat(research.getGranted(), is(equalTo(expectedDecisionSpa.getSpecimenAmount())));
 
                 assertThat(research.getRhy(), is(equalTo(LocalisedString.of(rhy.getNameFinnish(), rhy.getNameSwedish()))));
 
@@ -601,12 +674,102 @@ public class LargeCarnivoreReportExcelFeatureTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testNumberOfQueriesIsConstant() {
-        IntStream.range(0, 100).forEach(i -> createDerogations());
-        IntStream.range(0, 100).forEach(i -> createStockMgmt());
-        IntStream.range(0, 100).forEach(i -> createDeportations());
-        IntStream.range(0, 100).forEach(i -> createResearch());
-        IntStream.range(0, 100).forEach(i -> createSrva());
-        IntStream.range(0, 100).forEach(i -> createOtherwiseDeceased());
-        assertMaxQueryCount(193, () -> feature.export(2020));
+        IntStream.range(0, 100).forEach(i -> {
+            createDerogations();
+            persistInNewTransaction();
+        });
+        IntStream.range(0, 100).forEach(i -> {
+            createStockMgmt();
+            persistInNewTransaction();
+        });
+        IntStream.range(0, 100).forEach(i -> {
+            createDeportations();
+            persistInNewTransaction();
+        });
+        IntStream.range(0, 100).forEach(i -> {
+            createResearch();
+            persistInNewTransaction();
+        });
+        IntStream.range(0, 100).forEach(i -> {
+            createSrva();
+            persistInNewTransaction();
+        });
+        IntStream.range(0, 100).forEach(i -> {
+            createOtherwiseDeceased();
+            persistInNewTransaction();
+        });
+        assertMaxQueryCount(213, () -> feature.export(2020));
+    }
+
+    @Test
+    public void testOrdering() {
+        final GameSpecies species = gameSpecies.get(OFFICIAL_CODE_BEAR);
+
+        final LargeCarnivorePermitInfoDTO info1 = createLargeCarnivoreInfo(
+                species,
+                new LocalDate(2020, 1, 1),
+                new LocalDate(2020, 1, 15),
+                new LocalDate(2020, 1, 1));
+
+        final LargeCarnivorePermitInfoDTO info2 = createLargeCarnivoreInfo(
+                species,
+                new LocalDate(2020, 4, 1),
+                new LocalDate(2020, 4, 15),
+                new LocalDate(2020, 4, 1));
+
+        final LargeCarnivorePermitInfoDTO info3 = createLargeCarnivoreInfo(
+                species,
+                new LocalDate(2020, 2, 1),
+                new LocalDate(2020, 2, 15),
+                null);
+
+        final LargeCarnivorePermitInfoDTO info4 = createLargeCarnivoreInfo(
+                species,
+                new LocalDate(2020, 3, 1),
+                new LocalDate(2020, 3, 15),
+                new LocalDate(2020, 3, 1));
+
+        onSavedAndAuthenticated(createNewModerator(), () -> {
+            runInTransaction(() -> {
+                final List<LargeCarnivorePermitInfoDTO> expectedInfoList = Arrays.asList(info1, info4, info2, info3);
+
+                final List<LargeCarnivorePermitInfoDTO> infoList =
+                        feature.getPermitInfo(LARGE_CARNIVORE_BEAR, OFFICIAL_CODE_BEAR, 2019);
+
+                assertThat(infoList, hasSize(4));
+                assertThat(infoList, equalTo(expectedInfoList));
+            });
+        });
+    }
+
+    private LargeCarnivorePermitInfoDTO createLargeCarnivoreInfo(final GameSpecies species,
+                                                                 final LocalDate beginDate,
+                                                                 final LocalDate endDate,
+                                                                 final LocalDate lockedDate) {
+        final HarvestPermitApplication application =
+                model().newHarvestPermitApplication(rhy, null, LARGE_CARNIVORE_BEAR);
+        final HarvestPermitApplicationSpeciesAmount appSpa =
+                model().newHarvestPermitApplicationSpeciesAmount(application, species, 1);
+        appSpa.setBeginDate(beginDate);
+        appSpa.setEndDate(endDate);
+        PermitDecision decision = null;
+        PermitDecisionSpeciesAmount decisionSpa = null;
+        if (lockedDate != null) {
+            decision = model().newPermitDecision(application);
+            decision.setLockedDate(DateUtil.toDateTimeNullSafe(lockedDate));
+            decisionSpa = model().newPermitDecisionSpeciesAmount(decision, species, 1);
+            decisionSpa.setBeginDate(beginDate.plusDays(1));
+            decisionSpa.setEndDate(endDate.minusDays(1));
+        }
+        return LargeCarnivorePermitInfoDTO.create(
+                application,
+                appSpa,
+                decision,
+                null,
+                decisionSpa,
+                null,
+                rhy.getNameLocalisation(),
+                rka.getNameLocalisation(),
+                false);
     }
 }

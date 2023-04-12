@@ -6,10 +6,14 @@ import fi.riista.feature.account.mobile.MobileOccupationDTO;
 import fi.riista.feature.organization.occupation.OccupationCrudFeature;
 import fi.riista.feature.push.MobilePushRegistrationDTO;
 import fi.riista.feature.push.RegisterMobileClientDeviceFeature;
+import fi.riista.util.DateUtil;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,4 +57,15 @@ public class MobileAccountApiResource {
         return occupationCrudFeature.listMyClubMemberships();
     }
 
+    @PostMapping(value = API_PREFIX + "/unregister")
+    public LocalDateTime unregister() {
+        final DateTime unregisterRequestedTimestamp = mobileAccountFeature.unregister();
+
+        return DateUtil.toLocalDateTimeNullSafe(unregisterRequestedTimestamp);
+    }
+
+    @PostMapping(value = API_PREFIX + "/cancel-unregister")
+    public void cancelUnregister() {
+        mobileAccountFeature.cancelUnregister();
+    }
 }

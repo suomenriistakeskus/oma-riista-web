@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.research.justification', ['app.met
                 templateUrl: 'harvestpermit/applications/research/justification/justification.html',
                 controller: 'ResearchPermitWizardJustificationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     justification: function (ResearchPermitApplication, applicationId) {
                         return ResearchPermitApplication.getJustification({id: applicationId}).$promise;

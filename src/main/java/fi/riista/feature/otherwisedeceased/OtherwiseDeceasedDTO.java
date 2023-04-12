@@ -14,9 +14,11 @@ import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
 import javax.validation.Valid;
+import javax.validation.constraints.AssertTrue;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
+import static org.springframework.util.StringUtils.hasText;
 
 public class OtherwiseDeceasedDTO extends BaseEntityDTO<Long>  {
 
@@ -56,9 +58,9 @@ public class OtherwiseDeceasedDTO extends BaseEntityDTO<Long>  {
         dto.setNoExactLocation(entity.getNoExactLocation());
         dto.setRejected(entity.isRejected());
         dto.setCause(entity.getCause());
-        dto.setCauseOther(entity.getCauseOther());
+        dto.setCauseDescription(entity.getCauseDescription());
         dto.setSource(entity.getSource());
-        dto.setSourceOther(entity.getSourceOther());
+        dto.setSourceDescription(entity.getSourceDescription());
         dto.setDescription(entity.getDescription());
         dto.setAdditionalInfo(entity.getAdditionalInfo());
         dto.setMunicipality(municipalityDTO);
@@ -92,12 +94,12 @@ public class OtherwiseDeceasedDTO extends BaseEntityDTO<Long>  {
     private OtherwiseDeceasedCause cause;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String causeOther;
+    private String causeDescription;
 
     private OtherwiseDeceasedSource source;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String sourceOther;
+    private String sourceDescription;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String description;
@@ -204,12 +206,12 @@ public class OtherwiseDeceasedDTO extends BaseEntityDTO<Long>  {
         this.cause = cause;
     }
 
-    public String getCauseOther() {
-        return causeOther;
+    public String getCauseDescription() {
+        return causeDescription;
     }
 
-    public void setCauseOther(final String causeOther) {
-        this.causeOther = causeOther;
+    public void setCauseDescription(final String causeDescription) {
+        this.causeDescription = causeDescription;
     }
 
     public OtherwiseDeceasedSource getSource() {
@@ -220,12 +222,12 @@ public class OtherwiseDeceasedDTO extends BaseEntityDTO<Long>  {
         this.source = source;
     }
 
-    public String getSourceOther() {
-        return sourceOther;
+    public String getSourceDescription() {
+        return sourceDescription;
     }
 
-    public void setSourceOther(final String sourceOther) {
-        this.sourceOther = sourceOther;
+    public void setSourceDescription(final String sourceDescription) {
+        this.sourceDescription = sourceDescription;
     }
 
     public String getDescription() {
@@ -314,5 +316,14 @@ public class OtherwiseDeceasedDTO extends BaseEntityDTO<Long>  {
 
     public void setReasonForChange(final String reasonForChange) {
         this.reasonForChange = reasonForChange;
+    }
+
+    @AssertTrue
+    public boolean isCauseDescriptionSetWhenCauseOther() {
+        return cause != OtherwiseDeceasedCause.OTHER || hasText(causeDescription);
+    }
+    @AssertTrue
+    public boolean isSourceDescriptionSetWhenCauseOther() {
+        return source != OtherwiseDeceasedSource.OTHER || hasText(sourceDescription);
     }
 }

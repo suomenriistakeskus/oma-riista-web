@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.bird.species', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/bird/species/species.html',
                 controller: 'BirdPermitWizardSpeciesController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesAmountList: function (BirdPermitApplication, applicationId) {
                         return BirdPermitApplication.listSpeciesAmounts({id: applicationId}).$promise;

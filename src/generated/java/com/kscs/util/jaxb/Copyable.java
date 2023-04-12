@@ -30,6 +30,5 @@ package com.kscs.util.jaxb;
  * this interface.
  */
 public interface Copyable<T extends Copyable<T>> {
-    T createCopy();
+	T createCopy();
 }
- 

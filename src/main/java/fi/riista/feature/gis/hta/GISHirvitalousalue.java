@@ -10,17 +10,23 @@ import org.springframework.data.domain.Persistable;
 import javax.annotation.Nonnull;
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Access(AccessType.FIELD)
 @Table(name = "hta")
 public class GISHirvitalousalue implements Persistable<Integer>, HasID<Integer> {
+
+    public static final String ID_COLUMN_NAME = "hta_id";
 
     private Integer id;
 
@@ -49,16 +55,23 @@ public class GISHirvitalousalue implements Persistable<Integer>, HasID<Integer> 
     @Column(nullable = false, columnDefinition = "Geometry")
     private Geometry geom;
 
+    @OneToMany(
+            mappedBy = "hta",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<RHYHirvitalousalue> rhyHTAs = new ArrayList<>();
+
     @Nonnull
     public LocalisedString getNameLocalisation() {
         return LocalisedString.of(nameFinnish, nameSwedish);
     }
 
     // For persistence provider
-    GISHirvitalousalue() {
+    protected GISHirvitalousalue() {
     }
 
-    public GISHirvitalousalue(String number, String nameFinnish, String nameAbbrv, String nameSwedish, Geometry geom) {
+    public GISHirvitalousalue(final String number, final String nameFinnish, final String nameAbbrv, final String nameSwedish, final Geometry geom) {
         this.number = number;
         this.nameFinnish = nameFinnish;
         this.nameAbbrv = nameAbbrv;
@@ -149,5 +162,14 @@ public class GISHirvitalousalue implements Persistable<Integer>, HasID<Integer> 
 
     public void setGeom(final Geometry geom) {
         this.geom = geom;
+    }
+
+
+    public List<RHYHirvitalousalue> getRhyHTAs() {
+        return rhyHTAs;
+    }
+
+    public void setRhyHTAs(final List<RHYHirvitalousalue> rhyHTAs) {
+        this.rhyHTAs = rhyHTAs;
     }
 }

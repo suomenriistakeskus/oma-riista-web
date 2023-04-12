@@ -136,5 +136,6 @@ public class HarvestFeature {
         harvestSpecimenService.deleteAllSpecimens(harvest);
         gameDiaryImageService.deleteGameDiaryImages(harvest);
         harvestService.deleteHarvest(harvest, activeUser);
+
     }
 }

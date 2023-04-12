@@ -1,5 +1,6 @@
 package fi.riista.integration.mmm.statement;
 
+import com.google.common.collect.Range;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.config.Constants;
 import fi.riista.feature.common.entity.CreditorReference;
@@ -8,8 +9,10 @@ import fi.riista.integration.mmm.transfer.AccountTransferBatch;
 import fi.riista.integration.mmm.transfer.AccountTransferBatchRepository;
 import fi.riista.integration.mmm.transfer.AccountTransferRepository;
 import fi.riista.integration.mmm.transfer.QAccountTransferBatch;
+import fi.riista.util.DateUtil;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import io.vavr.Tuple3;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import net.schmizz.sshj.sftp.SFTPClient;
@@ -32,17 +35,20 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static com.querydsl.core.group.GroupBy.groupBy;
+import static com.querydsl.core.group.GroupBy.max;
 import static fi.riista.util.DateUtil.today;
 import static java.lang.String.format;
 import static java.util.Comparator.comparing;
-import static java.util.Comparator.naturalOrder;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
@@ -57,6 +63,8 @@ public class AccountStatementImportFeature {
 
     private static final Pattern FILENAME_PATTERN = Pattern.compile("hirviit(\\d{2})(\\d{2})(\\d{2})");
 
+    private static final Pattern FILENAME_WITH_FILE_NUMBER_PATTERN =
+            Pattern.compile(String.format("%s_%s", FILENAME_PATTERN.toString(), "(\\d+)"));
     @Resource
     private AccountTransferRepository transferRepo;
 
@@ -80,16 +88,17 @@ public class AccountStatementImportFeature {
     public void importAccountTransfers(@Nonnull final AccountStatement statement) {
         requireNonNull(statement);
 
-        final LocalDate date = statement.getStatementDate();
+        final LocalDate date = statement.getFilenameDate();
+        final Integer fileNumber = statement.getFileNumber();
 
-        if (batchRepo.findByStatementDate(date).isPresent()) {
+        if (batchRepo.findByFilenameDateAndFileNumber(date, fileNumber).isPresent()) {
             throw new AccountStatementImportException(
                     format("Account statement for date %s is already imported", date));
         }
 
         try {
             final AccountTransferBatch batch =
-                    new AccountTransferBatch(date, statement.getFilename(), statement.getFilenameDate());
+                    new AccountTransferBatch(date, statement.getFilename(), statement.getFilenameDate(), fileNumber);
             batchRepo.save(batch);
 
             final List<AccountStatementLine> lines = statement.getLines();
@@ -123,21 +132,17 @@ public class AccountStatementImportFeature {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
     public List<AccountStatement> fetchAccountStatements() {
-        return fetchAccountStatements(this.ipAddress, this.username, this.password, findMissingFilenameDates());
+        return fetchAccountStatements(this.ipAddress, this.username, this.password, findImportedFiles());
     }
 
     private static List<AccountStatement> fetchAccountStatements(final String ipAddress,
                                                                  final String username,
                                                                  final String password,
-                                                                 final List<LocalDate> missingFilenameDates) {
+                                                                 final Map<LocalDate, Integer> fetchedFiles) {
 
         requireNonNull(ipAddress, "ipAddress is null");
         requireNonNull(username, "username is null");
         requireNonNull(password, "password is null");
-
-        if (missingFilenameDates.isEmpty()) {
-            return Collections.emptyList();
-        }
 
         try (final SSHClient ssh = new SSHClient()) {
 
@@ -151,15 +156,15 @@ public class AccountStatementImportFeature {
 
                 final List<RemoteResourceInfo> resources = sftp.ls(DIRECTORY, RemoteResourceInfo::isRegularFile);
 
-                final List<Tuple2<String, LocalDate>> filesToFetch =
-                        findFilesToBeFetched(resources, missingFilenameDates);
+                final List<Tuple3<String, LocalDate, Integer>> filesToFetch =
+                        findFilesToBeFetched(resources, fetchedFiles);
 
                 if (filesToFetch.isEmpty()) {
                     LOG.info("No new account statement files present");
                     return Collections.emptyList();
                 }
 
-                final String filenames = filesToFetch.stream().map(Tuple2::_1).collect(joining(", "));
+                final String filenames = filesToFetch.stream().map(Tuple3::_1).collect(joining(", "));
                 LOG.info("Found {} account statement files to be fetched: {}", filesToFetch.size(), filenames);
 
                 final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -185,6 +190,7 @@ public class AccountStatementImportFeature {
                                 final AccountStatement statement = AccountStatementParser.parseFile(fileContent);
                                 statement.setFilename(filename);
                                 statement.setFilenameDate(tuple._2);
+                                statement.setFileNumber(tuple._3);
 
                                 return Stream.of(statement);
 
@@ -206,47 +212,63 @@ public class AccountStatementImportFeature {
         }
     }
 
-    private static List<Tuple2<String, LocalDate>> findFilesToBeFetched(final List<RemoteResourceInfo> resources,
-                                                                        final List<LocalDate> missingFilenameDates) {
-        final LocalDate earliestMissingDate =
-                missingFilenameDates.stream().min(naturalOrder()).orElseThrow(IllegalStateException::new);
+    // Package private for testing
+    /*package*/ static List<Tuple3<String, LocalDate, Integer>> findFilesToBeFetched(final List<RemoteResourceInfo> resources,
+                                                                                 final Map<LocalDate, Integer> fetchedFiles) {
+        // Earliest date to consider
+        final LocalDate earliestValidDate = getSearchPeriod().lowerEndpoint();
 
         return resources.stream()
-                .flatMap(resource -> {
-                    return extractFileDate(resource, earliestMissingDate)
-                            .filter(missingFilenameDates::contains)
-                            .map(date -> Tuple.of(resource.getName(), date))
-                            .map(Stream::of)
-                            .orElseGet(Stream::empty);
-                })
-                .sorted(comparing(Tuple2::_2))
+                .flatMap(resource -> extractFileMetadata(resource, earliestValidDate)
+                        // Filter out if earlies valid date is after the resource date
+                        .filter(tuple-> !earliestValidDate.isAfter(tuple._1()))
+                        // Include only if valid or greater file number that previously imported for that date
+                        .filter(tuple -> fetchedFiles.getOrDefault(tuple._1(), -1) < tuple._2())
+                        .map(date -> Tuple.of(resource.getName(), date._1(), date._2()))
+                        .map(Stream::of)
+                        .orElseGet(Stream::empty))
+                .sorted(getDateAndFileNumberComparator())
                 .collect(toList());
     }
 
-    private static Optional<LocalDate> extractFileDate(final RemoteResourceInfo resource,
-                                                       final LocalDate earliestDateExpected) {
+    private static Comparator<Tuple3<String, LocalDate, Integer>> getDateAndFileNumberComparator() {
+        final Comparator<Tuple3<String, LocalDate, Integer>> dateComparator = comparing(Tuple3::_2);
+        final Comparator<Tuple3<String, LocalDate, Integer>> fullComparator = dateComparator.thenComparing(Tuple3::_3);
+        return fullComparator;
+    }
+
+    private static Optional<Tuple2<LocalDate, Integer>> extractFileMetadata(final RemoteResourceInfo resource,
+                                                                            final LocalDate earliestValidDate) {
 
         final String filename = resource.getName();
-        final Matcher matcher = FILENAME_PATTERN.matcher(filename);
+        final Matcher legacyFormatMatcher = FILENAME_PATTERN.matcher(filename);
+        final Matcher matcher = FILENAME_WITH_FILE_NUMBER_PATTERN.matcher(filename);
 
-        if (matcher.matches()) {
+        if (legacyFormatMatcher.matches()) {
             try {
-                final int day = Integer.parseInt(matcher.group(1));
-                final int month = Integer.parseInt(matcher.group(2));
-                final int year = 2000 + Integer.parseInt(matcher.group(3));
+                final int day = Integer.parseInt(legacyFormatMatcher.group(1));
+                final int month = Integer.parseInt(legacyFormatMatcher.group(2));
+                final int year = 2000 + Integer.parseInt(legacyFormatMatcher.group(3));
 
-                return Optional.of(new LocalDate(year, month, day));
+                return Optional.of(Tuple.of(new LocalDate(year, month, day), 0));
 
             } catch (final IllegalArgumentException e) {
                 LOG.warn("Incorrect date in filename: '{}'", filename, e);
             }
+        } else if (matcher.matches()) {
+            final int day = Integer.parseInt(matcher.group(1));
+            final int month = Integer.parseInt(matcher.group(2));
+            final int year = 2000 + Integer.parseInt(matcher.group(3));
+            final int fileNumber = Integer.parseInt(matcher.group(4));
+
+            return Optional.of(Tuple.of(new LocalDate(year, month, day), fileNumber));
         } else {
             // Log warn message if new files with unknown filename pattern are detected.
 
             final long mtime = resource.getAttributes().getMtime();
             final LocalDate dateFromMtime = new DateTime(mtime * 1000L, Constants.DEFAULT_TIMEZONE).toLocalDate();
 
-            if (!dateFromMtime.isBefore(earliestDateExpected)) {
+            if (!dateFromMtime.isBefore(earliestValidDate)) {
                 LOG.warn("Filename not matching expected pattern: '{}'", filename);
             }
         }
@@ -254,35 +276,25 @@ public class AccountStatementImportFeature {
         return Optional.empty();
     }
 
-    private List<LocalDate> findMissingFilenameDates() {
+    private Map<LocalDate, Integer> findImportedFiles() {
+        final Range<LocalDate> searchPeriod = getSearchPeriod();
+
+        return findImportedFilesBetweenDates(searchPeriod.lowerEndpoint(), searchPeriod.upperEndpoint());
+
+    }
+
+    public static Range<LocalDate> getSearchPeriod() {
         final LocalDate searchPeriodEnd = today();
         final LocalDate searchPeriodBegin = searchPeriodEnd.minusDays(90);
-
-        final List<LocalDate> existingFilenameDates = findImportedFilenameDates(searchPeriodBegin, searchPeriodEnd);
-
-        return streamBusinessDays(searchPeriodBegin, searchPeriodEnd)
-                .filter(date -> !existingFilenameDates.contains(date))
-                .collect(toList());
+        return DateUtil.rangeFrom(searchPeriodBegin, searchPeriodEnd );
     }
 
-    private static Stream<LocalDate> streamBusinessDays(final LocalDate beginDate, final LocalDate endDate) {
-        final int daysElapsed = Days.daysBetween(beginDate, endDate).getDays();
-
-        return IntStream
-                .rangeClosed(0, daysElapsed)
-                .mapToObj(beginDate::plusDays)
-                // Filter out Saturdays and Sundays because account statement files do not appear
-                // at weekends.
-                .filter(date -> date.getDayOfWeek() <= 5);
-    }
-
-    private List<LocalDate> findImportedFilenameDates(final LocalDate beginDate, final LocalDate endDate) {
+    private Map<LocalDate, Integer> findImportedFilesBetweenDates(final LocalDate beginDate, final LocalDate endDate) {
         final QAccountTransferBatch BATCH = QAccountTransferBatch.accountTransferBatch;
 
         return queryFactory
-                .select(BATCH.filenameDate)
                 .from(BATCH)
                 .where(BATCH.filenameDate.between(beginDate, endDate))
-                .fetch();
+                .transform(groupBy(BATCH.filenameDate).as(max(BATCH.fileNumber.coalesce(0))));
     }
 }

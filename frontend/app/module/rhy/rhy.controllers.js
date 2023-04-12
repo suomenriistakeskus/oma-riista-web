@@ -19,6 +19,7 @@ angular.module('app.rhy.controllers', [])
                 controller: function (ActiveRoleService) {
                     this.coordinatorView = ActiveRoleService.isCoordinator() || ActiveRoleService.isModerator();
                     this.shootingTestOfficialView = ActiveRoleService.isShootingTestOfficial();
+                    this.gameWardenView = ActiveRoleService.isGameWarden();
                 }
             })
             .state('rhy.show', {

@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.research.species', ['app.metadata'
                 templateUrl: 'harvestpermit/applications/research/species/species.html',
                 controller: 'ResearchPermitWizardSpeciesController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesAmountList: function (ResearchPermitApplication, applicationId) {
                         return ResearchPermitApplication.listSpeciesAmounts({id: applicationId}).$promise;

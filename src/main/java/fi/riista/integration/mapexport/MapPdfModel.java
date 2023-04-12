@@ -2,6 +2,7 @@ package fi.riista.integration.mapexport;
 
 import fi.riista.feature.gis.zone.GISZoneSizeDTO;
 import fi.riista.util.DateUtil;
+import fi.riista.util.F;
 import fi.riista.util.GISUtils;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.NumberUtils;
@@ -58,6 +59,7 @@ public class MapPdfModel {
         private double[] bbox;
         private DateTime modificationTime;
         private GISZoneSizeDTO areaSize;
+        private FeatureCollection featureCollection;
 
         public Builder(final Locale locale) {
             this.locale = Objects.requireNonNull(locale);
@@ -107,6 +109,11 @@ public class MapPdfModel {
 
         public Builder withAreaSize(final GISZoneSizeDTO size) {
             this.areaSize = size;
+            return this;
+        }
+
+        public Builder withFeatureCollection(final FeatureCollection featureCollection) {
+            this.featureCollection = featureCollection;
             return this;
         }
 
@@ -171,7 +178,7 @@ public class MapPdfModel {
                     ? DateUtil.toLocalDateTimeNullSafe(modificationTime)
                     : DateUtil.today());
 
-            final String areaNameI18n = areaName.getAnyTranslation(locale);
+            final String areaNameI18n = F.mapNullable(areaName, name -> name.getAnyTranslation(locale));
 
             if (StringUtils.hasText(areaNameI18n)) {
                 return ts + "-" + areaNameI18n + ".pdf";
@@ -224,14 +231,17 @@ public class MapPdfModel {
 
         public MapPdfModel build() {
             Objects.requireNonNull(bbox, "bbox is null");
-            Objects.requireNonNull(geometry, "geometry is null");
-            Objects.requireNonNull(clubName, "clubName is null");
-            Objects.requireNonNull(areaName, "areaName is null");
 
-            final FeatureCollection featureCollection = new FeatureCollection();
-            featureCollection.setCrs(GISUtils.SRID.ETRS_TM35FIN.getGeoJsonCrs());
-            featureCollection.setBbox(bbox);
-            featureCollection.add(createBaseFeature());
+            if (featureCollection == null) {
+                Objects.requireNonNull(geometry, "geometry is null");
+                Objects.requireNonNull(areaName, "areaName is null");
+                Objects.requireNonNull(clubName, "clubName is null");
+
+                featureCollection = new FeatureCollection();
+                featureCollection.setCrs(GISUtils.SRID.ETRS_TM35FIN.getGeoJsonCrs());
+                featureCollection.setBbox(bbox);
+                featureCollection.add(createBaseFeature());
+            }
 
             if (overlayGeometry != null) {
                 featureCollection.add(createOverlayFeature());

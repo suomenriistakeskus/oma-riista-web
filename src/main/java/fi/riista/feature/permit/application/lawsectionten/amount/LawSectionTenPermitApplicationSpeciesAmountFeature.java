@@ -2,10 +2,12 @@ package fi.riista.feature.permit.application.lawsectionten.amount;
 
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesService;
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationAuthorizationService;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmountRepository;
+import fi.riista.feature.permit.application.lawsectionten.period.LawSectionTenPermitApplicationSpeciesPeriodDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +33,16 @@ public class LawSectionTenPermitApplicationSpeciesAmountFeature {
         final LawSectionTenPermitApplicationSpeciesAmountDTO speciesAmountDTO = application.getSpeciesAmounts().stream()
                 .map(LawSectionTenPermitApplicationSpeciesAmountDTO::new)
                 .findFirst()
-                .orElse(null);
+                .orElseGet(() -> {
+                    if (application.getHarvestPermitCategory() == HarvestPermitCategory.LAW_SECTION_TEN) {
+                        return null;
+                    }
+                    final LawSectionTenPermitApplicationSpeciesAmountDTO dto = new LawSectionTenPermitApplicationSpeciesAmountDTO();
+                    dto.setGameSpeciesCode(application.getHarvestPermitCategory() == HarvestPermitCategory.EUROPEAN_BEAVER
+                            ? GameSpecies.OFFICIAL_CODE_EUROPEAN_BEAVER
+                            : GameSpecies.OFFICIAL_CODE_PARTRIDGE);
+                    return dto;
+                });
 
         return speciesAmountDTO;
     }

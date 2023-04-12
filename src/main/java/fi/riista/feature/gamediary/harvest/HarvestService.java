@@ -2,14 +2,19 @@ package fi.riista.feature.gamediary.harvest;
 
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.CommitHookService;
+import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.HarvestChangeHistory;
 import fi.riista.feature.gamediary.harvest.mutation.HarvestMutationFactory;
 import fi.riista.feature.gamediary.harvest.mutation.HarvestUpdater;
 import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
 import fi.riista.feature.harvestpermit.report.email.HarvestReportNotificationService;
+import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingStatusService;
 import fi.riista.feature.huntingclub.hunting.mobile.MobileGroupHarvestDTO;
+import fi.riista.feature.huntingclub.search.HuntingClubNameDTO;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.util.F;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -30,6 +35,10 @@ public class HarvestService {
     @Resource
     private HarvestRepository harvestRepository;
 
+
+    @Resource
+    private DeletedHarvestRepository deletedHarvestRepository;
+
     @Resource
     private HarvestMutationFactory harvestMutationFactory;
 
@@ -41,6 +50,9 @@ public class HarvestService {
 
     @Resource
     private CommitHookService commitHookService;
+
+    @Resource
+    private HuntingClubRepository huntingClubRepository;
 
     private static void assertNotAcceptedToPermit(final Harvest harvest, final SystemUser activeUser) {
         if (harvest.getHarvestPermit() != null && harvest.isAcceptedToHarvestPermit()) {
@@ -112,6 +124,10 @@ public class HarvestService {
 
         harvest.setDescription(dto.getDescription());
 
+        if (dto.getHarvestSpecVersion().supportsHarvestHuntingClub()) {
+            updateHuntingClubField(harvest, dto.getSelectedHuntingClub());
+        }
+
         return historyEvent;
     }
 
@@ -178,6 +194,8 @@ public class HarvestService {
             harvest.setDescription(dto.getDescription());
         }
 
+        updateHuntingClubField(harvest, dto.getSelectedHuntingClub());
+
         return historyEvent;
     }
 
@@ -190,6 +208,10 @@ public class HarvestService {
         assertNotAcceptedToPermit(harvest, activeUser);
         assertNotAttachedToHuntingDay(harvest);
 
+        final DeletedHarvest deletedHarvest =
+                new DeletedHarvest(harvest.getId(), F.getId(harvest.getAuthor()), F.getId(harvest.getActualShooter()));
+        deletedHarvestRepository.save(deletedHarvest);
+
         harvestRepository.delete(harvest);
     }
 
@@ -199,5 +221,14 @@ public class HarvestService {
                 harvestReportNotificationService.sendNotificationForHarvest(harvest.getId());
             });
         }
+    }
+
+    private void updateHuntingClubField(Harvest harvest, HuntingClubNameDTO huntingClubNameDTO) {
+        if (huntingClubNameDTO == null || huntingClubNameDTO.getId() == null) {
+            harvest.setHuntingClub(null);
+            return;
+        }
+        final HuntingClub huntingClub = huntingClubRepository.getOne(huntingClubNameDTO.getId());
+        harvest.setHuntingClub(huntingClub);
     }
 }

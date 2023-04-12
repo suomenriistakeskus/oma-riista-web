@@ -15,6 +15,13 @@ angular.module('app.reporting.controllers', [])
                     $ctrl.isAuthorizedForHabides = ActiveRoleService.isAdmin() ||
                             AvailableRoleService.hasPrivilege(ModeratorPrivileges.habides);
 
+                    $ctrl.isAuthorizedForFrontpageNews = ActiveRoleService.isAdmin() ||
+                        AvailableRoleService.hasPrivilege(ModeratorPrivileges.publishFrontpageNews);
+
+                    $ctrl.isAuthorizedForHuntingControlMap = ActiveRoleService.isAdmin() ||
+                        AvailableRoleService.hasPrivilege(ModeratorPrivileges.viewHuntingControlEvents);
+
+
                 }
             })
             .state('reporting.home', {
@@ -52,6 +59,17 @@ angular.module('app.reporting.controllers', [])
                     },
                     tabs: function (Rhys) {
                         return Rhys.searchParamOrganisations({id: null}).$promise;
+                    }
+                }
+            })
+            .state('reporting.news', {
+                url: '/news',
+                templateUrl: 'news/list.html',
+                controller: 'NewsListController',
+                controllerAs: '$ctrl',
+                resolve: {
+                    slice: function (News) {
+                        return News.list().$promise;
                     }
                 }
             });

@@ -4,6 +4,7 @@ import fi.riista.feature.common.repository.BaseRepository;
 import fi.riista.feature.harvestpermit.list.MooselikeHuntingYearDTO;
 import fi.riista.feature.permit.decision.PermitDecision;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface HarvestPermitRepository extends BaseRepository<HarvestPermit, Long>, HarvestPermitRepositoryCustom{
@@ -11,6 +12,8 @@ public interface HarvestPermitRepository extends BaseRepository<HarvestPermit, L
     HarvestPermit findByPermitNumber(String permitNumber);
 
     List<HarvestPermit> findByPermitDecision(PermitDecision permitDecision);
+
+    List<HarvestPermit> findByPermitDecisionIn(Collection<PermitDecision> decisions);
 
     default List<HarvestPermit> findMooselikePermits(final int huntingYear, final int gameSpeciesCode) {
         final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;

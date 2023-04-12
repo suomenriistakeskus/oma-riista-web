@@ -58,6 +58,24 @@ public class PermitDecisionActionFeature {
     }
 
     @Transactional
+    public void createActions(final long decisionId, final List<PermitDecisionActionDTO> list) {
+        final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.UPDATE);
+        decision.assertHandler(activeUserService.requireActiveUser());
+
+        final List<PermitDecisionAction> actions = list.stream()
+                .map(dto -> {
+                    final PermitDecisionAction action = new PermitDecisionAction();
+                    action.setPermitDecision(decision);
+                    updateEntity(dto, action);
+                    return action;
+                })
+                .collect(toList());
+
+        permitDecisionActionRepository.saveAll(actions);
+        updateDecisionText(decision);
+    }
+
+    @Transactional
     public void update(final long decisionId, final PermitDecisionActionDTO dto) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(decisionId, EntityPermission.UPDATE);
         decision.assertHandler(activeUserService.requireActiveUser());

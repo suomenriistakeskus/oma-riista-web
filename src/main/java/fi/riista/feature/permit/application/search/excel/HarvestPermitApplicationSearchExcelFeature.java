@@ -195,8 +195,9 @@ public class HarvestPermitApplicationSearchExcelFeature {
                                 Projections.constructor(HarvestPermitApplicationSpeciesAmountDTO.class, APPLICATION_SPA, SPECIES))));
     }
 
-    private Map<Long, Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>>> collectGrantedAmountsByDecisions(final Collection<PermitDecision> decisions,
-                                                                                                                   final Integer gameSpeciesCode) {
+    /* Package private for testing */
+    Map<Long, Map<Integer, Map<Integer, ApplicationSearchDecisionSpeciesAmountDTO>>> collectGrantedAmountsByDecisions(final Collection<PermitDecision> decisions,
+                                                                                                                      final Integer gameSpeciesCode) {
         final Predicate speciesPredicate = F.mapNullable(gameSpeciesCode, code -> SPECIES.officialCode.eq(code));
         return jpqlQueryFactory.from(DECISION_SPA)
                 .innerJoin(DECISION_SPA.permitDecision, DECISION)
@@ -206,9 +207,9 @@ public class HarvestPermitApplicationSearchExcelFeature {
                 .where(speciesPredicate)
                 .transform(groupBy(APPLICATION.id).as(
                         GroupBy.map(
-                                DECISION_SPA.beginDate.year(),
+                                SPECIES.officialCode,
                                 GroupBy.map(
-                                        SPECIES.officialCode,
+                                        DECISION_SPA.beginDate.year(),
                                         Projections.constructor(ApplicationSearchDecisionSpeciesAmountDTO.class, DECISION_SPA, SPECIES)))));
 
     }

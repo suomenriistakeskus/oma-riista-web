@@ -110,8 +110,6 @@ angular.module('app.harvestpermit.decision.document', [])
                     return (isSwedish ? 67 : 66);
                 case PermitDecisionSection.ADDITIONAL_INFO:
                     return (isSwedish ? (byMail ? 288 : 302) : (byMail ? 265 : 282));
-                case PermitDecisionSection.DELIVERY:
-                    return (isSwedish ? 24 : 18);
             }
 
             return 0;

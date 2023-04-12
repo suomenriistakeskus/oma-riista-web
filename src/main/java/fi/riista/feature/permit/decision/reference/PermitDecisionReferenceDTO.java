@@ -8,8 +8,11 @@ import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.common.decision.GrantStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionDocument;
+import fi.riista.feature.permit.decision.action.PermitDecisionActionDTO;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
 
 public class PermitDecisionReferenceDTO extends BaseEntityDTO<Long> {
     private Long id;
@@ -23,7 +26,14 @@ public class PermitDecisionReferenceDTO extends BaseEntityDTO<Long> {
 
     private PermitDecisionDocument document;
 
+    private List<PermitDecisionActionDTO> actions;
+
     public static PermitDecisionReferenceDTO create(final @Nullable PermitDecision decision) {
+        return create(decision, Collections.emptyList());
+    }
+
+    public static PermitDecisionReferenceDTO create(final @Nullable PermitDecision decision,
+                                                    final List<PermitDecisionActionDTO> actions) {
         if (decision == null) {
             return null;
         }
@@ -46,6 +56,9 @@ public class PermitDecisionReferenceDTO extends BaseEntityDTO<Long> {
             handlerDTO.setLastName(h.getLastName());
             dto.setHandler(handlerDTO);
         }
+
+        dto.setActions(actions);
+
         return dto;
     }
 
@@ -123,5 +136,13 @@ public class PermitDecisionReferenceDTO extends BaseEntityDTO<Long> {
 
     public void setDocument(final PermitDecisionDocument document) {
         this.document = document;
+    }
+
+    public List<PermitDecisionActionDTO> getActions() {
+        return actions;
+    }
+
+    public void setActions(final List<PermitDecisionActionDTO> actions) {
+        this.actions = actions;
     }
 }

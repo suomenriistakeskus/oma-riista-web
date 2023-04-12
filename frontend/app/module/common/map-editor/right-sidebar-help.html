@@ -1,0 +1,139 @@
+<div class="map-help-panel">
+    <div class="top">
+        <div>
+            <h1 translate="global.map.editor.helpPanel.instructionsTitle"></h1>
+        </div>
+        <div>
+            <button class="close-btn" ng-click="close()" translate="global.map.editor.helpPanel.close"></button>
+        </div>
+    </div>
+    <ul class="help-link-list">
+        <li>
+            <button ng-click="openCategory('addAndRemovePalsta')" translate="global.map.editor.helpPanel.addAndRemovePalstaBtn" ></button>
+        </li>
+        <li>
+            <button ng-click="openCategory('drawArea')" translate="global.map.editor.helpPanel.drawAreaBtn" ></button>
+        </li>
+        <li>
+            <button ng-click="openCategory('palstaCutting')" translate="global.map.editor.helpPanel.palstaCuttingBtn" ></button>
+        </li>
+    </ul>
+    <div class="content" ng-show="isCategory('addAndRemovePalsta')">
+        <h2 translate="global.map.editor.helpPanel.addAndRemovePalsta.title"></h2>
+
+        <h3 translate="global.map.editor.helpPanel.addAndRemovePalsta.addTitle"></h3>
+
+        <ol>
+            <li translate="global.map.editor.helpPanel.addAndRemovePalsta.add_1"></li>
+            <li translate="global.map.editor.helpPanel.addAndRemovePalsta.add_2"></li>
+        </ol>
+
+        <img alt="{{'global.map.editor.helpPanel.addAndRemovePalsta.addTitle' | translate}}" src="/static/common/map/help/palstojen-lisays-1.jpg"/>
+
+        <h3 translate="global.map.editor.helpPanel.addAndRemovePalsta.removeTitle"></h3>
+
+        <ol>
+            <li translate="global.map.editor.helpPanel.addAndRemovePalsta.remove_1"></li>
+            <li translate="global.map.editor.helpPanel.addAndRemovePalsta.remove_2"></li>
+        </ol>
+
+    </div>
+
+    <div class="content" ng-show="isCategory('drawArea')">
+        <p class="alert alert-danger">
+            <span class="fa fa-warning fa-2x">&nbsp;</span>
+            <span translate="global.map.editor.helpPanel.notInMoosePermitAlert"></span>
+        </p>
+
+        <h2 translate="global.map.editor.helpPanel.drawArea.title"></h2>
+
+        <h3 translate="global.map.editor.helpPanel.drawArea.addTitle"></h3>
+
+        <ol>
+            <li translate="global.map.editor.helpPanel.drawArea.add_1"></li>
+            <li translate="global.map.editor.helpPanel.drawArea.add_2"></li>
+            <li translate="global.map.editor.helpPanel.drawArea.add_3"></li>
+            <li translate="global.map.editor.helpPanel.drawArea.add_4"></li>
+            <li translate="global.map.editor.helpPanel.drawArea.add_5"></li>
+        </ol>
+
+        <img alt="{{'global.map.editor.helpPanel.drawArea.addTitle' | translate}} 1/4" src="/static/common/map/help/alueen-lisays-1.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.drawArea.addTitle' | translate}} 2/4" src="/static/common/map/help/alueen-lisays-2.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.drawArea.addTitle' | translate}} 3/4" src="/static/common/map/help/alueen-lisays-3.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.drawArea.addTitle' | translate}} 4/4" src="/static/common/map/help/alueen-lisays-4.jpg"/>
+
+        <h3 translate="global.map.editor.helpPanel.drawArea.editTitle"></h3>
+
+        <ol>
+            <li translate="global.map.editor.helpPanel.drawArea.edit_1"></li>
+            <li translate="global.map.editor.helpPanel.drawArea.edit_2"></li>
+            <li translate="global.map.editor.helpPanel.drawArea.edit_3"></li>
+        </ol>
+
+        <img alt="{{'global.map.editor.helpPanel.drawArea.editTitle' | translate}} 1/2" src="/static/common/map/help/alueen-muokkaus-1.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.drawArea.editTitle' | translate}} 2/2" src="/static/common/map/help/alueen-muokkaus-2.jpg"/>
+    </div>
+
+    <div class="content" ng-show="isCategory('palstaCutting')">
+
+        <h2 translate="global.map.editor.helpPanel.palstaCutting.title"></h2>
+
+        <h3 translate="global.map.editor.helpPanel.palstaCutting.drawLineTitle"></h3>
+
+        <ol>
+            <li translate="global.map.editor.helpPanel.palstaCutting.drawLine_1"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.drawLine_2"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.drawLine_3"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.drawLine_4"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.drawLine_5"></li>
+        </ol>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.drawLineTitle' | translate}} 1/4" src="/static/common/map/help/piirra-murto-1.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.drawLineTitle' | translate}} 2/4" src="/static/common/map/help/piirra-murto-2.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.drawLineTitle' | translate}} 3/4" src="/static/common/map/help/piirra-murto-3.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.drawLineTitle' | translate}} 4/4" src="/static/common/map/help/piirra-murto-4.jpg"/>
+
+        <h3 translate="global.map.editor.helpPanel.palstaCutting.eraseLineTitle"></h3>
+
+        <ol>
+            <li translate="global.map.editor.helpPanel.palstaCutting.eraseLine_1"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.eraseLine_2"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.eraseLine_3"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.eraseLine_4"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.eraseLine_5"></li>
+        </ol>
+
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.eraseLineTitle' | translate}} 1/4" src="/static/common/map/help/pyyhi-murto-1.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.eraseLineTitle' | translate}} 2/4" src="/static/common/map/help/pyyhi-murto-2.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.eraseLineTitle' | translate}} 3/4" src="/static/common/map/help/pyyhi-murto-3.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.eraseLineTitle' | translate}} 4/4" src="/static/common/map/help/pyyhi-murto-4.jpg"/>
+
+        <h3 translate="global.map.editor.helpPanel.palstaCutting.drawFreeTitle"></h3>
+
+        <ol>
+            <li translate="global.map.editor.helpPanel.palstaCutting.drawFree_1"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.drawFree_2"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.drawFree_3"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.drawFree_4"></li>
+        </ol>
+
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.drawFreeTitle' | translate}} 1/4" src="/static/common/map/help/piirra-vapaa-1.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.drawFreeTitle' | translate}} 2/4" src="/static/common/map/help/piirra-vapaa-2.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.drawFreeTitle' | translate}} 3/4" src="/static/common/map/help/piirra-vapaa-3.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.drawFreeTitle' | translate}} 4/4" src="/static/common/map/help/piirra-vapaa-4.jpg"/>
+
+        <h3 translate="global.map.editor.helpPanel.palstaCutting.eraseFreeTitle"></h3>
+
+        <ol>
+            <li translate="global.map.editor.helpPanel.palstaCutting.eraseFree_1"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.eraseFree_2"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.eraseFree_3"></li>
+            <li translate="global.map.editor.helpPanel.palstaCutting.eraseFree_4"></li>
+        </ol>
+
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.eraseFreeTitle' | translate}} 1/3" src="/static/common/map/help/pyyhi-vapaa-1.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.eraseFreeTitle' | translate}} 2/3" src="/static/common/map/help/pyyhi-vapaa-1.jpg"/>
+        <img alt="{{'global.map.editor.helpPanel.palstaCutting.eraseFreeTitle' | translate}} 3/3" src="/static/common/map/help/pyyhi-vapaa-1.jpg"/>
+
+    </div>
+</div>
+

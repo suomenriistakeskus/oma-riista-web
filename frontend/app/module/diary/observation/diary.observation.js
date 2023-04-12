@@ -505,6 +505,7 @@ angular.module('app.diary.observation', [])
         $scope.getCategoryName = parameters.$getCategoryName;
         $scope.getUrl = DiaryImageService.getUrl;
         $scope.maxSpecimenCount = DiaryEntrySpecimenFormService.getMaxSpecimenCountForObservation();
+        $scope.minSpecimenCount = DiaryEntrySpecimenFormService.getMinSpecimenCountForObservation(entry.observationType);
         $scope.fieldMetadata = fieldMetadataForObservationSpecies;
         $scope.fieldRequirements = null;
         $scope.viewState = {
@@ -705,6 +706,26 @@ angular.module('app.diary.observation', [])
             if ($scope.fieldMetadata) {
                 $scope.updateRequirements();
             }
+
+            if ($scope.entry.observationType === 'PARI') {
+                $scope.entry.totalSpecimenAmount = 2;
+                DiaryEntrySpecimenFormService.setSpecimenCount($scope.entry, $scope.entry.totalSpecimenAmount);
+
+                $scope.entry.specimens[0].gender = 'MALE';
+                $scope.entry.specimens[0].age = 'ADULT';
+                $scope.entry.specimens[1].gender = 'FEMALE';
+                $scope.entry.specimens[1].age = 'ADULT';
+            }
+
+            $scope.minSpecimenCount = DiaryEntrySpecimenFormService.getMinSpecimenCountForObservation(entry.observationType);
+            if ($scope.entry.totalSpecimenAmount < $scope.minSpecimenCount) {
+                $scope.entry.totalSpecimenAmount = $scope.minSpecimenCount;
+                DiaryEntrySpecimenFormService.setSpecimenCount($scope.entry, $scope.minSpecimenCount);
+            }
+        };
+
+        $scope.isTotalSpecimenAmountDisabled = function () {
+            return !$scope.entry.canEdit || !$scope.entry.gameSpeciesCode || $scope.entry.observationType === 'PARI';
         };
 
         // Changed value of 'Määrä' input field

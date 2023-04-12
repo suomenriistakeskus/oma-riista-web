@@ -164,22 +164,6 @@
 
                 <hr>
 
-                <h2><fmt:message key="carnivore.application.justification.behaviour"/></h2>
-
-                <p>
-                    <c:out value="${model.justification.populationDescription}"></c:out>
-                </p>
-
-                <hr>
-
-                <h2><fmt:message key="carnivore.application.justification.other"/></h2>
-
-                <p>
-                    <c:out value="${model.justification.additionalJustificationInfo}"></c:out>
-                </p>
-
-                <hr>
-
                 <h2><fmt:message key="carnivore.application.justification.alternatives"/></h2>
 
                 <p>

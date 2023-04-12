@@ -51,6 +51,9 @@ public class HarvestPermitApplicationConflictPalsta extends LifecycleEntity<Long
     @Column
     private Double conflictAreaSize;
 
+    @Column
+    private Double conflictAreaWaterSize;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "harvest_permit_application_conflict_palsta_id", nullable = false)
@@ -127,5 +130,13 @@ public class HarvestPermitApplicationConflictPalsta extends LifecycleEntity<Long
 
     public void setConflictAreaSize(final Double conflictAreaSize) {
         this.conflictAreaSize = conflictAreaSize;
+    }
+
+    public Double getConflictAreaWaterSize() {
+        return conflictAreaWaterSize;
+    }
+
+    public void setConflictAreaWaterSize(final Double conflictAreaWaterSize) {
+        this.conflictAreaWaterSize = conflictAreaWaterSize;
     }
 }

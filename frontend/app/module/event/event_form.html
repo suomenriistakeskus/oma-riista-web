@@ -23,8 +23,14 @@
                         required
                         ng-change="onSelectionChange()"></select>
                 <div class="alert alert-info"
-                     ng-if="isHunterExamTraining()"
-                     translate="event.form.hunterExamTrainingInfo"></div>
+                     ng-if="isHunterExamTraining()">
+                    <p translate="event.form.hunterExamTrainingInfo"></p>
+                    <p translate="event.form.hunterExamTrainingInfo2"></p>
+                    <p translate="event.form.hunterExamTrainingInfo3"></p>
+                </div>
+                <div class="alert alert-info"
+                     ng-if="isShootingTraining()"
+                     translate="event.form.shootingTrainingInfo"></div>
             </div>
         </div>
 
@@ -89,19 +95,49 @@
                            finnish-time
                            ng-model="viewState.event.beginTime"
                            ng-disabled="viewState.event.lockedAsPastCalendarEvent ||isInRowEditMode()"
+                           ng-change="durationChanged()"
+                           ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
                            required/>
                 </div>
             </div>
             <div>
-                <label for="endTime" class="col-xs-3 control-label" translate="event.form.endTime"></label>
+                <label for="endTime" class="col-xs-3 control-label">
+                    <span translate="event.form.endTime"></span>
+                    <span ng-if="isHunterExamTraining()" class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
 
                 <div class="col-xs-2">
                     <input type="text" class="form-control"
                            name="endTime" id="endTime"
                            finnish-time
                            ng-model="viewState.event.endTime"
-                           ng-disabled="viewState.event.lockedAsPastCalendarEvent || isInRowEditMode()"/>
+                           ng-disabled="viewState.event.lockedAsPastCalendarEvent || isInRowEditMode()"
+                           ng-required="isHunterExamTraining()"
+                           ng-change="durationChanged()"
+                           ng-model-options="{updateOn: 'default blur', debounce: {'default': 500, 'blur': 0}}"
+                           r-validate-greater-or-equal="viewState.event.beginTime"/>
+
+                    <div class="help-block has-error"
+                         ng-show="form.endTime.$touched && form.endTime.$invalid"
+                         ng-messages="form.endTime.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                        <div ng-message="greaterOrEqual"
+                             translate="event.form.endTimeInstruction">
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <div ng-if="isHunterExamTraining()" class="form-group row">
+            <label for="duration" class="col-xs-4 control-label">
+                <span translate="event.form.duration"></span>
+            </label>
+
+            <div name="duration"
+                 id="duration"
+                 class="col-xs-2 r-event-duration"
+                 ng-bind="viewState.duration">
             </div>
         </div>
 
@@ -125,7 +161,8 @@
                           name="description" id="description"
                           rows="10"
                           ng-model="viewState.event.description"
-                          ng-disabled="isInRowEditMode()"></textarea>
+                          ng-disabled="isInRowEditMode()"
+                          spellcheck="false"></textarea>
             </div>
         </div>
 
@@ -146,6 +183,52 @@
                 </div>
             </div>
         </div>
+
+        <div ng-if="isAttemptsShown()">
+            <div class="form-group" show-errors>
+                <label for="passedAttempts" class="col-xs-4 control-label">
+                    <span translate="event.form.passedAttempts"></span>
+                </label>
+
+                <div class="col-xs-2">
+                    <input type="number" class="form-control"
+                           name="passedAttempts" id="passedAttempts"
+                           ng-model="viewState.event.passedAttempts"
+                           ng-disabled="viewState.event.lockedAsPastStatistics"
+                           min="0"
+                           max="99999"
+                           step="1"/>
+
+                    <p class="help-block has-error"
+                       ng-show="form.passedAttempts.$invalid"
+                       ng-messages="form.passedAttempts.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+            <div class="form-group" show-errors>
+                <label for="failedAttempts" class="col-xs-4 control-label">
+                    <span translate="event.form.failedAttempts"></span>
+                </label>
+
+                <div class="col-xs-2">
+                    <input type="number" class="form-control"
+                           name="failedAttempts" id="failedAttempts"
+                           ng-model="viewState.event.failedAttempts"
+                           ng-disabled="viewState.event.lockedAsPastStatistics"
+                           min="0"
+                           max="99999"
+                           step="1"/>
+
+                    <p class="help-block has-error"
+                       ng-show="form.failedAttempts.$invalid"
+                       ng-messages="form.failedAttempts.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
 
         <div class="form-group">
             <label for="visibility" class="col-xs-4 control-label" translate="event.form.visible"></label>
@@ -239,11 +322,12 @@
             <table class="table table-condensed">
                 <thead>
                 <tr>
-                    <th class="col-xs-4" translate="event.venue"></th>
-                    <th class="col-xs-4" translate="event.form.date"></th>
+                    <th class="col-xs-3" translate="event.venue"></th>
+                    <th class="col-xs-3" translate="event.form.date"></th>
                     <th class="col-xs-2" translate="event.date"></th>
                     <th class="col-xs-2"></th>
-                    <th></th>
+                    <th class="col-xs-1" translate="event.form.duration"></th>
+                    <th class="col-xs-1"></th>
                 </tr>
                 </thead>
 
@@ -284,6 +368,7 @@
                 </div>
             </td>
             <td></td>
+            <td>{{getDuration(additionalCalendarEvent)}}</td>
             <td class="text-right r-table-actions-cell">
                 <button type="button" ng-click="editEvent(additionalCalendarEvent)" class="btn btn-link"
                         ng-if="!viewState.event.lockedAsPastCalendarEvent"
@@ -360,17 +445,40 @@
                 </ng-form>
             </td>
             <td>
-                <input type="text" class="form-control"
-                       name="endTime" id="editedEndTime"
-                       finnish-time
-                       ng-model="viewState.editedEvent.endTime"
-                       ng-disabled="viewState.event.lockedAsPastCalendarEvent"/>
+                <ng-form name="endTimeForm">
+                    <div class="form-group" show-errors>
+                        <label ng-if="isHunterExamTraining()" for="editedEndTime" class="col-xs-1 control-label">
+                            <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                        </label>
+                        <div class="col-xs-8 input-group">
+                            <input type="text" class="form-control"
+                                   name="editedEndTime" id="editedEndTime"
+                                   finnish-time
+                                   ng-model="viewState.editedEvent.endTime"
+                                   ng-disabled="viewState.event.lockedAsPastCalendarEvent"
+                                   ng-required="isHunterExamTraining()"
+                                   r-validate-greater-or-equal="viewState.editedEvent.beginTime"/>
+                            <div class="help-block has-error"
+                                 ng-show="endTimeForm.editedEndTime.$touched && endTimeForm.editedEndTime.$invalid"
+                                 ng-messages="endTimeForm.editedEndTime.$error">
+                                <span ng-messages-include="common/errorMessages.html"></span>
+                                <div ng-message="greaterOrEqual"
+                                     translate="event.form.endTimeInstruction">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </ng-form>
+            </td>
+            <td>
+                <div class="r-event-duration">{{getDuration(viewState.editedEvent)}}</div>
             </td>
             <td class="text-right r-table-actions-cell">
                 <button type="button"
                         ng-click="saveEditEvent(additionalCalendarEvent.key)"
                         class="btn btn-link"
-                        ng-disabled="beginTimeForm.editedBeginTime.$invalid || venueForm.editedVenue.$invalid || dateForm.editedDate.$invalid"
+                        ng-disabled="dateForm.editedDate.$invalid || venueForm.editedVenue.$invalid || beginTimeForm.editedBeginTime.$invalid || endTimeForm.editedEndTime.$invalid"
                         ng-if="!viewState.event.lockedAsPastCalendarEvent">
                     <span class="glyphicon glyphicon-ok" title="{{'global.button.ok' | translate}}"></span>
                 </button>

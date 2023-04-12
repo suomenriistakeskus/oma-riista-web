@@ -18,6 +18,8 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="SOUND_EQUIPMENT"/&gt;
  *     &lt;enumeration value="TRACED_WITH_DOG"/&gt;
  *     &lt;enumeration value="TRACED_WITHOUT_DOG"/&gt;
+ *     &lt;enumeration value="VEHICLE"/&gt;
+ *     &lt;enumeration value="CHASING_WITH_PEOPLE"/&gt;
  *     &lt;enumeration value="OTHER"/&gt;
  *   &lt;/restriction&gt;
  * &lt;/simpleType&gt;
@@ -33,6 +35,8 @@ public enum RVR_SrvaMethodEnum {
     SOUND_EQUIPMENT,
     TRACED_WITH_DOG,
     TRACED_WITHOUT_DOG,
+    VEHICLE,
+    CHASING_WITH_PEOPLE,
     OTHER;
 
     public String value() {

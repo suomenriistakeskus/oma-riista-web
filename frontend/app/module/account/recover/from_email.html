@@ -9,7 +9,7 @@
     <div class="alert alert-danger" ng-show="doNotMatch" translate="recover_password.from_email.no_match"></div>
 
     <form name="form" role="form" novalidate ng-submit="submit()">
-        <div style="opacity: 0; position: absolute">
+        <div class="autofill-fields">
             <!-- Trick browser autofill to fill-in hidden input fields,
                 because autocomplete="off"" always ignores forms with password.-->
             <input type="text" name="autofill_username" autocomplete="username" tabindex="-1">

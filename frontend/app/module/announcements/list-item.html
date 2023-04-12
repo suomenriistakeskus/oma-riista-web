@@ -8,7 +8,7 @@
                 <span ng-show="$ctrl.showContent" class="glyphicon glyphicon-chevron-down"></span>
             </p>
 
-            <div class="col-xs-8 left">
+            <div class="col-xs-11 col-sm-8 left">
                 <div class="subject" ng-bind="::$ctrl.announcement.subject"></div>
                 <div class="sender">
                     <span translate="announcements.list.messageFrom"></span>
@@ -40,7 +40,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xs-3 right">
+            <div class="col-xs-12 col-sm-3 right">
                 <div class="date" ng-bind="::($ctrl.announcement.date | date:'dd.MM.yyyy')"></div>
 
                 <div ng-if="$ctrl.showContent && $ctrl.showActions && $ctrl.canEdit($ctrl.announcement)"

@@ -1,113 +1,115 @@
-<table class="table table-striped table-condensed">
-    <thead>
-    <tr>
-        <th class="col-xs-5" translate="occupation.name_and_address"></th>
-        <th class="col-xs-3" translate="occupation.phonenumber_and_email"></th>
-        <th class="col-xs-2" translate="club.group.memberOrder"></th>
-        <th class="col-xs-1">&nbsp;</th>
-        <th class="col-xs-1" translate="club.group.leaderCreated"></th>
-    </tr>
-    </thead>
+<div class="table-responsive">
+    <table class="table table-striped table-condensed">
+        <thead>
+        <tr>
+            <th class="col-xs-5" translate="occupation.name_and_address"></th>
+            <th class="col-xs-3" translate="occupation.phonenumber_and_email"></th>
+            <th class="col-xs-2" translate="club.group.memberOrder"></th>
+            <th class="col-xs-1">&nbsp;</th>
+            <th class="col-xs-1" translate="club.group.leaderCreated"></th>
+        </tr>
+        </thead>
 
-    <tbody>
-    <tr ng-repeat="member in $ctrl.members track by member.id">
-        <td>
-            <div ng-if="$ctrl.canEdit"
-                 ng-class="member.person.registered ? 'is-registered':'not-registered'"
-                 class="pull-right r-person-symbol"
-                 uib-tooltip="{{member.person.registered ? ('occupation.registered'|translate) : ('occupation.unregistered'|translate) }}">
+        <tbody>
+        <tr ng-repeat="member in $ctrl.members track by member.id">
+            <td>
+                <div ng-if="$ctrl.canEdit"
+                     ng-class="member.person.registered ? 'is-registered':'not-registered'"
+                     class="pull-right r-person-symbol"
+                     uib-tooltip="{{member.person.registered ? ('occupation.registered'|translate) : ('occupation.unregistered'|translate) }}">
 
-                <span class="glyphicon glyphicon-user"></span>
-            </div>
-
-            <div class="r-contact-name">
-                <span ng-bind="member.person.lastName + ' ' + member.person.byName"></span>
-                <span ng-show="member.callOrder == 0" class="glyphicon glyphicon-star text-success"></span>
-            </div>
-
-            <div>
-                <div ng-if="member.endDate">
-                    <span ng-bind="::member.beginDate | date:'d.M.yyyy'"></span>
-                    -
-                    <span ng-bind="::member.endDate | date:'d.M.yyyy'"></span>
+                    <span class="glyphicon glyphicon-user"></span>
                 </div>
-            </div>
 
-            <div class="r-contact-address">
-                <span ng-bind="member.person.address.streetAddress"></span>
-                <span ng-bind="member.person.address.postalCode"></span>
-                <span ng-bind="member.person.address.city" class="r-city"></span>
-            </div>
-        </td>
-        <td>
-            <div class="r-contact-phone" ng-if="member.person.phoneNumber">
-                <span class="glyphicon glyphicon glyphicon-earphone">&nbsp;</span>
-                <span ng-bind="member.person.phoneNumber"></span>
-            </div>
+                <div class="r-contact-name">
+                    <span ng-bind="member.person.lastName + ' ' + member.person.byName"></span>
+                    <span ng-show="member.callOrder == 0" class="glyphicon glyphicon-star text-success"></span>
+                </div>
 
-            <div class="r-contact-email" ng-if="member.person.email">
-                <span class="glyphicon glyphicon-envelope">&nbsp;</span>
-                <a href="mailto:{{member.person.email}}">
-                    <span ng-bind="member.person.email"></span>
-                </a>
-            </div>
-        </td>
-        <td>
-            <div ng-show="$ctrl.canEditMember(member) && member.callOrder != null">
-                <button type="button" class="btn btn-default"
-                        ng-disabled="$ctrl.adjustDisabled($index, -1)"
-                        ng-click="$ctrl.adjustMember($index, -1)">
-                    <span class="glyphicon glyphicon-circle-arrow-up"></span>
-                </button>
+                <div>
+                    <div ng-if="member.endDate">
+                        <span ng-bind="::member.beginDate | date:'d.M.yyyy'"></span>
+                        -
+                        <span ng-bind="::member.endDate | date:'d.M.yyyy'"></span>
+                    </div>
+                </div>
 
-                <button type="button" class="btn btn-default"
-                        ng-disabled="$ctrl.adjustDisabled($index, 1)"
-                        ng-click="$ctrl.adjustMember($index, 1)">
-                    <span class="glyphicon glyphicon-circle-arrow-down"></span>
-                </button>
-            </div>
-        </td>
-        <td>
+                <div class="r-contact-address">
+                    <span ng-bind="member.person.address.streetAddress"></span>
+                    <span ng-bind="member.person.address.postalCode"></span>
+                    <span ng-bind="member.person.address.city" class="r-city"></span>
+                </div>
+            </td>
+            <td>
+                <div class="r-contact-phone" ng-if="member.person.phoneNumber">
+                    <span class="glyphicon glyphicon glyphicon-earphone">&nbsp;</span>
+                    <span ng-bind="member.person.phoneNumber"></span>
+                </div>
+
+                <div class="r-contact-email" ng-if="member.person.email">
+                    <span class="glyphicon glyphicon-envelope">&nbsp;</span>
+                    <a href="mailto:{{member.person.email}}">
+                        <span ng-bind="member.person.email"></span>
+                    </a>
+                </div>
+            </td>
+            <td>
+                <div ng-show="$ctrl.canEditMember(member) && member.callOrder != null">
+                    <button type="button" class="btn btn-default"
+                            ng-disabled="$ctrl.adjustDisabled($index, -1)"
+                            ng-click="$ctrl.adjustMember($index, -1)">
+                        <span class="glyphicon glyphicon-circle-arrow-up"></span>
+                    </button>
+
+                    <button type="button" class="btn btn-default"
+                            ng-disabled="$ctrl.adjustDisabled($index, 1)"
+                            ng-click="$ctrl.adjustMember($index, 1)">
+                        <span class="glyphicon glyphicon-circle-arrow-down"></span>
+                    </button>
+                </div>
+            </td>
+            <td>
             <span ng-show="!$ctrl.canEditMember(member)"
                   ng-bind="::member.occupationType | translateWithPrefix:'occupation.type.'"></span>
 
-            <div class="btn-group"
-                 ng-show="$ctrl.canEditMember(member)"
-                 uib-dropdown dropdown-append-to-body>
+                <div class="btn-group"
+                     ng-show="$ctrl.canEditMember(member)"
+                     uib-dropdown dropdown-append-to-body>
 
-                <button type="button" class="btn btn-default"
-                        uib-dropdown-toggle>
-                    <span ng-bind="::member.occupationType | translateWithPrefix:'occupation.type.'"></span>
-                    <span class="caret"></span>
-                </button>
+                    <button type="button" class="btn btn-default"
+                            uib-dropdown-toggle>
+                        <span ng-bind="::member.occupationType | translateWithPrefix:'occupation.type.'"></span>
+                        <span class="caret"></span>
+                    </button>
 
-                <ul class="dropdown-menu" role="menu" uib-dropdown-menu>
-                    <li ng-show="$ctrl.isClubContact">
-                        <a ng-click="$ctrl.setMemberType('RYHMAN_JASEN',member)">
-                            <span translate="occupation.type.RYHMAN_JASEN"></span>
-                        </a>
-                    </li>
-                    <li ng-show="$ctrl.isClubContact && member.person.adult">
-                        <a ng-click="$ctrl.setMemberType('RYHMAN_METSASTYKSENJOHTAJA',member)">
-                            <span translate="occupation.type.RYHMAN_METSASTYKSENJOHTAJA"></span>
-                        </a>
-                    </li>
-                    <li class="divider" ng-show="$ctrl.isClubContact"></li>
-                    <li>
-                        <a ng-click="$ctrl.removeMember(member)">
-                            <span class="glyphicon glyphicon-remove"></span>
-                            <span translate="club.genericMember.button.remove"></span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </td>
-        <td>
-            <div ng-if="member.occupationType === 'RYHMAN_METSASTYKSENJOHTAJA'" class="text-center">
-                <span ng-bind="::member.modificationTime | date:'d.M.yyyy'"></span><br>
-                <span ng-bind="::member.modificationTime | date:'HH:mm'"></span>
-            </div>
-        </td>
-    </tr>
-    </tbody>
-</table>
+                    <ul class="dropdown-menu" role="menu" uib-dropdown-menu>
+                        <li ng-show="$ctrl.isClubContact">
+                            <a ng-click="$ctrl.setMemberType('RYHMAN_JASEN',member)">
+                                <span translate="occupation.type.RYHMAN_JASEN"></span>
+                            </a>
+                        </li>
+                        <li ng-show="$ctrl.isClubContact && member.person.adult">
+                            <a ng-click="$ctrl.setMemberType('RYHMAN_METSASTYKSENJOHTAJA',member)">
+                                <span translate="occupation.type.RYHMAN_METSASTYKSENJOHTAJA"></span>
+                            </a>
+                        </li>
+                        <li class="divider" ng-show="$ctrl.isClubContact"></li>
+                        <li>
+                            <a ng-click="$ctrl.removeMember(member)">
+                                <span class="glyphicon glyphicon-remove"></span>
+                                <span translate="club.genericMember.button.remove"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </td>
+            <td>
+                <div ng-if="member.occupationType === 'RYHMAN_METSASTYKSENJOHTAJA'" class="text-center">
+                    <span ng-bind="::member.modificationTime | date:'d.M.yyyy'"></span><br>
+                    <span ng-bind="::member.modificationTime | date:'HH:mm'"></span>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>

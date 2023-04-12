@@ -1,12 +1,11 @@
 package fi.riista.integration.paytrail.callback;
 
-import fi.riista.integration.paytrail.PaytrailService;
-import fi.riista.integration.paytrail.auth.PaytrailAccount;
-import fi.riista.integration.paytrail.auth.PaytrailAuthCodeException;
-import fi.riista.integration.paytrail.auth.PaytrailAuthCodeVerifier;
-import fi.riista.integration.paytrail.auth.PaytrailAuthService;
-import fi.riista.integration.paytrail.auth.PaytrailInvalidTimestampException;
 import fi.riista.integration.paytrail.order.PaytrailOrderNumber;
+import fi.riista.integration.paytrail.PaytrailService;
+import fi.riista.integration.paytrail.util.CheckoutConstants;
+import fi.riista.integration.paytrail.util.CheckoutLogging;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -17,54 +16,54 @@ import java.net.URI;
 @Component
 public class PaytrailDispatcher {
 
-    @Resource
-    private PaytrailAuthService paytrailAuthService;
-
+    private static Logger LOG = LoggerFactory.getLogger(PaytrailDispatcher.class);
     @Resource
     private PaytrailService paytrailService;
 
-    public ResponseEntity<?> dispatch(final PaytrailCallbackParameters params, final PaytrailCallback callback) {
-        paytrailService.storePaytrailPaymentEvent(params);
+    public ResponseEntity<?> dispatch(final boolean validSignature,
+                                      final PaytrailCallbackParameters params,
+                                      final PaytrailDispatcherCallback callback) {
+        if (validSignature) {
+            paytrailService.storePaytrailPaymentEvent(params);
 
-        final PaytrailOrderNumber paytrailOrderNumber = PaytrailOrderNumber.valueOf(params.getOrderNumber());
-
-        try {
-            final PaytrailAccount paytrailAccount = paytrailOrderNumber.getOrderType().getPaytrailAccount();
-            final PaytrailAuthCodeVerifier authCodeVerifier = paytrailAuthService.createAuthCodeVerifier(paytrailAccount);
-
-            authCodeVerifier.checkTimestampAge(params.getUnixTimestamp());
-            authCodeVerifier.verifyReturnAuthCode(params.getReturnAuthCode(),
-                    params.getFieldsForReturnAuthCodeValidation());
+            final PaytrailOrderNumber paytrailOrderNumber = PaytrailOrderNumber.valueOf(params.getOrderNumber());
 
             switch (params.getType()) {
-                case SUCCESS:
-                    return redirect(callback.onPaymentSuccess(
-                            paytrailOrderNumber,
-                            params.getPaymentId(),
-                            params.getSettlementReferenceNumber()));
-
-                case CANCEL:
-                    return redirect(callback.onPaymentCancel(
+                case REDIRECT_SUCCESS:
+                    if (CheckoutConstants.CHECKOUT_PAYMENT_STATUS_OK.equals(params.getStatus())) {
+                        return redirect(callback.onRedirectSuccess(
+                                paytrailOrderNumber,
+                                params.getPaymentId(),
+                                params.getSettlementReferenceNumber()));
+                    } else {
+                        CheckoutLogging.logFailure(LOG, "REDIRECT_SUCCESS received with status " + params.getStatus());
+                        return redirect(callback.onError(params.getType(), paytrailOrderNumber));
+                    }
+                case REDIRECT_CANCEL:
+                    return redirect(callback.onRedirectCancel(
                             paytrailOrderNumber,
                             params.getPaymentId()));
-
-                case NOTIFY:
-                    callback.onPaymentNotify(
-                            paytrailOrderNumber,
-                            params.getPaymentId(),
-                            params.getSettlementReferenceNumber());
-
+                case CALLBACK_SUCCESS: {
+                    if (CheckoutConstants.CHECKOUT_PAYMENT_STATUS_OK.equals(params.getStatus())) {
+                        callback.onCallbackSuccess(paytrailOrderNumber,
+                                params.getPaymentId(),
+                                params.getSettlementReferenceNumber());
+                    } else {
+                        LOG.info("Callback success with status {} for orderNumber {}",
+                                params.getStatus(), params.getOrderNumber());
+                        return ResponseEntity
+                                .badRequest()
+                                .body("Success callback called with status " + params.getStatus());
+                    }
+                    return ResponseEntity.ok("ok");
+                }
                 default:
                     return ResponseEntity.ok("ok");
             }
 
-        } catch (PaytrailAuthCodeException e) {
-            callback.onPaymentAuthCodeInvalid(params.getType(), paytrailOrderNumber);
-            return ResponseEntity.ok("auth-code-invalid");
-
-        } catch (PaytrailInvalidTimestampException e) {
-            callback.onPaymentAuthCodeExpired(params.getType(), paytrailOrderNumber);
-            return ResponseEntity.ok("auth-code-expired");
+        } else {
+            CheckoutLogging.logFailure(LOG, "Invalid signature while handling " + params.getType());
+            return ResponseEntity.badRequest().body("Invalid checksum");
         }
     }
 

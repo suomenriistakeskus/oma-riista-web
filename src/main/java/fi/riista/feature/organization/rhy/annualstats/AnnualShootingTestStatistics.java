@@ -29,28 +29,28 @@ public class AnnualShootingTestStatistics
         AnnualStatisticsManuallyEditableFields<AnnualShootingTestStatistics>,
         Serializable {
 
-    public static final AnnualShootingTestStatistics reduce(@Nullable final AnnualShootingTestStatistics a,
-                                                            @Nullable final AnnualShootingTestStatistics b) {
+    public static AnnualShootingTestStatistics reduce(@Nullable final AnnualShootingTestStatistics a,
+                                                      @Nullable final AnnualShootingTestStatistics b) {
 
         final AnnualShootingTestStatistics result = new AnnualShootingTestStatistics();
 
-        result.firearmTestEvents = nullableIntSum(a, b, s -> s.getFirearmTestEvents());
-        result.bowTestEvents = nullableIntSum(a, b, s -> s.getBowTestEvents());
+        result.firearmTestEvents = nullableIntSum(a, b, AnnualShootingTestStatistics::getFirearmTestEvents);
+        result.bowTestEvents = nullableIntSum(a, b, AnnualShootingTestStatistics::getBowTestEvents);
 
-        result.allMooseAttempts = nullableIntSum(a, b, s -> s.getAllMooseAttempts());
-        result.qualifiedMooseAttempts = nullableIntSum(a, b, s -> s.getQualifiedMooseAttempts());
-        result.allBearAttempts = nullableIntSum(a, b, s -> s.getAllBearAttempts());
-        result.qualifiedBearAttempts = nullableIntSum(a, b, s -> s.getQualifiedBearAttempts());
-        result.allRoeDeerAttempts = nullableIntSum(a, b, s -> s.getAllRoeDeerAttempts());
-        result.qualifiedRoeDeerAttempts = nullableIntSum(a, b, s -> s.getQualifiedRoeDeerAttempts());
-        result.allBowAttempts = nullableIntSum(a, b, s -> s.getAllBowAttempts());
-        result.qualifiedBowAttempts = nullableIntSum(a, b, s -> s.getQualifiedBowAttempts());
+        result.allMooseAttempts = nullableIntSum(a, b, AnnualShootingTestStatistics::getAllMooseAttempts);
+        result.qualifiedMooseAttempts = nullableIntSum(a, b, AnnualShootingTestStatistics::getQualifiedMooseAttempts);
+        result.allBearAttempts = nullableIntSum(a, b, AnnualShootingTestStatistics::getAllBearAttempts);
+        result.qualifiedBearAttempts = nullableIntSum(a, b, AnnualShootingTestStatistics::getQualifiedBearAttempts);
+        result.allRoeDeerAttempts = nullableIntSum(a, b, AnnualShootingTestStatistics::getAllRoeDeerAttempts);
+        result.qualifiedRoeDeerAttempts = nullableIntSum(a, b, AnnualShootingTestStatistics::getQualifiedRoeDeerAttempts);
+        result.allBowAttempts = nullableIntSum(a, b, AnnualShootingTestStatistics::getAllBowAttempts);
+        result.qualifiedBowAttempts = nullableIntSum(a, b, AnnualShootingTestStatistics::getQualifiedBowAttempts);
 
-        result.shootingTestOfficials = nullableIntSum(a, b, s -> s.getShootingTestOfficials());
+        result.shootingTestOfficials = nullableIntSum(a, b, AnnualShootingTestStatistics::getShootingTestOfficials);
 
-        result.firearmTestEventsLastOverridden = nullsafeMax(a, b, s -> s.getFirearmTestEventsLastOverridden());
-        result.bowTestEventsLastOverridden = nullsafeMax(a, b, s -> s.getBowTestEventsLastOverridden());
-        result.lastModified = nullsafeMax(a, b, s -> s.getLastModified());
+        result.firearmTestEventsLastOverridden = nullsafeMax(a, b, AnnualShootingTestStatistics::getFirearmTestEventsLastOverridden);
+        result.bowTestEventsLastOverridden = nullsafeMax(a, b, AnnualShootingTestStatistics::getBowTestEventsLastOverridden);
+        result.lastModified = nullsafeMax(a, b, AnnualShootingTestStatistics::getLastModified);
 
         return result;
     }

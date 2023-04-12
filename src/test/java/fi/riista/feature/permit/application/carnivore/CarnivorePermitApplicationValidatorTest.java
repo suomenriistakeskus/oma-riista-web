@@ -78,11 +78,9 @@ public class CarnivorePermitApplicationValidatorTest implements DefaultEntitySup
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Application RHY is not available");
 
-        testMutationForValidApplication(carnivorePermitApplication -> {
-            carnivorePermitApplication
-                    .getHarvestPermitApplication()
-                    .setRhy(null);
-        });
+        testMutationForValidApplication(carnivorePermitApplication -> carnivorePermitApplication
+                .getHarvestPermitApplication()
+                .setRhy(null));
     }
 
     @Theory
@@ -90,11 +88,9 @@ public class CarnivorePermitApplicationValidatorTest implements DefaultEntitySup
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Permit holder name missing");
 
-        testMutationForValidApplication(carnivorePermitApplication -> {
-            carnivorePermitApplication
-                    .getHarvestPermitApplication()
-                    .setPermitHolder(PermitHolder.create(null, "12345", type));
-        });
+        testMutationForValidApplication(carnivorePermitApplication -> carnivorePermitApplication
+                .getHarvestPermitApplication()
+                .setPermitHolder(PermitHolder.create(null, "12345", type)));
     }
 
     @Theory
@@ -103,21 +99,9 @@ public class CarnivorePermitApplicationValidatorTest implements DefaultEntitySup
             thrown.expect(IllegalStateException.class);
         }
 
-        testMutationForValidApplication(carnivorePermitApplication -> {
-            carnivorePermitApplication
-                    .getHarvestPermitApplication()
-                    .setPermitHolder(PermitHolder.create("nimi", null, type));
-        });
-    }
-
-    @Test
-    public void validateContent_withMissingAdditionalJustificationInfo() {
-        thrown.expect(IllegalStateException.class);
-        thrown.expectMessage("Required information missing: additional justification info");
-
-        testMutationForValidApplication(carnivorePermitApplication -> {
-            carnivorePermitApplication.setAdditionalJustificationInfo(null);
-        });
+        testMutationForValidApplication(carnivorePermitApplication -> carnivorePermitApplication
+                .getHarvestPermitApplication()
+                .setPermitHolder(PermitHolder.create("nimi", null, type)));
     }
 
     @Test
@@ -125,9 +109,7 @@ public class CarnivorePermitApplicationValidatorTest implements DefaultEntitySup
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Required information missing: alternative measures");
 
-        testMutationForValidApplication(carnivorePermitApplication -> {
-            carnivorePermitApplication.setAlternativeMeasures(null);
-        });
+        testMutationForValidApplication(carnivorePermitApplication -> carnivorePermitApplication.setAlternativeMeasures(null));
     }
 
     @Test
@@ -182,9 +164,7 @@ public class CarnivorePermitApplicationValidatorTest implements DefaultEntitySup
     public void validateContent_beginDateIsNull() {
         streamValidCarnivorePermitApplications().forEach(carnivoreApplication -> {
 
-            mutateSpeciesAmount(carnivoreApplication, spa -> {
-                spa.setBeginDate(null);
-            });
+            mutateSpeciesAmount(carnivoreApplication, spa -> spa.setBeginDate(null));
 
             expectValidationFailure(carnivoreApplication, "Begin date must not be null");
         });
@@ -194,9 +174,7 @@ public class CarnivorePermitApplicationValidatorTest implements DefaultEntitySup
     public void validateContent_endDateIsNull() {
         streamValidCarnivorePermitApplications().forEach(carnivoreApplication -> {
 
-            mutateSpeciesAmount(carnivoreApplication, spa -> {
-                spa.setEndDate(null);
-            });
+            mutateSpeciesAmount(carnivoreApplication, spa -> spa.setEndDate(null));
 
             expectValidationFailure(carnivoreApplication, "End date must not be null");
         });
@@ -204,39 +182,21 @@ public class CarnivorePermitApplicationValidatorTest implements DefaultEntitySup
 
     @Test
     public void validateContent_whenSpeciesAmountMissingPopulationAmount() {
-        streamValidCarnivorePermitApplications().forEach(carnivoreApplication -> {
-
-            mutateSpeciesAmount(carnivoreApplication, spa -> {
-                spa.setPopulationAmount(null);
-                expectValidationFailure(carnivoreApplication,
-                        "Required information missing: population amount for " + getSpeciesName(spa));
-            });
-        });
+        streamValidCarnivorePermitApplications().forEach(carnivoreApplication -> mutateSpeciesAmount(carnivoreApplication, spa -> {
+            spa.setPopulationAmount(null);
+            expectValidationFailure(carnivoreApplication,
+                    "Required information missing: population amount for " + getSpeciesName(spa));
+        }));
     }
 
     @Test
     public void validateContent_invalidPeriod() {
         streamValidCarnivorePermitApplications().forEach(carnivoreApplication -> {
 
-            mutateSpeciesAmount(carnivoreApplication, spa -> {
-                spa.setBeginDate(new LocalDate(2019, 8, 1));
-
-            });
+            mutateSpeciesAmount(carnivoreApplication, spa -> spa.setBeginDate(new LocalDate(2019, 8, 1)));
 
             expectValidationFailure(carnivoreApplication,
                     "Invalid period");
-        });
-    }
-
-    @Test
-    public void validateContent_whenSpeciesAmountMissingPopulationDescription() {
-        streamValidCarnivorePermitApplications().forEach(carnivoreApplication -> {
-
-            mutateSpeciesAmount(carnivoreApplication, spa -> {
-                spa.setPopulationDescription(null);
-                expectValidationFailure(carnivoreApplication,
-                        "Required information missing: population description for " + getSpeciesName(spa));
-            });
         });
     }
 
@@ -275,11 +235,9 @@ public class CarnivorePermitApplicationValidatorTest implements DefaultEntitySup
         thrown.expect(IllegalStateException.class);
         thrown.expectMessage("Area attachment is missing");
 
-        testMutationForValidApplication(carnivorePermitApplication -> {
-            carnivorePermitApplication
-                    .getHarvestPermitApplication()
-                    .setAttachments(emptyList());
-        });
+        testMutationForValidApplication(carnivorePermitApplication -> carnivorePermitApplication
+                .getHarvestPermitApplication()
+                .setAttachments(emptyList()));
     }
 
     @Test

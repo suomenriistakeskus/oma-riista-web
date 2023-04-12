@@ -1,8 +1,8 @@
-<div class="panel panel-default"
+<div class="panel panel-default area-list-container"
      ng-repeat="a in $ctrl.areaList">
     <div class="panel-heading">
         <div class="row">
-            <div class="col-xs-6">
+            <div class="col-xs-12 col-sm-6">
                 <span class="panel-title r-account-area-panel-title" ng-bind="a.name"></span>
                 <a class="r-account-area-edit-link" ng-click="$ctrl.edit(a)">
                     <span class="fa fa-pencil r-account-area-edit-icon"></span>
@@ -10,21 +10,23 @@
                 </a>
             </div>
 
-            <div class="col-xs-6 text-right">
+            <div class="col-xs-12 col-sm-6 col-md-2 print-link-container">
                 <a class="r-account-area-print-link"
                    ng-if="!!a.bounds"
                    ng-click="$ctrl.printArea(a)">
                     <span class="fa fa-2x fa-lg fa-print"></span>
                     <span translate="global.button.print" class="r-account-area-info-text text-primary"></span>
                 </a>
+            </div>
 
+            <div class="hidden-xs col-sm-6 col-md-2 edit-map-container">
                 <button type="button" class="btn btn-primary"
                         ng-click="$ctrl.editMap(a)">
                     <span translate="account.areas.editMap"></span>
                 </button>
+            </div>
 
-                &nbsp;
-
+            <div class="col-xs-12 col-sm-6 col-md-2 area-functions-container">
                 <account-area-functions area="a"></account-area-functions>
             </div>
         </div>

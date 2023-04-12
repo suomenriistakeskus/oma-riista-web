@@ -127,14 +127,16 @@ public class LukeReportParams {
         WTD_PRE2020_TABLE_FULL(Range.atMost(2019), LukeType.NOT_DEFINED, LukeReportType.TABLE, "wtd_S1"),
 
         WTD_HARVEST_FIGURE(Range.atLeast(2020), LukeType.HARVEST, LukeReportType.FIGURE, "1", "2", "3", "4", "5", "6", "7"),
-        WTD_HARVEST_ANTLER_FIGURE(Range.atLeast(2021), LukeType.HARVEST, LukeReportType.FIGURE, "hist_1", "hist_2", "hist_3", "hist_4", "hist_5"),
+        WTD_HARVEST_ANTLER_FIGURE(Range.atLeast(2021), LukeType.HARVEST, LukeReportType.FIGURE, "hist_1", "hist_3", "hist_4", "hist_5"),
         WTD_HARVEST_WEIGHT_FIGURE(Range.atLeast(2021), LukeType.HARVEST, LukeReportType.FIGURE,  "hist_6", "hist_7", "hist_8"),
         WTD_HARVEST_MAP(Range.atLeast(2020), LukeType.HARVEST, LukeReportType.MAP,"s1", "s2", "s3", "s4", "s5", "r1", "r2"),
         WTD_HARVEST_TABLE_FULL(Range.atLeast(2020), LukeType.HARVEST, LukeReportType.TABLE, "1", "2", "3", "4", "5"),
 
         WTD_OBSERVATION_FIGURE(Range.atLeast(2020), LukeType.OBSERVATION, LukeReportType.FIGURE, "1", "2", "3", "4", "5", "6", "7"),
         WTD_OBSERVATION_MAP(Range.atLeast(2020), LukeType.OBSERVATION, LukeReportType.MAP, "h1", "h2", "h3", "h4", "h5", "r1", "r2"),
-        WTD_OBSERVATION_TABLE_FULL(Range.atLeast(2020), LukeType.OBSERVATION, LukeReportType.TABLE, "1", "2", "3", "4", "5");
+
+        WTD_OBSERVATION_TABLE_FULL_2020(Range.singleton(2020), LukeType.OBSERVATION, LukeReportType.TABLE, "1", "2", "3", "4", "5"),
+        WTD_OBSERVATION_TABLE_FULL(Range.atLeast(2021), LukeType.OBSERVATION, LukeReportType.TABLE, "1", "2", "4", "5", "3");
 
         private final Range<Integer> validHuntingYears;
         private final LukeType lukeType;
@@ -190,10 +192,10 @@ public class LukeReportParams {
 
         WTD_FIGURE(LukeReportGroup.FIGURE, ImmutableList.of(Presentation.WTD_PRE2020_FIGURE, Presentation.WTD_HARVEST_FIGURE, Presentation.WTD_HARVEST_ANTLER_FIGURE, Presentation.WTD_HARVEST_WEIGHT_FIGURE, Presentation.WTD_OBSERVATION_FIGURE)),
         WTD_MAP(LukeReportGroup.MAP, ImmutableList.of(Presentation.WTD_HARVEST_MAP, Presentation.WTD_OBSERVATION_MAP)),
-        WTD_TABLE_FULL(LukeReportGroup.TABLE_FULL, ImmutableList.of(Presentation.WTD_PRE2020_TABLE_FULL, Presentation.WTD_HARVEST_TABLE_FULL, Presentation.WTD_OBSERVATION_TABLE_FULL)),
+        WTD_TABLE_FULL(LukeReportGroup.TABLE_COMPARISON, ImmutableList.of(Presentation.WTD_PRE2020_TABLE_FULL, Presentation.WTD_HARVEST_TABLE_FULL, Presentation.WTD_OBSERVATION_TABLE_FULL_2020, Presentation.WTD_OBSERVATION_TABLE_FULL)),
 
         WTD_CLUB_FIGURE(LukeReportGroup.FIGURE, ImmutableList.of(Presentation.WTD_HARVEST_FIGURE, Presentation.WTD_HARVEST_ANTLER_FIGURE, Presentation.WTD_HARVEST_WEIGHT_FIGURE, Presentation.WTD_OBSERVATION_FIGURE)),
-        WTD_CLUB_TABLE_FULL(LukeReportGroup.TABLE_FULL, ImmutableList.of(Presentation.WTD_HARVEST_TABLE_FULL, Presentation.WTD_OBSERVATION_TABLE_FULL));
+        WTD_CLUB_TABLE_FULL(LukeReportGroup.TABLE_COMPARISON, ImmutableList.of(Presentation.WTD_HARVEST_TABLE_FULL, Presentation.WTD_OBSERVATION_TABLE_FULL_2020, Presentation.WTD_OBSERVATION_TABLE_FULL));
 
         private final LukeReportGroup reportType;
         private final List<Presentation> presentations;

@@ -146,6 +146,14 @@ angular.module('app.layout.role', [])
             return activeRoleTypeIs('SEURAN_YHDYSHENKILO');
         };
 
+        this.isGameWarden = function () {
+            return activeRoleTypeIs('METSASTYKSENVALVOJA');
+        };
+
+        this.isClubGroupLeader = function () {
+            return activeRoleTypeIs('RYHMAN_METSASTYKSENJOHTAJA');
+        };
+
         function activeRoleTypeIs(type) {
             return activeRole && (type === activeRole.type);
         }
@@ -209,7 +217,8 @@ angular.module('app.layout.role', [])
                 }
 
                 return AvailableRoleService.findRoleForRhy(_.parseInt(params.id), 'AMPUMAKOKEEN_VASTAANOTTAJA');
-
+            } else if (_.startsWith(state, 'rhy.huntingcontrolevent.gamewarden')) {
+                return AvailableRoleService.findRoleForRhy(_.parseInt(params.id), 'METSASTYKSENVALVOJA');
             } else if (_.startsWith(state, 'rhy')) {
                 return AvailableRoleService.findRoleForRhy(_.parseInt(params.id), 'TOIMINNANOHJAAJA');
 
@@ -221,7 +230,6 @@ angular.module('app.layout.role', [])
 
             } else if (_.startsWith(state, 'admin')) {
                 return AvailableRoleService.findAdminRole();
-
             } else {
                 return AvailableRoleService.findUserRole();
             }
@@ -246,6 +254,8 @@ angular.module('app.layout.role', [])
                     return {name: 'admin.home', params: {}};
                 case 'ROLE_MODERATOR':
                     return {name: 'jht.home', params: {}};
+                case 'METSASTYKSENVALVOJA':
+                    return {name: 'rhy.huntingcontrolevent.gamewarden', params: {id: roleContext.rhyId}};
                 default:
                     return {name: 'profile.diary', params: {id: 'me'}};
             }
@@ -297,7 +307,8 @@ angular.module('app.layout.role', [])
     })
 
     .controller('RoleSelectionController', function ($state, RoleService, AvailableRoleService,
-                                                     ActiveRoleService, LoginRedirectService) {
+                                                     ActiveRoleService, LoginRedirectService,
+                                                     AccountBeingUnregisteredNotifier) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
@@ -305,6 +316,8 @@ angular.module('app.layout.role', [])
             $ctrl.getRoleLogo = RoleService.getRoleLogo;
             $ctrl.getRoleTitle = RoleService.getRoleDisplayName;
             $ctrl.getRoleSubtitle = RoleService.getRoleSubtitle;
+
+            AccountBeingUnregisteredNotifier.notifyAccountUnregistration();
         };
 
         // Update selected role in view on change

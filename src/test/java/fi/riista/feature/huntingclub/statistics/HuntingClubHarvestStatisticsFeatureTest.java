@@ -1,6 +1,7 @@
 package fi.riista.feature.huntingclub.statistics;
 
 import com.google.common.collect.ImmutableMap;
+import fi.riista.api.club.ClubHarvestSummaryRequestDTO;
 import fi.riista.config.Constants;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
@@ -17,11 +18,13 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import org.hamcrest.Matchers;
+import org.joda.time.LocalDate;
 import org.junit.Test;
 
 import javax.annotation.Resource;
 import java.util.Map;
 
+import static fi.riista.util.DateUtil.currentYear;
 import static fi.riista.util.DateUtil.today;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.Assert.assertNotNull;
@@ -46,8 +49,29 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
         createHarvestWithLocation(location, hunter, species);
+        final int currentYear = currentYear();
+        assertHarvestCount(club, species, 1L,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
+    }
 
-        assertHarvestCount(club, species, 1L);
+    @Test
+    public void testMatchHuntingClub() {
+        withPerson(author -> withPerson(hunter -> {
+
+            final HuntingClub club = model().newHuntingClub();
+
+            model().newOccupation(club, hunter, OccupationType.SEURAN_JASEN);
+
+            final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
+            Harvest harvest = model().newHarvest(species, author, hunter);
+            harvest.setHuntingClub(club);
+
+            final int currentYear = currentYear();
+            assertHarvestCount(club, species, 1L,
+                    DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                    DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
+        }));
     }
 
     @Test
@@ -61,7 +85,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
             final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
             model().newHarvest(species, author, hunter).setGeoLocation(location);
 
-            assertHarvestCount(club, species, 1L);
+            final int currentYear = currentYear();
+            assertHarvestCount(club, species, 1L,
+                    DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                    DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
         }));
     }
 
@@ -76,7 +103,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
             final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
             model().newHarvest(species, author, hunter).setGeoLocation(location);
 
-            assertHarvestCount(club, species, 1L);
+            final int currentYear = currentYear();
+            assertHarvestCount(club, species, 1L,
+                    DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                    DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
         }));
     }
 
@@ -86,7 +116,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         createHarvestWithLocation(location, model().newPerson(), model().newGameSpecies());
 
-        assertNoHarvests(createClubWithAreaAndZone(location));
+        final int currentYear = currentYear();
+        assertNoHarvests(createClubWithAreaAndZone(location),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     @Test
@@ -101,7 +134,11 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         createHarvestWithLocation(location, hunter, model().newGameSpecies());
 
-        assertNoHarvests(club);
+        final int currentYear = currentYear();
+        assertNoHarvests(club,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
+
     }
 
     @Test
@@ -114,7 +151,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         createHarvestWithLocation(location, hunter, model().newGameSpecies());
 
-        assertNoHarvests(club);
+        final int currentYear = currentYear();
+        assertNoHarvests(club,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     @Test
@@ -130,7 +170,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final GameSpecies species = model().newGameSpeciesNotSubjectToClubHunting();
         createHarvestWithLocation(location, hunter, species);
 
-        assertHarvestCount(club, species, 1L);
+        final int currentYear = currentYear();
+        assertHarvestCount(club, species, 1L,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     @Test
@@ -148,7 +191,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         createHarvestWithLocation(location, hunter, species);
 
-        assertHarvestCount(club, species, 1L);
+        final int currentYear = currentYear();
+        assertHarvestCount(club, species, 1L,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     @Test
@@ -161,7 +207,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         createHarvestWithLocation(location.move(10, 10), hunter, model().newGameSpecies());
 
-        assertNoHarvests(club);
+        final int currentYear = currentYear();
+        assertNoHarvests(club,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     @Test
@@ -176,7 +225,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
             createHarvestWithLocation(location, hunter, model().newGameSpecies(speciesCode));
         });
 
-        assertNoHarvests(club);
+        final int currentYear = currentYear();
+        assertNoHarvests(club,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     @Test
@@ -189,12 +241,16 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         createHarvestWithLocation(location, hunter, model().newGameSpecies());
 
-        assertNoHarvests(club);
+        final int currentYear = currentYear();
+        assertNoHarvests(club,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
-    private void assertClubMemberHarvests(final HuntingClub club, final Map<Integer, Long> expectedCounts) {
-        final int huntingYear = DateUtil.today().getYear();
-        final HuntingClubHarvestStatisticsDTO summary = huntingClubHarvestSummaryFeature.getSummary(club.getId(), huntingYear);
+    private void assertClubMemberHarvests(final HuntingClub club, final Map<Integer, Long> expectedCounts,
+                                          final LocalDate begin, final LocalDate end) {
+        final ClubHarvestSummaryRequestDTO dto = new ClubHarvestSummaryRequestDTO(club.getId(), begin, end);
+        final HuntingClubHarvestStatisticsDTO summary = huntingClubHarvestSummaryFeature.getSummary(dto);
 
         assertNotNull(summary);
         assertThat(summary.getItems(), Matchers.hasSize(expectedCounts.size()));
@@ -232,7 +288,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
             createHarvestWithHarvestReportRequiredWithReport(location, hunter, species, s);
         }
 
-        assertHarvestCount(club, species, 1L);
+        final int currentYear = currentYear();
+        assertHarvestCount(club, species, 1L,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     private void createHarvestWithHarvestReportRequiredWithReport(GeoLocation location, Person hunter, GameSpecies species, HarvestReportState state) {
@@ -261,7 +320,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
             createHarvestWithLocation(location.move(100, 100), hunter, species);
         });
 
-        assertNoHarvests(club);
+        final int currentYear = currentYear();
+        assertNoHarvests(club,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     @Test
@@ -280,7 +342,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         createHarvestWithLocationAndHuntingDay(location, hunter, species, huntingDay);
         createHarvestWithLocationAndHuntingDay(location.move(100, 100), hunter, species, huntingDay);
 
-        assertHarvestCount(club, species, 2L);
+        final int currentYear = currentYear();
+        assertHarvestCount(club, species, 2L,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     @Test
@@ -297,7 +362,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         final Harvest h = createHarvestWithLocationAndHuntingDay(location, model().newPerson(), species, huntingDay);
         h.setPointOfTime(h.getPointOfTimeAsLocalDate().withYear(huntingYear).toDateTimeAtStartOfDay(Constants.DEFAULT_TIMEZONE));
 
-        assertNoHarvests(club);
+        final int currentYear = currentYear();
+        assertNoHarvests(club,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     @Test
@@ -313,7 +381,10 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
 
         createHarvestWithLocationAndHuntingDay(location, model().newPerson(), species, huntingDay);
 
-        assertNoHarvests(club);
+        final int currentYear = currentYear();
+        assertNoHarvests(club,
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear)),
+                DateUtil.toLocalDateNullSafe(DateUtil.beginOfCalendarYear(currentYear + 1).minusDays(1)));
     }
 
     private Harvest createHarvestWithLocation(GeoLocation location, Person hunter, GameSpecies species) {
@@ -329,15 +400,16 @@ public class HuntingClubHarvestStatisticsFeatureTest extends EmbeddedDatabaseTes
         return harvest;
     }
 
-    private void assertNoHarvests(HuntingClub club) {
+    private void assertNoHarvests(HuntingClub club, final LocalDate begin, final LocalDate end) {
         onSavedAndAuthenticated(createContactUserForClub(club), () -> {
-            assertClubMemberHarvests(club, ImmutableMap.of());
+            assertClubMemberHarvests(club, ImmutableMap.of(), begin, end);
         });
     }
 
-    private void assertHarvestCount(HuntingClub club, GameSpecies species, long count) {
+    private void assertHarvestCount(final HuntingClub club, final GameSpecies species, final long count,
+                                    final LocalDate begin, final LocalDate end) {
         onSavedAndAuthenticated(createContactUserForClub(club), () -> {
-            assertClubMemberHarvests(club, ImmutableMap.of(species.getOfficialCode(), count));
+            assertClubMemberHarvests(club, ImmutableMap.of(species.getOfficialCode(), count), begin, end);
         });
     }
 }

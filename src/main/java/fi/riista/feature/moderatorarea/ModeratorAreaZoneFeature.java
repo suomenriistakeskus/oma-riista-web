@@ -1,6 +1,5 @@
 package fi.riista.feature.moderatorarea;
 
-import com.newrelic.api.agent.Trace;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneEditService;
@@ -47,7 +46,6 @@ public class ModeratorAreaZoneFeature {
                 .orElseGet(FeatureCollection::new);
     }
 
-    @Trace
     @Transactional(timeout = 300)
     public void updateGeoJSON(final long id, final FeatureCollection featureCollection) {
         final ModeratorArea area = requireEntityService.requireModeratorArea(id, EntityPermission.UPDATE);
@@ -59,7 +57,6 @@ public class ModeratorAreaZoneFeature {
         area.setModificationTimeToCurrentTime();
     }
 
-    @Trace
     @Async
     @Transactional
     public void updateAreaSize(final long areaId) {

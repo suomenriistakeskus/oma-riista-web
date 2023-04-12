@@ -5,8 +5,6 @@ import fi.riista.feature.storage.metadata.FileType;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.MediaTypeExtras;
 import fi.riista.util.OpenSSLPBECodec;
-import io.sentry.Sentry;
-import io.sentry.SentryClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,12 +62,6 @@ public class ShootingTestExportStorageService {
 
                     } catch (final Exception e) {
                         LOG.error("Retrieving shooting test export file failed", e);
-
-                        final SentryClient sentry = Sentry.getStoredClient();
-                        if (sentry != null) {
-                            sentry.sendException(e);
-                        }
-
                         return errorResponse();
                     }
                 })

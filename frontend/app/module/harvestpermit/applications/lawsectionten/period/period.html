@@ -1,4 +1,4 @@
-<div class="alert alert-info">
+<div class="alert alert-info wizard-info">
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
@@ -6,21 +6,21 @@
         <p translate="harvestpermit.wizard.lawsectionten.period.instruction2"></p>
         <p translate="harvestpermit.wizard.lawsectionten.period.instruction3"></p>
         <ul>
-            <li><div><span ng-bind="48251 | translateSpeciesCode"></span><span>&nbsp20.8.-30.4.</span></div></li>
-            <li><div><span ng-bind="27048 | translateSpeciesCode"></span><span>&nbsp1.9.-31.12.</span></div></li>
+            <li ng-if="::$ctrl.isBeaverApplication"><div><span ng-bind="48251 | translateSpeciesCode"></span><span>&nbsp20.8.-30.4.</span></div></li>
+            <li ng-if="::!$ctrl.isBeaverApplication"><div><span ng-bind="27048 | translateSpeciesCode"></span><span>&nbsp1.9.-31.12.</span></div></li>
         </ul>
     </div>
 </div>
 
 <form name="speciesPeriodForm" r-force-show-errors-check-validity>
     <div class="row">
-        <div class="col-xs-2">
+        <div class="col-sm-2">
             <div class="form-control-static" style="padding-top: 30px">
                 <strong ng-bind="$ctrl.speciesPeriod.gameSpeciesCode | translateSpeciesCode | uppercase"></strong>
             </div>
         </div>
 
-        <div class="col-xs-3">
+        <div class="col-sm-3">
             <div class="form-group" show-errors>
                 <label class="control-label" for="beginDate"
                        translate="harvestpermit.wizard.period.beginDate"></label>
@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        <div class="col-xs-3">
+        <div class="col-sm-3">
             <div class="form-group" show-errors>
                 <label class="control-label" for="endDate"
                        translate="harvestpermit.wizard.period.endDate"></label>
@@ -86,7 +86,7 @@
             </div>
         </div>
 
-        <div class="col-xs-3" style="padding-top: 25px">
+        <div class="col-sm-3" style="padding-top: 25px">
             <div ng-show="$ctrl.isPeriodInvalid($ctrl.speciesPeriod)">
                 <span class="text-danger"
                       translate="harvestpermit.wizard.lawsectionten.period.outsideSeason"></span>

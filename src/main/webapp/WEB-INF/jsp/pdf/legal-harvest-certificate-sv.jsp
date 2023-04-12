@@ -15,9 +15,9 @@
 </head>
 <body>
 
-<div class="container">
+<div class="header-container">
     <div class="header-logo">
-        <img width="280" alt="image" src="riista-logo.jpg"/>
+        <img width="280" alt="image" src="riistakeskus-logo.png"/>
     </div>
 
 
@@ -33,7 +33,10 @@
         <joda:format value="${model.currentDate}" pattern="d.M.YYYY"/>
     </div>
 
+    <hr class="header-separator">
+</div>
 
+<div class="container">
     <br/>
     <br/>
 
@@ -152,14 +155,15 @@
         <strong>${model.approver}</strong>
         <br/>
         <br/>
-        Intyget är undertecknat maskinellt med stöd av viltförvaltningslagens (158/2011) 8 § 5 mom.<br/>
+        Intyget är undertecknat maskinellt.<br/>
     </p>
 
     <br/>
-
-    <div class="footer" style="margin-top: 330pt">
-        <%@include file="footer-sv.jsp" %>
-    </div>
 </div>
+
+<div class="footer" style="margin-top: 330pt">
+    <%@include file="footer-sv.jsp" %>
+</div>
+
 </body>
 </html>

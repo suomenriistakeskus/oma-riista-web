@@ -1,9 +1,11 @@
 package fi.riista.feature.permit.application;
 
 import fi.riista.feature.account.user.UserRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.archive.PermitApplicationArchiveDTO;
 import fi.riista.feature.permit.application.archive.PermitApplicationArchiveService;
 import fi.riista.feature.permit.application.email.HarvestPermitApplicationNotificationService;
+import fi.riista.util.F;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
@@ -16,6 +18,12 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static fi.riista.feature.permit.application.HarvestPermitApplication.Status.ACTIVE;
+import static fi.riista.feature.permit.application.HarvestPermitApplication.Status.AMENDING;
 
 @Component
 public class HarvestPermitApplicationAsyncFeature {
@@ -78,6 +86,22 @@ public class HarvestPermitApplicationAsyncFeature {
         doCreateArchive(applicationId);
     }
 
+    @Async
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    public void recreateArchivesForYear(final int year) {
+        final List<HarvestPermitApplication> applications =
+                harvestPermitApplicationRepository.findByApplicationYearAndStatusInAndHarvestPermitCategory(year,
+                        Arrays.asList(ACTIVE, AMENDING), HarvestPermitCategory.MOOSELIKE);
+        final List<Long> ids = new ArrayList<>(F.getUniqueIds(applications));
+        doRecreate(ids);
+    }
+
+    @Async
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public void recreateArchives(final List<Long> ids) {
+        doRecreate(ids);
+    }
+
     private void doCreateArchive(final long applicationId) throws Exception {
         final PermitApplicationArchiveDTO dto = permitApplicationArchiveService.getDataForArchive(applicationId);
 
@@ -95,6 +119,44 @@ public class HarvestPermitApplicationAsyncFeature {
                     LOG.error("Could not delete temporary file", e);
                 }
             }
+        }
+    }
+
+    private void doRecreate(final List<Long> applicationIds) {
+        final List<Long> failures = new ArrayList<>();
+
+        for (final Long id : applicationIds) {
+            Path originalPath = null;
+            Path archivePath = null;
+            try {
+                originalPath = permitApplicationArchiveService.getOriginalZipArchive(id);
+                archivePath = permitApplicationArchiveService.appendPartnersMapToArchive(originalPath, id);
+                permitApplicationArchiveService.updateArchive(archivePath, id);
+            } catch (final Exception e) {
+                LOG.error("Failed to recreate archive", e);
+                failures.add(id);
+            } finally {
+                if (originalPath != null) {
+                    try {
+                        Files.deleteIfExists(originalPath);
+                    } catch (final IOException e) {
+                        LOG.error("Could not delete temporary original file", e);
+                    }
+                }
+                if (archivePath != null) {
+                    try {
+                        Files.deleteIfExists(archivePath);
+                    } catch (final IOException e) {
+                        LOG.error("Could not delete temporary archive file", e);
+                    }
+                }
+            }
+        }
+
+        if (failures.isEmpty()) {
+            LOG.info("Successfully recreated archives");
+        } else {
+            LOG.error("Failed to recreate archives: {}", failures);
         }
     }
 }

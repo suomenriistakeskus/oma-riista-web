@@ -2,7 +2,6 @@ package fi.riista.integration.fivaldi;
 
 import fi.riista.config.quartz.QuartzScheduledJob;
 import fi.riista.config.quartz.RunAsAdminJob;
-import io.sentry.Sentry;
 import org.quartz.DisallowConcurrentExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,6 @@ public class FivaldiInvoiceBatchExportJob extends RunAsAdminJob {
             LOG.info("Done.");
         } catch (final Exception e) {
             LOG.error("Fivaldi invoice batch export job threw exception", e);
-            Sentry.capture(e);
         }
     }
 }

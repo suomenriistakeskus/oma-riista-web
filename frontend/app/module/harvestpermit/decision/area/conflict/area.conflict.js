@@ -102,7 +102,7 @@ angular.module('app.harvestpermit.decision.area.conflict', [])
                 focusedPalsta = row;
                 updateListFocusAttribute(row.palstaId);
 
-                GIS.getPropertyPolygonById(row.palstaId).then(function (response) {
+                GIS.getPropertyPolygonWithWaterAreaById(row.palstaId).then(function (response) {
                     $ctrl.palstaFeatureCollection = response.data;
                     $ctrl.focusSelected = true;
                 });
@@ -120,7 +120,9 @@ angular.module('app.harvestpermit.decision.area.conflict', [])
                     var uri = '/api/v1/harvestpermit/application/mooselike/conflicts/print';
                     var requestBody = {
                         palstaIds: palstaIds,
-                        mapParameters: pdfParameters
+                        mapParameters: pdfParameters,
+                        firstApplicationId: firstApplicationId,
+                        secondApplicationId: secondApplicationId
                     };
 
                     TranslatedBlockUI.start("global.block.wait");
@@ -133,7 +135,7 @@ angular.module('app.harvestpermit.decision.area.conflict', [])
 
             $ctrl.onMapClick = function (latlng) {
                 // Add area geometry by clicking map
-                GIS.getPropertyByCoordinates(latlng).then(function (response) {
+                GIS.getPropertyWithWaterAreaByCoordinates(latlng).then(function (response) {
                     $ctrl.palstaFeatureCollection = response.data;
                     $ctrl.focusSelected = false;
 
@@ -179,6 +181,8 @@ angular.module('app.harvestpermit.decision.area.conflict', [])
                               $filter, $translate, MapState, MapDefaults, MapBounds, leafletData) {
             var $ctrl = this;
             var featureAreaSize = $filter('featureAreaSize');
+            var featureLandAreaSize = $filter('featureLandSize');
+            var featureWaterAreaSize = $filter('featureWaterSize');
             var formatPropertyIdentifier = $filter('formatPropertyIdentifier');
 
             $ctrl.mapId = 'harvest-permit-application-conflict-map';
@@ -196,16 +200,18 @@ angular.module('app.harvestpermit.decision.area.conflict', [])
 
                 L.control.simpleLegend({
                     legend: {
-                        '#EB7870': $translate.instant('harvestpermit.application.conflictResolution.firstApplication'),
-                        '#666': $translate.instant('harvestpermit.application.conflictResolution.secondApplication'),
-                        '#B53C38': $translate.instant('harvestpermit.application.conflictResolution.conflictArea')
+                        'rgba(162, 43, 0, 0.6)': $translate.instant('harvestpermit.application.conflictResolution.firstApplication'),
+                        '#FAFF01': $translate.instant('harvestpermit.application.conflictResolution.firstApplicationBorder'),
+                        'rgba(15, 80, 155, 0.4)': $translate.instant('harvestpermit.application.conflictResolution.secondApplication'),
+                        '#4052F5': $translate.instant('harvestpermit.application.conflictResolution.secondApplicationBorder'),
+                        '#846F82': $translate.instant('harvestpermit.application.conflictResolution.conflictArea')
                     }
                 }).addTo(map);
             });
 
             var vectorLayerTemplate = _.template('/api/v1/vector/application/<%= id %>/{z}/{x}/{y}');
 
-            function createVectorLayer(applicationId, color) {
+            function createVectorLayer(applicationId, borderColor, fill, fillColor, fillOpacity) {
                 var url = vectorLayerTemplate({id: applicationId});
 
                 return L.vectorGrid.protobuf(url, {
@@ -220,11 +226,12 @@ angular.module('app.harvestpermit.decision.area.conflict', [])
                     //bounds: L.latLngBounds(maxBounds.southWest, maxBounds.northEast),
                     vectorTileLayerStyles: {
                         all: {
-                            fill: true,
-                            fillColor: color,
-                            fillOpacity: 0.3,
-                            weight: 0.75,
-                            color: 'black'
+                            fill: fill,
+                            fillColor: fillColor,
+                            fillOpacity: fillOpacity,
+                            weight: 2,
+                            color: borderColor,
+                            opacity: 1
                         }
                     }
                 });
@@ -232,6 +239,7 @@ angular.module('app.harvestpermit.decision.area.conflict', [])
 
             var firstApplicationVectorLayer = null;
             var secondApplicationVectorLayer = null;
+            var firstApplicationBorderLayer = null;
 
             $ctrl.$onChanges = function (c) {
                 if ($ctrl.palstaFeatureCollection) {
@@ -249,6 +257,9 @@ angular.module('app.harvestpermit.decision.area.conflict', [])
                     if (firstApplicationVectorLayer) {
                         map.removeLayer(firstApplicationVectorLayer);
                         firstApplicationVectorLayer = null;
+
+                        map.removeLayer(firstApplicationBorderLayer);
+                        firstApplicationBorderLayer = null;
                     }
 
                     if (secondApplicationVectorLayer) {
@@ -256,12 +267,16 @@ angular.module('app.harvestpermit.decision.area.conflict', [])
                         secondApplicationVectorLayer = null;
                     }
 
+                    if (firstApplicationId) {
+                        firstApplicationVectorLayer = createVectorLayer(firstApplicationId, '#FAFF01', true, '#A22B00', 0.6).addTo(map);
+                    }
+
                     if (secondApplicationId) {
-                        secondApplicationVectorLayer = createVectorLayer(secondApplicationId, 'black').addTo(map);
+                        secondApplicationVectorLayer = createVectorLayer(secondApplicationId, '#4052F5', true, '#0F509B', 0.4).addTo(map);
                     }
 
                     if (firstApplicationId) {
-                        firstApplicationVectorLayer = createVectorLayer(firstApplicationId, 'red').addTo(map);
+                        firstApplicationBorderLayer = createVectorLayer(firstApplicationId, '#FAFF01', false).addTo(map);
 
                         loadApplicationBounds(firstApplicationId).then(function (bounds) {
                             MapState.updateMapBounds(bounds, boundsOfFinland, true);
@@ -297,7 +312,9 @@ angular.module('app.harvestpermit.decision.area.conflict', [])
                         var name = _.get(feature, 'properties.name');
                         var codeText = '<strong>' + formatPropertyIdentifier(code) + '</strong>';
                         var nameText = name ? '<br/>' + name : '';
-                        var areaText = '<br/>' + featureAreaSize(feature);
+                        var areaText = '<br/>Pinta-ala: ' + featureAreaSize(feature)
+                            + '<br/>Maapinta-ala: ' + featureLandAreaSize(feature)
+                            + '<br/>Vesipinta-ala: ' + featureWaterAreaSize(feature);
 
                         var popup = layer.bindPopup(codeText + nameText + areaText);
 

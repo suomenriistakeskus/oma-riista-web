@@ -17,10 +17,13 @@ import java.util.stream.Stream;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_CANADIAN_BEAVER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_EUROPEAN_BEAVER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
+import static fi.riista.feature.gamediary.observation.ObservationType.NAKO;
+import static fi.riista.feature.gamediary.observation.ObservationType.PARI;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_PENKKA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_SEKA;
+import static fi.riista.feature.gamediary.observation.ObservationType.POIKUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -148,6 +151,10 @@ public class MobileObservationDTOBuilderTest {
                                 && (type == PESA_KEKO || type == PESA_PENKKA || type == PESA_SEKA)) {
 
                             assertEquals(PESA, dto.getObservationType());
+                        } else if (!version.supportsBirdLitterAndCoupleObservationTypes()
+                                && (type == POIKUE || type == PARI)) {
+
+                            assertEquals(NAKO, dto.getObservationType());
                         } else {
                             assertEquals(type, dto.getObservationType());
                         }

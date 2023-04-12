@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.dogunleash.eventdetails', ['app.me
                 templateUrl: 'harvestpermit/applications/dogunleash/eventdetails/eventdetails.html',
                 controller: 'DogUnleashEventDetailsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

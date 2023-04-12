@@ -1,0 +1,46 @@
+<div ng-if="$ctrl.isHuntingClubComponentVisible">
+    <div class="form-group">
+        <label for="harvestDiaryHuntingClub" class="col-xs-4 control-label">
+            <span translate="gamediary.form.huntingClub"></span>
+        </label>
+
+        <div class="col-xs-8">
+            <select name="huntingClub" id="harvestDiaryHuntingClub"
+                    class="form-control"
+                    ng-model="$ctrl.huntingClubId"
+                    ng-options="::hc.id as ::hc.name for hc in $ctrl.huntingClubs"
+                    ng-change="$ctrl.huntingClubSelectionChanged()"
+                    ie10-optgroup-fix>
+                <option value=""></option>
+            </select>
+        </div>
+    </div>
+    <div ng-if="$ctrl.isOfficialCodeInputVisible">
+        <div class="form-group">
+            <label for="clubOfficialCodeInput" class="col-xs-4 control-label">
+                <span translate="gamediary.form.clubOfficialCode"></span>
+            </label>
+
+            <div class="col-xs-8">
+                <input type="text" name="officialCode" id="clubOfficialCodeInput"
+                       class="form-control"
+                       ng-model="$ctrl.officialCode"
+                       maxlength="{{$ctrl.HUNTING_CLUB_OFFICIAL_CODE_LENGTH}}"
+                       ng-change="$ctrl.officialCodeChanged()">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-xs-8 col-xs-offset-4">
+                <p class="form-control-static"
+                   ng-show="$ctrl.searchedClub">
+                    <span ng-bind="$ctrl.searchedClub.name"></span>
+                </p>
+
+                <p ng-show="!$ctrl.isClubByOfficialCodeFound"
+                   class="form-control-static alert alert-info"
+                   translate="gamediary.form.insertClubOfficialCode"></p>
+            </div>
+        </div>
+    </div>
+</div>
+

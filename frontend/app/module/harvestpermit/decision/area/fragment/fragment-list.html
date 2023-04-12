@@ -23,7 +23,7 @@
                         <span ng-switch-when="false" class="text-primary fa fa-fw fa-lg fa-plus-circle"></span>
                         <span ng-switch-default class="text-info fa fa-fw fa-lg fa-question"></span>
                         <span ng-bind="::f.hash" ng-class="{'text-primary' : $ctrl.isSelectedFragment(f)}"></span>
-                        (<span ng-bind="f.bothSize.total | prettyAreaSize:2" class="text-right"></span>)
+                        (<span ng-bind="f.bothSize.land | prettyAreaSize:2" class="text-right"></span>)
                     </label>
                 </td>
             </tr>

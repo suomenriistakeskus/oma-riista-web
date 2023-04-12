@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.carnivore.justification', ['app.me
                 templateUrl: 'harvestpermit/applications/carnivore/justification/justification.html',
                 controller: 'CarnivorePermitWizardJustificationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     justification: function (CarnivorePermitApplication, applicationId) {
                         return CarnivorePermitApplication.getJustification({id: applicationId}).$promise;

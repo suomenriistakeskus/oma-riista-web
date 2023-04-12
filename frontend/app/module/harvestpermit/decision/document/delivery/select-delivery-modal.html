@@ -7,6 +7,29 @@
 
     <div class="modal-body">
 
+        <div class="row permit-decision-delivery-automatic-delivery-deduction-selection form-group">
+            <div class="col-xs-12 checkbox">
+                <div class="btn-group">
+                    <label class="btn"
+                           ng-class="!$ctrl.automaticDeliveryDeduction ? 'btn-primary' : 'btn-default'"
+                           ng-model="$ctrl.automaticDeliveryDeduction"
+                           ng-change="$ctrl.updateAutomaticDeliveryDeduction()"
+                           uib-btn-radio="false">
+                        <span translate="global.no"></span>
+                    </label>
+
+                    <label class="btn btn-default"
+                           ng-class="$ctrl.automaticDeliveryDeduction ? 'btn-primary' : 'btn-default'"
+                           ng-model="$ctrl.automaticDeliveryDeduction"
+                           ng-change="$ctrl.updateAutomaticDeliveryDeduction()"
+                           uib-btn-radio="true">
+                        <span translate="global.yes"></span>
+                    </label>
+                </div>
+                <span translate="decision.delivery.automaticDeliveryDeduction"></span>
+            </div>
+        </div>
+        
         <div class="btn-group btn-group-justified r-decision-delivery-tabs">
             <label class="btn btn-default" ng-model="$ctrl.selectedTab" uib-btn-radio="'a'">
                 <span translate="decision.delivery.fromRka"></span>

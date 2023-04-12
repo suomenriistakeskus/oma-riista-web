@@ -8,6 +8,8 @@ import fi.riista.feature.gamediary.harvest.HarvestExceptionMapper;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsRequestDTO;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFieldsResponseDTO;
+import fi.riista.feature.gamediary.mobile.MobileDeletedDiaryEntriesDTO;
+import fi.riista.feature.gamediary.mobile.MobileDiaryEntryPageDTO;
 import fi.riista.feature.gamediary.mobile.MobileGameDiaryFeature;
 import fi.riista.feature.gamediary.mobile.MobileGameSpeciesCodesetDTO;
 import fi.riista.feature.gamediary.mobile.MobileHarvestDTO;
@@ -46,6 +48,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -61,6 +64,9 @@ public class MobileGameDiaryApiResource {
 
     private static final String HARVEST_LIST_RESOURCE_URL =
             URL_PREFIX + "/harvests/{firstCalendarYearOfHuntingYear:\\d+}";
+
+    private static final String HARVEST_PAGE_RESOURCE_URL =
+            URL_PREFIX + "/harvests/page";
     private static final String HARVEST_CHANGES_RESOURCE_URL =
             URL_PREFIX + "/harvests/haschanges/{firstCalendarYearOfHuntingYear:\\d+}/{since:" + Patterns.DATETIME_ISO_8601 + "}";
     private static final String HARVEST_BASE_RESOURCE_URL = URL_PREFIX + "/harvest";
@@ -68,6 +74,9 @@ public class MobileGameDiaryApiResource {
 
     private static final String OBSERVATION_LIST_RESOURCE_URL =
             URL_PREFIX + "/observations/{firstCalendarYearOfHuntingYear:\\d+}";
+
+    private static final String OBSERVATION_PAGE_RESOURCE_URL =
+            URL_PREFIX + "/observations/page";
     private static final String OBSERVATION_BASE_RESOURCE_URL = URL_PREFIX + "/observation";
     private static final String OBSERVATION_INSTANCE_RESOURCE_URL = OBSERVATION_BASE_RESOURCE_URL + "/{id:\\d+}";
     private static final String OBSERVATION_METADATA_RESOURCE_URL = OBSERVATION_BASE_RESOURCE_URL + "/metadata/{observationSpecVersion:\\d+}";
@@ -80,6 +89,8 @@ public class MobileGameDiaryApiResource {
 
     private static final String CHECK_PERMIT_NUMBER = URL_PREFIX + "/checkPermitNumber";
     private static final String PRELOAD_PERMITS = URL_PREFIX + "/preloadPermits";
+    private static final String DELETED_HARVESTS = HARVEST_BASE_RESOURCE_URL + "/deleted";
+    private static final String DELETED_OBSERVATIONS = OBSERVATION_BASE_RESOURCE_URL + "/deleted";
 
     @Resource
     private MobileHarvestFeature mobileHarvestFeature;
@@ -152,6 +163,15 @@ public class MobileGameDiaryApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = HARVEST_PAGE_RESOURCE_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+    public MobileDiaryEntryPageDTO<MobileHarvestDTO> getHarvestPage(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") final LocalDateTime modifiedAfter,
+            @RequestParam final int harvestSpecVersion) {
+        final HarvestSpecVersion specVersion = HarvestSpecVersion.fromIntValue(harvestSpecVersion);
+        return mobileHarvestFeature.fetchPageForActiveUser(modifiedAfter, specVersion);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = HARVEST_CHANGES_RESOURCE_URL)
     public String checkHarvestsAreUpdated(
             @PathVariable final Integer firstCalendarYearOfHuntingYear,
@@ -204,6 +224,15 @@ public class MobileGameDiaryApiResource {
 
         return mobileObservationFeature.getObservations(
                 firstCalendarYearOfHuntingYear, ObservationSpecVersion.fromIntValue(observationSpecVersion));
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = OBSERVATION_PAGE_RESOURCE_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+    public MobileDiaryEntryPageDTO<MobileObservationDTO> getObservationPage(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") final LocalDateTime modifiedAfter,
+            @RequestParam final int observationSpecVersion) {
+        final ObservationSpecVersion specVersion = ObservationSpecVersion.fromIntValue(observationSpecVersion);
+        return mobileObservationFeature.fetchPageForActiveUser(modifiedAfter, specVersion);
     }
 
     @RequestMapping(value = OBSERVATION_BASE_RESOURCE_URL,
@@ -307,4 +336,21 @@ public class MobileGameDiaryApiResource {
 
         return mobileHarvestPermitFeature.preloadPermits(specVersion);
     }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = DELETED_HARVESTS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public MobileDeletedDiaryEntriesDTO getDeletedHarvests(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") final LocalDateTime deletedAfter) {
+        return mobileHarvestFeature.getDeletedHarvestIds(deletedAfter)
+                .combine(mobileHarvestFeature.getHarvestsWhereOnlyAuthor());
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = DELETED_OBSERVATIONS, produces = MediaType.APPLICATION_JSON_VALUE)
+    public MobileDeletedDiaryEntriesDTO getDeletedObservations(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") final LocalDateTime deletedAfter) {
+        return mobileObservationFeature.getDeletedObservationIds(deletedAfter)
+                .combine(mobileObservationFeature.getObservationsWhereOnlyAuthor());
+    }
+
 }

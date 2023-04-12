@@ -1,4 +1,4 @@
-<div class="alert alert-info">
+<div class="alert alert-info wizard-info">
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
@@ -14,7 +14,7 @@
         </p>
 
         <div class="row">
-            <div class="col-xs-3">
+            <div class="col-xs-12 col-sm-3">
                 <div class="form-group" show-errors>
                     <label class="control-label"
                            for="populationAmount-{{::s.gameSpeciesCode}}"
@@ -39,7 +39,8 @@
                       name="populationDescription-{{::s.gameSpeciesCode}}"
                       id="populationDescription-{{::s.gameSpeciesCode}}"
                       ng-model="s.populationDescription"
-                      required></textarea>
+                      required
+                      spellcheck="false"></textarea>
         </div>
 
         <hr class="invisible">

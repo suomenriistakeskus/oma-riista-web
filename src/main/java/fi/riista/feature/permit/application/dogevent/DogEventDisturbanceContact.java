@@ -1,6 +1,7 @@
 package fi.riista.feature.permit.application.dogevent;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
+import fi.riista.validation.PhoneNumber;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.persistence.Access;
@@ -16,7 +17,6 @@ import javax.persistence.ManyToOne;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Entity
@@ -45,7 +45,7 @@ public class DogEventDisturbanceContact extends LifecycleEntity<Long> {
 
     @NotBlank
     @Size(max = 255)
-    @Pattern(regexp = "[+]?[ 0-9]+")
+    @PhoneNumber
     @Column(nullable = false)
     private String contactPhone;
 

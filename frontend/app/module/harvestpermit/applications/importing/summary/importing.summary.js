@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.importing.summary', ['app.metadata
                 templateUrl: 'harvestpermit/applications/importing/summary/summary.html',
                 controller: 'ImportingPermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, ImportingPermitApplication) {
                         return ImportingPermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -160,7 +161,7 @@ angular.module('app.harvestpermit.application.importing.summary', ['app.metadata
                 ? $translate.instant('harvestpermit.wizard.summary.sendConfirmation.bodyLate')
                 : $translate.instant('harvestpermit.wizard.summary.sendConfirmation.body');
 
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(modalTitle, modalBody);
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(modalTitle, modalBody);
         }
 
         function getDeliveryInfoFromContactPerson(person) {

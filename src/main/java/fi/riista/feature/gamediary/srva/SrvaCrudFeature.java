@@ -1,6 +1,10 @@
 package fi.riista.feature.gamediary.srva;
 
+import static fi.riista.feature.gamediary.srva.SrvaEventNameEnum.ACCIDENT;
+
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
@@ -22,21 +26,19 @@ import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.SliceImpl;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Resource;
+import fi.riista.util.QueryDslUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static fi.riista.feature.gamediary.srva.SrvaEventNameEnum.ACCIDENT;
+import javax.annotation.Nonnull;
+import javax.annotation.Resource;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
@@ -65,6 +67,7 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
     @Override
     protected void updateEntity(@Nonnull final SrvaEvent entity, @Nonnull final SrvaEventDTO dto) {
         updateEntityCommonFields(entity, dto);
+        updateEntitySpecV2Fields(entity, dto);
     }
 
     @Override
@@ -124,8 +127,10 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
     }
 
     private Slice<SrvaEvent> getSlice(final SrvaEventSearchDTO dto, final Pageable pageRequest) {
-        final List<SrvaEvent> result = getQuery(dto).offset(pageRequest.getOffset())
+        final List<SrvaEvent> result = getQuery(dto)
+                .offset(pageRequest.getOffset())
                 .limit(pageRequest.getPageSize() + 1)
+                .orderBy(QueryDslUtil.getSortedColumns(pageRequest.getSort(), QSrvaEvent.srvaEvent))
                 .fetch();
         return BaseRepositoryImpl.toSlice(result, pageRequest);
     }
@@ -134,16 +139,19 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
     public List<SrvaEventDTO> search(final SrvaEventSearchDTO dto) {
         assertCurrentRhyId(dto);
 
-        final List<SrvaEvent> srvaEvents = getQuery(dto).fetch();
+        final List<SrvaEvent> srvaEvents = getQuery(dto).orderBy(QSrvaEvent.srvaEvent.id.asc()).fetch();
 
-        return srvaEventDTOTransformer.apply(srvaEvents);
+        return Lists.partition(srvaEvents, 1000).stream()
+                .map(srvaEventDTOTransformer::apply)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<SrvaEventExportExcelDTO> searchExcel(final SrvaEventSearchDTO dto) {
         assertCurrentRhyId(dto);
 
-        final List<SrvaEvent> srvaEvents = getQuery(dto).fetch();
+        final List<SrvaEvent> srvaEvents = getQuery(dto).orderBy(QSrvaEvent.srvaEvent.id.asc()).fetch();
 
         return srvaEvents.stream().map(srvaEvent ->
                 SrvaEventExportExcelDTO.create(srvaEvent, enumLocaliser)).collect(Collectors.toList());
@@ -180,8 +188,7 @@ public class SrvaCrudFeature extends AbstractSrvaCrudFeature<SrvaEventDTO> {
 
         final JPQLQuery<SrvaEvent> q = jpqlQueryFactory.select(SRVA)
                 .from(SRVA)
-                .where(eventNamesRestriction.and(rhyRestriction).or(accidentSubtypeRestriction))
-                .orderBy(SRVA.id.asc());
+                .where(eventNamesRestriction.and(rhyRestriction).or(accidentSubtypeRestriction));
 
         if (Objects.nonNull(dto.getRhyCode())) {
             final Riistanhoitoyhdistys rhy = riistanhoitoyhdistysRepository.findByOfficialCode(dto.getRhyCode());

@@ -1,0 +1,55 @@
+.status {
+  font-size: large;
+  font-weight: bold;
+}
+
+.accepted {
+  color: @r-green;
+}
+
+.proposed {
+  color: @r-yellow;
+}
+
+.rejected {
+  color: @r-red;
+}
+
+@hunting-control-sidebar-width: 320px;
+
+.hunting-control-sidebar-layout {
+  overflow: hidden;
+
+  .left-column,
+  .main-column {
+    position: fixed;
+    overflow: auto;
+    overflow-x: hidden;
+    min-height: 1px;
+    background: #fff;
+  }
+
+  .left-column {
+    left: 0;
+    bottom: 0;
+    width: @hunting-control-sidebar-width;
+    top: @main-nav-height;
+    padding: 5px 10px 0;
+  }
+
+  .main-column {
+    top: @main-nav-height;
+    left: @hunting-control-sidebar-width;
+    bottom: 0;
+    right: 0;
+
+    .container-fluid {
+      padding: 10px;
+      margin: 0;
+    }
+  }
+
+  .main-column.in {
+    top: @sub-nav-height;
+  }
+}

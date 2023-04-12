@@ -18,6 +18,7 @@ import fi.riista.feature.gamediary.srva.SrvaEventTypeEnum;
 import fi.riista.feature.gamediary.srva.SrvaJpaUtils;
 import fi.riista.feature.gamediary.srva.SrvaSpecs;
 import fi.riista.feature.gamediary.srva.method.SrvaMethod;
+import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodRepository;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimenDTO;
@@ -31,6 +32,8 @@ import fi.riista.integration.srva.rvr.RVR_GeoLocation;
 import fi.riista.integration.srva.rvr.RVR_SourceEnum;
 import fi.riista.integration.srva.rvr.RVR_SrvaEvent;
 import fi.riista.integration.srva.rvr.RVR_SrvaEventNameEnum;
+import fi.riista.integration.srva.rvr.RVR_SrvaEventResultDetailsEnum;
+import fi.riista.integration.srva.rvr.RVR_SrvaEventTypeDetailsEnum;
 import fi.riista.integration.srva.rvr.RVR_SrvaEventTypeEnum;
 import fi.riista.integration.srva.rvr.RVR_SrvaEvents;
 import fi.riista.integration.srva.rvr.RVR_SrvaMethodEnum;
@@ -39,10 +42,11 @@ import fi.riista.integration.srva.rvr.RVR_SrvaSpecimen;
 import fi.riista.util.DateUtil;
 import fi.riista.util.JaxbUtils;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +59,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import static java.util.stream.Collectors.toList;
 
@@ -164,19 +170,38 @@ public class SrvaExportFeature {
 
     @Transactional(readOnly = true)
     @PreAuthorize("hasPrivilege('EXPORT_SRVA_RVR')")
-    public String exportRVR() {
-        return JaxbUtils.marshalToString(getRVREventsForXmlMarshal(), jaxbMarshaller);
+    public String exportRVRV1Xml(final Optional<Integer> calendarYear) {
+        return JaxbUtils.marshalToString(exportRVRV1(calendarYear), jaxbMarshaller);
     }
 
-    // Do not call this method directory, it's not authorized!
     @Transactional(readOnly = true)
-    public RVR_SrvaEvents getRVREventsForXmlMarshal() {
-        final List<SrvaEvent> srvaEvents =
-                srvaEventRepository.findAll(SrvaSpecs.equalState(SrvaEventStateEnum.APPROVED));
+    @PreAuthorize("hasPrivilege('EXPORT_SRVA_RVR')")
+    public String exportRVRV2Xml(final Optional<Integer> calendarYear) {
+        return JaxbUtils.marshalToString(exportRVRV2(calendarYear), jaxbMarshaller);
+    }
 
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasPrivilege('EXPORT_SRVA_RVR')")
+    public RVR_SrvaEvents exportRVRV1(final Optional<Integer> calendarYear) {
+        final List<SrvaEvent> srvaEvents = calendarYear
+                .map(this::getApprovedWithinCalendarYear)
+                .orElseGet(this::getAllApproved);
+        return mapEntities(srvaEvents, false);
+    }
+
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasPrivilege('EXPORT_SRVA_RVR')")
+    public RVR_SrvaEvents exportRVRV2(final Optional<Integer> calendarYear) {
+        final List<SrvaEvent> srvaEvents = calendarYear
+                .map(this::getApprovedWithinCalendarYear)
+                .orElseGet(this::getAllApproved);
+        return mapEntities(srvaEvents, true);
+    }
+
+    private RVR_SrvaEvents mapEntities(final List<SrvaEvent> srvaEvents, final boolean includeV2Parameters) {
         // To prevent too many parameters (2^15 is max) to SQL IN clause, process in smaller batches
         final List<RVR_SrvaEvent> rvrEventList = Lists.partition(srvaEvents, 4096).stream()
-                .flatMap(this::transformToRVREventStream)
+                .flatMap(events -> transformToRVREventStream(events, includeV2Parameters))
                 .collect(toList());
 
         final RVR_SrvaEvents rvrEvents = new RVR_SrvaEvents();
@@ -186,7 +211,23 @@ public class SrvaExportFeature {
         return rvrEvents;
     }
 
-    private Stream<? extends RVR_SrvaEvent> transformToRVREventStream(final List<SrvaEvent> srvaEvents) {
+
+    private List<SrvaEvent> getAllApproved() {
+        return srvaEventRepository.findAll(SrvaSpecs.equalState(SrvaEventStateEnum.APPROVED));
+    }
+
+    private List<SrvaEvent> getApprovedWithinCalendarYear(final int year) {
+        final DateTime yearStart = new LocalDate(year, 1, 1).toDateTimeAtStartOfDay();
+        final DateTime yearEnd = new LocalDate(year + 1, 1, 1).toDateTimeAtStartOfDay();
+
+        final List<SrvaEvent> srvaEvents =
+                srvaEventRepository.findAll(SrvaSpecs.equalState(SrvaEventStateEnum.APPROVED)
+                        .and(SrvaSpecs.withinInterval(new Interval(yearStart, yearEnd))));
+        return srvaEvents;
+    }
+
+    private Stream<? extends RVR_SrvaEvent> transformToRVREventStream(final List<SrvaEvent> srvaEvents,
+                                                                      final boolean includeV2Parameters) {
         final Function<SrvaEvent, GameSpecies> srvaEventToSpecies =
                 SrvaJpaUtils.getSrvaEventToSpeciesMapping(srvaEvents, gameSpeciesRepo);
         final Function<SrvaEvent, Riistanhoitoyhdistys> srvaEventToRhy =
@@ -196,14 +237,15 @@ public class SrvaExportFeature {
         final Map<SrvaEvent, List<SrvaMethod>> groupedMethods = SrvaJpaUtils.getMethodsGroupedBySrvaEvent(srvaEvents,
                 srvaMethodRepo);
 
-        return constructExportData(srvaEvents, srvaEventToSpecies, srvaEventToRhy, groupedSpecimens, groupedMethods);
+        return constructExportData(srvaEvents, srvaEventToSpecies, srvaEventToRhy, groupedSpecimens, groupedMethods, includeV2Parameters);
     }
 
     private static Stream<RVR_SrvaEvent> constructExportData(final List<SrvaEvent> events,
                                                              final Function<SrvaEvent, GameSpecies> srvaEventToSpecies,
                                                              final Function<SrvaEvent, Riistanhoitoyhdistys> srvaEventToRhy,
                                                              final Map<SrvaEvent, List<SrvaSpecimen>> groupedSpecimens,
-                                                             final Map<SrvaEvent, List<SrvaMethod>> groupedMethods) {
+                                                             final Map<SrvaEvent, List<SrvaMethod>> groupedMethods,
+                                                             final boolean includeV2Parameters) {
 
         return events.stream().map(event -> {
             RVR_SrvaEvent rvrEvent = new RVR_SrvaEvent();
@@ -221,8 +263,12 @@ public class SrvaExportFeature {
             rvrEvent.setOtherMethodDescription(event.getOtherMethodDescription());
             rvrEvent.setEventResult(createRvrEnum(RVR_SrvaResultEnum.class, event.getEventResult()));
             rvrEvent.setDescription(event.getDescription());
-            rvrEvent.setMethods(createRvrMethods(groupedMethods.get(event)));
             rvrEvent.setSpecimens(createRvrSpecimens(groupedSpecimens.get(event)));
+            if (includeV2Parameters) {
+                rvrEvent.setMethods(createRvrMethods(groupedMethods.get(event)));
+            } else {
+                rvrEvent.setMethods(getV1Methods(groupedMethods.get(event)));
+            }
 
             final Riistanhoitoyhdistys rhy = srvaEventToRhy.apply(event);
             rvrEvent.setRhyOfficialCode(rhy.getOfficialCode());
@@ -232,8 +278,50 @@ public class SrvaExportFeature {
             rvrEvent.setGameSpeciesOfficialCode(species.map(GameSpecies::getOfficialCode).orElse(null));
             rvrEvent.setGameSpeciesHumanReadableName(species.map(GameSpecies::getNameFinnish).orElse(null));
 
+            if (includeV2Parameters) {
+                rvrEvent.setDeportationOrderNumber(event.getDeportationOrderNumber());
+                rvrEvent.setEventTypeDetail(createRvrEnum(RVR_SrvaEventTypeDetailsEnum.class, event.getEventTypeDetail()));
+                rvrEvent.setOtherEventTypeDetailDescription(event.getOtherEventTypeDetailDescription());
+                rvrEvent.setEventResultDetail(createRvrEnum(RVR_SrvaEventResultDetailsEnum.class, event.getEventResultDetail()));
+            }
             return rvrEvent;
         });
+    }
+
+    private static RVR_SrvaEvent.RVR_Methods getV1Methods(final List<SrvaMethod> methods) {
+        if (methods == null) {
+            return null;
+        }
+
+        // Count how many V2 methods are enabled
+        final long v2Methods = methods.stream().filter(
+                method -> (method.getName() == SrvaMethodEnum.CHASING_WITH_PEOPLE && method.isChecked()) ||
+                        (method.getName() == SrvaMethodEnum.VEHICLE && method.isChecked())
+        ).count();
+
+        final long otherMethods = methods.stream().filter(
+                method -> (method.getName() == SrvaMethodEnum.OTHER)).count();
+
+        // If there are v2 methods and no OTHER method then add OTHER
+        if (v2Methods > 0 && otherMethods == 0) {
+            final SrvaMethod method = new SrvaMethod();
+            method.setName(SrvaMethodEnum.OTHER);
+            methods.add(method);
+        }
+
+        // Filter V2 methods away and if any of them was set, then enable OTHER method
+        return createRvrMethods(
+                methods.stream()
+                        .filter(method -> method.getName() != SrvaMethodEnum.CHASING_WITH_PEOPLE &&
+                                method.getName() != SrvaMethodEnum.VEHICLE)
+                        .map(method -> {
+                            if (method.getName() == SrvaMethodEnum.OTHER && v2Methods > 0) {
+                                method.setChecked(true);
+                                return method;
+                            } else {
+                                return method;
+                            }
+                        }).collect(toList()));
     }
 
     private static RVR_SrvaEvent.RVR_Specimens createRvrSpecimens(final List<SrvaSpecimen> srvaSpecimens) {

@@ -50,14 +50,14 @@ public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
 
     @Test(expected = AccessDeniedException.class)
     public void testAccessDenied() {
-        onSavedAndAuthenticated(createNewAdmin(), () -> feature.exportSrvaEvents(2018, 1));
+        onSavedAndAuthenticated(createNewAdmin(), () -> feature.exportSrvaEvents(2018, 1, true));
     }
 
     @Test
     public void testAccessGranted() {
         onSavedAndAuthenticated(
                 apiUser,
-                () -> Asserts.assertEmpty(feature.exportSrvaEvents(2018, 1).getSrvaEvent()));
+                () -> Asserts.assertEmpty(feature.exportSrvaEvents(2018, 1, true).getSrvaEvent()));
     }
 
     @Test
@@ -68,7 +68,7 @@ public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
         createEvent(2018, 02, 01);
 
         onSavedAndAuthenticated(apiUser, () -> {
-            final CEV_SrvaEvents result = feature.exportSrvaEvents(2018, 1);
+            final CEV_SrvaEvents result = feature.exportSrvaEvents(2018, 1, true);
             Assert.assertEquals(2, result.getSrvaEvent().size());
             result.getSrvaEvent()
                     .forEach(event -> Assert.assertEquals(1, event.getPointOfTime().monthOfYear().get()));
@@ -86,7 +86,7 @@ public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
         rejectedEvent.setState(REJECTED);
 
         onSavedAndAuthenticated(apiUser, () -> {
-            final CEV_SrvaEvents result = feature.exportSrvaEvents(2018, 1);
+            final CEV_SrvaEvents result = feature.exportSrvaEvents(2018, 1, true);
             Assert.assertEquals(1, result.getSrvaEvent().size());
             Assert.assertEquals(DateUtil.toLocalDateTimeNullSafe(approvedEvent.getPointOfTime()),
                     result.getSrvaEvent().get(0).getPointOfTime());
@@ -100,7 +100,7 @@ public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
         createEvent(2018, 03, 05);
 
         onSavedAndAuthenticated(apiUser, () -> {
-            final CEV_SrvaEvents result = feature.exportSrvaEvents(2018, 3);
+            final CEV_SrvaEvents result = feature.exportSrvaEvents(2018, 3, true);
 
             Assert.assertEquals(2, result.getSrvaEvent().size());
             Assert.assertEquals(2, result.getSrvaSpecimen().size());
@@ -121,7 +121,7 @@ public class CommonSrvaEventExportFeatureTest extends EmbeddedDatabaseTest {
         model().newSrvaMethod(event, SrvaMethodEnum.TRACED_WITHOUT_DOG, false);
 
         onSavedAndAuthenticated(apiUser, () -> {
-            final CEV_SrvaEvents result = feature.exportSrvaEvents(2018, 3);
+            final CEV_SrvaEvents result = feature.exportSrvaEvents(2018, 3, true);
 
             Assert.assertEquals(1, result.getSrvaEvent().size());
 

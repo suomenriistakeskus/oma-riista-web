@@ -20,18 +20,19 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
                 $ctrl.editSection = function () {
                     var referenceDecisionId = _.get(reference, 'id');
 
-                    PermitDecisionDeliveryModal.open(decisionId, referenceDecisionId).then(function (deliveries) {
-                        return PermitDecision.updateDeliveries({
-                            id: decisionId,
-                            deliveries: deliveries
-                        }).$promise.then(function () {
-                            NotificationService.showDefaultSuccess();
-                            RefreshDecisionStateService.refresh();
+                    PermitDecisionDeliveryModal.open(decisionId, referenceDecisionId, decision.automaticDeliveryDeduction)
+                        .then(function (deliveries) {
+                            return PermitDecision.updateDeliveries({
+                                id: decisionId,
+                                deliveries: deliveries
+                            }).$promise.then(function () {
+                                NotificationService.showDefaultSuccess();
+                                RefreshDecisionStateService.refresh();
 
-                        }, function () {
-                            NotificationService.showDefaultFailure();
+                            }, function () {
+                                NotificationService.showDefaultFailure();
+                            });
                         });
-                    });
                 };
 
                 $ctrl.canEditContent = function () {
@@ -62,7 +63,7 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
     })
 
     .service('PermitDecisionDeliveryModal', function ($uibModal, PermitDecision, DecisionRkaRecipient) {
-        this.open = function (decisionId, referenceId) {
+        this.open = function (decisionId, referenceId, automaticDeliveryDeduction) {
             return $uibModal.open({
                 templateUrl: 'harvestpermit/decision/document/delivery/select-delivery-modal.html',
                 controllerAs: '$ctrl',
@@ -78,13 +79,15 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
                     },
                     rkaDeliveryList: function () {
                         return DecisionRkaRecipient.query().$promise;
-                    }
+                    },
+                    automaticDeliveryDeduction: _.constant(automaticDeliveryDeduction)
                 }
             }).result;
         };
 
-        function ModalController($uibModalInstance, $filter,
-                                 decisionId, deliveries, referenceDeliveries, rkaDeliveryList) {
+        function ModalController($uibModalInstance, $filter, NotificationService,
+                                 decisionId, deliveries, referenceDeliveries, rkaDeliveryList,
+                                 automaticDeliveryDeduction) {
             var $ctrl = this;
 
             var rI18nNameFilter = $filter('rI18nNameFilter');
@@ -114,6 +117,7 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
                 $ctrl.selectedTab = 'a';
 
                 $ctrl.deliveries = deliveries;
+                $ctrl.automaticDeliveryDeduction = automaticDeliveryDeduction;
                 $ctrl.referenceDeliveries = referenceDeliveries;
                 $ctrl.typeaheadModel = null;
 
@@ -166,6 +170,15 @@ angular.module('app.harvestpermit.decision.document.delivery', [])
 
             $ctrl.cancel = function () {
                 $uibModalInstance.dismiss('cancel');
+            };
+
+            $ctrl.updateAutomaticDeliveryDeduction = function () {
+                var params = {id: decisionId, enabled: $ctrl.automaticDeliveryDeduction};
+
+                PermitDecision.updateAutomaticDeliveryDeduction(params).$promise
+                    .then(function () {
+                        NotificationService.showDefaultSuccess();
+                    });
             };
         }
     });

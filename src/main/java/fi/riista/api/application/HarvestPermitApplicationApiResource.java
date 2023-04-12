@@ -18,6 +18,8 @@ import fi.riista.feature.permit.application.create.HarvestPermitApplicationCreat
 import fi.riista.feature.permit.application.create.HarvestPermitApplicationCreateFeature;
 import fi.riista.feature.permit.application.create.HarvestPermitApplicationTypeDTO;
 import fi.riista.feature.permit.application.create.HarvestPermitApplicationTypeFeature;
+import fi.riista.feature.permit.application.schedule.HarvestPermitApplicationScheduleCrudFeature;
+import fi.riista.feature.permit.application.schedule.HarvestPermitApplicationScheduleDTO;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchFeature;
 import fi.riista.feature.permit.application.send.HarvestPermitApplicationSendDTO;
 import fi.riista.feature.permit.application.send.HarvestPermitApplicationSendFeature;
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -101,6 +104,9 @@ public class HarvestPermitApplicationApiResource {
 
     @Resource
     private ContentTypeChecker contentTypeChecker;
+
+    @Resource
+    private HarvestPermitApplicationScheduleCrudFeature harvestPermitApplicationScheduleCrudFeature;
 
     // TYPES
 
@@ -247,6 +253,22 @@ public class HarvestPermitApplicationApiResource {
         return harvestPermitApplicationAsyncFeature.createArchiveIfMissing(applicationId);
     }
 
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/archive/recreate-for-year/{year:\\d+}")
+    public String recreateArchivesForYear(@PathVariable final int year) {
+        // Updates existing PermitApplicationArchive entity, make sure to backup original just in case
+        harvestPermitApplicationAsyncFeature.recreateArchivesForYear(year);
+        return "Archive recreation started for " + year;
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/archive/recreate")
+    public String recreateArchives(final @RequestParam List<Long> ids) {
+        // Updates existing PermitApplicationArchive entity, make sure to backup original just in case
+        harvestPermitApplicationAsyncFeature.recreateArchives(ids);
+        return "Archive recreation started";
+    }
+
     // SEND
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -258,5 +280,17 @@ public class HarvestPermitApplicationApiResource {
         harvestPermitApplicationAsyncFeature.asyncCreateArchive(applicationId);
         harvestPermitApplicationAsyncFeature.asyncSendEmailNotification(applicationId);
         harvestPermitApplicationAsyncFeature.asyncSendModeratorNotification(applicationId);
+    }
+
+    @GetMapping("/schedules")
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    public List<HarvestPermitApplicationScheduleDTO> listSchedules() {
+        return harvestPermitApplicationScheduleCrudFeature.list();
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PutMapping("/schedules")
+    public void updateSchedule(final @Valid @RequestBody HarvestPermitApplicationScheduleDTO dto) {
+        harvestPermitApplicationScheduleCrudFeature.update(dto);
     }
 }

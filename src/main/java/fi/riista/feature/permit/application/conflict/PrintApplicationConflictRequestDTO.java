@@ -15,6 +15,9 @@ public class PrintApplicationConflictRequestDTO {
     @Valid
     private MapPdfParameters mapParameters;
 
+    private long firstApplicationId;
+    private long secondApplicationId;
+
     public List<Long> getPalstaIds() {
         return palstaIds;
     }
@@ -29,5 +32,21 @@ public class PrintApplicationConflictRequestDTO {
 
     public void setMapParameters(final MapPdfParameters mapParameters) {
         this.mapParameters = mapParameters;
+    }
+
+    public long getFirstApplicationId() {
+        return firstApplicationId;
+    }
+
+    public void setFirstApplicationId(final long firstApplicationId) {
+        this.firstApplicationId = firstApplicationId;
+    }
+
+    public long getSecondApplicationId() {
+        return secondApplicationId;
+    }
+
+    public void setSecondApplicationId(final long secondApplicationId) {
+        this.secondApplicationId = secondApplicationId;
     }
 }

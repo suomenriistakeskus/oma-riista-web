@@ -2,6 +2,8 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -13,10 +15,14 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.HUNTING_CONTROLLERS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantFieldGroup.HUNTING_CONTROL_STATISTICS;
 import static fi.riista.util.F.nullsafeMax;
 import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
@@ -25,14 +31,16 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class HuntingControlStatistics
         implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsFieldsetParticipants,
         AnnualStatisticsManuallyEditableFields<HuntingControlStatistics>,
         Serializable {
 
-    public static final HuntingControlStatistics reduce(@Nullable final HuntingControlStatistics a,
-                                                        @Nullable final HuntingControlStatistics b) {
+    public static HuntingControlStatistics reduce(@Nullable final HuntingControlStatistics a,
+                                                  @Nullable final HuntingControlStatistics b) {
 
         final HuntingControlStatistics result = new HuntingControlStatistics();
         result.setHuntingControlEvents(nullableIntSum(a, b, HuntingControlStatistics::getHuntingControlEvents));
+        result.setNonSubsidizableHuntingControlEvents(nullableIntSum(a, b, HuntingControlStatistics::getNonSubsidizableHuntingControlEvents));
         result.setHuntingControlCustomers(nullableIntSum(a, b, HuntingControlStatistics::getHuntingControlCustomers));
         result.setProofOrders(nullableIntSum(a, b, HuntingControlStatistics::getProofOrders));
         result.setHuntingControllers(nullableIntSum(a, b, HuntingControlStatistics::getHuntingControllers));
@@ -55,7 +63,11 @@ public class HuntingControlStatistics
     // Valvontatapahtumien määrä
     @Min(0)
     @Column(name = "hunting_control_events")
-    private Integer huntingControlEvents;
+    private Integer huntingControlEvents; // Subsidizable events
+
+    @Min(0)
+    @Column(name = "non_subsidizable_hunting_control_events")
+    private Integer nonSubsidizableHuntingControlEvents;
 
     @Column(name = "hunting_control_events_overridden", nullable = false)
     private boolean huntingControlEventsOverridden;
@@ -93,6 +105,7 @@ public class HuntingControlStatistics
         requireNonNull(that);
 
         this.huntingControlEvents = that.huntingControlEvents;
+        this.nonSubsidizableHuntingControlEvents = that.nonSubsidizableHuntingControlEvents;
         this.huntingControlEventsOverridden = that.huntingControlEventsOverridden;
         this.huntingControlCustomers = that.huntingControlCustomers;
         this.huntingControlCustomersOverridden = that.huntingControlCustomersOverridden;
@@ -112,6 +125,7 @@ public class HuntingControlStatistics
         // Includes manually updateable fields only.
 
         return Objects.equals(huntingControlEvents, that.huntingControlEvents) &&
+                Objects.equals(nonSubsidizableHuntingControlEvents, that.nonSubsidizableHuntingControlEvents) &&
                 Objects.equals(huntingControlCustomers, that.huntingControlCustomers) &&
                 Objects.equals(proofOrders, that.proofOrders);
     }
@@ -120,10 +134,12 @@ public class HuntingControlStatistics
     public void assignFrom(@Nonnull final HuntingControlStatistics that) {
         // Includes manually updateable fields only.
 
-        if (!Objects.equals(this.huntingControlEvents, that.huntingControlEvents)) {
+        if (!Objects.equals(this.huntingControlEvents, that.huntingControlEvents) ||
+                !Objects.equals(this.nonSubsidizableHuntingControlEvents, that.nonSubsidizableHuntingControlEvents)) {
             huntingControlEventsOverridden = true;
         }
         this.huntingControlEvents = that.huntingControlEvents;
+        this.nonSubsidizableHuntingControlEvents = that.nonSubsidizableHuntingControlEvents;
 
         if (!Objects.equals(this.huntingControlCustomers, that.huntingControlCustomers)) {
             huntingControlCustomersOverridden = true;
@@ -138,8 +154,23 @@ public class HuntingControlStatistics
 
     @Override
     public boolean isReadyForInspection() {
-        return F.allNotNull(huntingControlEvents, huntingControlCustomers, proofOrders, huntingControllers);
+        return F.allNotNull(huntingControlEvents, huntingControlCustomers, proofOrders, huntingControllers) && hasParticipants();
     }
+
+    private boolean hasParticipants() {
+        return listMissingParticipants()._2.isEmpty();
+    }
+
+    @Override
+    public Tuple2<AnnualStatisticsParticipantFieldGroup, List<AnnualStatisticsParticipantField>> listMissingParticipants() {
+        final List<AnnualStatisticsParticipantField> missing = new ArrayList<>();
+        if (huntingControlEvents != null && huntingControlEvents > 0
+                && (huntingControllers == null || huntingControllers <= 0)) {
+            missing.add(HUNTING_CONTROLLERS);
+        }
+        return Tuple.of(HUNTING_CONTROL_STATISTICS, missing);
+    }
+
 
     @Override
     public boolean isCompleteForApproval() {
@@ -154,6 +185,18 @@ public class HuntingControlStatistics
 
     public void setHuntingControlEvents(final Integer huntingControlEvents) {
         this.huntingControlEvents = huntingControlEvents;
+    }
+
+    public Integer getNonSubsidizableHuntingControlEvents() {
+        return nonSubsidizableHuntingControlEvents;
+    }
+
+    public void setNonSubsidizableHuntingControlEvents(final Integer nonSubsidizableHuntingControlEvents) {
+        this.nonSubsidizableHuntingControlEvents = nonSubsidizableHuntingControlEvents;
+    }
+
+    public Integer getTotalHuntingControlEvents() {
+        return nullableIntSum(huntingControlEvents, nonSubsidizableHuntingControlEvents);
     }
 
     public boolean isHuntingControlEventsOverridden() {

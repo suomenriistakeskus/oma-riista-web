@@ -1,83 +1,124 @@
 <div class="container-transparent r-login-container">
-    <div class="r-login-logo"></div>
-    <div class="r-login-main-title">Oma riista</div>
-    <div class="r-login-sub-title" translate="main.title"></div>
-
-    <ul class="nav nav-tabs pull-right">
-        <li ng-class="{'active': $ctrl.isSelectedLanguage('fi')}">
-            <a ng-click="$ctrl.changeLanguage('fi')"><span translate="global.language.fi"></span></a>
-        </li>
-        <li ng-class="{'active': $ctrl.isSelectedLanguage('sv')}">
-            <a ng-click="$ctrl.changeLanguage('sv')"><span translate="global.language.sv"></span></a>
-        </li>
-        <li ng-class="{'active': $ctrl.isSelectedLanguage('en')}" show-in-development>
-            <a ng-click="$ctrl.changeLanguage('en')"><span translate="global.language.en"></span></a>
-        </li>
-    </ul>
-    <div class="clearfix"></div>
-
-    <div class="r-login-well">
-        <h4 translate="login.title" class="text-center"></h4>
-
-        <div growl inline="true"></div>
-
-        <form class="form-horizontal" novalidate role="form"
-              ng-submit="$ctrl.login()">
-            <div class="form-group">
-                <div class="col-sm-4">
-                    <input type="text" name="username" id="username"
-                           class="form-control"
-                           required
-                           autocomplete="username" autocorrect="off" autocapitalize="none"
-                           focus-me
-                           placeholder="{{'login.form.usernamePlaceholder' | translate}}"
-                           ng-model="$ctrl.credentials.username">
+    <div class="row no-padding r-login-title-row">
+        <div class="col-xs-12 col-sm-7 col-md-7 col-lg-7 r-login-title-row-left">
+            <div style="display: inline-block">
+                <div class="r-login-logo">
+                    <img src="/static/oma-riista-logo-white.svg" alt="white logo" width="49px" height="51px">
                 </div>
-                <div class="col-sm-4">
-                    <input type="password" name="password" id="password"
-                           class="form-control"
-                           autocomplete="current-password"
-                           required
-                           placeholder="{{'login.form.passwordPlaceholder' | translate}}"
-                           ng-model="$ctrl.credentials.password">
-                </div>
-                <div class="col-sm-4">
-                    <button type="submit" class="btn btn-primary btn-block">
-                        <span translate="login.form.button"></span>
-                    </button>
-                </div>
+                <div class="r-login-main-title">Oma riista</div>
+                <div class="r-login-vertical-separator"></div>
             </div>
-            <div class="form-group">
-                <div class="col-sm-4 text-center form-control-static">
-                    <a ui-sref="registration-email-changed" translate="login.emailChanged"></a>
+            <div class="r-login-sub-title">
+                <div class="visible-xs-block">
+                    <div translate="main.title.row1"></div>
+                    <div translate="main.title.row2"></div>
                 </div>
-                <div class="col-sm-4 text-center form-control-static">
-                    <a ui-sref="recoverPassword" translate="login.recoverPassword"></a>
-                </div>
-                <div class="col-sm-4 text-center checkbox">
-                    <label>
-                        <input type="checkbox" ng-model="$ctrl.credentials.rememberMe" checked>
-                        <span translate="login.form.rememberme"></span>
-                    </label>
-                </div>
+                <div class="hidden-xs" translate="main.title.complete"></div>
             </div>
-        </form>
-    </div>
-    <div class="r-login-well-lower row">
-        <div class="col-sm-12 text-center">
-            <button class="r-login-create-account" ui-sref="registration-send-email" translate="login.register"></button>
         </div>
-        <div class="col-sm-12 text-center ">
-            <a href="{{'login.instructionsLink' | translate}}" target="_blank" translate="login.instructionsTitle"></a>
+
+        <div class="clearfix visible-xs-block"></div>
+
+        <div class="col-xs-12 col-sm-5 col-md-5">
+            <div class="row r-login-title-row-right">
+                <div>
+                    <a href="{{'login.faqLink' | translate}}" target="_blank" translate="login.faqTitle"></a>
+                </div>
+                <div>
+                    <a href="{{'login.instructionsLink' | translate}}" target="_blank" translate="login.instructionsTitle"></a>
+                </div>
+                <div class="r-login-title-languages">
+                    <div>
+                        <a href="" ng-click="$ctrl.changeLanguage('fi')"><span>fi</span></a>
+                    </div>
+                    <div>
+                        <a ng-click="$ctrl.changeLanguage('sv')"><span>sv</span></a>
+                    </div>
+                    <div show-in-development>
+                        <a ng-click="$ctrl.changeLanguage('en')"><span>en</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="r-login-tab-container">
+        <ul class="nav nav-tabs">
+            <li class="r-login-tab">
+                <div><span translate="login.navTab.title1"></span></div>
+            </li>
+            <li class="r-login-tab">
+                <a ui-sref="registration-send-email"><span translate="login.navTab.title2"></span></a>
+            </li>
+        </ul>
+
+        <div class="clearfix"></div>
+
+        <div class="r-login-well">
+            <div growl inline="true"></div>
+
+            <form class="form-horizontal" novalidate role="form"
+                  ng-submit="$ctrl.login()">
+                <div class="form-group">
+                    <div class="col-sm-4">
+                        <label for="username" translate="global.email"></label>
+                        <input type="text" name="username" id="username"
+                               class="form-control"
+                               required
+                               autocomplete="username" autocorrect="off" autocapitalize="none"
+                               focus-me
+                               placeholder="{{'login.form.usernamePlaceholder' | translate}}"
+                               ng-model="$ctrl.credentials.username">
+                    </div>
+                    <div class="col-sm-4">
+                        <label for="password" translate="global.password"></label>
+                        <input type="password" name="password" id="password"
+                               class="form-control"
+                               autocomplete="current-password"
+                               required
+                               placeholder="{{'login.form.passwordPlaceholder' | translate}}"
+                               ng-model="$ctrl.credentials.password">
+                    </div>
+                    <div class="col-sm-4">
+                        <label for="submit-button">&nbsp;</label>
+                        <button type="submit" id="submit-button" class="btn btn-primary btn-block login-button">
+                            <span translate="login.form.button"></span>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-4 form-control-static r-login-question-container">
+                        <span class="fa fa-question-circle r-login-fa-question"></span>
+                        <a class="r-login-question-link" ui-sref="registration-email-changed" translate="login.emailChanged"></a>
+                    </div>
+                    <div class="col-sm-4 form-control-static r-login-question-container">
+                        <span class="fa fa-question-circle r-login-fa-question"></span>
+                        <a class="r-login-question-link" ui-sref="recoverPassword" translate="login.recoverPassword"></a>
+                    </div>
+                    <div class="col-sm-4 checkbox r-login-question-container">
+                        <label class="r-login-checkbox">
+                            <input type="checkbox" ng-model="$ctrl.credentials.rememberMe" checked>
+                            <span translate="login.form.rememberme"></span>
+                        </label>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<div class="container r-twitter-feed-container text-center twitter-feed-container">
-    <h3 translate="main.news"></h3>
+<div class="container r-news-container">
+    <h2 translate="main.news.title"></h2>
 
-    <a class="twitter-timeline"
-       data-chrome="noheader nofooter noborders transparent"
-       data-tweet-limit="4"
-       href="https://twitter.com/omariistafi">Twiittejä käyttäjältä @omariistafi</a>
+    <hr>
+
+    <login-news news="$ctrl.news" get-language="$ctrl.getLanguage()"></login-news>
+
+    <login-static-info class="r-login-static-info"></login-static-info>
 </div>
+
+<login-additional-info riista-feeds="$ctrl.riistaFeeds"
+                       metsastaja-feeds="$ctrl.metsastajaFeeds"
+                       is-selected-language="$ctrl.isSelectedLanguage(value)"></login-additional-info>
+
+<login-logo-row></login-logo-row>

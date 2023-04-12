@@ -6,6 +6,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
+import fi.riista.feature.common.training.TrainingType;
 import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -51,7 +52,7 @@ public class JHTTrainingRepositoryImpl extends QuerydslRepositorySupport impleme
             @Nonnull final Pageable pageRequest,
             @Nonnull final JHTTrainingSearchDTO.SearchType searchType,
             @Nonnull final OccupationType occupationType,
-            @Nullable final JHTTraining.TrainingType trainingType,
+            @Nullable final TrainingType trainingType,
             @Nullable final String trainingLocation,
             @Nullable final RiistakeskuksenAlue rka,
             @Nullable final Riistanhoitoyhdistys rhy,
@@ -87,7 +88,7 @@ public class JHTTrainingRepositoryImpl extends QuerydslRepositorySupport impleme
             predicateList.add(TRAINING.person.in(queryPersonWithExistingOrPastOccupation(occupationType, rka, rhy)));
 
         } else if (searchType == JHTTrainingSearchDTO.SearchType.TRAINING_LOCATION) {
-            predicateList.add(TRAINING.trainingType.eq(JHTTraining.TrainingType.LAHI));
+            predicateList.add(TRAINING.trainingType.eq(TrainingType.LAHI));
 
             if (StringUtils.hasText(trainingLocation)) {
                 predicateList.add(Expressions.booleanTemplate(
@@ -100,7 +101,7 @@ public class JHTTrainingRepositoryImpl extends QuerydslRepositorySupport impleme
         } else if (searchType == JHTTrainingSearchDTO.SearchType.HOME_RHY) {
             checkArgument(rka != null || rhy != null);
 
-            predicateList.add(TRAINING.trainingType.eq(JHTTraining.TrainingType.LAHI));
+            predicateList.add(TRAINING.trainingType.eq(TrainingType.LAHI));
             if (rhy != null) {
                 predicateList.add(PERSON.rhyMembership.eq(rhy));
 

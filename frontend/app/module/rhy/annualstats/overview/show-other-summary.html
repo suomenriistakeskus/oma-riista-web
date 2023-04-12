@@ -24,9 +24,10 @@
                         <td class="col-xs-9" computed-marker-title="rhy.annualStats.overview.otherSummary.shootingTestEvents"></td>
                         <td num-pieces="::$ctrl.statistics.shootingTests.allShootingTestEvents"></td>
                     </tr>
-                    <tr>
-                        <td translate="rhy.annualStats.overview.otherSummary.huntingControlEvents"></td>
-                        <td num-pieces="::$ctrl.statistics.huntingControl.huntingControlEvents"></td>
+                    <tr ng-switch="$ctrl.statistics.huntingControl.huntingControlEventsOverridden">
+                        <td ng-switch-when="true" translate="rhy.annualStats.overview.otherSummary.huntingControlEvents"></td>
+                        <td ng-switch-when="false" computed-marker-title="rhy.annualStats.overview.otherSummary.huntingControlEvents"></td>
+                        <td num-pieces="::{{$ctrl.statistics.huntingControl.huntingControlEvents + $ctrl.statistics.huntingControl.nonSubsidizableHuntingControlEvents}}"></td>
                     </tr>
                     <tr>
                         <td class="col-xs-9" computed-marker-title="rhy.annualStats.overview.otherSummary.totalDamageInspectionLocations"></td>

@@ -33,18 +33,31 @@
                         return isUserOwnProfile
                             ? Account.shootingTests().$promise
                             : Account.shootingTests({personId: personId}).$promise;
+                    },
+                    occupationTrainings: function (Account, personId, isUserOwnProfile) {
+                        return isUserOwnProfile
+                            ? Account.occupationTrainings().$promise
+                            : Account.occupationTrainings({personId: personId}).$promise;
+                    },
+                    huntingLeaderOccupations: function (HarvestPermits, isUserOwnProfile) {
+                        return isUserOwnProfile
+                            ? HarvestPermits.listWithHuntingClubGroups().$promise
+                            : _.constant([]);
                     }
                 },
                 controller: function ($uibModal, Account, AccountService,
-                                      profile, personId, isUserOwnProfile, clubInvitations, jhtTrainings, shootingTests) {
+                                      profile, personId, isUserOwnProfile, clubInvitations, huntingLeaderOccupations,
+                                      jhtTrainings, occupationTrainings, shootingTests) {
                     var $ctrl = this;
                     $ctrl.profile = profile;
                     $ctrl.profile.address = $ctrl.profile.address || {};
                     $ctrl.isUserOwnProfile = isUserOwnProfile;
                     $ctrl.clubInvitations = clubInvitations;
                     $ctrl.jhtTrainings = jhtTrainings;
+                    $ctrl.occupationTrainings = occupationTrainings;
                     $ctrl.shootingTests = shootingTests;
                     $ctrl.personId = personId;
+                    $ctrl.huntingLeaderOccupations = huntingLeaderOccupations;
 
                     $ctrl.saveAddress = function (address) {
                         return Account.updateAddress({
@@ -95,7 +108,7 @@
 
                     NotificationService.handleModalPromise(modalPromise)
                         .then(function () {
-                            NotificationService.flashMessage('account.edit.messages.success', 'success');
+                            NotificationService.showDefaultSuccess();
                         })
                         .finally(function () {
                             $state.reload();
@@ -160,10 +173,20 @@
                 }
             }
         })
-        .component('accountProfileJht', {
-            templateUrl: 'account/profile/profile_jht.html',
+        .component('accountProfileTrainings', {
+            templateUrl: 'account/profile/profile_trainings.html',
             bindings: {
-                jhtTrainings: '<'
+                jhtTrainings: '<',
+                occupationTrainings: '<'
+            },
+            controllerAs: '$ctrl',
+            controller: function () {
+                var $ctrl = this;
+
+                $ctrl.showTrainings = function () {
+                    return $ctrl.jhtTrainings && $ctrl.jhtTrainings.length ||
+                        $ctrl.occupationTrainings && $ctrl.occupationTrainings.length;
+                };
             }
         })
         .component('accountProfileShootingTests', {
@@ -186,7 +209,8 @@
                     var otherInfo = {
                         email: profile.email,
                         byName: profile.byName,
-                        phoneNumber: profile.phoneNumber
+                        phoneNumber: profile.phoneNumber,
+                        denyAnnouncementEmail: profile.denyAnnouncementEmail
                     };
                     showModal(otherInfo, profile.registered);
                 };
@@ -205,7 +229,7 @@
                     });
 
                     NotificationService.handleModalPromise(modalPromise).then(function () {
-                        NotificationService.flashMessage('account.edit.messages.success', 'success');
+                        NotificationService.showDefaultSuccess();
                         $state.reload();
                     });
                 }
@@ -296,12 +320,12 @@
                         resolve: {
                             address: _.constant(address)
                         }
-                    }).result.then(function() {
+                    }).result.then(function () {
                         return $ctrl.onSave({address: address});
                     });
 
                     NotificationService.handleModalPromise(modalPromise).then(function () {
-                        NotificationService.flashMessage('account.edit.messages.success', 'success');
+                        NotificationService.showDefaultSuccess();
                         $state.reload();
                     });
                 }
@@ -383,6 +407,71 @@
                 }
             }
         })
+        .component('accountProfileUnregisterUserAccount', {
+            templateUrl: 'account/profile/profile_unregister_user_account.html',
+            bindings: {
+                profile: '<',
+                isUserOwnProfile: '<'
+            },
+            controller: function ($translate, $uibModal, $state, Account, NotificationService,
+                                  ConfirmationDialogService, Helpers) {
+                var $ctrl = this;
+
+                $ctrl.$onInit = function () {
+                    var profile = $ctrl.profile;
+                    var unregisterRequestedTime = profile.unregisterRequestedTime || null;
+                    $ctrl.unregistrationRequested = unregisterRequestedTime !== null;
+
+                    if (unregisterRequestedTime) {
+                        var datetime = Helpers.toMoment(unregisterRequestedTime, 'YYYY-MM-DD[T]HH:mm:ss.SSS');
+
+                        $ctrl.requestFormattedDate = Helpers.dateToString(datetime, "DD.MM.YYYY");
+                        $ctrl.requestFormattedTime = Helpers.dateToString(datetime, "HH:mm");
+                    }
+                };
+
+                $ctrl.unregister = function () {
+                    var modalPromise = $uibModal.open({
+                        templateUrl: 'account/unregister_account.html',
+                        controller: ModalController,
+                        controllerAs: '$ctrl'
+                    }).result.then(function () {
+                        return Account.unregister({
+                            personId: $ctrl.profile.personId
+                        }).$promise;
+                    });
+
+                    NotificationService.handleModalPromise(modalPromise).then(function () {
+                        NotificationService.showDefaultSuccess();
+                        $state.reload();
+                    });
+                };
+
+                $ctrl.continueUsingService = function () {
+                    ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
+                        'global.dialog.confirmation.title',
+                        'global.dialog.confirmation.text')
+                        .then(function () {
+                            Account.cancelUnregister({ personId: $ctrl.profile.personId })
+                                .$promise
+                                .then(function () {
+                                    NotificationService.showDefaultSuccess();
+                                    $state.reload();
+                                });
+                        });
+                };
+
+                function ModalController($uibModalInstance) {
+                    var $modalCtrl = this;
+
+                    $modalCtrl.cancel = function () {
+                        $uibModalInstance.dismiss('cancel');
+                    };
+
+                    $modalCtrl.unregister = $uibModalInstance.close;
+                }
+            }
+        })
         .component('accountProfileDeactivate', {
             templateUrl: 'account/profile/profile_deactivate.html',
             bindings: {
@@ -404,7 +493,7 @@
                     });
 
                     NotificationService.handleModalPromise(modalPromise).then(function () {
-                        NotificationService.flashMessage('account.edit.messages.success', 'success');
+                        NotificationService.showDefaultSuccess();
                         $state.reload();
                     });
                 };
@@ -424,13 +513,14 @@
             templateUrl: 'account/profile/profile_clubs.html',
             bindings: {
                 clubOccupations: '<',
+                huntingLeaderOccupations: '<',
                 isUserOwnProfile: '<',
                 personId: '<'
             },
             controller: function ($uibModal, $state, AccountService, ActiveRoleService, NotificationService) {
                 var $ctrl = this;
 
-                function ok (clubId) {
+                function ok(clubId) {
                     if (ActiveRoleService.isModerator()) {
                         NotificationService.showDefaultSuccess();
                         $state.go('club.main', {id: clubId});

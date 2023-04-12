@@ -135,6 +135,8 @@ public class SQHarvest extends RelationalPathSpatial<SQHarvest> {
 
     public final NumberPath<Integer> subSpeciesCode = createNumber("subSpeciesCode", Integer.class);
 
+    public final NumberPath<Long> huntingClubId = createNumber("huntingClubId", Long.class);
+
     public final com.querydsl.sql.PrimaryKey<SQHarvest> harvestPkey = createPrimaryKey(harvestId);
 
     public final com.querydsl.sql.ForeignKey<SQHarvestPermit> harvestHarvestPermitFk = createForeignKey(harvestPermitId, "harvest_permit_id");
@@ -174,6 +176,8 @@ public class SQHarvest extends RelationalPathSpatial<SQHarvest> {
     public final com.querydsl.sql.ForeignKey<SQGameDiaryImage> _gameDiaryImageHarvestFk = createInvForeignKey(harvestId, "harvest_id");
 
     public final com.querydsl.sql.ForeignKey<SQHarvestSpecimen> _harvestSpecimenHarvestFk = createInvForeignKey(harvestId, "harvest_id");
+
+    public final com.querydsl.sql.ForeignKey<SQOrganisation> _harvestHuntingClubFk = createForeignKey(huntingClubId, "hunting_club_id");
 
     public SQHarvest(String variable) {
         super(SQHarvest.class, forVariable(variable), "public", "harvest");
@@ -255,6 +259,7 @@ public class SQHarvest extends RelationalPathSpatial<SQHarvest> {
         addMetadata(rhyId, ColumnMetadata.named("rhy_id").withIndex(22).ofType(Types.BIGINT).withSize(19));
         addMetadata(stateAcceptedToHarvestPermit, ColumnMetadata.named("state_accepted_to_harvest_permit").withIndex(38).ofType(Types.VARCHAR).withSize(255));
         addMetadata(subSpeciesCode, ColumnMetadata.named("sub_species_code").withIndex(49).ofType(Types.INTEGER).withSize(10));
+        addMetadata(huntingClubId, ColumnMetadata.named("hunting_club_id").withIndex(57).ofType(Types.INTEGER).withSize(10));
     }
 
 }

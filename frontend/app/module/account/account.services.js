@@ -14,6 +14,16 @@ angular.module('app.account.services', ['ngResource'])
                 params: {personId: '@personId'}
             },
             deactivate: {url: '/api/v1/account/deactivate', params: {personId: '@personId'}, method: 'POST'},
+            unregister: {
+                method: 'POST',
+                url: '/api/v1/account/unregister',
+                params: {personId: '@personId'}
+            },
+            cancelUnregister: {
+                method: 'POST',
+                url: '/api/v1/account/cancel-unregister',
+                params: {personId: '@personId'}
+            },
             activateSrvaFeature: {url: '/api/v1/account/:id/srva/enable', method: 'PUT'},
             deactivateSrvaFeature: {url: '/api/v1/account/:id/srva/disable', method: 'PUT'},
             activateShootingTestFeature: {url: '/api/v1/account/:id/shootingtests/enable', method: 'PUT'},
@@ -21,6 +31,10 @@ angular.module('app.account.services', ['ngResource'])
             contactShare: {
                 method: 'PUT',
                 url: 'api/v1/account/contactshare'
+            },
+            contactShareAndVisibility: {
+                method: 'PUT',
+                url: 'api/v1/account/contactshare-and-visibility'
             },
             clubInvitations: {
                 method: 'GET',
@@ -49,6 +63,17 @@ angular.module('app.account.services', ['ngResource'])
                 method: 'GET',
                 cache: CacheFactory.get('accountShootingTestTodoCountCache')
             },
+            countTaxationTodo: {
+                url: 'api/v1/account/taxationtodocount',
+                params: {rhyId: '@rhyId'},
+                method: 'GET',
+                cache: CacheFactory.get('accountTaxationTodoCountCache')
+            },
+            countHuntingControlEventTodo: {
+                url: 'api/v1/account/huntingcontroleventtodocount',
+                params: {rhyId: '@rhyId'},
+                method: 'GET'
+            },
             shootingTests: {
                 method: 'GET',
                 url: 'api/v1/account/shootingtests',
@@ -58,6 +83,12 @@ angular.module('app.account.services', ['ngResource'])
             contactInfoVisibility: {
                 method: 'PUT',
                 url: 'api/v1/account/occupation-contact-info-visibility'
+            },
+            occupationTrainings: {
+                method: 'GET',
+                url: 'api/v1/account/occupation-trainings',
+                params: {personId: '@personId'},
+                isArray: true
             }
         });
     })
@@ -92,6 +123,12 @@ angular.module('app.account.services', ['ngResource'])
             return account && !!account.enableShootingTests;
         };
 
+        this.isAccountUnregistrationRequested = function () {
+            return Account.get().$promise.then(function (account) {
+                return account.unregisterRequestedTime;
+            });
+        };
+
         this.getPdfOptions = function (account) {
             function _certificateOption(type, lang) {
                 return {
@@ -124,4 +161,44 @@ angular.module('app.account.services', ['ngResource'])
     })
     .factory('Password', function ($resource) {
         return $resource('/api/v1/account/password', {}, {});
+    })
+    .service('AccountBeingUnregisteredNotifier', function ($uibModal, AccountService, Helpers) {
+        var lastNotification = null;
+
+        var isCoolingDown = function () {
+            var now = new Date();
+            if (lastNotification) {
+                var secondsSinceLastNotification = (now.getTime() - lastNotification.getTime()) / 1000;
+                if (secondsSinceLastNotification < 15) {
+                    return true;
+                }
+            }
+            lastNotification = now;
+            return false;
+        };
+
+        this.notifyAccountUnregistration = function () {
+            AccountService.isAccountUnregistrationRequested().then(function (unregisterRequestedTime) {
+                if (!unregisterRequestedTime) {
+                    return;
+                }
+
+                if (isCoolingDown()) {
+                    return;
+                }
+
+                $uibModal.open({
+                    templateUrl: 'account/account_being_unregistered_notification.html',
+                    controllerAs: "$ctrl",
+                    controller: function () {
+                        var $ctrl = this;
+
+                        var datetime = Helpers.toMoment(unregisterRequestedTime, 'YYYY-MM-DD[T]HH:mm:ss.SSS');
+
+                        $ctrl.requestFormattedDate = Helpers.dateToString(datetime, "DD.MM.YYYY");
+                        $ctrl.requestFormattedTime = Helpers.dateToString(datetime, "HH:mm");
+                    }
+                });
+            });
+        };
     });

@@ -4,7 +4,9 @@ import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.integration.vtj.VtjSearchService;
+import fi.riista.util.Collect;
 import fi.riista.validation.Validators;
+import io.vavr.Tuple;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +15,9 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -58,6 +62,20 @@ public class PersonLookupService {
         return Optional
                 .of(personRepository.getOne(personId))
                 .filter(person -> validatePerson(person, isForeignPersonEligible));
+    }
+
+    @Transactional(readOnly = true)
+    public Map<Long, Person> findByIdIn(@Nonnull final List<Long> personIds, final boolean isForeignPersonEligible) {
+        requireNonNull(personIds);
+
+        if (personIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        
+        return personRepository.findAllById(personIds).stream()
+                .filter(p -> validatePerson(p, isForeignPersonEligible))
+                .map(p -> Tuple.of(p.getId(), p))
+                .collect(Collect.tuplesToMap());
     }
 
     @Transactional(readOnly = true)

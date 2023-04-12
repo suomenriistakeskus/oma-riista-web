@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.research.applicant', ['app.metadat
                 templateUrl: 'harvestpermit/applications/research/applicant/applicant.html',
                 controller: 'ResearchWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

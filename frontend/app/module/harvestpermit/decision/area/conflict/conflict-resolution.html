@@ -81,6 +81,10 @@
                     <br/>
 
                     <strong ng-bind="::conflict.areaSize | prettyAreaSize"></strong>
+                    <span class="r-land-area" uib-tooltip="Konfliktin maapinta-ala"
+                          ng-bind="::conflict.landAreaSize | prettyAreaSize"></span>
+                    <span class="r-water-area" uib-tooltip="Konfliktin vesipinta-ala"
+                          ng-bind="::conflict.waterAreaSize | prettyAreaSize" ></span>
                 </td>
                 <td class="col-xs-2 text-center">
                     <span class="fa fa-2x fa-eye text-primary"

@@ -23,6 +23,12 @@ angular.module('app.harvestpermit.management.tables', [])
                         return GameDiaryParameters.query().$promise.then(function (parameters) {
                             return parameters.$getGameName(gameSpeciesCode);
                         });
+                    },
+                    observationSummary: function (MoosePermits, permitId, gameSpeciesCode) {
+                        return MoosePermits.getObservationSummary({
+                            permitId: permitId,
+                            species: gameSpeciesCode
+                        }).$promise;
                     }
                 }
             });
@@ -30,12 +36,14 @@ angular.module('app.harvestpermit.management.tables', [])
     .controller('MoosePermitTablesController', function ($state, $filter,
                                                          GameSpeciesCodes,
                                                          MoosePermitCounterService,
-                                                         permit, gameSpeciesCode, gameSpeciesName) {
+                                                         permit, gameSpeciesCode, gameSpeciesName,
+                                                         observationSummary) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
             $ctrl.permit = permit;
             $ctrl.gameSpeciesName = gameSpeciesName;
+            $ctrl.observationSummary = observationSummary;
             $ctrl.isMoose = GameSpeciesCodes.isMoose(gameSpeciesCode);
             $ctrl.counter = MoosePermitCounterService.create($ctrl.permit);
             $ctrl.canNavigateToClub = false;
@@ -57,4 +65,12 @@ angular.module('app.harvestpermit.management.tables', [])
                 gameSpeciesCode: gameSpeciesCode
             }, {reload: true});
         };
+    })
+    .component('mooseHuntingTableObservationSummary', {
+        templateUrl: 'harvestpermit/management/tables/observation-list.html',
+        bindings: {
+            observationSummary: '<',
+            isMoose: '<'
+        },
+        controllerAs: '$ctrl'
     });

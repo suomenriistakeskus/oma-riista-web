@@ -17,20 +17,20 @@
     </div>
 
     <div class="row" style="margin: 20px 0 40px;">
-        <div class="col-xs-3 text-muted">
+        <div class="col-sm-3 text-muted">
             <p class="text-uppercase" translate="payment.amount"></p>
 
             <p style="font-size: 36px; line-height: 32px; font-weight: 300; margin-bottom: 24px">
                 <span ng-bind="::p.amount | currency: '&euro;' : 2"></span>
             </p>
 
-            <button class="btn btn-primary" ng-click="$ctrl.startPayment(p)">
+            <button class="btn btn-primary" ng-click="$ctrl.startPayment(p)" ng-disabled="$ctrl.paymentStarted">
                 <span class="fa fa-credit-card"></span>
                 &nbsp;
                 <span class="text-uppercase" translate="payment.payButton"></span>
             </button>
         </div>
-        <div class="col-xs-3 text-muted">
+        <div class="col-sm-3 text-muted">
             <p class="text-uppercase" translate="invoice.info"></p>
 
             <p style="margin-bottom: 6px">
@@ -46,7 +46,7 @@
                 <span ng-bind="::p.dueDate | date:'dd.MM.yyyy'"></span>
             </p>
         </div>
-        <div class="col-xs-6 text-muted">
+        <div class="col-sm-6 text-muted">
             <p class="text-uppercase" translate="invoice.items"></p>
 
             <p>

@@ -3,6 +3,8 @@ package fi.riista.feature.organization.rhy.annualstats;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -14,10 +16,15 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.HUNTER_EXAM_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantFieldGroup.HUNTER_EXAM_TRAINING_STATISTICS;
 import static fi.riista.util.F.nullsafeMax;
 import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
@@ -26,18 +33,19 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class HunterExamTrainingStatistics
         implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsFieldsetParticipants,
         AnnualStatisticsManuallyEditableFields<HunterExamTrainingStatistics>,
         Serializable {
 
-    public static final HunterExamTrainingStatistics reduce(@Nullable final HunterExamTrainingStatistics a,
-                                                            @Nullable final HunterExamTrainingStatistics b) {
+    public static HunterExamTrainingStatistics reduce(@Nullable final HunterExamTrainingStatistics a,
+                                                      @Nullable final HunterExamTrainingStatistics b) {
 
         final HunterExamTrainingStatistics result = new HunterExamTrainingStatistics();
-        result.hunterExamTrainingEvents = nullableIntSum(a, b, s -> s.getHunterExamTrainingEvents());
-        result.nonSubsidizableHunterExamTrainingEvents = nullableIntSum(a, b, s -> s.getNonSubsidizableHunterExamTrainingEvents());
-        result.hunterExamTrainingParticipants = nullableIntSum(a, b, s -> s.getHunterExamTrainingParticipants());
-        result.nonSubsidizableHunterExamTrainingParticipants = nullableIntSum(a, b, s -> s.getNonSubsidizableHunterExamTrainingParticipants());
-        result.lastModified = nullsafeMax(a, b, s -> s.getLastModified());
+        result.hunterExamTrainingEvents = nullableIntSum(a, b, HunterExamTrainingStatistics::getHunterExamTrainingEvents);
+        result.nonSubsidizableHunterExamTrainingEvents = nullableIntSum(a, b, HunterExamTrainingStatistics::getNonSubsidizableHunterExamTrainingEvents);
+        result.hunterExamTrainingParticipants = nullableIntSum(a, b, HunterExamTrainingStatistics::getHunterExamTrainingParticipants);
+        result.nonSubsidizableHunterExamTrainingParticipants = nullableIntSum(a, b, HunterExamTrainingStatistics::getNonSubsidizableHunterExamTrainingParticipants);
+        result.lastModified = nullsafeMax(a, b, HunterExamTrainingStatistics::getLastModified);
         return result;
     }
 
@@ -134,7 +142,24 @@ public class HunterExamTrainingStatistics
 
     @Override
     public boolean isReadyForInspection() {
-        return F.allNotNull(hunterExamTrainingEvents, hunterExamTrainingParticipants);
+        return F.allNotNull(hunterExamTrainingEvents, hunterExamTrainingParticipants) && hasParticipants();
+    }
+
+    private boolean hasParticipants() {
+        return listMissingParticipants()._2.isEmpty();
+    }
+
+    @Override
+    public Tuple2<AnnualStatisticsParticipantFieldGroup, List<AnnualStatisticsParticipantField>> listMissingParticipants() {
+        final List<AnnualStatisticsParticipantField> missing = new ArrayList<>();
+        if (hunterExamTrainingEvents != null && hunterExamTrainingEvents > 0 &&  hunterExamTrainingParticipants <= 0) {
+            missing.add(HUNTER_EXAM_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableHunterExamTrainingEvents != null && nonSubsidizableHunterExamTrainingEvents > 0 &&
+                nonSubsidizableHunterExamTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING_EVENTS);
+        }
+        return Tuple.of(HUNTER_EXAM_TRAINING_STATISTICS, missing);
     }
 
     @Override
@@ -214,7 +239,7 @@ public class HunterExamTrainingStatistics
         return hunterExamTrainingParticipantsOverridden;
     }
 
-    public void setHunterExamTrainingParticipantsOverridden(boolean hunterExamTrainingParticipantsOverridden) {
+    public void setHunterExamTrainingParticipantsOverridden(final boolean hunterExamTrainingParticipantsOverridden) {
         this.hunterExamTrainingParticipantsOverridden = hunterExamTrainingParticipantsOverridden;
     }
 }

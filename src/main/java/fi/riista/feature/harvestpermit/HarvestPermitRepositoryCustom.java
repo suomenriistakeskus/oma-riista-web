@@ -5,6 +5,7 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.endofhunting.reminder.EndOfHuntingReminderDTO;
 import fi.riista.feature.harvestpermit.endofhunting.reminder.EndOfHuntingReminderFeature.EndOfHuntingReminderType;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
+import fi.riista.feature.permit.decision.PermitDecision;
 import org.joda.time.LocalDate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -29,5 +30,4 @@ public interface HarvestPermitRepositoryCustom {
 
     Map<HuntingClubGroup, HarvestPermit> getByHuntingGroup(Collection<HuntingClubGroup> groups);
 
-    List<HarvestPermit> findByHuntingYearAndSpeciesAndCategory(int huntingYear, GameSpecies species, HarvestPermitCategory category);
 }

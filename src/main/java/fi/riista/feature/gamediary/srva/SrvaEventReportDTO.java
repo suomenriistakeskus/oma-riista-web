@@ -33,13 +33,17 @@ public class SrvaEventReportDTO {
         final SrvaEventReportDTO dto = new SrvaEventReportDTO(
                 event.getEventName(),
                 event.getEventType(),
+                event.getEventTypeDetail(),
                 event.getTotalSpecimenAmount(),
+                event.getDeportationOrderNumber(),
                 event.getOtherMethodDescription(),
                 event.getOtherTypeDescription(),
+                event.getOtherEventTypeDetailDescription(),
                 methods,
                 event.getPersonCount(),
                 event.getTimeSpent(),
                 event.getEventResult(),
+                event.getEventResultDetail(),
                 event.getGeoLocation(),
                 event.getPointOfTime(),
                 author,
@@ -64,13 +68,17 @@ public class SrvaEventReportDTO {
 
     private final SrvaEventNameEnum eventName;
     private final SrvaEventTypeEnum eventType;
+    private final SrvaEventTypeDetailsEnum eventTypeDetail;
     private final Integer amount;
+    private final String deportationOrderNumber;
     private final String otherMethodDescription;
     private final String otherTypeDescription;
+    private final String otherTypeDetailDescription;
     private final Set<SrvaMethodDTO> methods;
     private final Integer personCount;
     private final Integer timeSpent;
     private final SrvaResultEnum eventResult;
+    private final SrvaEventResultDetailsEnum eventResultDetail;
     private final GeoLocation geoLocation;
     private final DateTime pointOfTime;
     private final PersonWithNameDTO author;
@@ -89,25 +97,31 @@ public class SrvaEventReportDTO {
     private final String mapFinland64Encoded;
     private final String lang;
 
-    public SrvaEventReportDTO(final SrvaEventNameEnum eventName, final SrvaEventTypeEnum eventType, final Integer amount,
-                              final String otherMethodDescription, final String otherTypeDescription,
+    public SrvaEventReportDTO(final SrvaEventNameEnum eventName, final SrvaEventTypeEnum eventType,
+                              final SrvaEventTypeDetailsEnum eventTypeDetail, final Integer amount,
+                              final String deportationOrderNumber, final String otherMethodDescription,
+                              final String otherTypeDescription, final String otherTypeDetailDescription,
                               final Set<SrvaMethodDTO> methods, final Integer personCount, final Integer timeSpent,
-                              final SrvaResultEnum eventResult, final GeoLocation geoLocation,
-                              final DateTime pointOfTime, final PersonWithNameDTO author, final GameSpeciesDTO species,
-                              final String description, final Set<SrvaSpecimenDTO> specimens,
+                              final SrvaResultEnum eventResult, final SrvaEventResultDetailsEnum eventResultDetail,
+                              final GeoLocation geoLocation, final DateTime pointOfTime, final PersonWithNameDTO author,
+                              final GameSpeciesDTO species, final String description, final Set<SrvaSpecimenDTO> specimens,
                               final String rhy, final SrvaEventStateEnum state, final String otherSpeciesDescription,
                               final PersonWithNameDTO approver, final String activeUser,
                               final boolean isModerator, final LocalDate reportDate, final Set<String> imageURLs,
                               final String map64Encoded, final String mapFinland64Encoded, final String lang) {
         this.eventName = eventName;
         this.eventType = eventType;
+        this.eventTypeDetail = eventTypeDetail;
         this.amount = amount;
+        this.deportationOrderNumber = deportationOrderNumber;
         this.otherMethodDescription = otherMethodDescription;
         this.otherTypeDescription = otherTypeDescription;
+        this.otherTypeDetailDescription = otherTypeDetailDescription;
         this.methods = methods;
         this.personCount = personCount;
         this.timeSpent = timeSpent;
         this.eventResult = eventResult;
+        this.eventResultDetail = eventResultDetail;
         this.geoLocation = geoLocation;
         this.pointOfTime = pointOfTime;
         this.author = author;
@@ -135,8 +149,16 @@ public class SrvaEventReportDTO {
         return eventType;
     }
 
+    public SrvaEventTypeDetailsEnum getEventTypeDetail() {
+        return eventTypeDetail;
+    }
+
     public Integer getAmount() {
         return amount;
+    }
+
+    public String getDeportationOrderNumber() {
+        return deportationOrderNumber;
     }
 
     public String getOtherMethodDescription() {
@@ -145,6 +167,10 @@ public class SrvaEventReportDTO {
 
     public String getOtherTypeDescription() {
         return otherTypeDescription;
+    }
+
+    public String getOtherTypeDetailDescription() {
+        return otherTypeDetailDescription;
     }
 
     public Set<SrvaMethodDTO> getMethods() {
@@ -161,6 +187,10 @@ public class SrvaEventReportDTO {
 
     public SrvaResultEnum getEventResult() {
         return eventResult;
+    }
+
+    public SrvaEventResultDetailsEnum getEventResultDetail() {
+        return eventResultDetail;
     }
 
     public GeoLocation getGeoLocation() {

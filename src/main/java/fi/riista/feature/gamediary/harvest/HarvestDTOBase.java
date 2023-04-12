@@ -10,8 +10,11 @@ import fi.riista.feature.gamediary.harvest.Harvest.StateAcceptedToHarvestPermit;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenDTO;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenOps;
+import fi.riista.feature.gamediary.harvest.validation.HarvestHuntingClubConstraint;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.report.HarvestReportState;
+import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.search.HuntingClubNameDTO;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.apache.commons.lang.StringUtils;
@@ -24,9 +27,11 @@ import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 
+@HarvestHuntingClubConstraint
 public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
 
     @NotNull
@@ -90,6 +95,10 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
     @HarvestSpecVersionSupport(lowest = HarvestSpecVersion._7)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String deerHuntingOtherTypeDescription;
+
+    @Valid
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private HuntingClubNameDTO selectedHuntingClub;
 
     protected HarvestDTOBase() {
         super(GameDiaryEntryType.HARVEST);
@@ -247,6 +256,13 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
         this.deerHuntingOtherTypeDescription = deerHuntingOtherTypeDescription;
     }
 
+    @JsonProperty
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public HuntingClubNameDTO getSelectedHuntingClub() { return selectedHuntingClub; }
+
+    @JsonIgnore
+    public void setSelectedHuntingClub(HuntingClubNameDTO selectedHuntingClub) { this.selectedHuntingClub = selectedHuntingClub; }
+
     // Builder -->
 
     protected static abstract class Builder<DTO extends HarvestDTOBase, SELF extends Builder<DTO, SELF>>
@@ -324,6 +340,13 @@ public abstract class HarvestDTOBase extends HuntingDiaryEntryDTO {
 
         public SELF withDeerHuntingOtherTypeDescription(final String deerHuntingOtherTypeDescription) {
             dto.setDeerHuntingOtherTypeDescription(deerHuntingOtherTypeDescription);
+            return self();
+        }
+
+        public SELF withHuntingClub(final HuntingClub huntingClub) {
+            dto.setSelectedHuntingClub(Optional.ofNullable(huntingClub)
+                    .map(HuntingClubNameDTO::create)
+                    .orElse(null));
             return self();
         }
 

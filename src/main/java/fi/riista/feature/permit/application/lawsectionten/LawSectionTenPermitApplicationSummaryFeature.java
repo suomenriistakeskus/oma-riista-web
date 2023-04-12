@@ -8,7 +8,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.Locale;
+
+import static fi.riista.feature.harvestpermit.HarvestPermitCategory.EUROPEAN_BEAVER;
+import static fi.riista.feature.harvestpermit.HarvestPermitCategory.LAW_SECTION_TEN;
+import static fi.riista.feature.harvestpermit.HarvestPermitCategory.PARTRIDGE;
 
 @Component
 public class LawSectionTenPermitApplicationSummaryFeature {
@@ -26,7 +31,8 @@ public class LawSectionTenPermitApplicationSummaryFeature {
         final HarvestPermitApplication application =
                 harvestPermitApplicationAuthorizationService.readApplication(applicationId);
 
-        Preconditions.checkState(application.getHarvestPermitCategory() == HarvestPermitCategory.LAW_SECTION_TEN,
+        Preconditions.checkState(Arrays.asList(LAW_SECTION_TEN, EUROPEAN_BEAVER, PARTRIDGE)
+                        .contains(application.getHarvestPermitCategory()),
                 "Only law section 10 application is supported");
 
         final LawSectionTenPermitApplication lawSectionTenPermitApplication =

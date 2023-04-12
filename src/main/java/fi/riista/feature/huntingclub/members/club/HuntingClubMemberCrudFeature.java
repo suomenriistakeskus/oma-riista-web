@@ -76,7 +76,7 @@ public class HuntingClubMemberCrudFeature extends AbstractCrudFeature<Long, Occu
     }
 
     @Override
-    protected void delete(Occupation entity) {
+    protected void delete(final Occupation entity) {
         contactPersonCanExitClubService.assertContactPersonNotLocked(entity);
 
         if (!entity.isDeleted()) {
@@ -203,8 +203,8 @@ public class HuntingClubMemberCrudFeature extends AbstractCrudFeature<Long, Occu
             }
 
             occupation.setContactInfoShare(dto.getShare());
-            occupationRepository.findNotDeletedByParentOrganisationAndPerson(occupation.getOrganisation(), person)
-                    .forEach(groupOccupation -> groupOccupation.setContactInfoShare(dto.getShare()));
+
         });
     }
+
 }

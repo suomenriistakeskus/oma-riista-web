@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 @RestController
 public class PasswordResetApiResource {
@@ -26,7 +27,7 @@ public class PasswordResetApiResource {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @RequestMapping(value = URI_SEND_MAIL, method = RequestMethod.POST)
     public void forgotPassword(@RequestBody @Validated ForgotPasswordDTO dto, HttpServletRequest request) {
-        passwordResetFeature.sendPasswordResetEmail(dto.getEmail(), request);
+        passwordResetFeature.sendPasswordResetEmail(dto.getEmail(), Optional.empty(), request);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

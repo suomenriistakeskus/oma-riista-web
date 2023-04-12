@@ -33,17 +33,20 @@ public class PermitDecisionDeliveryService {
                     return e;
                 }).collect(toList());
 
-        final List<PermitDecisionDeliveryDTO> rhyDtos = generateRhyDeliveryDTOs(decision);
-        rhyDtos.forEach(rhy -> {
-            if (!existingDeliveriesContainRhy(deliveries, rhy)) {
-                final PermitDecisionDelivery e = new PermitDecisionDelivery();
-                e.setPermitDecision(decision);
-                e.setEmail(rhy.getEmail());
-                e.setName(rhy.getName());
-                // to keep consisten ordering, insert rhy:s first
-                deliveries.add(0, e);
-            }
-        });
+        if (decision.isAutomaticDeliveryDeduction()) {
+            final List<PermitDecisionDeliveryDTO> rhyDtos = generateRhyDeliveryDTOs(decision);
+            rhyDtos.forEach(rhy -> {
+                if (!existingDeliveriesContainRhy(deliveries, rhy)) {
+                    final PermitDecisionDelivery e = new PermitDecisionDelivery();
+                    e.setPermitDecision(decision);
+                    e.setEmail(rhy.getEmail());
+                    e.setName(rhy.getName());
+                    // to keep consistent ordering, insert rhys first
+                    deliveries.add(0, e);
+                }
+            });
+        }
+
         return deliveries;
     }
 

@@ -150,20 +150,6 @@ public class PermitDecisionCarnivoreApplicationSummaryGenerator {
         sb.append("\n");
 
         sb.append("\n");
-        sb.append(i18nKey("carnivore.application.justification.behaviour"));
-        sb.append("\n");
-        sb.append("\\- ");
-        sb.append(escape(justification.getPopulationDescription()));
-        sb.append("\n");
-
-        sb.append("\n");
-        sb.append(i18nKey("carnivore.application.justification.other"));
-        sb.append("\n");
-        sb.append("\\- ");
-        sb.append(escape(justification.getAdditionalJustificationInfo()));
-        sb.append("\n");
-
-        sb.append("\n");
         sb.append(i18nKey("carnivore.application.justification.alternatives"));
         sb.append("\n");
         sb.append("\\- ");
@@ -177,7 +163,7 @@ public class PermitDecisionCarnivoreApplicationSummaryGenerator {
             sb.append(i18n("Liitteet", "Bilagor"));
             sb.append("\n");
 
-            for (CarnivorePermitApplicationAttachmentDTO s : model.getOtherAttachments()) {
+            for (final CarnivorePermitApplicationAttachmentDTO s : model.getOtherAttachments()) {
                 sb.append("\\- ");
                 sb.append(s.getName());
                 sb.append("\n");

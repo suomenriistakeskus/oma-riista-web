@@ -8,7 +8,13 @@ angular.module('app.harvestpermit.application.lawsectionten.species', ['app.meta
                 templateUrl: 'harvestpermit/applications/lawsectionten/species/species.html',
                 controller: 'LawSectionTenPermitWizardSpeciesController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
+                    harvestPermitCategory: function (HarvestPermitApplications, applicationId){
+                        return HarvestPermitApplications.get({id: applicationId}).$promise.then(function (application){
+                            return application.harvestPermitCategory;
+                        });
+                    },
                     speciesAmount: function (LawSectionTenPermitApplication, applicationId) {
                         return LawSectionTenPermitApplication.getSpeciesAmount({id: applicationId}).$promise;
                     },
@@ -26,6 +32,11 @@ angular.module('app.harvestpermit.application.lawsectionten.species', ['app.meta
                 controller: 'LawSectionTenPermitWizardSpeciesController',
                 controllerAs: '$ctrl',
                 resolve: {
+                    harvestPermitCategory: function (HarvestPermitApplications, applicationId){
+                        return HarvestPermitApplications.get({id: applicationId}).$promise.then(function (application){
+                            return application.harvestPermitCategory;
+                        });
+                    },
                     speciesAmount: function (LawSectionTenPermitApplication, applicationId) {
                         return LawSectionTenPermitApplication.getSpeciesAmount({id: applicationId}).$promise;
                     },
@@ -42,11 +53,13 @@ angular.module('app.harvestpermit.application.lawsectionten.species', ['app.meta
     .controller('LawSectionTenPermitWizardSpeciesController', function ($scope, LawSectionTenPermitApplication,
                                                                         UnsavedChangesConfirmationService,
                                                                         ApplicationWizardNavigationHelper,
-                                                                        states, wizard, applicationId, speciesAmount) {
+                                                                        states, wizard, applicationId, speciesAmount,
+                                                                        harvestPermitCategory) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
             $ctrl.speciesAmount = speciesAmount || {};
+            $ctrl.harvestPermitCategory = harvestPermitCategory;
             $scope.$watch('speciesAmountForm.$pristine', function (newVal, oldVal) {
                 if (oldVal && !newVal) {
                     UnsavedChangesConfirmationService.setChanges(true);

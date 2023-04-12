@@ -8,6 +8,7 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.JPQLQueryFactory;
+import fi.riista.feature.account.user.QSystemUser;
 import fi.riista.feature.announcement.Announcement;
 import fi.riista.feature.announcement.AnnouncementSubscriber;
 import fi.riista.feature.announcement.AnnouncementSubscriberRepository;
@@ -158,15 +159,19 @@ public class AnnouncementSubscriberPersonResolver {
         }
 
         final QPerson PERSON = QPerson.person;
+        final QSystemUser USER = QSystemUser.systemUser;
 
         return Lists.partition(personIds, 1000).stream()
                 .flatMap(partition -> jpqlQueryFactory
                         .select(PERSON.email)
-                        .from(PERSON)
-                        .where(PERSON.id.in(partition),
+                        .from(USER)
+                        .innerJoin(USER.person, PERSON)
+                        .where(USER.active.isTrue(),
+                                PERSON.id.in(partition),
                                 PERSON.email.isNotNull(),
                                 PERSON.deletionCode.isNull(),
-                                PERSON.lifecycleFields.deletionTime.isNull())
+                                PERSON.lifecycleFields.deletionTime.isNull(),
+                                PERSON.denyAnnouncementEmail.isFalse())
                         .fetch().stream())
                 .filter(StringUtils::hasText)
                 .filter(email -> email.contains("@"))

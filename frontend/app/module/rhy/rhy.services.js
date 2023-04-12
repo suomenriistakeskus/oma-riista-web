@@ -2,6 +2,7 @@
 
 angular.module('app.rhy.services', [])
     .factory('Rhys', function ($resource) {
+        var apiPrefix = '/api/v1/riistanhoitoyhdistys';
         return $resource('api/v1/riistanhoitoyhdistys/:id', {id: '@id'}, {
             query: {method: 'GET', params: {type: 'page'}},
             get: {method: 'GET'},
@@ -44,6 +45,38 @@ angular.module('app.rhy.services', [])
                 method: 'POST',
                 url: 'api/v1/riistanhoitoyhdistys/:id/srva-rotation',
                 params:{id: '@id'}
-            }
+            },
+            getTaxationReport: {
+                method: 'GET',
+                url: apiPrefix + '/taxation',
+                params: {year: '@year', speciesCode: '@speciesCode', rhyId: '@rhyId', htaId: '@htaId'}
+            },
+            getMooseAreas: {
+                method: 'GET',
+                url: apiPrefix + '/taxation/moose_areas',
+                params: { rhyId: '@rhyId'}
+            },
+            getTaxationReportYears: {
+                method: 'GET',
+                isArray: true,
+                url: apiPrefix + '/taxation/years',
+                params: { rhyId: '@rhyId'}
+            },
+            getExcelExport: {
+                method: 'POST',
+                url: apiPrefix + '/taxation/excel',
+            },
+            saveOrUpdateTaxationReport: {
+                method: 'POST',
+                url: apiPrefix + '/taxation'
+            },
+            downloadTaxationAttachment: {
+                method: 'POST',
+                url: apiPrefix + '/taxation'
+            },
+            deleteTaxationAttachment: {
+                method: 'DELETE',
+                url: apiPrefix + '/taxation/attachment/:id'
+            },
         });
     });

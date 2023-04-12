@@ -436,4 +436,21 @@ angular.module('app.common.directives', ['dialogs.main', 'app.metadata'])
             '<div ng-if="::!isFinite" class="text-right"><span>-</span>&nbsp;<span class="unit-suffix"></span></div>'
         };
     })
-;
+    .directive('rValidateGreater', function () {
+        return {
+            restrict: 'A',
+            require: 'ngModel',
+            link: function (scope, elem, attrs, ctrl) {
+                scope.$watchGroup([attrs.rValidateGreater, attrs.ngModel], function (newValues) {
+                    if (_.isNil(newValues[0]) || _.isNil(newValues[1])) {
+                        // One or both value is not defined and validity cannot be checked.
+                        // Must set as valid, otherwise optional field can be invalid state when empty.
+                        ctrl.$setValidity('greater', true);
+                    } else {
+                        // Compare values. Note, works with date strings (YYYY-MM-DD) too.
+                        ctrl.$setValidity('greater', newValues[0] < newValues[1]);
+                    }
+                });
+            }
+        };
+    });

@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.lawsectionten.period', ['app.metad
                 templateUrl: 'harvestpermit/applications/lawsectionten/period/period.html',
                 controller: 'LawSectionTenPermitWizardPeriodController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesPeriod: function (LawSectionTenPermitApplication, applicationId) {
                         return LawSectionTenPermitApplication.getSpeciesPeriod({id: applicationId}).$promise;
@@ -47,6 +48,9 @@ angular.module('app.harvestpermit.application.lawsectionten.period', ['app.metad
 
         $ctrl.$onInit = function () {
             $ctrl.speciesPeriod = speciesPeriod;
+
+            $ctrl.isBeaverApplication = GameSpeciesCodes.isEuropeanBeaver(speciesPeriod.gameSpeciesCode);
+
             $scope.$watch('speciesPeriodForm.$pristine', function (newVal, oldVal) {
                 if (oldVal && !newVal) {
                     UnsavedChangesConfirmationService.setChanges(true);

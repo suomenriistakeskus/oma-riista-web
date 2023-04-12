@@ -118,6 +118,15 @@
                         </button>
                     </div>
                 </div>
+                <div class="row" style="padding-top: 5px" ng-if="$ctrl.decision.canDelete">
+                    <div class="col-xs-offset-6 col-xs-6">
+                        <button type="button" class="btn btn-block"
+                                ng-click="$ctrl.remove()">
+                            <span class="glyphicon glyphicon-remove"></span>
+                            <span translate="jht.nomination.decision.remove"></span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

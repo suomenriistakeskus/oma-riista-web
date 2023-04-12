@@ -38,6 +38,9 @@ public abstract class AbstractSrvaCrudFeature<DTO extends SrvaEventDTOBase>
     private SrvaEventRepository srvaEventRepository;
 
     @Resource
+    private DeletedSrvaEventRepository deletedSrvaEventRepository;
+
+    @Resource
     private SrvaMethodService srvaMethodService;
 
     @Resource
@@ -98,9 +101,16 @@ public abstract class AbstractSrvaCrudFeature<DTO extends SrvaEventDTOBase>
         // state and approverInfo of event are changed via separate api
     }
 
+    protected void updateEntitySpecV2Fields(@Nonnull final SrvaEvent entity, @Nonnull final DTO dto) {
+        entity.setDeportationOrderNumber(dto.getDeportationOrderNumber());
+        entity.setEventTypeDetail(dto.getEventTypeDetail());
+        entity.setOtherEventTypeDetailDescription(dto.getOtherEventTypeDetailDescription());
+        entity.setEventResultDetail(dto.getEventResultDetail());
+    }
+
     @Transactional(readOnly = true)
-    public SrvaParametersDTO getSrvaParameters() {
-        return new SrvaParametersDTO(getGameSpeciesForSrva());
+    public SrvaParametersDTO getSrvaParameters(final SrvaEventSpecVersion specVersion) {
+        return new SrvaParametersDTO(getGameSpeciesForSrva(), specVersion);
     }
 
     private List<GameSpeciesDTO> getGameSpeciesForSrva() {
@@ -168,6 +178,8 @@ public abstract class AbstractSrvaCrudFeature<DTO extends SrvaEventDTOBase>
         //NOTE! No need to delete methods or specimens separately, since it's handled with onDelete="CASCADE".
 
         gameDiaryImageService.deleteGameDiaryImages(entity);
+
+        deletedSrvaEventRepository.save(new DeletedSrvaEvent(id, entity.getAuthor().getId()));
 
         delete(entity);
     }

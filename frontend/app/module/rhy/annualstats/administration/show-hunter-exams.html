@@ -1,6 +1,7 @@
 <div class="panel panel-default">
     <timestamped-panel-heading title-key="'rhy.annualStats.administration.hunterExam.title'"
-                               last-modified="$ctrl.hunterExams.lastModified">
+                               last-modified="$ctrl.hunterExams.lastModified"
+                               has-warning-sign="$ctrl.warnings.length > 0">
     </timestamped-panel-heading>
 
     <div class="panel-body">
@@ -22,11 +23,17 @@
                         <td num-pieces="::([$ctrl.hunterExams.passedHunterExams, $ctrl.hunterExams.failedHunterExams] | sumFinite)"></td>
                     </tr>
                     <tr>
-                        <td class="col-xs-9" translate="rhy.annualStats.administration.hunterExam.passed"></td>
+                        <td class="col-xs-9" ng-switch="$ctrl.hunterExams.hunterExamAttemptResultsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.hunterExam.passed"></span>
+                            <span ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.hunterExam.passed"></span>
+                        </td>
                         <td num-pieces="::$ctrl.hunterExams.passedHunterExams"></td>
                     </tr>
                     <tr>
-                        <td class="col-xs-9" translate="rhy.annualStats.administration.hunterExam.failed"></td>
+                        <td class="col-xs-9" ng-switch="$ctrl.hunterExams.hunterExamAttemptResultsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.hunterExam.failed"></span>
+                            <span ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.hunterExam.failed"></span>
+                        </td>
                         <td num-pieces="::$ctrl.hunterExams.failedHunterExams"></td>
                     </tr>
                     <tr>

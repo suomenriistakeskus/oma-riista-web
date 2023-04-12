@@ -71,7 +71,9 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
         public final Occupation clubContactOccupation;
         public final Occupation clubMemberOccupation;
         public final Occupation groupLeaderOccupation;
+        public final Occupation groupLeaderClubOccupation;
         public final Occupation groupMemberOccupation;
+        public final Occupation groupMemberClubOccupation;
 
         public final PermitDecision decision;
 
@@ -163,12 +165,12 @@ public interface HuntingGroupFixtureMixin extends FixtureMixin {
             clubMemberOccupation = es.newOccupation(club, clubMember, OccupationType.SEURAN_JASEN);
 
             groupLeader = es.newPerson();
-            es.newOccupation(club, groupLeader, OccupationType.SEURAN_JASEN);
+            groupLeaderClubOccupation = es.newOccupation(club, groupLeader, OccupationType.SEURAN_JASEN);
             groupLeaderOccupation = es.newOccupation(group, groupLeader, OccupationType.RYHMAN_METSASTYKSENJOHTAJA);
             groupLeaderOccupation.setCallOrder(1);
 
             groupMember = es.newPerson();
-            es.newOccupation(club, groupMember, OccupationType.SEURAN_JASEN);
+            groupMemberClubOccupation = es.newOccupation(club, groupMember, OccupationType.SEURAN_JASEN);
             groupMemberOccupation = es.newOccupation(group, groupMember, OccupationType.RYHMAN_JASEN);
 
             this.decision = decision;

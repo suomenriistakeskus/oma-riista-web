@@ -1,6 +1,5 @@
 package fi.riista.feature.permit.application.conflict;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -29,7 +28,6 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +43,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static fi.riista.util.DateUtil.huntingYear;
+import static java.util.Collections.singletonList;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -68,7 +67,7 @@ public class SearchApplicationConflictsFeature {
                 public Map<Integer, Boolean> loadAll(final Iterable<? extends Integer> keys) throws Exception {
                     final ImmutableList<Integer> ints = ImmutableList.copyOf(keys);
                     final Set<Integer> valtiomaaPalstas = filterStateArea(ints);
-                    return ints.stream().collect(toMap(identity(), v -> valtiomaaPalstas.contains(v)));
+                    return ints.stream().collect(toMap(identity(), valtiomaaPalstas::contains));
                 }
             });
 
@@ -187,9 +186,17 @@ public class SearchApplicationConflictsFeature {
             return;
         }
 
-        final List<HarvestPermitApplication> intersecting =
+        if (harvestPermitApplicationRepository.findApplicationsWithAlsoOtherThanStateMooseLandsFromList(singletonList(firstApplication)).isEmpty()) {
+            LOG.info("Skipping applicationId={} contains only state moose lands", firstApplication.getId());
+            return;
+        }
+
+        List<HarvestPermitApplication> intersecting =
                 harvestPermitApplicationRepository.findIntersecting(
-                        firstApplication.getId(), firstApplication.getApplicationYear());
+                        firstApplication.getId(),
+                        firstApplication.getApplicationYear());
+
+        intersecting = harvestPermitApplicationRepository.findApplicationsWithAlsoOtherThanStateMooseLandsFromList(intersecting);
 
         final long elapsed = stopwatch.elapsed(TimeUnit.SECONDS);
 
@@ -281,7 +288,7 @@ public class SearchApplicationConflictsFeature {
                 .mapToInt(HarvestPermitApplicationConflictPalsta::getPalstaId).boxed().collect(toList());
 
         final Set<Integer> metsahallitusPalstaIds = VALTIONMAA_PALSTA_CACHE.getAll(palstaIds).entrySet().stream()
-                .filter(e -> e.getValue())
+                .filter(Map.Entry::getValue)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
 
@@ -289,12 +296,13 @@ public class SearchApplicationConflictsFeature {
             palsta.setBatchId(conflict.getBatchId());
             palsta.setMetsahallitus(metsahallitusPalstaIds.contains(palsta.getPalstaId()));
 
-            LOG.info("Storing conflict first={} second={} palstaId={} palstaName={} areaSize={}",
+            LOG.info("Storing conflict first={} second={} palstaId={} palstaName={} areaSize={}, waterSize={}",
                     conflict.getFirstApplication().getId(),
                     conflict.getSecondApplication().getId(),
                     palsta.getPalstaId(),
                     palsta.getPalstaNimi(),
-                    palsta.getConflictAreaSize());
+                    palsta.getConflictAreaSize(),
+                    palsta.getConflictAreaWaterSize());
         });
 
         harvestPermitApplicationConflictPalstaRepository.saveAll(listOfConflicts);
@@ -310,8 +318,8 @@ public class SearchApplicationConflictsFeature {
 
             // Also delete opposite conflict
             jpqlQueryFactory.delete(CONFLICT).where(
-                    CONFLICT.firstApplication.eq(conflict.getSecondApplication()),
-                    CONFLICT.secondApplication.eq(conflict.getFirstApplication()))
+                            CONFLICT.firstApplication.eq(conflict.getSecondApplication()),
+                            CONFLICT.secondApplication.eq(conflict.getFirstApplication()))
                     .execute();
         }
         conflict.setProcessingPalstaSeconds(stopwatch.elapsed(TimeUnit.SECONDS));

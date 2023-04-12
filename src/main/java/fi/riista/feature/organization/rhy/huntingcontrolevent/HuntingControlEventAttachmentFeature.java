@@ -18,9 +18,13 @@ public class HuntingControlEventAttachmentFeature {
     @Resource
     private RequireEntityService requireEntityService;
 
+    @Resource
+    private HuntingControlEventChangeService changeService;
+
     @Transactional(rollbackFor = IOException.class)
     public void deleteAttachment(final long id) {
         final HuntingControlAttachment attachment = requireEntityService.requireHuntingControlAttachment(id, EntityPermission.DELETE);
+        changeService.addDeleteAttachment(attachment.getHuntingControlEvent(), attachment.getAttachmentMetadata().getOriginalFilename());
         attachmentService.delete(attachment);
     }
 
@@ -34,5 +38,11 @@ public class HuntingControlEventAttachmentFeature {
     public ResponseEntity<byte[]> getAttachment(final long attachmentId) throws IOException {
         final HuntingControlAttachment attachment = requireEntityService.requireHuntingControlAttachment(attachmentId, EntityPermission.READ);
         return attachmentService.getAttachment(attachment);
+    }
+
+    @Transactional(readOnly = true, rollbackFor = IOException.class)
+    public ResponseEntity<byte[]> getThumbnail(final long attachmentId) throws IOException {
+        final HuntingControlAttachment attachment = requireEntityService.requireHuntingControlAttachment(attachmentId, EntityPermission.READ);
+        return attachmentService.getThumbnail(attachment);
     }
 }

@@ -19,7 +19,6 @@ import org.junit.runner.RunWith;
 import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -54,9 +53,6 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
     @Resource
     private PersonRepository personRepository;
 
-    @Resource
-    private OccupationRepository occupationRepository;
-
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
@@ -66,7 +62,7 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
             final Person person = model().newPerson();
 
             onSavedAndAuthenticated(createNewModerator(), () -> {
-                OccupationDTO dto = createOccupationDTO(rhy, person, TOIMINNANOHJAAJA);
+                final OccupationDTO dto = createOccupationDTO(rhy, person, TOIMINNANOHJAAJA);
                 occupationCrudFeature.create(dto);
             });
         });
@@ -79,28 +75,46 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
 
             thrown.expect(AccessDeniedException.class);
 
-            onSavedAndAuthenticated(createUser(coordinator), () -> {
-                occupationCrudFeature.create(createOccupationDTO(rhy, person, TOIMINNANOHJAAJA));
-            });
+            onSavedAndAuthenticated(createUser(coordinator), () -> occupationCrudFeature.create(createOccupationDTO(rhy, person, TOIMINNANOHJAAJA)));
         });
     }
 
     @Test
     public void testCoordinatorIsAllowedToAddOtherThanCoordinatorOccupation() {
         withRhyAndCoordinator((rhy, coordinator) -> {
-            Person person = model().newPerson();
+            final Person person = model().newPerson();
 
-            onSavedAndAuthenticated(createUser(coordinator), () -> {
-                occupationCrudFeature.create(createOccupationDTO(rhy, person, PETOYHDYSHENKILO));
+            onSavedAndAuthenticated(createUser(coordinator), () -> occupationCrudFeature.create(createOccupationDTO(rhy, person, SRVA_YHTEYSHENKILO)));
+        });
+    }
+
+    @Test
+    public void testModeratorCanAddCarnivoreContactPersonOccupation() {
+        withRhy(rhy -> {
+            final Person person = model().newPerson();
+
+            onSavedAndAuthenticated(createNewModerator(), () -> {
+                final OccupationDTO dto = createOccupationDTO(rhy, person, PETOYHDYSHENKILO);
+                occupationCrudFeature.create(dto);
             });
         });
     }
 
     @Test
-    public void testModeratorCanDeleteCoordinatorOccupation() {
-        withRhyAndCoordinatorOccupation((rhy, occupation) -> {
-            onSavedAndAuthenticated(createNewModerator(), () -> occupationCrudFeature.delete(occupation.getId()));
+    public void testCoordinatorIsNotAllowedToAddCarnivoreContactPersonOccupation() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            final Person person = model().newPerson();
+
+            thrown.expect(AccessDeniedException.class);
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> occupationCrudFeature.create(createOccupationDTO(rhy, person, PETOYHDYSHENKILO)));
         });
+    }
+
+
+    @Test
+    public void testModeratorCanDeleteCoordinatorOccupation() {
+        withRhyAndCoordinatorOccupation((rhy, occupation) -> onSavedAndAuthenticated(createNewModerator(), () -> occupationCrudFeature.delete(occupation.getId())));
     }
 
     @Test
@@ -120,21 +134,19 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
 
             final Person person = model().newPerson();
 
-            onSavedAndAuthenticated(createUser(coordinator), () -> {
-                OccupationType.jhtValues().forEach(occupationType -> {
-                    final OccupationDTO dto = createOccupationDTO(rhy, person, occupationType);
+            onSavedAndAuthenticated(createUser(coordinator), () -> OccupationType.jhtValues().forEach(occupationType -> {
+                final OccupationDTO dto = createOccupationDTO(rhy, person, occupationType);
 
-                    try {
-                        occupationCrudFeature.create(dto);
+                try {
+                    occupationCrudFeature.create(dto);
 
-                    } catch (final AccessDeniedException ignore) {
-                        assertEquals("JHT occupation can be edited only by moderator or admin", ignore.getMessage());
-                        return;
-                    }
+                } catch (final AccessDeniedException e) {
+                    assertEquals("JHT occupation can be edited only by moderator or admin", e.getMessage());
+                    return;
+                }
 
-                    fail("Should prohibit creating occupationType " + occupationType);
-                });
-            });
+                fail("Should prohibit creating occupationType " + occupationType);
+            }));
         });
     }
 
@@ -148,43 +160,39 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
                     .map(occupationType -> model().newOccupation(rhy, person, occupationType))
                     .collect(Collectors.toList());
 
-            onSavedAndAuthenticated(createUser(coordinator), () -> {
-                existingOccupations.forEach((existingOccupation) -> {
-                    try {
-                        final OccupationDTO dto = OccupationDTO.createWithPerson(existingOccupation);
+            onSavedAndAuthenticated(createUser(coordinator), () -> existingOccupations.forEach((existingOccupation) -> {
+                try {
+                    final OccupationDTO dto = OccupationDTO.createWithPerson(existingOccupation);
 
-                        occupationCrudFeature.update(dto);
+                    occupationCrudFeature.update(dto);
 
-                    } catch (final AccessDeniedException ignore) {
-                        assertEquals("JHT occupation can be edited only by moderator or admin", ignore.getMessage());
-                        return;
-                    }
+                } catch (final AccessDeniedException e) {
+                    assertEquals("JHT occupation can be edited only by moderator or admin", e.getMessage());
+                    return;
+                }
 
-                    fail("Should prohibit updating occupationType " + existingOccupation.getOccupationType());
-                });
-            });
+                fail("Should prohibit updating occupationType " + existingOccupation.getOccupationType());
+            }));
         });
     }
 
     @Test
     public void testCoordinatorCannotDeleteJHTOccupation() {
-        withRhyAndCoordinator((rhy, coordinator) -> onSavedAndAuthenticated(createUser(coordinator), () -> {
-            OccupationType.jhtValues().forEach(occupationType -> {
-                try {
-                    final Occupation occupation = model().newOccupation(rhy, coordinator, occupationType);
+        withRhyAndCoordinator((rhy, coordinator) -> onSavedAndAuthenticated(createUser(coordinator), () -> OccupationType.jhtValues().forEach(occupationType -> {
+            try {
+                final Occupation occupation = model().newOccupation(rhy, coordinator, occupationType);
 
-                    persistInNewTransaction();
+                persistInNewTransaction();
 
-                    occupationCrudFeature.delete(occupation.getId());
+                occupationCrudFeature.delete(occupation.getId());
 
-                } catch (final AccessDeniedException ignore) {
-                    assertEquals("JHT occupation can be edited only by moderator or admin", ignore.getMessage());
-                    return;
-                }
+            } catch (final AccessDeniedException e) {
+                assertEquals("JHT occupation can be edited only by moderator or admin", e.getMessage());
+                return;
+            }
 
-                fail("Should prohibit deleting occupationType " + occupationType);
-            });
-        }));
+            fail("Should prohibit deleting occupationType " + occupationType);
+        })));
     }
 
     @Test
@@ -195,9 +203,7 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
 
             thrown.expect(PersonIsDeceasedException.class);
 
-            onSavedAndAuthenticated(createUser(coordinator), () -> {
-                occupationCrudFeature.create(createOccupationDTO(rhy, deadPerson, SRVA_YHTEYSHENKILO));
-            });
+            onSavedAndAuthenticated(createUser(coordinator), () -> occupationCrudFeature.create(createOccupationDTO(rhy, deadPerson, SRVA_YHTEYSHENKILO)));
         });
     }
 
@@ -208,9 +214,7 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
             final Occupation existingOccupation = model().newOccupation(rhy, deadPerson, SRVA_YHTEYSHENKILO);
             deadPerson.setDeletionCode(Person.DeletionCode.D);
 
-            onSavedAndAuthenticated(createUser(coordinator), () -> {
-                occupationCrudFeature.update(OccupationDTO.createWithPerson(existingOccupation));
-            });
+            onSavedAndAuthenticated(createUser(coordinator), () -> occupationCrudFeature.update(OccupationDTO.createWithPerson(existingOccupation)));
         });
     }
 
@@ -230,11 +234,11 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
-    private static OccupationDTO createOccupationDTO(Riistanhoitoyhdistys rhy, Person person, OccupationType type) {
-        OccupationDTO dto = new OccupationDTO();
+    private static OccupationDTO createOccupationDTO(final Riistanhoitoyhdistys rhy, final Person person, final OccupationType type) {
+        final OccupationDTO dto = new OccupationDTO();
         dto.setOrganisationId(rhy.getId());
 
-        PersonContactInfoDTO personDTO = new PersonContactInfoDTO();
+        final PersonContactInfoDTO personDTO = new PersonContactInfoDTO();
         personDTO.setId(person.getId());
         dto.setPerson(personDTO);
         dto.setOccupationType(type);
@@ -309,8 +313,8 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
     @Test
     public void testCreateOccupation_rhyCoordinator() {
         withRhyAndCoordinator((rhy, coordinator) -> {
-            Person person = model().newPerson();
-            Person substitute = model().newPerson();
+            final Person person = model().newPerson();
+            final Person substitute = model().newPerson();
 
             onSavedAndAuthenticated(createUser(coordinator), () -> {
                 final OccupationDTO boardMemberDTO = createOccupationDTO(rhy, person, PUHEENJOHTAJA);
@@ -427,51 +431,6 @@ public class OccupationCrudFeatureTest extends EmbeddedDatabaseTest {
         assertEquals(expected, occupationsByType.size());
 
         return occupationsByType;
-    }
-
-    @Test
-    public void testUpdateContactInfoVisibility() {
-        withRhyAndCoordinator((rhy, coordinator) -> {
-            final Person person = model().newPerson();
-            final Occupation occupation = model().newOccupation(rhy, person, METSASTYKSENVALVOJA);
-
-            onSavedAndAuthenticated(createUser(person), () -> {
-                final OccupationContactInfoVisibilityDTO visibility =
-                        new OccupationContactInfoVisibilityDTO(
-                                occupation.getId(),
-                                occupation.isNameVisibility(),
-                                occupation.isPhoneNumberVisibility(),
-                                false);
-                occupationCrudFeature.updateContactInfoVisibility(Collections.singletonList(visibility));
-
-                runInTransaction(() -> {
-                    final Occupation updated = occupationRepository.getOne(occupation.getId());
-                    assertThat(updated, is(notNullValue()));
-
-                    assertThat(updated.isNameVisibility(), is(equalTo(occupation.isNameVisibility())));
-                    assertThat(updated.isPhoneNumberVisibility(), is(equalTo(occupation.isPhoneNumberVisibility())));
-                    assertThat(updated.isEmailVisibility(), is(equalTo(false)));
-                });
-            });
-        });
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testUpdateContactInfoVisibility_illegalSetting() {
-        withRhyAndCoordinator((rhy, coordinator) -> {
-            final Person person = model().newPerson();
-            final Occupation occupation = model().newOccupation(rhy, person, METSASTYKSENVALVOJA);
-
-            onSavedAndAuthenticated(createUser(person), () -> {
-                final OccupationContactInfoVisibilityDTO visibility =
-                        new OccupationContactInfoVisibilityDTO(
-                                occupation.getId(),
-                                false,
-                                occupation.isPhoneNumberVisibility(),
-                                false);
-                occupationCrudFeature.updateContactInfoVisibility(Collections.singletonList(visibility));
-            });
-        });
     }
 
     @Test

@@ -8,21 +8,21 @@
 
     <div class="modal-body">
         <div class="form-group" ng-if="!$ctrl.showSpeciesSelection">
-            <label for="species" class="col-xs-3 control-label">
+            <label for="species" class="col-sm-3 control-label">
                 <span translate="club.group.form.species"></span>
             </label>
-            <div class="col-xs-4">
+            <div class="col-sm-4">
                 <p class="form-control-static" ng-bind="$ctrl.getGameName($ctrl.group.gameSpeciesCode, null)"></p>
             </div>
         </div>
 
         <div class="form-group" show-errors ng-if="$ctrl.showSpeciesSelection">
-            <label for="species" class="col-xs-3 control-label">
+            <label for="species" class="col-sm-3 control-label">
                 <span translate="club.group.form.species"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
-            <div class="col-xs-4">
+            <div class="col-sm-4">
                 <select name="species" id="species" class="form-control"
                         ng-model="$ctrl.group.gameSpeciesCode"
                         ng-change="$ctrl.onGameSpeciesChange()"
@@ -34,12 +34,12 @@
         </div>
 
         <div class="form-group" show-errors>
-            <label for="huntingYear" class="col-xs-3 control-label">
+            <label for="huntingYear" class="col-sm-3 control-label">
                 <span translate="global.huntingYear"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
-            <div class="col-xs-4">
+            <div class="col-sm-4">
                 <select name="huntingYear" id="huntingYear" class="form-control"
                         ng-model="$ctrl.group.huntingYear"
                         ng-change="$ctrl.onHuntingYearChange($ctrl.group.huntingYear)"
@@ -51,11 +51,11 @@
         </div>
 
         <div class="form-group">
-            <label for="permitSelection" class="col-xs-3 control-label">
+            <label for="permitSelection" class="col-sm-3 control-label">
                 <span translate="club.group.form.harvestPermit"></span>
             </label>
 
-            <div class="col-xs-4">
+            <div class="col-sm-4">
                 <p class="form-control-static">
                    <span ng-show="$ctrl.group.permit"
                          ng-bind="$ctrl.group.permit.permitNumber"></span>
@@ -65,7 +65,7 @@
                 </p>
             </div>
 
-            <div class="col-xs-5">
+            <div class="col-sm-5">
                 <div class="form-control-static">
                     <a class="bnt btn-link"
                        ng-show="$ctrl.group.permit && $ctrl.huntingNotStarted"
@@ -76,7 +76,7 @@
         </div>
 
         <div class="form-group" show-errors ng-if="$ctrl.huntingNotStarted">
-            <div class="col-xs-4 col-xs-offset-3">
+            <div class="col-sm-4 col-sm-offset-3">
                 <select name="permitSelection" id="permitSelection" class="form-control"
                         ng-model="$ctrl.selectedPermit"
                         ng-change="$ctrl.selectPermit($ctrl.selectedPermit)"
@@ -88,12 +88,12 @@
         </div>
 
         <div class="form-group" show-errors>
-            <label for="huntingArea" class="col-xs-3 control-label">
+            <label for="huntingArea" class="col-sm-3 control-label">
                 <span translate="club.group.form.huntingArea"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
-            <div class="col-xs-4">
+            <div class="col-sm-4">
                 <select name="huntingArea" id="huntingArea"
                         class="form-control"
                         required
@@ -106,12 +106,12 @@
         </div>
 
         <div class="form-group" show-errors>
-            <label for="nameFI" class="col-xs-3 control-label">
+            <label for="nameFI" class="col-sm-3 control-label">
                 <span translate="global.nameFI"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
-            <div class="col-xs-4">
+            <div class="col-sm-4">
                 <input name="nameFI" id="nameFI" class="form-control"
                        ng-model="$ctrl.group.nameFI"
                        ng-maxlength="255"
@@ -122,12 +122,12 @@
         </div>
 
         <div class="form-group" show-errors>
-            <label for="nameSV" class="col-xs-3 control-label">
+            <label for="nameSV" class="col-sm-3 control-label">
                 <span translate="global.nameSV"></span>
                 <span class="glyphicon glyphicon-asterisk text-danger small"></span>
             </label>
 
-            <div class="col-xs-4">
+            <div class="col-sm-4">
                 <input name="nameSV" id="nameSV" class="form-control"
                        ng-model="$ctrl.group.nameSV"
                        ng-maxlength="255"

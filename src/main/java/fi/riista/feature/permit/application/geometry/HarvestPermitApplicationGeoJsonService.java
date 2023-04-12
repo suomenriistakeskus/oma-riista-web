@@ -2,6 +2,7 @@ package fi.riista.feature.permit.application.geometry;
 
 import com.google.common.collect.ImmutableSet;
 import com.querydsl.jpa.JPQLQueryFactory;
+import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
 import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.huntingclub.QHuntingClub;
@@ -56,6 +57,20 @@ public class HarvestPermitApplicationGeoJsonService {
         }
 
         return featureCollection;
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public HarvestPermitApplicationAreaPartnerExportDTO exportPermitAreaForEachPartner(final HarvestPermitArea harvestPermitArea) {
+        final List<Long> zoneIds = harvestPermitAreaPartnerRepository.findAreaPartnerZoneIds(harvestPermitArea.getId());
+        final FeatureCollection featureCollection =  gisZoneRepository.getCombinedFeatures(ImmutableSet.copyOf(zoneIds), GISUtils.SRID.ETRS_TM35FIN);
+
+        final GISBounds bounds = gisZoneRepository.getBounds(harvestPermitArea.getZone().getId(), GISUtils.SRID.ETRS_TM35FIN);
+        featureCollection.setBbox(bounds.toBBox());
+
+        return new HarvestPermitApplicationAreaPartnerExportDTO(
+                featureCollection,
+                createZoneToAreaNameMapping(harvestPermitArea),
+                createZoneToClubNameMapping(harvestPermitArea));
     }
 
     private Map<Long, LocalisedString> createZoneToClubNameMapping(final HarvestPermitArea harvestPermitArea) {

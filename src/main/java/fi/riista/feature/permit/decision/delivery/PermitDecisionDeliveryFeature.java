@@ -50,7 +50,7 @@ public class PermitDecisionDeliveryFeature {
         final List<PermitDecisionDeliveryDTO> deliveries = findDeliveriesByDecision(decision)
                 .stream().map(d -> new PermitDecisionDeliveryDTO(d.getName(), d.getEmail()))
                 .collect(toList());
-        if (deliveries.isEmpty()) {
+        if (decision.isAutomaticDeliveryDeduction() && deliveries.isEmpty()) {
             return permitDecisionDeliveryService.generateRhyDeliveryDTOs(decision);
         }
         return deliveries;

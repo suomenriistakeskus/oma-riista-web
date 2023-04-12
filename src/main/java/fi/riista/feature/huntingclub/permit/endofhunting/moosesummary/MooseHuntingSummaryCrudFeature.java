@@ -153,7 +153,7 @@ public class MooseHuntingSummaryCrudFeature
 
         entity.setDeerFliesAppeared(dto.getDeerFliesAppeared());
 
-        if (Boolean.FALSE.equals(dto.getDeerFliesAppeared())) {
+        if (dto.getDeerFliesAppeared() == null || Boolean.FALSE.equals(dto.getDeerFliesAppeared())) {
             entity.setDateOfFirstDeerFlySeen(null);
             entity.setDateOfLastDeerFlySeen(null);
             entity.setNumberOfAdultMoosesHavingFlies(null);

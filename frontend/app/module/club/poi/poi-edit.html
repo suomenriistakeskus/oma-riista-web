@@ -1,0 +1,107 @@
+<div class="poi-edit-layout">
+    <div class="left-column">
+        <div class="btn-group btn-group-justified">
+            <div class="btn btn-primary" ng-click="$ctrl.save()">
+                <span class="fa fa-fw fa-lg fa-floppy-o"></span>
+                <span translate="global.button.save"></span>
+            </div>
+            <div class="btn btn-default" ng-click="$ctrl.close()">
+                <span class="fa fa-fw fa-lg fa-sign-out"></span>
+                <span translate="global.button.exit"></span>
+            </div>
+        </div>
+
+        <div class="btn-group btn-group-justified">
+            <div class="btn btn-default" ng-click="$ctrl.importPoiFromGpxFile()">
+                <span class="glyphicon glyphicon-import"></span>
+                <span translate="club.area.poi.importGpx"></span>
+            </div>
+        </div>
+
+        <h3 translate="club.area.poi.type.{{::$ctrl.poi.type}}"></h3>
+        <div class="poi-edit-title-row">
+            <div class="col-xs-6">
+                <strong class="control-label" ng-bind="::$ctrl.poi.visibleId"></strong>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 edited-poi-description form-group">
+                <label class="control-label" for="editedPoiDescription">
+                    <span translate="club.area.poi.poiName"></span>
+                </label>
+                <div>
+
+                <textarea name="editedPoiDescription" id="editedPoiDescription"
+                          ng-change="$ctrl.onPoiTextChanged()"
+                          cols="40" rows="1" ng-model="$ctrl.poi.description"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="poi-edit-instruction-row">
+            <div class="col-xs-2">
+                <span class="fa fa-mouse-pointer poi-edit-instruction-arrow"></span>
+            </div>
+            <div class="col-xs-10">
+                <strong translate="club.area.poi.editInstruction1"></strong>
+            </div>
+        </div>
+        <div class="poi-edit-instruction-row">
+            <div class="col-xs-2">
+                <span class="fa fa-arrows poi-edit-instruction"></span>
+            </div>
+            <div class="col-xs-10">
+                <strong translate="club.area.poi.editInstruction2"></strong>
+            </div>
+        </div>
+        <div class="poi-edit-instruction-row">
+            <div class="col-xs-2">
+                <div class="poi-edit-instruction-group"></div>
+            </div>
+            <div class="col-xs-10">
+                <strong translate="club.area.poi.editInstruction3"></strong>
+            </div>
+        </div>
+        <hr>
+        <div class="row"
+             ng-repeat="loc in $ctrl.poi.locations | orderBy: 'visibleId' track by loc.visibleId">
+            <div class="poi-edit-item-details">
+                <hr>
+                <div class="col-xs-8">
+                    <span class="fa fa-map-marker"></span>
+                    <span ng-bind="::$ctrl.poi.visibleId"></span>-
+                    <span ng-bind="::loc.visibleId"></span>
+                </div>
+                <div class="col-xs-4 text-right">
+                    <a ng-click="$ctrl.deleteLocation(loc.visibleId)">
+                        <span class="text-danger fa fa-trash"></span>
+                        <span class="text-danger" translate="global.button.delete"></span>
+                    </a>
+                </div>
+                <div class="col-xs-12 form-group">
+                    <label class="control-label" for="editedPoiLocationDescription-{{::loc.visibleId}}">
+                        <span translate="club.area.poi.description"></span>
+                    </label>
+                    <div>
+                        <textarea name="editedPoiLocationDescription-{{::loc.visibleId}}"
+                                  id="editedPoiLocationDescription-{{::loc.visibleId}}"
+                                  ng-change="$ctrl.onPoiTextChanged()"
+                                  rows="1" ng-model="loc.description"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="main-column">
+        <club-poi-map
+                editable="true"
+                selected-poi="$ctrl.poi"
+                default-bounds="$ctrl.rhyBounds"
+                poi-locations="$ctrl.visibleMarkers"
+                on-drag-ended="$ctrl.onDragEnded(marker)"
+                on-map-clicked="$ctrl.onMapClicked(geoLocation)">
+        </club-poi-map>
+    </div>
+</div>

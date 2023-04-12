@@ -1,4 +1,4 @@
-<div class="alert alert-info">
+<div class="alert alert-info wizard-info">
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
@@ -10,7 +10,7 @@
 <form name="attachmentForm" class="derogation-application-wizard-attachment-list">
     <div ng-repeat="a in $ctrl.attachmentList track by a.id">
         <div class="row">
-            <div class="col-xs-6">
+            <div class="col-sm-6">
                 <div class="left-column">
                     <div class="attachment-logo">
                         <span class="fa fa-2x fa-file-o"></span>
@@ -24,14 +24,15 @@
                 </div>
             </div>
 
-            <div class="col-xs-6">
+            <div class="col-sm-6">
                 <div class="form-group">
                     <label class="control-label" for="additionalInfo-{{a.id}}"
                            translate="harvestpermit.wizard.attachments.attachmentDescription"></label>
 
                     <textarea class="form-control" rows="4"
                               name="additionalInfo-{{a.id}}" id="additionalInfo-{{a.id}}"
-                              ng-model="a.additionalInfo"></textarea>
+                              ng-model="a.additionalInfo"
+                              spellcheck="false"></textarea>
                 </div>
             </div>
         </div>

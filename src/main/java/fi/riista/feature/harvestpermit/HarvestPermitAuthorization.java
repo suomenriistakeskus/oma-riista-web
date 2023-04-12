@@ -30,10 +30,12 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
 
     public enum Permission {
         LIST_LEADERS,
+        LIST_LEADERS_CONTACT_PERSON,
         UPDATE_ALLOCATIONS,
         ACCEPT_REJECT_HARVEST,
         CREATE_REMOVE_HARVEST_REPORT,
-        CREATE_REMOVE_MOOSE_HARVEST_REPORT
+        CREATE_REMOVE_MOOSE_HARVEST_REPORT,
+        VIEW_OBSERVATION_SUMMARY
     }
 
     public enum Role {
@@ -104,6 +106,16 @@ public class HarvestPermitAuthorization extends AbstractEntityAuthorization<Harv
                 Role.HUNTING_LEADER_OF_PERMIT_HOLDER,
                 Role.PERMIT_RHY_COORDINATOR,
                 Role.PERMIT_RELATED_RHY_COORDINATOR);
+
+        allow(Permission.LIST_LEADERS_CONTACT_PERSON,
+                SystemUser.Role.ROLE_ADMIN,
+                Role.HARVEST_PERMIT_MODERATOR,
+                Role.CONTACT_PERSON_FOR_PERMIT);
+
+        allow(Permission.VIEW_OBSERVATION_SUMMARY,
+                SystemUser.Role.ROLE_ADMIN,
+                Role.HARVEST_PERMIT_MODERATOR,
+                Role.CONTACT_PERSON_FOR_PERMIT);
     }
 
     @Override

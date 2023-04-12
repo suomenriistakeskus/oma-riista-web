@@ -1,5 +1,6 @@
 <uib-accordion close-others="true">
     <div uib-accordion-group class="panel-default"
+         ng-class="area.hasPendingZoneChanges ? 'r-warning-panel' : ''"
          is-open="area.isOpen"
          template-url="common/accordion-group.html"
          ng-click="$ctrl.selectArea($event, area)"
@@ -16,19 +17,20 @@
                           title="{{ 'club.area.list.areaIsDeactive' | translate }}"
                           ng-hide="area.active"></span>
                     <span ng-bind="area | rI18nNameFilter"></span>
-                    <br/>
-                    <span class="text-danger"
-                          ng-show="$ctrl.canEdit && area.hasPendingZoneChanges"
-                          translate="club.area.list.hasPendingChanges"></span>
                 </div>
 
                 <div class="col-xs-4 text-right">
                     <strong ng-bind="area.size.all.total | prettyAreaSize:0"></strong>
+                    <span class="glyphicon glyphicon-alert"
+                          ng-show="$ctrl.canEdit && area.hasPendingZoneChanges"></span>
                     <br/>
                     <span class="text-danger glyphicon glyphicon-lock"
                           ng-show="area.sourceType === 'EXTERNAL'"></span>
-                    <span class="text-danger glyphicon glyphicon-alert"
-                          ng-show="$ctrl.canEdit && area.hasPendingZoneChanges"></span>
+                </div>
+            </div>
+            <div ng-if="area.hasPendingZoneChanges" class="row">
+                <div class="col-xs-offset-1 col-xs-11">
+                    <span translate="club.area.list.updateArea"></span>
                 </div>
             </div>
         </uib-accordion-heading>

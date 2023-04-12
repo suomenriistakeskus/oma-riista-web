@@ -4,6 +4,7 @@ import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.HasBeginAndEndDate;
 import fi.riista.feature.permit.application.dogevent.DogEventType;
 import fi.riista.feature.permit.application.dogevent.DogEventUnleash;
+import fi.riista.validation.PhoneNumber;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
 
@@ -14,7 +15,6 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
@@ -78,7 +78,7 @@ public class DogEventUnleashDTO implements Serializable, HasBeginAndEndDate {
 
     @NotBlank
     @Size(max = 255)
-    @Pattern(regexp = "[+]?[ 0-9]+")
+    @PhoneNumber
     private String contactPhone;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)

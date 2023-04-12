@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.research.summary', ['app.metadata'
                 templateUrl: 'harvestpermit/applications/research/summary/summary.html',
                 controller: 'ResearchPermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, ResearchPermitApplication) {
                         return ResearchPermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -139,7 +140,7 @@ angular.module('app.harvestpermit.application.research.summary', ['app.metadata'
         }
 
         function confirmSend() {
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
                 'harvestpermit.wizard.summary.sendConfirmation.title',
                 'harvestpermit.wizard.summary.sendConfirmation.body');
         }

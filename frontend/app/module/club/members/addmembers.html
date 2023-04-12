@@ -7,17 +7,18 @@
 
     <div class="modal-body">
         <div class="form-group" show-errors>
-            <label for="hunterNumber" class="col-xs-3 control-label">
+            <label for="hunterNumber" class="col-sm-3 control-label">
                 <span translate="global.person.hunterNumber"></span>
             </label>
 
-            <div class="col-xs-9">
+            <div class="col-sm-9">
                 <p class="help-block" translate="club.genericMember.hunterNumbersPlaceholder"></p>
                 <textarea name="hunterNumber" id="hunterNumber" class="form-control"
                           focus-me
                           ng-change="$ctrl.hunterNumberTyped()"
                           ng-model="$ctrl.hunterNumbers"
-                          rows="10"></textarea>
+                          rows="10"
+                          spellcheck="false"></textarea>
             </div>
         </div>
         <div ng-show="$ctrl.hasInvalidHunterNumbers()" class="alert alert-warning">
@@ -41,11 +42,11 @@
 
             <div class="r-club-member-invite-select-group">
                 <div class="form-group" show-errors>
-                    <label for="yearSelection" class="col-xs-3 control-label">
+                    <label for="yearSelection" class="col-sm-3 control-label">
                         <span translate="global.huntingYear"></span>
                     </label>
 
-                    <div class="col-xs-9">
+                    <div class="col-sm-9">
                         <select name="yearSelection" id="yearSelection" class="form-control"
                                 ng-model="$ctrl.years.selected"
                                 ng-change="$ctrl.yearChanged()"
@@ -56,11 +57,11 @@
                 </div>
 
                 <div class="form-group" show-errors>
-                    <label for="groupSelection" class="col-xs-3 control-label">
+                    <label for="groupSelection" class="col-sm-3 control-label">
                         <span translate="club.hunting.selectGroup"></span>
                     </label>
 
-                    <div class="col-xs-9">
+                    <div class="col-sm-9">
                         <select name="groupSelection" id="groupSelection" class="form-control"
                                 ng-model="$ctrl.selectedGroup"
                                 ng-options="group as group.nameFI for group in $ctrl.groups"

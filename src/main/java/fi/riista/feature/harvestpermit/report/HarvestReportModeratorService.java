@@ -89,11 +89,13 @@ public class HarvestReportModeratorService {
                 RequiredHarvestFields.getFormFields(huntingYear, gameSpeciesCode, reportingType, false);
         new HarvestFieldValidator(requirements, harvest).validateAll().throwOnErrors();
 
+        final boolean withPermit = harvest.getHarvestPermit() != null;
+
         final RequiredHarvestFields.Specimen specimenFieldRequirements = RequiredHarvestFields.getSpecimenFields(
-                huntingYear, gameSpeciesCode, harvest.getHuntingMethod(), reportingType, false, specVersion);
+                huntingYear, gameSpeciesCode, harvest.getHuntingMethod(), reportingType, false, specVersion, withPermit);
 
         for (final HarvestSpecimen harvestSpecimen : harvest.getSortedSpecimens()) {
-            new HarvestSpecimenValidator(specimenFieldRequirements, harvestSpecimen, gameSpeciesCode, false)
+            new HarvestSpecimenValidator(specimenFieldRequirements, harvestSpecimen, gameSpeciesCode, false, specVersion, withPermit)
                     .validateAll()
                     .throwOnErrors();
         }

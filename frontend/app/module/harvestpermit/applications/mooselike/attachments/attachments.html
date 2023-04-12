@@ -1,6 +1,6 @@
 <div class="row">
-    <div class="col-xs-10 col-xs-offset-1">
-        <div class="alert alert-info">
+    <div class="col-xs-12 col-sm-10 col-sm-offset-1">
+        <div class="alert alert-info wizard-info">
             <span class="fa fa-info-circle"></span>
 
             <div class="alert-content">
@@ -11,7 +11,7 @@
         </div>
     </div>
 
-    <div class="col-xs-10 col-xs-offset-1">
+    <div class="col-xs-12 col-sm-10 col-sm-offset-1">
         <button type="button" class="btn btn-info"
                 ng-if="$ctrl.freeHunting"
                 ng-click="$ctrl.importMh()">
@@ -29,14 +29,14 @@
                  template-url="common/accordion-group.html">
                 <uib-accordion-heading>
                     <div class="row">
-                        <div class="col-xs-8">
+                        <div class="col-xs-12 col-sm-8">
                             <div class="panel-title">
                                 <span panel-toggle="$ctrl.toggle.a"></span>
                                 <span translate="harvestpermit.wizard.attachments.areaPermit"></span>
                             </div>
                         </div>
 
-                        <div class="col-xs-4 text-right" ng-switch="$ctrl.hasAttachmentWithType('MH_AREA_PERMIT')">
+                        <div class="col-xs-12 col-sm-4 text-right" ng-switch="$ctrl.hasAttachmentWithType('MH_AREA_PERMIT')">
                             <span class="panel-title" ng-switch-when="true">
                                 <span ng-bind="::$ctrl.getAttachmentCount('MH_AREA_PERMIT')"></span>
                                 <span translate="global.pcs"></span>
@@ -65,13 +65,13 @@
                  template-url="common/accordion-group.html">
                 <uib-accordion-heading>
                     <div class="row">
-                        <div class="col-xs-8">
+                        <div class="col-xs-12 col-sm-8">
                             <div class="panel-title">
                                 <span panel-toggle="$ctrl.toggle.b"></span>
                                 <span translate="harvestpermit.wizard.attachments.shooterList"></span>
                             </div>
                         </div>
-                        <div class="col-xs-4 text-right" ng-switch="$ctrl.hasAttachmentWithType('SHOOTER_LIST')">
+                        <div class="col-xs-12 col-sm-4 text-right" ng-switch="$ctrl.hasAttachmentWithType('SHOOTER_LIST')">
                             <span class="panel-title" ng-switch-when="true">
                                 <span ng-bind="::$ctrl.getAttachmentCount('SHOOTER_LIST')"></span>
                                 <span translate="global.pcs"></span>
@@ -100,14 +100,14 @@
                  template-url="common/accordion-group.html">
                 <uib-accordion-heading>
                     <div class="row">
-                        <div class="col-xs-8">
+                        <div class="col-xs-12 col-sm-8">
                             <div class="panel-title">
                                 <span panel-toggle="$ctrl.toggle.c"></span>
                                 <span class="panel-title"
                                       translate="harvestpermit.wizard.attachments.shooterCount"></span>
                             </div>
                         </div>
-                        <div class="col-xs-4 text-right" ng-switch="$ctrl.shooterCountsValid()">
+                        <div class="col-xs-12 col-sm-4 text-right" ng-switch="$ctrl.shooterCountsValid()">
                             <strong class="text-danger" ng-switch-when="false"
                                     translate="harvestpermit.wizard.attachments.missingShooterCount"></strong>
                             <span class="fa fa-check text-primary" ng-switch-when="true"></span>
@@ -128,13 +128,13 @@
                  template-url="common/accordion-group.html">
                 <uib-accordion-heading>
                     <div class="row">
-                        <div class="col-xs-8">
+                        <div class="col-xs-12 col-sm-8">
                             <div class="panel-title">
                                 <span panel-toggle="$ctrl.toggle.d"></span>
                                 <span class="panel-title" translate="harvestpermit.wizard.attachments.otherList"></span>
                             </div>
                         </div>
-                        <div class="col-xs-4 text-right">
+                        <div class="col-xs-12 col-sm-4 text-right">
                             <span class="panel-title">
                                 <span ng-bind="::$ctrl.getAttachmentCount('OTHER')"></span>
                                 <span translate="global.pcs"></span>

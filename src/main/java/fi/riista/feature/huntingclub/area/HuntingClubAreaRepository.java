@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface HuntingClubAreaRepository extends BaseRepository<HuntingClubArea, Long>, HuntingClubAreaRepositoryCustom {
-    @Query("select distinct o.huntingYear FROM #{#entityName} o WHERE o.club= ?1")
+    @Query("SELECT DISTINCT o.huntingYear FROM #{#entityName} o WHERE o.club= ?1")
     List<Integer> listHuntingYears(HuntingClub club);
 
     Optional<HuntingClubArea> findByExternalId(String externalId);

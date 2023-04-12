@@ -10,8 +10,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static fi.riista.feature.organization.calendar.CalendarEventType.AMPUMAKOE;
-import static fi.riista.feature.organization.calendar.CalendarEventType.JOUSIAMPUMAKOE;
 import static fi.riista.feature.organization.calendar.CalendarEventType.VUOSIKOKOUS;
 import static fi.riista.util.DateUtil.now;
 import static fi.riista.util.DateUtil.today;
@@ -57,45 +55,6 @@ public class CalendarEventTest {
     }
 
     @Test
-    public void testIsLockedAsPastCalendarEvent_whenEventInPastWithParticipants() {
-        CalendarEvent event = createEvent(today().minusDays(1));
-        event.setParticipants(1);
-
-        calendarEventRepository.save(event);
-
-        assertTrue(event.isLockedAsPastCalendarEvent());
-    }
-
-    @Test
-    public void testIsLockedAsPastCalendarEvent_whenEventInPastWithoutParticipants() {
-        CalendarEvent event = createEvent(today().minusDays(1));
-
-        calendarEventRepository.save(event);
-
-        assertFalse(event.isLockedAsPastCalendarEvent());
-    }
-
-    @Test
-    public void testIsLockedAsPastCalendarEvent_whenShootingTestEvent() {
-        CalendarEvent event = createEvent(today().minusDays(1));
-        event.setCalendarEventType(AMPUMAKOE);
-
-        calendarEventRepository.save(event);
-
-        assertFalse(event.isLockedAsPastCalendarEvent());
-    }
-
-    @Test
-    public void testIsLockedAsPastCalendarEvent_whenBowShootingTestEvent() {
-        CalendarEvent event = createEvent(today().minusDays(1));
-        event.setCalendarEventType(JOUSIAMPUMAKOE);
-
-        calendarEventRepository.save(event);
-
-        assertFalse(event.isLockedAsPastCalendarEvent());
-    }
-
-    @Test
     public void testIsLockedAsPastStatisticsEvent_whenEventInCurrentYear() {
         CalendarEvent event = createEvent(today());
 
@@ -105,26 +64,80 @@ public class CalendarEventTest {
     }
 
     @Test
-    public void testIsLockedAsPastStatisticsEvent_whenEventInPastYearAndPastYearStatisticsOpen() {
+    public void testIsLockedAsPastStatisticsEvent_whenEventInPastYearAndPastYearStatisticsOpen15JanOnFriday() {
+        final LocalDate deadline = new LocalDate(2021, 1, 15);
+        MockTimeProvider.mockTime(deadline.toDate().getTime());
+
         final LocalDate today = today();
         CalendarEvent event = createEvent(today.minusYears(1));
 
         calendarEventRepository.save(event);
 
-        final LocalDate openPastStatisticsDate = new LocalDate(today.getYear(), 1, 15);
-        MockTimeProvider.mockTime(openPastStatisticsDate.toDate().getTime());
         assertFalse(event.isLockedAsPastStatistics());
     }
 
     @Test
-    public void testIsLockedAsPastStatisticsEvent_whenEventInPastYearAndPastYearStatisticsClosed() {
+    public void testIsLockedAsPastStatisticsEvent_whenEventInPastYearAndPastYearStatisticsOpen15JanOnSaturday() {
+        final LocalDate deadline = new LocalDate(2022, 1, 17);
+        MockTimeProvider.mockTime(deadline.toDate().getTime());
+
         final LocalDate today = today();
         CalendarEvent event = createEvent(today.minusYears(1));
 
         calendarEventRepository.save(event);
 
-        final LocalDate closedPastStatisticsDate = new LocalDate(today.getYear(), 1, 16);
-        MockTimeProvider.mockTime(closedPastStatisticsDate.toDate().getTime());
+        assertFalse(event.isLockedAsPastStatistics());
+    }
+
+    @Test
+    public void testIsLockedAsPastStatisticsEvent_whenEventInPastYearAndPastYearStatisticsOpen15JanOnSunday() {
+        final LocalDate deadline = new LocalDate(2023, 1, 16);
+        MockTimeProvider.mockTime(deadline.toDate().getTime());
+
+        final LocalDate today = today();
+        CalendarEvent event = createEvent(today.minusYears(1));
+
+        calendarEventRepository.save(event);
+
+        assertFalse(event.isLockedAsPastStatistics());
+    }
+
+    @Test
+    public void testIsLockedAsPastStatisticsEvent_whenEventInPastYearAndPastYearStatisticsClosed15JanOnFriday() {
+        final LocalDate deadline = new LocalDate(2021, 1, 16);
+        MockTimeProvider.mockTime(deadline.toDate().getTime());
+
+        final LocalDate today = today();
+        CalendarEvent event = createEvent(today.minusYears(1));
+
+        calendarEventRepository.save(event);
+
+        assertTrue(event.isLockedAsPastStatistics());
+    }
+
+    @Test
+    public void testIsLockedAsPastStatisticsEvent_whenEventInPastYearAndPastYearStatisticsClosed15JanOnSaturday() {
+        final LocalDate deadline = new LocalDate(2022, 1, 18);
+        MockTimeProvider.mockTime(deadline.toDate().getTime());
+
+        final LocalDate today = today();
+        CalendarEvent event = createEvent(today.minusYears(1));
+
+        calendarEventRepository.save(event);
+
+        assertTrue(event.isLockedAsPastStatistics());
+    }
+
+    @Test
+    public void testIsLockedAsPastStatisticsEvent_whenEventInPastYearAndPastYearStatisticsClosed15JanOnSunday() {
+        final LocalDate deadline = new LocalDate(2023, 1, 17);
+        MockTimeProvider.mockTime(deadline.toDate().getTime());
+
+        final LocalDate today = today();
+        CalendarEvent event = createEvent(today.minusYears(1));
+
+        calendarEventRepository.save(event);
+
         assertTrue(event.isLockedAsPastStatistics());
     }
 

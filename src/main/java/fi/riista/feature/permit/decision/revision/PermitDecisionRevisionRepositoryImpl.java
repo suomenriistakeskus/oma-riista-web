@@ -20,6 +20,24 @@ public class PermitDecisionRevisionRepositoryImpl implements PermitDecisionRevis
     private JPQLQueryFactory jpqlQueryFactory;
 
     @Transactional(readOnly = true)
+    public Optional<PersistentFileMetadata> findLatestDecisionMetadataForInformationRequest(final int decisionNumber){
+        final QPermitDecisionRevision REV = QPermitDecisionRevision.permitDecisionRevision;
+        final QPermitDecision DECISION = QPermitDecision.permitDecision;
+        final QPersistentFileMetadata METADATA = QPersistentFileMetadata.persistentFileMetadata;
+
+        return Optional.ofNullable(jpqlQueryFactory
+                .select(METADATA)
+                .from(REV)
+                .innerJoin(REV.permitDecision, DECISION)
+                .innerJoin(REV.pdfMetadata, METADATA)
+                .where(DECISION.decisionNumber.eq(decisionNumber))
+                .where(DECISION.status.eq(PUBLISHED))
+                .orderBy(REV.lockedDate.desc())
+                .limit(1)
+                .fetchOne());
+    }
+
+    @Transactional(readOnly = true)
     public Optional<PersistentFileMetadata> findLatestPublicDecisionPdf(final int decisionNumber){
         final QPermitDecisionRevision REV = QPermitDecisionRevision.permitDecisionRevision;
         final QPermitDecision DECISION = QPermitDecision.permitDecision;

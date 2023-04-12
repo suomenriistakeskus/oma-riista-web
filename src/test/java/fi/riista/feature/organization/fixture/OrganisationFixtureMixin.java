@@ -10,6 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA;
+import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 
 public interface OrganisationFixtureMixin extends FixtureMixin {
@@ -60,6 +61,17 @@ public interface OrganisationFixtureMixin extends FixtureMixin {
         withRhy(rhy -> withPerson(person -> {
             person.setRhyMembership(rhy);
             consumer.accept(rhy, getEntitySupplier().newOccupation(rhy, person));
+        }));
+    }
+
+    default void withRhyAndGameWarden(final BiConsumer<Riistanhoitoyhdistys, Person> consumer) {
+        withRhyAndGameWardenOccupation((rhy, occupation) -> consumer.accept(rhy, occupation.getPerson()));
+    }
+
+    default void withRhyAndGameWardenOccupation(final BiConsumer<Riistanhoitoyhdistys, Occupation> consumer) {
+        withRhy(rhy -> withPerson(gameWarden -> {
+            gameWarden.setRhyMembership(rhy);
+            consumer.accept(rhy, getEntitySupplier().newOccupation(rhy, gameWarden, METSASTYKSENVALVOJA));
         }));
     }
 }

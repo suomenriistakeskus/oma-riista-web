@@ -108,7 +108,34 @@ public class MobileGroupHuntingFeatureTest extends EmbeddedDatabaseTest implemen
                             assertThat(status.isCanCreateObservation(), is(true));
                             assertThat(status.isCanEditDiaryEntry(), is(true));
                             assertThat(status.isCanEditHuntingDay(), is(true));
+                            assertThat(status.isCanEditHarvest(), is(true));
+                            assertThat(status.isCanEditObservation(), is(true));
+                            assertThat(status.isHuntingFinished(), is(false));
                         })));
+    }
+
+    @Test
+    public void testGetGroupStatus_groupFinishedHunting() {
+        final LocalDate huntingDay = new LocalDate(2021, 3, 31);
+        MockTimeProvider.mockTime(huntingDay.toDate().getTime());
+
+        withMooseHuntingGroupFixture(f ->
+                 withHuntingGroupFixture(f.species, notApplicableFixture -> {
+                     persistInNewTransaction(); // Persist before newMooseHuntingSummary (see its comments)
+                     model().newMooseHuntingSummary(f.permit, f.club, true);
+
+                     onSavedAndAuthenticated(createUser(f.groupLeader), () -> {
+                         final MobileGroupHuntingStatusDTO status = feature.getGroupStatus(f.group.getId());
+                         assertThat(status.isCanCreateHarvest(), is(false));
+                         assertThat(status.isCanCreateHuntingDay(), is(false));
+                         assertThat(status.isCanCreateObservation(), is(false));
+                         assertThat(status.isCanEditDiaryEntry(), is(false));
+                         assertThat(status.isCanEditHuntingDay(), is(false));
+                         assertThat(status.isCanEditHarvest(), is(false));
+                         assertThat(status.isCanEditObservation(), is(false));
+                         assertThat(status.isHuntingFinished(), is(true));
+                     });
+                 }));
     }
 
     @Test
@@ -125,6 +152,9 @@ public class MobileGroupHuntingFeatureTest extends EmbeddedDatabaseTest implemen
                             assertThat(status.isCanCreateObservation(), is(false));
                             assertThat(status.isCanEditDiaryEntry(), is(false));
                             assertThat(status.isCanEditHuntingDay(), is(false));
+                            assertThat(status.isCanEditHarvest(), is(false));
+                            assertThat(status.isCanEditObservation(), is(false));
+                            assertThat(status.isHuntingFinished(), is(false)); // TODO: Should the be true?
                         })));
     }
 

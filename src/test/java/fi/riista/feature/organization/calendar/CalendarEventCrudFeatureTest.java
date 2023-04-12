@@ -9,16 +9,20 @@ import org.joda.time.LocalTime;
 import org.junit.Test;
 
 import javax.annotation.Resource;
+import javax.validation.ConstraintViolationException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 
 import static fi.riista.feature.organization.calendar.CalendarEventType.KOULUTUSTILAISUUS;
+import static fi.riista.feature.organization.calendar.CalendarEventType.METSASTAJAKURSSI;
 import static fi.riista.feature.organization.calendar.CalendarEventType.NUORISOTAPAHTUMA;
 import static fi.riista.feature.organization.calendar.CalendarEventType.nonShootingTestTypes;
 import static fi.riista.feature.organization.calendar.CalendarEventType.shootingTestTypes;
 import static fi.riista.util.DateUtil.today;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -56,7 +60,24 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                     assertEquals(inputDto.getEndTime(), event.getEndTime());
                     assertEquals(inputDto.getName(), event.getName());
                     assertEquals(inputDto.getDescription(), event.getDescription());
+                    assertEquals(inputDto.getPassedAttempts(), event.getPassedAttempts());
+                    assertEquals(inputDto.getFailedAttempts(), event.getFailedAttempts());
                 });
+            });
+        });
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void testCreate_hunterExamTrainingWithoutEndTime() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            final Venue venue = model().newVenue();
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+
+                final CalendarEventDTO inputDto = createDTO(rhy, venue, false);
+                inputDto.setCalendarEventType(METSASTAJAKURSSI);
+                inputDto.setEndTime(null);
+                feature.create(inputDto);
             });
         });
     }
@@ -109,6 +130,27 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                     assertEquals(endTime2, event2.getEndTime());
                     assertEquals(venue3, event2.getVenue());
                 });
+            });
+        });
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void testCreateWithAdditionalEvents_hunterExamTrainingWithoutEndTime() {
+        withRhyAndCoordinator((rhy, coordinator) -> {
+            final Venue venue = model().newVenue();
+
+            onSavedAndAuthenticated(createUser(coordinator), () -> {
+                final CalendarEventDTO calendarEventDTO = createDTO(rhy, venue, false);
+                calendarEventDTO.setCalendarEventType(METSASTAJAKURSSI);
+
+                final LocalDate date = today().plusDays(1);
+                final LocalTime beginTime = new LocalTime(18, 0);
+                final AdditionalCalendarEventDTO additionalCalendarEventDTO =
+                        createAdditionalCalendarEventDTO(venue, date, beginTime, null);
+
+                calendarEventDTO.setAdditionalCalendarEvents(singletonList(additionalCalendarEventDTO));
+
+                feature.create(calendarEventDTO);
             });
         });
     }
@@ -203,6 +245,9 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
         dto.setName("Name " + nextPositiveInt());
         dto.setDescription("Description " + nextPositiveInt());
 
+        dto.setPassedAttempts(1);
+        dto.setFailedAttempts(2);
+
         return dto;
     }
 
@@ -230,6 +275,8 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
 
             final CalendarEvent event =
                     model().newCalendarEvent(rhy, some(nonShootingTestTypes()), today(), venue);
+            event.setPassedAttempts(1);
+            event.setFailedAttempts(2);
 
             onSavedAndAuthenticated(createUser(coordinator), () -> {
 
@@ -257,6 +304,8 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
                     assertEquals(dto.getEndTime(), reloaded.getEndTime());
                     assertEquals(dto.getName(), reloaded.getName());
                     assertEquals(dto.getDescription(), reloaded.getDescription());
+                    assertEquals(dto.getPassedAttempts(), reloaded.getPassedAttempts());
+                    assertEquals(dto.getFailedAttempts(), reloaded.getFailedAttempts());
                 });
             });
         }));
@@ -561,6 +610,8 @@ public class CalendarEventCrudFeatureTest extends EmbeddedDatabaseTest {
         dto.setEndTime(dto.getEndTime().plusHours(1));
         dto.setName(dto.getName() + "UPDATED");
         dto.setDescription(dto.getDescription() + "UPDATED");
+        dto.setPassedAttempts(Optional.ofNullable(dto.getPassedAttempts()).map(a -> a + 1).orElse(1));
+        dto.setFailedAttempts(Optional.ofNullable(dto.getFailedAttempts()).map(a -> a + 1).orElse(2));
     }
 
     @Test

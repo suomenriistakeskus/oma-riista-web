@@ -22,17 +22,16 @@ public class RequiredHarvestFields {
                                                                    final HuntingMethod huntingMethod,
                                                                    final HarvestReportingType reportingType,
                                                                    final boolean legallyMandatoryOnly,
-                                                                   final HarvestSpecVersion specVersion) {
-
-        final boolean isClientSupportFor2020Fields = specVersion.supportsAntlerFields2020();
+                                                                   final HarvestSpecVersion specVersion,
+                                                                   final boolean withPermit) {
 
         if (legallyMandatoryOnly) {
             return LegallyMandatoryFieldsMooselike
-                    .getSpecimenFields(huntingYear, gameSpeciesCode, isClientSupportFor2020Fields);
+                    .getSpecimenFields(huntingYear, gameSpeciesCode, specVersion);
         }
 
         return RequiredHarvestFieldsImpl.getSpecimenFields(
-                huntingYear, gameSpeciesCode, huntingMethod, reportingType, isClientSupportFor2020Fields);
+                huntingYear, gameSpeciesCode, huntingMethod, reportingType, specVersion, withPermit);
     }
 
     public interface Report {

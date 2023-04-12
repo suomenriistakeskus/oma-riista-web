@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mooselike.species', ['app.metadata
                 templateUrl: 'harvestpermit/applications/mooselike/species/species.html',
                 controller: 'MooselikePermitWizardSpeciesController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     gameDiaryParameters: function (GameDiaryParameters) {
                         return GameDiaryParameters.query().$promise;

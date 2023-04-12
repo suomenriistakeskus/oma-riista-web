@@ -266,20 +266,6 @@ public class MooseHuntingSummary extends LifecycleEntity<Long> implements HasBeg
     }
 
     @AssertTrue
-    public boolean isHuntingAreaAndRemainingPopulationPresentWhenHuntingFinished() {
-        return !huntingFinished || isHuntingAreaAndRemainingPopulationPresent();
-    }
-
-    public boolean isHuntingAreaAndRemainingPopulationPresent() {
-        final AreaSizeAndRemainingPopulation ap = getAreaSizeAndPopulation();
-
-        return ap.getTotalHuntingArea() != null && ap.getRemainingPopulationInTotalArea() != null ||
-                ap.getRemainingPopulationInEffectiveArea() != null &&
-                        (ap.getEffectiveHuntingArea() != null ||
-                                ap.getTotalHuntingArea() != null && effectiveHuntingAreaPercentage != null);
-    }
-
-    @AssertTrue
     public boolean isDeerFlyDataGivenCorrectly() {
         return !Boolean.FALSE.equals(deerFliesAppeared) ||
                 F.allNull(dateOfFirstDeerFlySeen, dateOfLastDeerFlySeen, numberOfAdultMoosesHavingFlies,

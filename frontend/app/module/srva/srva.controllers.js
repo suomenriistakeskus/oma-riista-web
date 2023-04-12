@@ -195,7 +195,8 @@ angular.module('app.srva.controllers', [])
         $ctrl.loadPage = function (page) {
             var pageRequest = {
                 page: page,
-                size: 10
+                size: 10,
+                sort: 'pointOfTime,desc'
             };
 
             SrvaEventListSearchService.searchPage(createRequest(), pageRequest).then(function (response) {

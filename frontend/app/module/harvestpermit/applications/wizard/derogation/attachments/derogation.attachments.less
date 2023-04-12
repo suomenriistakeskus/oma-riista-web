@@ -31,5 +31,19 @@
       top: 50%;
       transform: translateY(-50%);
     }
+
+    @media (max-width: @screen-xs-max) {
+
+      > .attachment-logo {
+        display: none;
+      }
+      > .attachment-name {
+        left: 0;
+      }
+      > .remove-button {
+        width:50px;
+      }
+
+    }
   }
 }

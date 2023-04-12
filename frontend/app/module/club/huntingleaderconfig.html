@@ -1,0 +1,89 @@
+<h3 class="modal-title" translate="club.huntingLeaderConfig.title"></h3>
+
+<div class="r-account-profile-info-box">
+    <div class="alert alert-info">
+        <span class="fa fa-info-circle"></span>
+        <div class="alert-title" translate="club.huntingLeaderConfig.info1"></div>
+        <div class="alert-content">
+
+            <p translate="club.huntingLeaderConfig.info2"></p>
+            <p translate="club.huntingLeaderConfig.info3"></p>
+        </div>
+    </div>
+</div>
+
+<div class="table-striped">
+    <table class="table table-condensed table-striped r-hunting-leader-config"
+           ng-repeat="permit in $ctrl.permitsWithGroups track by permit.id">
+        <thead>
+        <tr>
+            <th class="col-xs-9 hunting-leader-title" colspan="2">
+                <span ng-bind="::permit.permitNumber"></span>
+            </th>
+
+            <th class="col-xs-1 text-center">
+                <span r-club-contact-info-visibility="'NAME'" r-club-contact-info-visibility-large="true"
+                      r-club-contact-info-visibility-with-label="true"></span>
+            </th>
+            <th class="col-xs-1 text-center">
+                <span r-club-contact-info-visibility="'PHONE'" r-club-contact-info-visibility-large="true"
+                      r-club-contact-info-visibility-with-label="true"></span>
+            </th>
+            <th class="col-xs-1 text-center">
+                <span r-club-contact-info-visibility="'EMAIL'" r-club-contact-info-visibility-large="true"
+                      r-club-contact-info-visibility-with-label="true"></span>
+            </th>
+        </tr>
+        </thead>
+        <tr>
+            <td class="col-xs-6">
+                <div ng-repeat="club in permit.huntingClubs track by club.id">
+                    <strong name-translated="::club"></strong>
+
+                    <ul>
+                        <li ng-repeat="group in $ctrl.getGroupsForClub(permit, club) track by group.id">
+                            <span name-translated="group"></span>
+                        </li>
+                    </ul>
+                </div>
+
+            </td>
+            <td class="col-xs-3 radio-list">
+                <div>
+                    <input type="radio" id="{{permit.permitNumber}}-contactInfoShare-null"
+                           ng-model="permit.groupOccupation.contactInfoShare" ng-change="$ctrl.savePermit(permit)"
+                           ng-value="">
+                    <label for="{{permit.permitNumber}}-contactInfoShare-null">
+                        <span translate="club.config.contactShare.null"></span></label>
+                </div>
+                <div>
+                    <input type="radio" id="{{permit.permitNumber}}-contactInfoShare-own-group-level"
+                           ng-model="permit.groupOccupation.contactInfoShare" ng-change="$ctrl.savePermit(permit)"
+                           ng-value="'SAME_PERMIT_LEVEL'">
+                    <label for="{{permit.permitNumber}}-contactInfoShare-own-group-level"><span
+                            translate="club.config.contactShare.SAME_PERMIT_LEVEL"></span></label>
+                </div>
+                <div>
+                    <input type="radio" id="{{permit.permitNumber}}-contactInfoShare-rhy-level"
+                           ng-model="permit.groupOccupation.contactInfoShare" ng-change="$ctrl.savePermit(permit)"
+                           ng-value="'RHY_LEVEL'"> <label for="{{permit.permitNumber}}-contactInfoShare-rhy-level"><span
+                        translate="club.config.contactShare.RHY_LEVEL"></span></label>
+                </div>
+            </td>
+            <td class="col-xs-1 text-center" ng-switch="permit.groupOccupation.contactInfoShare">
+                <span ng-switch-when-separator="|" ng-switch-when="SAME_PERMIT_LEVEL|RHY_LEVEL"
+                      class="text-primary fa fa-fw fa-check always-check"></span>
+            </td>
+            <td class="col-xs-1 text-center">
+                <input type="checkbox"
+                       ng-disabled="!['SAME_PERMIT_LEVEL','RHY_LEVEL'].includes(permit.groupOccupation.contactInfoShare)"
+                       ng-model="permit.groupOccupation.phoneNumberVisibility" ng-change="$ctrl.savePermit(permit)">
+            </td>
+            <td class="col-xs-1 text-center">
+                <input type="checkbox"
+                       ng-disabled="!['SAME_PERMIT_LEVEL','RHY_LEVEL'].includes(permit.groupOccupation.contactInfoShare)"
+                       ng-model="permit.groupOccupation.emailVisibility" ng-change="$ctrl.savePermit(permit)">
+            </td>
+        </tr>
+    </table>
+</div>

@@ -13,6 +13,8 @@ import fi.riista.feature.huntingclub.HuntingClubRepository;
 import fi.riista.feature.huntingclub.QHuntingClub;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
 import fi.riista.feature.organization.address.QAddress;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationService;
 import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.organization.person.QPerson;
 import org.springframework.stereotype.Component;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nullable;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
@@ -80,37 +83,34 @@ public class HuntingClubGroupMemberExportFeature {
         final QAddress mrAddress = QAddress.address;
         final QMunicipality municipality = QMunicipality.municipality;
 
-        final Predicate clubMemberExists = JPAExpressions.selectFrom(clubOccupation)
-                .where(clubOccupation.organisation.eq(exportedClub),
-                        clubOccupation.person.eq(occupation.person),
-                        clubOccupation.validAndNotDeleted())
-                .exists();
-
-        return queryFactory.select(club, group, groupSpecies.nameFinnish, person, occupation.contactInfoShare)
+        return queryFactory.select(club, group, groupSpecies.nameFinnish, person, clubOccupation.contactInfoShare)
                 .from(club)
                 .join(club.subOrganisations, group._super)
                 .join(group.occupations, occupation)
                 .join(occupation.person, person)
+                .join(club.occupations, clubOccupation)
                 .leftJoin(person.mrAddress, mrAddress).fetchJoin()
                 .leftJoin(person.homeMunicipality, municipality).fetchJoin()
                 .join(group.species, groupSpecies)
                 .where(club.eq(exportedClub),
+                        clubOccupation.organisation.eq(exportedClub),
+                        clubOccupation.person.eq(occupation.person),
                         group.huntingYear.eq(year),
                         selectedSpecies != null ? groupSpecies.eq(selectedSpecies) : null,
                         occupation.validAndNotDeleted(),
-                        clubMemberExists
+                        clubOccupation.validAndNotDeleted()
                 )
                 .orderBy(club.nameFinnish.asc(), groupSpecies.nameFinnish.asc(), group.nameFinnish.asc(),
                         person.lastName.asc(), person.firstName.asc())
                 .fetch()
                 .stream()
                 .map(t -> new HuntingClubGroupMemberRowDTO(
-                        t.get(club).getNameFinnish(),
-                        t.get(group).getNameFinnish(),
-                        t.get(groupSpecies.nameFinnish),
-                        year,
-                        t.get(person),
-                        t.get(occupation.contactInfoShare) != null))
+                                    t.get(club).getNameFinnish(),
+                                    t.get(group).getNameFinnish(),
+                                    t.get(groupSpecies.nameFinnish),
+                                    year,
+                                    t.get(person),
+                                    t.get(clubOccupation.contactInfoShare) != null))
                 .collect(toList());
     }
 }

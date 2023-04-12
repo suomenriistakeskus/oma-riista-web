@@ -7,6 +7,7 @@
                 <a uib-dropdown-toggle>
                     <span translate="rhy.menu.main"></span>
                     <span class="caret"></span>
+                    <span r-account-todo="'unfinishedHuntingControlEvents'"></span>
                 </a>
 
                 <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
@@ -14,7 +15,12 @@
                     <li ui-sref-active="active"><a ui-sref="rhy.announcements" translate="announcements.list.title"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.events" translate="rhy.menu.events"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.gamedamageinspectionevent" translate="rhy.gameDamageInspectionEvent.heading"></a></li>
-                    <li ui-sref-active="active"><a ui-sref="rhy.huntingcontrolevent" translate="rhy.huntingControlEvent.heading"></a></li>
+                    <li ui-sref-active="active">
+                        <div>
+                            <a ui-sref="rhy.huntingcontrolevent.coordinator" translate="rhy.huntingControlEvent.heading"></a>
+                            <span r-account-todo="'unfinishedHuntingControlEvents'" class="r-account-todo-dropdown"></span>
+                        </div>
+                    </li>
                     <li ui-sref-active="active"><a ui-sref="rhy.locations" translate="rhy.menu.venues"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.nomination" translate="rhy.menu.jht"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.occupations" translate="rhy.menu.occupations"></a></li>
@@ -29,6 +35,7 @@
                 uib-dropdown dropdown-append-to-body>
                 <a uib-dropdown-toggle>
                     <span translate="rhy.menu.mooselike"></span>
+                    <span r-account-todo="'unfinishedTaxationReports'"></span>
                     <span class="caret"></span>
                 </a>
 
@@ -38,6 +45,12 @@
                     <li ui-sref-active="active"><a ui-sref="rhy.harvestmap" translate="rhy.menu.mooselikeHarvestMap"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.moosepermitstatistics" translate="rhy.menu.mooselikeStats"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.reports" translate="rhy.menu.mooselikeReports"></a></li>
+                    <li ui-sref-active="active">
+                        <a ui-sref="rhy.taxation" >
+                            <span translate="rhy.menu.mooselikeTaxationPlan"></span>
+                            <span r-account-todo="'unfinishedTaxationReports'"></span>
+                        </a>
+                    </li>
                 </ul>
             </li>
 
@@ -94,6 +107,12 @@
                     <li ui-sref-active="active"><a ui-sref="rhy.shootingtest.events" translate="shootingTest.events"></a></li>
                     <li ui-sref-active="active"><a ui-sref="rhy.shootingtest.stats" translate="shootingTest.stats.title"></a></li>
                 </ul>
+            </li>
+        </ul>
+
+        <ul class="nav navbar-nav r-subnav-nav" ng-if="$ctrl.gameWardenView">
+            <li active-if-state-includes="rhy.huntingcontrolevent.gamewarden">
+                <a ui-sref="rhy.huntingcontrolevent.gamewarden" translate="rhy.huntingControlEvent.heading"></a>
             </li>
         </ul>
     </div>

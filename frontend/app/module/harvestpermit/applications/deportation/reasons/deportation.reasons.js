@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.deportation.reasons', ['app.metada
                 templateUrl: 'harvestpermit/applications/deportation/reasons/reasons.html',
                 controller: 'DeportationPermitWizardReasonsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     permitCause: function (DeportationPermitApplication, applicationId) {
                         return DeportationPermitApplication.getCurrentPermitCause({id: applicationId}).$promise;

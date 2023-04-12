@@ -145,6 +145,22 @@ public class PermitDecisionLawSectionTenApplicationSummaryGenerator {
     }
 
     private void createPopulation(final StringBuilder sb) {
+        switch (model.getHarvestPermitCategory()){
+            case LAW_SECTION_TEN:
+                appendSectionTenPopulation(sb);
+                return;
+            case EUROPEAN_BEAVER:
+                appendBeaverPopulation(sb);
+                return;
+            case PARTRIDGE:
+                appendPartridgePopulation(sb);
+                return;
+            default:
+                throw new IllegalArgumentException("Unknown category " + model.getHarvestPermitCategory());
+        }
+    }
+
+    private void appendSectionTenPopulation(final StringBuilder sb) {
         sb.append(i18nKey("lawsectionten.application.population.populationInfo"));
         sb.append("\n\n");
 
@@ -170,6 +186,41 @@ public class PermitDecisionLawSectionTenApplicationSummaryGenerator {
 
         sb.append("\n");
     }
+
+    private void appendBeaverPopulation(final StringBuilder sb) {
+        sb.append(i18nKey("europeanbeaver.application.population.justification"));
+        sb.append("\n");
+        sb.append(escape(model.getJustification()));
+        sb.append("\n\n");
+        sb.append(i18nKey("europeanbeaver.application.population.damages"));
+        sb.append("\n");
+        sb.append(escape(model.getDamagesCaused()));
+        sb.append("\n\n");
+        sb.append(i18nKey("europeanbeaver.application.population.populationAmount"));
+        sb.append("\n");
+        sb.append(escape(model.getPopulationDescription()));
+        sb.append("\n\n");
+    }
+
+    private void appendPartridgePopulation(final StringBuilder sb) {
+        sb.append(i18nKey("partridge.application.population.justification"));
+        sb.append("\n");
+        sb.append(escape(model.getJustification()));
+        sb.append("\n\n");
+        sb.append(i18nKey("partridge.application.population.transferredAnimalOrigin"));
+        sb.append("\n");
+        sb.append(escape(model.getTransferredAnimalOrigin()));
+        sb.append("\n\n");
+        sb.append(i18nKey("partridge.application.population.transferredAnimalAmount"));
+        sb.append("\n");
+        sb.append(model.getTransferredAnimalAmount());
+        sb.append("\n\n");
+        sb.append(i18nKey("partridge.application.population.populationAmount"));
+        sb.append("\n");
+        sb.append(escape(model.getPopulationDescription()));
+        sb.append("\n\n");
+    }
+
 
     private void createAttachments(final StringBuilder sb) {
         if (!model.getOtherAttachments().isEmpty()) {

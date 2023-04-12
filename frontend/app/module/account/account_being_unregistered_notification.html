@@ -1,0 +1,18 @@
+<div class="modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title" translate="account.profile.unregisterUserAccount.requested.status"></h3>
+</div>
+
+<div class="modal-body">
+    <p >{{ "account.profile.unregisterUserAccount.requested.message1" | translate: {
+        date: $ctrl.requestFormattedDate, time: $ctrl.requestFormattedTime
+    } }}</p>
+
+    <p translate='account.profile.unregisterUserAccount.requested.message2'></p>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default"
+            ng-click="$close()"
+            translate="global.button.close"></button>
+</div>

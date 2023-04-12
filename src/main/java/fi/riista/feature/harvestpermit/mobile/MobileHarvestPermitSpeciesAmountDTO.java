@@ -33,8 +33,10 @@ public class MobileHarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
         final int huntingYear = DateUtil.huntingYearContaining(speciesAmount.getBeginDate());
         final int gameSpeciesCode = speciesAmount.getGameSpecies().getOfficialCode();
 
+        final boolean withPermit = true;
+
         final RequiredHarvestFields.Specimen specimenRequirements = RequiredHarvestFields.getSpecimenFields(
-                huntingYear, gameSpeciesCode, null, HarvestReportingType.PERMIT, false, specVersion);
+                huntingYear, gameSpeciesCode, null, HarvestReportingType.PERMIT, false, specVersion, withPermit);
 
         final MobileHarvestPermitSpeciesAmountDTO dto = new MobileHarvestPermitSpeciesAmountDTO();
         dto.setGameSpeciesCode(gameSpeciesCode);
@@ -59,7 +61,7 @@ public class MobileHarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
         return gameSpeciesCode;
     }
 
-    public void setGameSpeciesCode(int gameSpeciesCode) {
+    public void setGameSpeciesCode(final int gameSpeciesCode) {
         this.gameSpeciesCode = gameSpeciesCode;
     }
 
@@ -67,7 +69,7 @@ public class MobileHarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
         return amount;
     }
 
-    public void setAmount(float amount) {
+    public void setAmount(final float amount) {
         this.amount = amount;
     }
 
@@ -75,7 +77,7 @@ public class MobileHarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
         return ageRequired;
     }
 
-    public void setAgeRequired(boolean ageRequired) {
+    public void setAgeRequired(final boolean ageRequired) {
         this.ageRequired = ageRequired;
     }
 
@@ -83,7 +85,7 @@ public class MobileHarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
         return genderRequired;
     }
 
-    public void setGenderRequired(boolean genderRequired) {
+    public void setGenderRequired(final boolean genderRequired) {
         this.genderRequired = genderRequired;
     }
 
@@ -91,7 +93,7 @@ public class MobileHarvestPermitSpeciesAmountDTO extends Has2BeginEndDatesDTO {
         return weightRequired;
     }
 
-    public void setWeightRequired(boolean weightRequired) {
+    public void setWeightRequired(final boolean weightRequired) {
         this.weightRequired = weightRequired;
     }
 }

@@ -1,5 +1,6 @@
 package fi.riista.feature.organization.jht.training;
 
+import fi.riista.feature.common.training.TrainingType;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
@@ -18,7 +19,7 @@ public interface JHTTrainingRepositoryCustom {
             @Nonnull Pageable pageRequest,
             @Nonnull JHTTrainingSearchDTO.SearchType searchType,
             @Nonnull OccupationType occupationType,
-            @Nullable JHTTraining.TrainingType trainingType,
+            @Nullable TrainingType trainingType,
             @Nullable String trainingLocation,
             @Nullable RiistakeskuksenAlue rka,
             @Nullable Riistanhoitoyhdistys rhy,

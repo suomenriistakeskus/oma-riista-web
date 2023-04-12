@@ -5,6 +5,7 @@ import com.querydsl.jpa.JPQLQueryFactory;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import fi.riista.config.jpa.CustomH2Dialect;
 import fi.riista.config.jpa.CustomPostgisDialect;
+import fi.riista.config.jpa.ImprovedPhysicalNamingStrategyForTestSetup;
 import fi.riista.config.profile.AmazonDatabase;
 import fi.riista.config.profile.EmbeddedDatabase;
 import fi.riista.config.profile.StandardDatabase;
@@ -57,9 +58,6 @@ public class JPAConfig {
         protected LiquibaseConfig liquibaseConfig;
 
         @Resource
-        protected PapertrailConfig papertrailConfig;
-
-        @Resource
         private DataSourceConfig.DataSourceContext dataSourceWrapper;
 
         @Bean
@@ -72,9 +70,6 @@ public class JPAConfig {
             emf.setPackagesToScan(Constants.APPLICATION_ROOT_PACKAGE);
             emf.setDataSource(dataSource);
             emf.setMappingResources(dataSourceWrapper.getMappingResources().orElse(null));
-
-            // Setup Papertrail before Liquibase
-            papertrailConfig.configureAuditLogAppender();
 
             // Run Liquibase migrations before ORM setup
             liquibaseConfig.upgradeDatabase();
@@ -120,6 +115,8 @@ public class JPAConfig {
         protected Map<String, Object> jpaProperties() {
             final Map<String, Object> jpaProperties = this.jpaPropertiesBuilder.build();
             jpaProperties.put(AvailableSettings.GENERATE_STATISTICS, true);
+            jpaProperties.put(
+                    AvailableSettings.PHYSICAL_NAMING_STRATEGY, ImprovedPhysicalNamingStrategyForTestSetup.class.getName());
             return jpaProperties;
         }
     }

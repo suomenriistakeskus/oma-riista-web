@@ -14,7 +14,7 @@ Required CI / CD variables:
 
 ## Stage: Deploy
 
-Deploy stage copies application (.war) file to AWS S3, deploys it to Elastic Beanstalk and informs about new available version in Slack, Sentry and New Relic.
+Deploy stage copies application (.war) file to AWS S3, deploys it to Elastic Beanstalk and informs about new available version in Slack.
 
 The content information of new version is fetched from Jira by using issue IDs in Git commit messages.
 
@@ -36,4 +36,3 @@ Required CI / CD variables:
 - **SLACK_HOOK**: Slack application hook for sending info messages
 - **JIRA_HOST**: Hostname for Jira, e.g. company.atlassian.net
 - **JIRA_CREDENTIALS**: Jira credentials as `jira_user:jira_api_token`
-- **SENTRY_URL**: URL of used Sentry API

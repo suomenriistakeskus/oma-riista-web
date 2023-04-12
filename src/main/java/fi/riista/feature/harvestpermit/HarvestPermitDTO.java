@@ -14,10 +14,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import static fi.riista.util.F.mapNullable;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 
 public class HarvestPermitDTO {
+
 
     @Nonnull
     public static HarvestPermitDTO create(final @Nonnull HarvestPermit harvestPermit,
@@ -26,7 +28,7 @@ public class HarvestPermitDTO {
                                           final @Nonnull List<HarvestPermitSpeciesAmount> amendmentSpeciesAmounts,
                                           final @Nonnull SystemUser activeUser,
                                           final @Nullable GrantStatus grantStatus,
-                                          final @Nullable PermitDecision.DecisionType decisionType) {
+                                          final @Nullable PermitDecision decision) {
         requireNonNull(harvestPermit);
         requireNonNull(speciesAmounts);
         requireNonNull(amendmentPermitNumbers);
@@ -45,11 +47,13 @@ public class HarvestPermitDTO {
         final boolean canEditHarvest = harvestPermit.canCreateEndOfHuntingReport(activeUser);
         final boolean canDownloadDecision = harvestPermit.getPermitDecision() != null || harvestPermit.getPrintingUrl() != null;
 
+        final PermitDecision.DecisionType decisionType = mapNullable(decision,PermitDecision::getDecisionType);
+        final String decisionDocumentNumber = mapNullable(decision, PermitDecision::createPermitNumber);
         return new HarvestPermitDTO(harvestPermit.getId(), harvestPermit.getPermitNumber(),
                 harvestPermit.getPermitType(), harvestPermit.getPermitTypeCode(), F.getId(harvestPermit.getOriginalPermit()),
                 harvestPermit.getHarvestReportState(),
                 gameSpeciesCodes, speciesAmountsDTOs, amendmentPermitNumbers,
-                canAddHarvest, canEditHarvest, canDownloadDecision, grantStatus, decisionType);
+                canAddHarvest, canEditHarvest, canDownloadDecision, grantStatus, decisionType, decisionDocumentNumber);
     }
 
     private static Function<GameSpecies, Float> createAmendmentPermitAmountMapping(
@@ -75,7 +79,8 @@ public class HarvestPermitDTO {
                              final boolean canEditHarvest,
                              final boolean canDownloadDecision,
                              final GrantStatus grantStatus,
-                             final PermitDecision.DecisionType decisionType) {
+                             final PermitDecision.DecisionType decisionType,
+                             final String decisionDocumentNumber) {
         this.id = requireNonNull(permitId);
         this.permitNumber = requireNonNull(permitNumber);
         this.permitType = requireNonNull(permitType);
@@ -90,6 +95,7 @@ public class HarvestPermitDTO {
         this.canDownloadDecision = canDownloadDecision;
         this.grantStatus = grantStatus;
         this.decisionType = decisionType;
+        this.decisionDocumentNumber = decisionDocumentNumber;
     }
 
     private final Long id;
@@ -106,6 +112,7 @@ public class HarvestPermitDTO {
     private final boolean canDownloadDecision;
     private final GrantStatus grantStatus;
     private final PermitDecision.DecisionType decisionType;
+    private final String decisionDocumentNumber;
 
     public Long getId() {
         return id;
@@ -161,5 +168,9 @@ public class HarvestPermitDTO {
 
     public PermitDecision.DecisionType getDecisionType() {
         return decisionType;
+    }
+
+    public String getDecisionDocumentNumber() {
+        return decisionDocumentNumber;
     }
 }

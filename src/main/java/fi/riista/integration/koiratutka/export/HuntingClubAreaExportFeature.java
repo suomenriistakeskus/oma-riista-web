@@ -9,6 +9,7 @@ import fi.riista.feature.gis.zone.GISZoneRepository;
 import fi.riista.feature.gis.zone.GISZoneWithoutGeometryDTO;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.area.HuntingClubAreaRepository;
+import fi.riista.feature.huntingclub.poi.geojson.HuntingClubPoiGeoJsonExportFeature;
 import fi.riista.feature.moderatorarea.ModeratorArea;
 import fi.riista.feature.moderatorarea.ModeratorAreaRepository;
 import fi.riista.feature.permit.area.HarvestPermitArea;
@@ -57,6 +58,9 @@ public class HuntingClubAreaExportFeature {
     @Resource
     private AuditService auditService;
 
+    @Resource
+    private HuntingClubPoiGeoJsonExportFeature geoJsonExportFeature;
+
     private static DateTime getLatest(final @Nonnull DateTime first, final @Nonnull DateTime second) {
         return first.isAfter(second) ? first : second;
     }
@@ -64,7 +68,8 @@ public class HuntingClubAreaExportFeature {
     @PreAuthorize("hasPrivilege('EXPORT_HUNTINGCLUB_AREA')")
     @Transactional(readOnly = true)
     public ResponseEntity<?> export(final ExportRequestDTO request,
-                                    final WebRequest webRequest) {
+                                    final WebRequest webRequest,
+                                    final boolean includePoi) {
 
         return resolveArea(request)
                 .filter(area -> area.getZoneId() != null)
@@ -95,6 +100,11 @@ public class HuntingClubAreaExportFeature {
                     final GeoJsonMetadata geoJsonMetadata = new GeoJsonMetadata(zoneDTO.getSize(), area,
                             latestModificationTime);
                     final FeatureCollection featureCollection = getFeatures(zoneId, geoJsonMetadata);
+
+                    if (includePoi) {
+                        final String externalId = request.getExternalId().toUpperCase();
+                        featureCollection.getFeatures().addAll(geoJsonExportFeature.getFeatures(externalId));
+                    }
 
                     return ResponseEntity.ok()
                             .cacheControl(CacheControl.maxAge(1, TimeUnit.DAYS).cachePrivate().mustRevalidate())

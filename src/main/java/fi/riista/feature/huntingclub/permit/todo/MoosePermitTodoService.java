@@ -1,5 +1,7 @@
 package fi.riista.feature.huntingclub.permit.todo;
 
+import static fi.riista.util.Collect.indexingBy;
+
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -7,6 +9,7 @@ import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
 import fi.riista.feature.harvestpermit.QHarvestPermitSpeciesAmount;
@@ -14,17 +17,15 @@ import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.QHuntingClub;
 import fi.riista.feature.huntingclub.area.QHuntingClubArea;
 import fi.riista.feature.huntingclub.group.QHuntingClubGroup;
+import fi.riista.feature.huntingclub.permit.statistics.ClubHuntingSummaryBasicInfoService;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.occupation.QOccupation;
 import fi.riista.feature.permit.PermitTypeCode;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-
-import static fi.riista.util.Collect.indexingBy;
+import javax.annotation.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class MoosePermitTodoService {
@@ -35,9 +36,14 @@ public class MoosePermitTodoService {
     @Resource
     private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
 
+    @Resource
+    private ClubHuntingSummaryBasicInfoService clubHuntingSummaryBasicInfoService;
+
     @Transactional(readOnly = true)
     public MoosePermitTodoDTO listTodosForClub(final HuntingClub huntingClub, final int year) {
         final QHarvestPermit permit = QHarvestPermit.harvestPermit;
+        final QHarvestPermitSpeciesAmount speciesAmount = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
+        final QGameSpecies gameSpecies = QGameSpecies.gameSpecies;
 
         final QHuntingClub club = QHuntingClub.huntingClub;
         final QHuntingClubArea area = QHuntingClubArea.huntingClubArea;
@@ -87,7 +93,23 @@ public class MoosePermitTodoService {
                         group.id.notIn(groupIdsHavingLeader))
                 .fetchCount() > 0;
 
-        return new MoosePermitTodoDTO(huntingClub.getId(), noActiveArea, hasNoGroup, hasGroupNotLinkedToPermit, hasGroupsWithoutLeader);
+        // mooselike speciesAmounts hunting is passed, but no summary sent
+        final List<HarvestPermitSpeciesAmount> spas = queryFactory
+                .select(speciesAmount)
+                .from(permit)
+                .join(permit.permitPartners, club).on(club.eq(huntingClub))
+                .join(permit.speciesAmounts, speciesAmount).on(speciesAmount.validOnHuntingYear(year).and(speciesAmount.validityPassed()))
+                .join(speciesAmount.gameSpecies, gameSpecies)
+                .where(permit.permitTypeCode.eq(PermitTypeCode.MOOSELIKE))
+                .fetch();
+
+        final boolean partnerHuntingSummaryMissing = !spas.isEmpty() && spas.stream().anyMatch(spa -> !clubHuntingSummaryBasicInfoService
+                .getHuntingSummariesGroupedByClubId(spa.getHarvestPermit(), spa.getGameSpecies().getOfficialCode())
+                .get(huntingClub.getId()).isHuntingFinished());
+
+
+
+        return new MoosePermitTodoDTO(huntingClub.getId(), noActiveArea, hasNoGroup, hasGroupNotLinkedToPermit, hasGroupsWithoutLeader, partnerHuntingSummaryMissing);
     }
 
     @Transactional(readOnly = true)
@@ -147,7 +169,8 @@ public class MoosePermitTodoService {
                         !hasArea.contains(id),
                         !hasGroup.contains(id),
                         !hasGroupLinkedToPermit.contains(id),
-                        !hasGroupHuntingLeader.contains(id)
+                        !hasGroupHuntingLeader.contains(id),
+                        false
                 ))
                 .collect(indexingBy(MoosePermitTodoDTO::getClubId));
     }

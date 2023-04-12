@@ -10,18 +10,21 @@ public class MoosePermitTodoDTO {
     private final boolean groupMissing;
     private final boolean groupPermitMissing;
     private final boolean groupLeaderMissing;
+    private final boolean partnerHuntingSummaryMissing;
 
     public MoosePermitTodoDTO(final long clubId,
                               final boolean areaMissing,
                               final boolean groupMissing,
                               final boolean groupPermitMissing,
-                              final boolean groupLeaderMissing) {
+                              final boolean groupLeaderMissing,
+                              final boolean partnerHuntingSummaryMissing) {
 
         this.clubId = clubId;
         this.areaMissing = areaMissing;
         this.groupMissing = groupMissing;
         this.groupPermitMissing = groupPermitMissing;
         this.groupLeaderMissing = groupLeaderMissing;
+        this.partnerHuntingSummaryMissing = partnerHuntingSummaryMissing;
     }
 
     public long getClubId() {
@@ -44,12 +47,17 @@ public class MoosePermitTodoDTO {
         return groupLeaderMissing;
     }
 
+    public boolean isPartnerHuntingSummaryMissing() {
+        return partnerHuntingSummaryMissing;
+    }
+
     @JsonGetter
     public boolean isTodo() {
+        // partnerHuntingSummaryMissing omitted on purpose, since all other flags are per club, partnerHuntingSummaryMissing is per permit species amount
         return areaMissing || groupMissing || groupPermitMissing || groupLeaderMissing;
     }
 
     public static MoosePermitTodoDTO noTodo(final long clubId) {
-        return new MoosePermitTodoDTO(clubId, false, false, false, false);
+        return new MoosePermitTodoDTO(clubId, false, false, false, false, false);
     }
 }

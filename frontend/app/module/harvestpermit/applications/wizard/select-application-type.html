@@ -54,13 +54,8 @@
     <hr class="invisible">
 
     <div class="row">
-        <div class="col-md-6 col-xs-12 text-center"
-             ng-repeat="t in $ctrl.otherDerogations" ng-switch="t.category">
-            <application-type-large-carnivore-lynx ng-switch-when="LARGE_CARNIVORE_LYNX" type="t"
-                                                   on-select-type="$ctrl.onSelect({applicationType: t})">
-            </application-type-large-carnivore-lynx>
-            <application-type ng-switch-default type="t"
-                              on-select-type="$ctrl.onSelect({applicationType: t})"></application-type>
+        <div class="col-md-6 col-xs-12 text-center" ng-repeat="t in $ctrl.otherDerogations">
+            <application-type type="t" on-select-type="$ctrl.onSelect({applicationType: t})"></application-type>
         </div>
     </div>
 

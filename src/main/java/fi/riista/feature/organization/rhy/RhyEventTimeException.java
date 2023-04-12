@@ -1,5 +1,6 @@
 package fi.riista.feature.organization.rhy;
 
+import fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsService;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 import org.springframework.http.HttpStatus;
@@ -16,9 +17,7 @@ public class RhyEventTimeException extends RuntimeException {
 
     public static void assertEventNotTooFarInPast(final LocalDate eventDate,
                                                   final boolean isModerator) {
-        final LocalDate today = today();
-
-        if (!isModerator && (eventDate.getYear() < today.minusDays(15).getYear())) {
+        if (!isModerator && AnnualStatisticsService.hasDeadlinePassed(eventDate)) {
             throw new RhyEventTimeException("Event too far in the past.");
         }
     }

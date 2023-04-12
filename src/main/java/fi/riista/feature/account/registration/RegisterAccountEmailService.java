@@ -1,7 +1,6 @@
 package fi.riista.feature.account.registration;
 
 import com.github.jknack.handlebars.Handlebars;
-import com.google.common.base.MoreObjects;
 import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.mail.MailMessageDTO;
 import fi.riista.feature.mail.MailService;
@@ -9,9 +8,7 @@ import fi.riista.feature.mail.token.EmailToken;
 import fi.riista.feature.mail.token.EmailTokenService;
 import fi.riista.feature.mail.token.EmailTokenType;
 import fi.riista.util.Locales;
-import fi.riista.util.Localiser;
 import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,8 +26,10 @@ public class RegisterAccountEmailService {
     private static final String TEMPLATE_REGISTER_ACCOUNT = "register_account";
     private static final String TEMPLATE_REGISTER_ACCOUNT_SV = "register_account.sv";
 
-    private static String selectTemplate() {
-        return Localiser.select(TEMPLATE_REGISTER_ACCOUNT, TEMPLATE_REGISTER_ACCOUNT_SV);
+    private static String selectTemplate(final Locale locale) {
+        return Locales.isSwedish(locale)
+                ? TEMPLATE_REGISTER_ACCOUNT_SV
+                : TEMPLATE_REGISTER_ACCOUNT;
     }
 
     @Resource
@@ -64,9 +63,7 @@ public class RegisterAccountEmailService {
                 .buildAndExpand(token, lang)
                 .toUri();
 
-        // Unregistered user does not have locale preference set in the system
-        //  -> determine locale otherwise
-        final Locale locale = MoreObjects.firstNonNull(LocaleContextHolder.getLocale(), Locales.FI);
+        final Locale locale = Locales.getLocaleByLanguageCode(lang);
 
         final String subject = messageSource.getMessage("registration.email.title", null, locale);
 
@@ -76,7 +73,7 @@ public class RegisterAccountEmailService {
                 .withFrom(mailService.getDefaultFromAddress())
                 .addRecipient(email)
                 .withSubject(subject)
-                .appendHandlebarsBody(handlebars, selectTemplate(), params)
+                .appendHandlebarsBody(handlebars, selectTemplate(locale), params)
                 .build());
 
         return token;

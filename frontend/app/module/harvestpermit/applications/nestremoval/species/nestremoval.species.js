@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.nestremoval.species', ['app.metada
                 templateUrl: 'harvestpermit/applications/nestremoval/species/species.html',
                 controller: 'NestRemovalPermitWizardSpeciesController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesAmountList: function (NestRemovalPermitApplication, applicationId) {
                         return NestRemovalPermitApplication.listSpeciesAmounts({id: applicationId}).$promise;

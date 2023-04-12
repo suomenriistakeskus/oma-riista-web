@@ -4,7 +4,10 @@ import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.util.DateUtil;
+import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
+
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotBlank;
 import org.joda.time.LocalDate;
 
@@ -80,6 +83,12 @@ public class HarvestSeason extends LifecycleEntity<Long> implements Has2BeginEnd
         this.beginDate = beginDate;
         this.endDate = endDate;
         this.endOfReportingDate = endOfReportingDate;
+    }
+
+    @AssertTrue
+    public boolean isSecondPeriodValid() {
+        return F.allNull(beginDate2, endDate2, endOfReportingDate2) ||
+                F.allNotNull(beginDate2, endDate2, endOfReportingDate2);
     }
 
     @Id

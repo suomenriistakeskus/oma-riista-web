@@ -119,16 +119,16 @@ angular.module('app.login.services', [])
         this.setAuthentication = function (value) {
             authentication = value;
 
-            if (Raven && _.isFunction(Raven.setUserContext)) {
-                Raven.setUserContext(_.pick(value, ['id', 'role', 'personId']));
+            if(window.DD_LOGS) {
+                window.DD_LOGS.setUser(_.pick(value, ['id', 'role', 'personId']));
             }
         };
 
         this.clearAuthentication = function () {
             authentication = null;
 
-            if (Raven && _.isFunction(Raven.setUserContext)) {
-                Raven.setUserContext();
+            if(window.DD_LOGS) {
+                window.DD_LOGS.clearUser();
             }
         };
 

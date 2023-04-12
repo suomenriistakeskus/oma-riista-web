@@ -83,6 +83,16 @@
                         <c:out value="${model.permitNumber}"/>
                     </td>
                 </tr>
+                <c:if test="${fn:length(model.additionalPermitNumbers) > 0 && !model.draft}">
+                    <c:forEach var="pn" items="${model.additionalPermitNumbers}">
+                        <tr>
+                            <td></td>
+                            <td>
+                                <c:out value="${pn}"/>
+                            </td>
+                        </tr>
+                    </c:forEach>
+                </c:if>
                 </tbody>
             </table>
         </div>
@@ -260,14 +270,16 @@
         </div>
     </div>
 
-    <div class="layout-container" id="delivery">
-        <div class="col-1">
-            <c:out value="${model.heading.delivery}"/>
+    <c:if test="${not empty model.document.delivery}">
+        <div class="layout-container" id="delivery">
+            <div class="col-1">
+                <c:out value="${model.heading.delivery}"/>
+            </div>
+            <div class="col-2">
+                <c:out value="${model.document.delivery}" escapeXml="false"/>
+            </div>
         </div>
-        <div class="col-2">
-            <c:out value="${model.document.delivery}" escapeXml="false"/>
-        </div>
-    </div>
+    </c:if>
 
     <c:if test="${model.includePayment}">
         <div class="layout-container" id="payment">
@@ -292,14 +304,29 @@
     </c:if>
 </div>
 
+<jsp:useBean id="today" class="org.joda.time.LocalDate"/>
 <c:choose>
     <c:when test="${model.swedish}">
         <%@include file="decision-appeal-sv.jsp" %>
-        <%@include file="decision-correction-sv.jsp" %>
+        <c:choose>
+            <c:when test="${today.year >= 2022}">
+                <%@include file="decision-correction-sv-2022.jsp" %>
+            </c:when>
+            <c:otherwise>
+                <%@include file="decision-correction-sv.jsp" %>
+            </c:otherwise>
+        </c:choose>
     </c:when>
     <c:otherwise>
         <%@include file="decision-appeal-fi.jsp" %>
-        <%@include file="decision-correction-fi.jsp" %>
+        <c:choose>
+            <c:when test="${today.year >= 2022}">
+                <%@include file="decision-correction-fi-2022.jsp" %>
+            </c:when>
+            <c:otherwise>
+                <%@include file="decision-correction-fi.jsp" %>
+            </c:otherwise>
+        </c:choose>
     </c:otherwise>
 </c:choose>
 

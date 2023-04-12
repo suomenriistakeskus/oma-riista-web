@@ -1,5 +1,6 @@
 package fi.riista.feature.mail.queue;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterables;
 import com.querydsl.core.types.Projections;
@@ -9,8 +10,12 @@ import com.querydsl.sql.dml.SQLInsertClause;
 import fi.riista.config.properties.MailProperties;
 import fi.riista.feature.mail.MailMessageDTO;
 import fi.riista.feature.mail.MailMessageDelivery;
+import fi.riista.feature.mail.bounce.MailMessageBounce;
+import fi.riista.feature.mail.bounce.MailMessageBounceRepository;
+import fi.riista.feature.mail.bounce.QMailMessageBounce;
 import fi.riista.sql.SQMailMessageRecipient;
 import fi.riista.util.DateUtil;
+import fi.riista.util.F;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +24,14 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class DatabaseMailDeliveryQueue implements MailDeliveryQueue {
     private static final Logger LOG = LoggerFactory.getLogger(DatabaseMailDeliveryQueue.class);
+    public static final int PARTITION_SIZE = 1000;
 
     @Resource
     private MailProperties mailProperties;
@@ -54,18 +61,27 @@ public class DatabaseMailDeliveryQueue implements MailDeliveryQueue {
         entityManager.persist(mailMessage);
         entityManager.flush();
 
-        Iterables.partition(dto.getRecipients(), 1000).forEach(partition -> {
+        Iterables.partition(dto.getRecipients(), PARTITION_SIZE).forEach(partition -> {
+
+            final List<String> invalidEmails = findInvalidEmails(partition);
+
             final SQMailMessageRecipient RECIPIENT = SQMailMessageRecipient.mailMessageRecipient;
             final SQLInsertClause batchInsert = sqlQueryFactory.insert(RECIPIENT);
 
-            for (final String recipientEmail : partition) {
-                batchInsert.columns(RECIPIENT.mailMessageId, RECIPIENT.email, RECIPIENT.failureCounter)
-                        .values(mailMessage.getId(), recipientEmail, 0)
-                        .addBatch();
-            }
+            partition.stream()
+                    .filter(mailAddress -> !invalidEmails.contains(mailAddress))
+                    .forEach(recipientEmail ->
+                            batchInsert.columns(RECIPIENT.mailMessageId, RECIPIENT.email, RECIPIENT.failureCounter)
+                                    .values(mailMessage.getId(), recipientEmail, 0)
+                                    .addBatch());
 
-            batchInsert.setBatchToBulk(true);
-            batchInsert.execute();
+            if (batchInsert.getBatchCount() > 0) {
+                batchInsert.setBatchToBulk(true);
+                batchInsert.execute();
+            } else {
+                LOG.info("No valid email addresses found for mail message (id: {}) with subject {}",
+                        mailMessage.getId(), dto.getSubject());
+            }
         });
 
         if (sw.elapsed(TimeUnit.SECONDS) > 1) {
@@ -140,5 +156,27 @@ public class DatabaseMailDeliveryQueue implements MailDeliveryQueue {
                     .where(RECIPIENT.id.in(failedIds))
                     .execute();
         });
+    }
+
+    private List<String> findInvalidEmails(final List<String> emails) {
+        Preconditions.checkArgument(emails.size() <= PARTITION_SIZE);
+
+        if (emails.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final QMailMessageBounce BOUNCE = QMailMessageBounce.mailMessageBounce;
+
+        final List<String> list = jpqlQueryFactory.selectDistinct(BOUNCE.recipientEmailAddress)
+                .from(BOUNCE)
+                .where(BOUNCE.bounceType.eq(MailMessageBounce.BounceType.Permanent))
+                .where(BOUNCE.recipientEmailAddress.in(emails))
+                .fetch();
+
+        if (!list.isEmpty()) {
+            LOG.info("Invalid email addresses found from recipients, {} recipients will be filtered out", list.size());
+        }
+
+        return list;
     }
 }

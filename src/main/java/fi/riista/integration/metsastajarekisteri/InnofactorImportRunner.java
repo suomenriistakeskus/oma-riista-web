@@ -1,7 +1,5 @@
 package fi.riista.integration.metsastajarekisteri;
 
-import com.newrelic.api.agent.NewRelic;
-import com.newrelic.api.agent.Trace;
 import fi.riista.integration.metsastajarekisteri.common.MetsastajaRekisteriJobParameters;
 import fi.riista.integration.metsastajarekisteri.input.PendingImportFile;
 import fi.riista.integration.metsastajarekisteri.input.PendingImportFileFilter;
@@ -72,10 +70,7 @@ public class InnofactorImportRunner {
         run(entry);
     }
 
-    @Trace(dispatcher = true, metricName = "Job execution")
     public void run(final PendingImportFile entry) throws Exception {
-        NewRelic.setTransactionName(null, InnofactorImportConfig.JOB_NAME);
-
         entry.removeMarkerFile();
 
         jobLauncher.run(job, MetsastajaRekisteriJobParameters.createJobParameters(entry));

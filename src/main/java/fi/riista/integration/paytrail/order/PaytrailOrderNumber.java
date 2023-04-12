@@ -17,8 +17,9 @@ import static java.util.Objects.requireNonNull;
 // As regular expression '/^[0-9a-zA-Z()\[\]{}*+\-_,. ]{1,64}$/'
 public class PaytrailOrderNumber {
 
-    private static final Pattern PATTERN = Pattern.compile("(\\S+)-(\\d{12})-(\\d+)");
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern("yyyyMMddHHmm");
+    public static final String TIMESTAMP_PATTERN = "yyyyMMddHHmmss";
+    private static final Pattern PATTERN = Pattern.compile("(\\S+)-(\\d{14})-(\\d+)");
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern(TIMESTAMP_PATTERN);
 
     @Nonnull
     public static PaytrailOrderNumber create(final @Nonnull Invoice invoice, final @Nonnull DateTime creationTime) {

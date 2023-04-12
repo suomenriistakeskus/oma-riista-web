@@ -107,8 +107,53 @@
     }
 
     .info-value {
-      color: #555;
+      color: @r-info-box-text-grey;
       font-weight: bold;
     }
   }
 }
+@media (max-width: @screen-xs-max) {
+  .r-account-permits {
+    .nav-pills > .nav-item {
+      width: 100%;
+      a {
+        background-color: #FFFFFF;
+      }
+    }
+    .permit-row {
+      &:nth-of-type(odd) {
+        background-color: unset;
+      }
+      .permit-header-content {
+        .main-header {
+          font-weight: bold;
+        }
+        .text-muted {
+          display: block;
+        }
+      }
+    }
+    .profile-new-permit-btn {
+      width: 100%;
+    }
+    .permit-section-actions {
+      .btn,
+      .btn-group {
+        width: 100%;
+        margin-left: 0;
+      }
+      button {
+        width: 100%;
+        margin-top: 8px;
+      }
+    }
+
+    .dropdown .dropdown-menu {
+      left: 0 !important;
+      right: 0 !important;
+    }
+
+  }
+
+}
+

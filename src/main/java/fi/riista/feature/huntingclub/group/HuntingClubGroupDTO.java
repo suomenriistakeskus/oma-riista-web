@@ -7,7 +7,6 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
 import fi.riista.validation.DoNotValidate;
-import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.util.StringUtils;
 
@@ -16,6 +15,7 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;

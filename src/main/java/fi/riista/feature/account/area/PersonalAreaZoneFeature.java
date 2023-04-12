@@ -1,6 +1,5 @@
 package fi.riista.feature.account.area;
 
-import com.newrelic.api.agent.Trace;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.gis.zone.GISZoneEditService;
@@ -48,7 +47,6 @@ public class PersonalAreaZoneFeature {
     }
 
 
-    @Trace
     @Transactional(timeout = 300)
     public void updateGeoJSON(final long id, final FeatureCollection featureCollection) {
         final PersonalArea area = requireEntityService.requirePersonalArea(id, EntityPermission.UPDATE);
@@ -60,7 +58,6 @@ public class PersonalAreaZoneFeature {
         area.setModificationTimeToCurrentTime();
     }
 
-    @Trace
     @Async
     @Transactional
     public void updateAreaSize(final long areaId) {

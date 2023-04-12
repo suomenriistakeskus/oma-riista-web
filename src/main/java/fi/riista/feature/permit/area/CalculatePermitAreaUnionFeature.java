@@ -1,7 +1,6 @@
 package fi.riista.feature.permit.area;
 
 import com.google.common.base.Stopwatch;
-import com.newrelic.api.agent.Trace;
 import fi.riista.feature.gis.OnlyStateAreaService;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
@@ -26,7 +25,6 @@ import fi.riista.feature.permit.area.verotuslohko.HarvestPermitAreaVerotusLohko;
 import fi.riista.feature.permit.area.verotuslohko.HarvestPermitAreaVerotusLohkoRepository;
 import fi.riista.util.F;
 import fi.riista.util.GISUtils;
-import io.sentry.Sentry;
 import org.locationtech.jts.geom.Geometry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,11 +33,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
@@ -95,7 +89,6 @@ public class CalculatePermitAreaUnionFeature {
     private HarvestPermitAreaMmlRepository harvestPermitAreaMmlRepository;
 
     // No @Transaction here to avoid long-running transactions during processing
-    @Trace
     public void startProcessing(final long harvestPermitAreaId) {
         final TransactionTemplate txTemplate = new TransactionTemplate(transactionManager);
         final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -134,8 +127,6 @@ public class CalculatePermitAreaUnionFeature {
 
         } catch (Exception ex) {
             LOG.error(String.format("Processing harvestPermitAreaId=%d failed with exception", harvestPermitAreaId), ex);
-
-            Sentry.capture(ex);
 
             try {
                 txTemplate.execute(txStatus -> {
@@ -232,7 +223,7 @@ public class CalculatePermitAreaUnionFeature {
         final Map<String, GISHirvitalousalue> htaMapping = F.index(htaList, GISHirvitalousalue::getNumber);
 
         return htaCodes.stream().map(htaOfficialCode -> new HarvestPermitAreaHta(harvestPermitArea,
-                htaMapping.get(htaOfficialCode), htaAreaSizeList.get(htaOfficialCode)))
+                        htaMapping.get(htaOfficialCode), htaAreaSizeList.get(htaOfficialCode)))
                 .filter(a -> a.getAreaSize() >= MIN_MAPPING_AREA_SIZE)
                 .collect(Collectors.toList());
     }
@@ -255,7 +246,7 @@ public class CalculatePermitAreaUnionFeature {
     private List<HarvestPermitAreaVerotusLohko> calculateVerotusLohkoAreaSize(final HarvestPermitArea harvestPermitArea,
                                                                               final long zoneId) {
         final List<GISZoneSizeByOfficialCodeDTO> verotusLohkoAreaSizeList =
-                gisZoneRepository.calculateVerotusLohkoAreaSize( harvestPermitArea.getHuntingYear(), zoneId);
+                gisZoneRepository.calculateVerotusLohkoAreaSize(harvestPermitArea.getHuntingYear(), zoneId);
         final Set<String> officialCodes =
                 F.mapNonNullsToSet(verotusLohkoAreaSizeList, GISZoneSizeByOfficialCodeDTO::getOfficialCode);
         final List<GISVerotusLohkoDTO> dtoList =

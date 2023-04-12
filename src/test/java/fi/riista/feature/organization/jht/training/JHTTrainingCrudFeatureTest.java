@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static fi.riista.feature.organization.jht.training.JHTTraining.TrainingType.LAHI;
+import static fi.riista.feature.common.training.TrainingType.LAHI;
 import static fi.riista.feature.organization.jht.training.JHTTrainingSearchDTO.SearchType.HOME_RHY;
 import static fi.riista.feature.organization.jht.training.JHTTrainingSearchDTO.SearchType.PERSON;
 import static fi.riista.feature.organization.jht.training.JHTTrainingSearchDTO.SearchType.PREVIOUS_OCCUPATION;
@@ -41,30 +41,26 @@ public class JHTTrainingCrudFeatureTest extends EmbeddedDatabaseTest {
 
     @Test
     public void testProposeDoesNotCreateNominationIfAnotherIsPending_EHDOLLA() {
-        testProposeDoesNotCreateNominationIfAnotherIsPending(OccupationNomination.NominationStatus.EHDOLLA, () -> {
-            assertEquals(1, occupationNominationRepository.count());
-        });
+        testProposeDoesNotCreateNominationIfAnotherIsPending(OccupationNomination.NominationStatus.EHDOLLA, () ->
+                assertEquals(1, occupationNominationRepository.count()));
     }
 
     @Test
     public void testProposeDoesNotCreateNominationIfAnotherIsPending_ESITETTY() {
-        testProposeDoesNotCreateNominationIfAnotherIsPending(OccupationNomination.NominationStatus.ESITETTY, () -> {
-            assertEquals(1, occupationNominationRepository.count());
-        });
+        testProposeDoesNotCreateNominationIfAnotherIsPending(OccupationNomination.NominationStatus.ESITETTY, () ->
+                assertEquals(1, occupationNominationRepository.count()));
     }
 
     @Test
     public void testProposeDoesNotCreateNominationIfAnotherIsPending_HYLATTY() {
-        testProposeDoesNotCreateNominationIfAnotherIsPending(OccupationNomination.NominationStatus.HYLATTY, () -> {
-            assertEquals(2, occupationNominationRepository.count());
-        });
+        testProposeDoesNotCreateNominationIfAnotherIsPending(OccupationNomination.NominationStatus.HYLATTY, () ->
+                assertEquals(2, occupationNominationRepository.count()));
     }
 
     @Test
     public void testProposeDoesNotCreateNominationIfAnotherIsPending_NIMITETTY() {
-        testProposeDoesNotCreateNominationIfAnotherIsPending(OccupationNomination.NominationStatus.NIMITETTY, () -> {
-            assertEquals(2, occupationNominationRepository.count());
-        });
+        testProposeDoesNotCreateNominationIfAnotherIsPending(OccupationNomination.NominationStatus.NIMITETTY, () ->
+                assertEquals(2, occupationNominationRepository.count()));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -171,7 +167,10 @@ public class JHTTrainingCrudFeatureTest extends EmbeddedDatabaseTest {
             onSavedAndAuthenticated(createUser(coordinator), () -> {
                 final List<Long> personIds = Arrays.asList(trainingPerson.getId());
 
-                final Map<Long, LocalDate> trainingDates = jhtTrainingCrudFeature.lastTrainings(personIds, occupationType);
+                final Map<Long, LocalDate> trainingDates = jhtTrainingCrudFeature.lastTrainings(
+                        personIds,
+                        occupationType
+                );
 
                 assertThat(trainingDates.size(), equalTo(1));
                 assertThat(trainingDates.get(trainingPerson.getId()), equalTo(last.getTrainingDate()));
@@ -187,7 +186,10 @@ public class JHTTrainingCrudFeatureTest extends EmbeddedDatabaseTest {
 
             onSavedAndAuthenticated(createUser(coordinator), () -> {
                 final List<Long> personIds = Arrays.asList(trainingPerson.getId());
-                final Map<Long, LocalDate> trainingDates = jhtTrainingCrudFeature.lastTrainings(personIds, METSASTYKSENVALVOJA);
+                final Map<Long, LocalDate> trainingDates = jhtTrainingCrudFeature.lastTrainings(
+                        personIds,
+                        METSASTYKSENVALVOJA
+                );
                 assertThat(trainingDates.size(), equalTo(0));
             });
         });
@@ -201,7 +203,10 @@ public class JHTTrainingCrudFeatureTest extends EmbeddedDatabaseTest {
 
             onSavedAndAuthenticated(createUser(coordinator), () -> {
                 final List<Long> personIds = Arrays.asList(nonTrainingPerson.getId());
-                final Map<Long, LocalDate> trainingDates = jhtTrainingCrudFeature.lastTrainings(personIds, AMPUMAKOKEEN_VASTAANOTTAJA);
+                final Map<Long, LocalDate> trainingDates = jhtTrainingCrudFeature.lastTrainings(
+                        personIds,
+                        AMPUMAKOKEEN_VASTAANOTTAJA
+                );
                 assertThat(trainingDates.size(), equalTo(0));
             });
         });
@@ -209,27 +214,62 @@ public class JHTTrainingCrudFeatureTest extends EmbeddedDatabaseTest {
 
     @Test
     public void coordinatorCanSearchLastTrainings() {
-        withRhyAndCoordinator((rhy, coordinator) -> {
-            onSavedAndAuthenticated(createUser(coordinator), () -> {
-                jhtTrainingCrudFeature.lastTrainings(emptyList(), AMPUMAKOKEEN_VASTAANOTTAJA);
+        withRhyAndCoordinator((rhy, coordinator) -> onSavedAndAuthenticated(createUser(coordinator), () ->
+                jhtTrainingCrudFeature.lastTrainings(emptyList(), AMPUMAKOKEEN_VASTAANOTTAJA)));
+    }
+
+    @Test
+    public void moderatorCanSearchLastTrainings() {
+        withRhyAndCoordinator((rhy, coordinator) -> onSavedAndAuthenticated(createNewModerator(), () ->
+                jhtTrainingCrudFeature.lastTrainings(emptyList(), AMPUMAKOKEEN_VASTAANOTTAJA)));
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void userCanNotSearchLastTrainings() {
+        withRhyAndCoordinator((rhy, coordinator) -> onSavedAndAuthenticated(createNewUser(), () ->
+                jhtTrainingCrudFeature.lastTrainings(emptyList(), AMPUMAKOKEEN_VASTAANOTTAJA)));
+    }
+
+    @Test
+    public void listMine() {
+        withPerson((person) -> {
+            final OccupationType occupationType = AMPUMAKOKEEN_VASTAANOTTAJA;
+
+            final JHTTraining last = model().newJHTTraining(occupationType, person);
+            last.setTrainingDate(today().minusDays(1));
+            final JHTTraining first = model().newJHTTraining(occupationType, person);
+            first.setTrainingDate(last.getTrainingDate().minusDays(1)); // Before last training
+            final JHTTraining other = model().newJHTTraining(METSASTYKSENVALVOJA, person);
+            other.setTrainingDate(last.getTrainingDate().plusDays(1)); // After last training
+            final SystemUser user = createUser(person);
+
+            onSavedAndAuthenticated(user, () -> {
+                final List<JHTTrainingDTO> trainingDTOS = jhtTrainingCrudFeature.listMine();
+                assertThat(trainingDTOS.size(), equalTo(2));
+                trainingDTOS.get(0).getOccupationType().equals(METSASTYKSENVALVOJA);
+                trainingDTOS.get(1).getOccupationType().equals(AMPUMAKOKEEN_VASTAANOTTAJA);
             });
         });
     }
 
     @Test
-    public void moderatorCanSearchLastTrainings() {
-        withRhyAndCoordinator((rhy, coordinator) -> {
-            onSavedAndAuthenticated(createNewModerator(), () -> {
-                jhtTrainingCrudFeature.lastTrainings(emptyList(), AMPUMAKOKEEN_VASTAANOTTAJA);
-            });
-        });
-    }
+    public void testList_moderator() {
+        withPerson((person) -> {
+            final OccupationType occupationType = AMPUMAKOKEEN_VASTAANOTTAJA;
 
-    @Test(expected = AccessDeniedException.class)
-    public void userCanNotSearchLastTrainings() {
-        withRhyAndCoordinator((rhy, coordinator) -> {
-            onSavedAndAuthenticated(createNewUser(), () -> {
-                jhtTrainingCrudFeature.lastTrainings(emptyList(), AMPUMAKOKEEN_VASTAANOTTAJA);
+            final JHTTraining last = model().newJHTTraining(occupationType, person);
+            last.setTrainingDate(today().minusDays(1));
+            final JHTTraining first = model().newJHTTraining(occupationType, person);
+            first.setTrainingDate(last.getTrainingDate().minusDays(1)); // Before last training
+            final JHTTraining other = model().newJHTTraining(METSASTYKSENVALVOJA, person);
+            other.setTrainingDate(last.getTrainingDate().plusDays(1)); // After last training
+            createUser(person);
+
+            onSavedAndAuthenticated(createNewModerator(), () -> {
+                final List<JHTTrainingDTO> trainingDTOS = jhtTrainingCrudFeature.listForPerson(person.getId());
+                assertThat(trainingDTOS.size(), equalTo(2));
+                trainingDTOS.get(0).getOccupationType().equals(METSASTYKSENVALVOJA);
+                trainingDTOS.get(1).getOccupationType().equals(AMPUMAKOKEEN_VASTAANOTTAJA);
             });
         });
     }

@@ -15,7 +15,7 @@
 
         <div class="row">
 
-            <div class="col-xs-3 form-group" ng-class="{ 'has-error': !$modalCtrl.event.eventType }">
+            <div class="col-sm-3 form-group" ng-class="{ 'has-error': !$modalCtrl.event.eventType }">
 
                 <label class="mandatory-field" for="eventType"
                        translate="harvestpermit.wizard.dogunleash.eventDetails.eventType">
@@ -41,7 +41,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-3 form-group" ng-class="{ 'has-error': (dogForm.dogsAmount.$touched && dogForm.dogsAmount.$invalid) }">
+            <div class="col-sm-3 form-group" ng-class="{ 'has-error': (dogForm.dogsAmount.$touched && dogForm.dogsAmount.$invalid) }">
                 <label for="dogsAmount" class="mandatory-field"
                        translate="harvestpermit.wizard.dogunleash.eventDetails.dogsAmount">
                 </label>
@@ -58,7 +58,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-3 form-group"
+            <div class="col-sm-3 form-group"
                  ng-class="{ 'has-error': ((dogForm.beginDate.$touched || !!dogForm.beginDate.$modelValue) && dogForm.beginDate.$invalid) }">
                 <label for="beginDate" class="mandatory-field" translate="global.beginDate"></label>
 
@@ -86,7 +86,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-3 form-group"
+            <div class="col-sm-3 form-group"
                  ng-class="{ 'has-error': ((dogForm.endDate.$touched || !!dogForm.endDate.$modelValue) && dogForm.endDate.$invalid) }">
                 <label for="endDate" translate="global.endDate"></label>
 
@@ -161,7 +161,7 @@
 
         <!-- 4th row: event and location descriptions -->
         <div class="row">
-            <div class="col-xs-6 form-group"
+            <div class="col-sm-6 form-group"
                  ng-class="{ 'has-error': (dogForm.eventDescription.$touched && dogForm.eventDescription.$invalid) }">
                 <label for="eventDescription" class="mandatory-field"
                        translate="harvestpermit.wizard.dogunleash.eventDetails.eventDescription">
@@ -170,7 +170,8 @@
                 <textarea required
                           name="eventDescription" id="eventDescription"
                           class="form-control" rows="6"
-                          ng-model="$modalCtrl.event.eventDescription">
+                          ng-model="$modalCtrl.event.eventDescription"
+                          spellcheck="false">
                 </textarea>
 
                 <div class="help-block has-error"
@@ -180,7 +181,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-6 form-group"
+            <div class="col-sm-6 form-group"
                  ng-class="{ 'has-error': (dogForm.locationDescription.$touched && dogForm.locationDescription.$invalid) }">
 
                 <label for="locationDescription" class="mandatory-field"
@@ -190,7 +191,8 @@
                 <textarea required
                           name="locationDescription" id="locationDescription"
                           class="form-control" rows="6"
-                          ng-model="$modalCtrl.event.locationDescription">
+                          ng-model="$modalCtrl.event.locationDescription"
+                          spellcheck="false">
                 </textarea>
 
                 <div class="help-block has-error"
@@ -204,7 +206,7 @@
         <!-- 4th row: contact's name, email and phone -->
 
         <div class="row">
-            <div class="col-xs-4 form-group"
+            <div class="col-sm-4 form-group"
                  ng-class="{ 'has-error': (dogForm.contactName.$touched && dogForm.contactName.$invalid) }">
 
                 <label for="contactName" class="mandatory-field"
@@ -222,7 +224,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-4 form-group"
+            <div class="col-sm-4 form-group"
                  ng-class="{ 'has-error': (dogForm.contactPhone.$touched && dogForm.contactPhone.$invalid) }">
 
                 <label for="contactPhone" class="mandatory-field"
@@ -242,7 +244,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-4 form-group"
+            <div class="col-sm-4 form-group"
                  ng-class="{ 'has-error': (dogForm.contactMail.$touched && dogForm.contactMail.$invalid) }">
 
                 <label for="contactMail" translate="harvestpermit.wizard.dogunleash.eventDetails.contactMail"></label>
@@ -271,7 +273,8 @@
 
                 <textarea id="additionalInfo" name="additionalInfo"
                           class="form-control" rows="3"
-                          ng-model="$modalCtrl.event.additionalInfo">
+                          ng-model="$modalCtrl.event.additionalInfo"
+                          spellcheck="false">
                 </textarea>
             </div>
         </div>

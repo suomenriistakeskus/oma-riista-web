@@ -179,6 +179,13 @@ public class HarvestPermitApplicationGeometryFeature {
     }
 
     @Transactional(readOnly = true)
+    public HarvestPermitApplicationAreaPartnerExportDTO exportPermitAreaForEachPartner(final long applicationId) {
+        final HarvestPermitArea permitArea = requirePermitArea(applicationId, EntityPermission.READ);
+
+        return harvestPermitApplicationGeoJsonService.exportPermitAreaForEachPartner(permitArea);
+    }
+
+    @Transactional(readOnly = true)
     public FeatureCollection getPermitAreaCombined(final long applicationId) {
         final HarvestPermitArea permitArea = requirePermitArea(applicationId, EntityPermission.READ);
 
@@ -196,6 +203,7 @@ public class HarvestPermitApplicationGeometryFeature {
         harvestPermitAreaMmlRepository.deleteByHarvestPermitArea(harvestPermitArea);
         harvestPermitAreaVerotusLohkoRepository.deleteByHarvestPermitArea(harvestPermitArea);
         harvestPermitAreaPartnerRepository.deleteByHarvestPermitArea(harvestPermitArea);
+        harvestPermitAreaEventRepository.deleteByHarvestPermitArea(harvestPermitArea);
 
         final GISZone zone = harvestPermitArea.getZone();
 

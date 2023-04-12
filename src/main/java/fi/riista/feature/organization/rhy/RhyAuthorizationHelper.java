@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static fi.riista.feature.organization.occupation.OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA;
+import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.SRVA_YHTEYSHENKILO;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 import static java.util.stream.Collectors.toSet;
@@ -65,6 +66,7 @@ public class RhyAuthorizationHelper {
                     collector.addAuthorizationRole(TOIMINNANOHJAAJA, () -> rhyRoles.contains(TOIMINNANOHJAAJA));
                     collector.addAuthorizationRole(SRVA_YHTEYSHENKILO, () -> rhyRoles.contains(SRVA_YHTEYSHENKILO));
                     collector.addAuthorizationRole(AMPUMAKOKEEN_VASTAANOTTAJA, () -> rhyRoles.contains(AMPUMAKOKEEN_VASTAANOTTAJA));
+                    collector.addAuthorizationRole(METSASTYKSENVALVOJA, () -> rhyRoles.contains(METSASTYKSENVALVOJA));
                 });
     }
 }

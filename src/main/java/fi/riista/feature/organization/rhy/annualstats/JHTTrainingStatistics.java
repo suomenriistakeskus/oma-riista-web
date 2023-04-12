@@ -2,6 +2,8 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -13,10 +15,21 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.GAME_DAMAGE_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.HUNTER_EXAM_OFFICIAL_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.HUNTING_CONTROL_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_GAME_DAMAGE_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_HUNTER_EXAM_OFFICIAL_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_HUNTING_CONTROL_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.NON_SUBSIDIZABLE_SHOOTING_TEST_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.SHOOTING_TEST_TRAINING_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantFieldGroup.JHT_TRAINING_STATISTICS;
 import static fi.riista.util.F.nullsafeMax;
 import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
@@ -25,32 +38,33 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class JHTTrainingStatistics
         implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsFieldsetParticipants,
         AnnualStatisticsManuallyEditableFields<JHTTrainingStatistics>,
         Serializable {
 
-    public static final JHTTrainingStatistics reduce(@Nullable final JHTTrainingStatistics a,
-                                                     @Nullable final JHTTrainingStatistics b) {
+    public static JHTTrainingStatistics reduce(@Nullable final JHTTrainingStatistics a,
+                                               @Nullable final JHTTrainingStatistics b) {
 
         final JHTTrainingStatistics result = new JHTTrainingStatistics();
-        result.setShootingTestTrainingEvents(nullableIntSum(a, b, s -> s.getShootingTestTrainingEvents()));
-        result.setShootingTestTrainingParticipants(nullableIntSum(a, b, s -> s.getShootingTestTrainingParticipants()));
-        result.setHunterExamOfficialTrainingEvents(nullableIntSum(a, b, s -> s.getHunterExamOfficialTrainingEvents()));
-        result.setHunterExamOfficialTrainingParticipants(nullableIntSum(a, b, s -> s.getHunterExamOfficialTrainingParticipants()));
-        result.setGameDamageTrainingEvents(nullableIntSum(a, b, s -> s.getGameDamageTrainingEvents()));
-        result.setGameDamageTrainingParticipants(nullableIntSum(a, b, s -> s.getGameDamageTrainingParticipants()));
-        result.setHuntingControlTrainingEvents(nullableIntSum(a, b, s -> s.getHuntingControlTrainingEvents()));
-        result.setHuntingControlTrainingParticipants(nullableIntSum(a, b, s -> s.getHuntingControlTrainingParticipants()));
+        result.setShootingTestTrainingEvents(nullableIntSum(a, b, JHTTrainingStatistics::getShootingTestTrainingEvents));
+        result.setShootingTestTrainingParticipants(nullableIntSum(a, b, JHTTrainingStatistics::getShootingTestTrainingParticipants));
+        result.setHunterExamOfficialTrainingEvents(nullableIntSum(a, b, JHTTrainingStatistics::getHunterExamOfficialTrainingEvents));
+        result.setHunterExamOfficialTrainingParticipants(nullableIntSum(a, b, JHTTrainingStatistics::getHunterExamOfficialTrainingParticipants));
+        result.setGameDamageTrainingEvents(nullableIntSum(a, b, JHTTrainingStatistics::getGameDamageTrainingEvents));
+        result.setGameDamageTrainingParticipants(nullableIntSum(a, b, JHTTrainingStatistics::getGameDamageTrainingParticipants));
+        result.setHuntingControlTrainingEvents(nullableIntSum(a, b, JHTTrainingStatistics::getHuntingControlTrainingEvents));
+        result.setHuntingControlTrainingParticipants(nullableIntSum(a, b, JHTTrainingStatistics::getHuntingControlTrainingParticipants));
 
-        result.setNonSubsidizableShootingTestTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableShootingTestTrainingEvents()));
-        result.setNonSubsidizableShootingTestTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableShootingTestTrainingParticipants()));
-        result.setNonSubsidizableHunterExamOfficialTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableHunterExamOfficialTrainingEvents()));
-        result.setNonSubsidizableHunterExamOfficialTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableHunterExamOfficialTrainingParticipants()));
-        result.setNonSubsidizableGameDamageTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableGameDamageTrainingEvents()));
-        result.setNonSubsidizableGameDamageTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableGameDamageTrainingParticipants()));
-        result.setNonSubsidizableHuntingControlTrainingEvents(nullableIntSum(a, b, s -> s.getNonSubsidizableHuntingControlTrainingEvents()));
-        result.setNonSubsidizableHuntingControlTrainingParticipants(nullableIntSum(a, b, s -> s.getNonSubsidizableHuntingControlTrainingParticipants()));
+        result.setNonSubsidizableShootingTestTrainingEvents(nullableIntSum(a, b, JHTTrainingStatistics::getNonSubsidizableShootingTestTrainingEvents));
+        result.setNonSubsidizableShootingTestTrainingParticipants(nullableIntSum(a, b, JHTTrainingStatistics::getNonSubsidizableShootingTestTrainingParticipants));
+        result.setNonSubsidizableHunterExamOfficialTrainingEvents(nullableIntSum(a, b, JHTTrainingStatistics::getNonSubsidizableHunterExamOfficialTrainingEvents));
+        result.setNonSubsidizableHunterExamOfficialTrainingParticipants(nullableIntSum(a, b, JHTTrainingStatistics::getNonSubsidizableHunterExamOfficialTrainingParticipants));
+        result.setNonSubsidizableGameDamageTrainingEvents(nullableIntSum(a, b, JHTTrainingStatistics::getNonSubsidizableGameDamageTrainingEvents));
+        result.setNonSubsidizableGameDamageTrainingParticipants(nullableIntSum(a, b, JHTTrainingStatistics::getNonSubsidizableGameDamageTrainingParticipants));
+        result.setNonSubsidizableHuntingControlTrainingEvents(nullableIntSum(a, b, JHTTrainingStatistics::getNonSubsidizableHuntingControlTrainingEvents));
+        result.setNonSubsidizableHuntingControlTrainingParticipants(nullableIntSum(a, b, JHTTrainingStatistics::getNonSubsidizableHuntingControlTrainingParticipants));
 
-        result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
+        result.setLastModified(nullsafeMax(a, b, JHTTrainingStatistics::getLastModified));
         return result;
     }
 
@@ -229,7 +243,6 @@ public class JHTTrainingStatistics
                 Objects.equals(gameDamageTrainingEvents, that.gameDamageTrainingEvents) &&
                 Objects.equals(gameDamageTrainingParticipants, that.gameDamageTrainingParticipants) &&
                 Objects.equals(nonSubsidizableGameDamageTrainingEvents, that.nonSubsidizableGameDamageTrainingEvents) &&
-                Objects.equals(gameDamageTrainingParticipants, that.gameDamageTrainingParticipants) &&
 
                 Objects.equals(huntingControlTrainingEvents, that.huntingControlTrainingEvents) &&
                 Objects.equals(huntingControlTrainingParticipants, that.huntingControlTrainingParticipants) &&
@@ -255,7 +268,7 @@ public class JHTTrainingStatistics
         this.shootingTestTrainingParticipants = that.shootingTestTrainingParticipants;
         this.nonSubsidizableShootingTestTrainingParticipants = that.nonSubsidizableShootingTestTrainingParticipants;
 
-        if (!Objects.equals(this.hunterExamOfficialTrainingEvents, that.hunterExamOfficialTrainingEvents)||
+        if (!Objects.equals(this.hunterExamOfficialTrainingEvents, that.hunterExamOfficialTrainingEvents) ||
                 !Objects.equals(this.nonSubsidizableHunterExamOfficialTrainingEvents, that.nonSubsidizableHunterExamOfficialTrainingEvents)) {
             this.hunterExamOfficialTrainingEventsOverridden = true;
         }
@@ -304,7 +317,45 @@ public class JHTTrainingStatistics
                 shootingTestTrainingEvents, shootingTestTrainingParticipants,
                 hunterExamOfficialTrainingEvents, hunterExamOfficialTrainingParticipants,
                 gameDamageTrainingEvents, gameDamageTrainingParticipants,
-                huntingControlTrainingEvents, huntingControlTrainingParticipants);
+                huntingControlTrainingEvents, huntingControlTrainingParticipants) && hasParticipants();
+    }
+
+    private boolean hasParticipants() {
+        return listMissingParticipants()._2.isEmpty();
+    }
+
+    @Override
+    public Tuple2<AnnualStatisticsParticipantFieldGroup, List<AnnualStatisticsParticipantField>> listMissingParticipants() {
+        final List<AnnualStatisticsParticipantField> missing = new ArrayList<>();
+        if (shootingTestTrainingEvents != null && shootingTestTrainingEvents > 0 &&  shootingTestTrainingParticipants <= 0) {
+            missing.add(SHOOTING_TEST_TRAINING_EVENTS);
+        }
+        if (hunterExamOfficialTrainingEvents != null && hunterExamOfficialTrainingEvents > 0 &&  hunterExamOfficialTrainingParticipants <= 0) {
+            missing.add(HUNTER_EXAM_OFFICIAL_TRAINING_EVENTS);
+        }
+        if (gameDamageTrainingEvents != null && gameDamageTrainingEvents > 0 &&  gameDamageTrainingParticipants <= 0) {
+            missing.add(GAME_DAMAGE_TRAINING_EVENTS);
+        }
+        if (huntingControlTrainingEvents != null && huntingControlTrainingEvents > 0 &&  huntingControlTrainingParticipants <= 0) {
+            missing.add(HUNTING_CONTROL_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableShootingTestTrainingEvents != null && nonSubsidizableShootingTestTrainingEvents > 0 &&
+                nonSubsidizableShootingTestTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_SHOOTING_TEST_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableHunterExamOfficialTrainingEvents != null && nonSubsidizableHunterExamOfficialTrainingEvents > 0 &&
+                nonSubsidizableHunterExamOfficialTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_HUNTER_EXAM_OFFICIAL_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableGameDamageTrainingEvents != null && nonSubsidizableGameDamageTrainingEvents > 0 &&
+                nonSubsidizableGameDamageTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_GAME_DAMAGE_TRAINING_EVENTS);
+        }
+        if (nonSubsidizableHuntingControlTrainingEvents != null && nonSubsidizableHuntingControlTrainingEvents > 0 &&
+                nonSubsidizableHuntingControlTrainingParticipants <= 0) {
+            missing.add(NON_SUBSIDIZABLE_HUNTING_CONTROL_TRAINING_EVENTS);
+        }
+        return Tuple.of(JHT_TRAINING_STATISTICS, missing);
     }
 
     @Override

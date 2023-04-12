@@ -2,6 +2,7 @@ package fi.riista.feature.common.decision.nomination.excel;
 
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
+import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.common.decision.nomination.NominationDecisionDTO;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
@@ -46,6 +47,10 @@ public class NominationDecisionExcelView extends AbstractXlsxView {
         excelHelper.appendRow().appendHeaderRow(i18n.translate(LOCALISATION_PREFIX, HEADERS));
 
         dtos.forEach(decision -> {
+            final String decisionStatus = decision.getStatus() == DecisionStatus.DRAFT && decision.getHandler() == null ?
+                    i18n.getTranslation("NominationDecisionExcelView.DECISION_OPEN") :
+                    i18n.getTranslation(decision.getStatus());
+
             excelHelper.appendRow()
                     .appendNumberCell(decision.getDecisionNumber())
                     .appendTextCell(mapNullable(decision.getContactPerson(), h -> h.getFirstName() + " " + h.getLastName()))
@@ -55,7 +60,7 @@ public class NominationDecisionExcelView extends AbstractXlsxView {
                     .appendTextCell(mapNullable(decision.getProposalDate(), d -> d.toString(DATE_FORMAT_FINNISH)))
                     .appendTextCell(mapNullable(decision.getHandler(), h -> h.getFirstName() + " " + h.getLastName()))
                     .appendTextCell(i18n.getTranslation(decision.getOccupationType()))
-                    .appendTextCell(i18n.getTranslation(decision.getStatus()))
+                    .appendTextCell(decisionStatus)
                     .appendTextCell(mapNullable(decision.getPublishDate(), d -> d.toString(DATE_FORMAT_FINNISH)))
                     .appendTextCell(i18n.getTranslation(decision.getAppealStatus()));
         });

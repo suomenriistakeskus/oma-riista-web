@@ -79,7 +79,7 @@ public class OtherwiseDeceasedExcelViewTest {
         assertThat(row.getCell(5).getStringCellValue(), equalTo(rejected ? "Kyllä" : "Ei"));
         assertThat(row.getCell(6).getStringCellValue(), isOneOf(
                 "Liikenneonnettomuus", "Onnettomuus rautatiellä", "Sairaus / nääntyminen", "Poliisin määräyksellä lopetettu",
-                "Pakkotila", "Laiton tappaminen (metsästysrikos, lainvoimainen tuomio)", "Tutkinnassa", "Muu"));
+                "Pakkotila", "Laiton", "Tutkinnassa", "Muu"));
         assertThat(row.getCell(7).getStringCellValue(), equalTo("CauseOther"));
         assertThat(row.getCell(8).getStringCellValue(), isOneOf(
                 "Riistakeskus", "Riistanhoitoyhdistys", "Ruokavirasto", "Poliisi", "Rajavartiolaitos",
@@ -136,9 +136,9 @@ public class OtherwiseDeceasedExcelViewTest {
         dto.setWeight(12.3);
         dto.setRejected(rejected);
         dto.setCause(cause);
-        dto.setCauseOther("CauseOther");
+        dto.setCauseDescription("CauseOther");
         dto.setSource(source);
-        dto.setSourceOther("SourceOther");
+        dto.setSourceDescription("SourceOther");
         dto.setRka(newOrganisationNameDTO("001"));
         dto.setRhy(newOrganisationNameDTO("002"));
         dto.setMunicipality(newOrganisationNameDTO("003"));

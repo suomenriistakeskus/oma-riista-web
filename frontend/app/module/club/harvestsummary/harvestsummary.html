@@ -1,29 +1,93 @@
 <div class="row">
-    <div class="col-md-2 col-xs-3">
-        <form>
-            <select name="huntingYearSelection" id="huntingYearSelection"
-                    class="form-control"
-                    ng-model="$ctrl.year"
-                    ng-change="$ctrl.yearChanged()"
-                    ng-options="y for y in $ctrl.years">
-            </select>
+    <div class="col-md-2 col-sm-3">
+        <form name="clubHarvestSummaryFilterForm">
+            <!-- begin date -->
+
+            <div class="form-group" show-errors>
+                <label for="beginDateFilter" translate="global.beginDate"></label>
+                <div class="input-group r-dropdown-align-left" id="beginDateFilter"
+                     ng-controller="DatePickerController">
+                    <input type="text" class="form-control"
+                           required
+                           name="beginDateFilterInput" id="beginDateFilterInput"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           ng-model="$ctrl.beginDate"
+                           datepicker-append-to-body="true"
+                           date-between-min-max
+                           max-date="$ctrl.endDate"
+                           ng-change="$ctrl.onFilterChange()">
+
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+
+            <!-- end date -->
+
+            <div class="form-group" show-errors>
+                <label for="endDateFilter" translate="global.endDate"></label>
+                <div class="input-group r-dropdown-align-left" id="endDateFilter" ng-controller="DatePickerController">
+                    <input type="text" class="form-control"
+                           required
+                           name="endDateFilterInput" id="endDateFilterInput"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           ng-model="$ctrl.endDate"
+                           datepicker-append-to-body="true"
+                           date-between-min-max
+                           min-date="$ctrl.beginDate"
+                           r-validate-greater-or-equal="$ctrl.event.beginDate"
+                           ng-change="$ctrl.onFilterChange()">
+
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="help-block has-error"
+                     ng-show="clubHarvestSummaryFilterForm.endDateFilterInput.$touched && clubHarvestSummaryFilterForm.endDateFilterInput.$invalid"
+                     ng-messages="clubHarvestSummaryFilterForm.endDateFilterInput.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+
+            <div>
+                <div ng-show="$ctrl.isIntervalIllegal()">
+                    <span class="text-danger"
+                          translate="club.harvestsummary.tooLongPeriodInfo"></span>
+                </div>
+            </div>
+            <div>
+                <button type="button" class="btn btn-primary btn-block"
+                        ng-disabled="clubHarvestSummaryFilterForm.$invalid || $ctrl.isIntervalIllegal()"
+                        ng-click="$ctrl.searchSummary()">
+                    <span translate="global.button.search"></span>
+                </button>
+            </div>
         </form>
+
     </div>
 
-    <div class="col-md-10 col-xs-9">
+    <div class="col-md-10 col-sm-9">
         <h2>
             <span translate="club.harvestsummary.harvestSummary"></span>
             &nbsp;-&nbsp;
             <span ng-bind="::$ctrl.club | rI18nNameFilter"></span>
         </h2>
 
-        <h3 translate="global.gameCategory.GAME_MAMMAL"></h3>
-        <club-harvest-summary-category items="$ctrl.mammalSummary"></club-harvest-summary-category>
+        <div ng-if="$ctrl.searchPerformed">
+            <h3 translate="global.gameCategory.GAME_MAMMAL"></h3>
+            <club-harvest-summary-category items="$ctrl.mammalSummary"></club-harvest-summary-category>
 
-        <h3 translate="global.gameCategory.FOWL"></h3>
-        <club-harvest-summary-category items="$ctrl.fowlSummary"></club-harvest-summary-category>
+            <h3 translate="global.gameCategory.FOWL"></h3>
+            <club-harvest-summary-category items="$ctrl.fowlSummary"></club-harvest-summary-category>
 
-        <h3 translate="global.gameCategory.UNPROTECTED"></h3>
-        <club-harvest-summary-category items="$ctrl.unprotectedSummary"></club-harvest-summary-category>
+            <h3 translate="global.gameCategory.UNPROTECTED"></h3>
+            <club-harvest-summary-category items="$ctrl.unprotectedSummary"></club-harvest-summary-category>
+        </div>
     </div>
 </div>

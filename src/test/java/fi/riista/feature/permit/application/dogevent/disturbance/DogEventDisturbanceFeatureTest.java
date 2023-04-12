@@ -476,6 +476,21 @@ public class DogEventDisturbanceFeatureTest extends EmbeddedDatabaseTest
         });
     }
 
+    public void updateEvent_validate_contactPhoneCanHaveHyphen() {
+        withDogDisturbanceSpecies(s -> {
+            withDogEventDisturbanceFixture(s, f -> {
+                onSavedAndAuthenticated(createUser(f.applicant), () -> {
+                    final DogEventDisturbanceDTO expected = feature.getEvent(f.application.getId(), DOG_TRAINING);
+                    final DogEventDisturbanceContactDTO contact = newDogEventDisturbanceContactDTO();
+                    contact.setPhone("050-123456789");
+                    expected.setContacts(Arrays.asList(contact));
+
+                    feature.updateEvent(f.application.getId(), expected);
+                });
+            });
+        });
+    }
+
     @Test
     public void updateEvent_validate_contactHasOptionalMail() {
         withDogDisturbanceSpecies(s -> {

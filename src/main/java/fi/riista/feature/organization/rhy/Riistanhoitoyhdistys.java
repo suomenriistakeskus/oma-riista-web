@@ -1,6 +1,7 @@
 package fi.riista.feature.organization.rhy;
 
 import com.google.common.collect.ImmutableSet;
+import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
@@ -13,6 +14,10 @@ import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -21,7 +26,7 @@ import java.util.Set;
 public class Riistanhoitoyhdistys extends Organisation {
 
     public static final int ANNUAL_STATISTICS_FIRST_YEAR = 2017;
-    public static final int ANNUAL_STATISTICS_DEFAULT_LAST_YEAR = 2021; // TODO Update when new annual statistics opened
+    public static final int ANNUAL_STATISTICS_DEFAULT_LAST_YEAR = 2022; // TODO Update when new annual statistics opened
 
     public static final String RHY_OFFICIAL_CODE_HELSINKI = "602";
 
@@ -44,6 +49,12 @@ public class Riistanhoitoyhdistys extends Organisation {
     @Column(name="rhy_srva_rotation_start")
     private LocalDate rotationStart;
 
+    @ManyToMany
+    @JoinTable(name = "rhy_hta",
+            joinColumns = {@JoinColumn(name = ID_COLUMN_NAME, referencedColumnName = Organisation.ID_COLUMN_NAME)},
+            inverseJoinColumns = {@JoinColumn(name = GISHirvitalousalue.ID_COLUMN_NAME, referencedColumnName = "gid")})
+    private Set<GISHirvitalousalue> relatedHtas = new HashSet<>();
+
     public static String shortenRhySuffixFi(final String input) {
         return input.endsWith(RHY_SUFFIX_FI)
                 ? input.substring(0, input.length() - RHY_SUFFIX_FI.length()) + "RHY"
@@ -60,7 +71,7 @@ public class Riistanhoitoyhdistys extends Organisation {
         super(OrganisationType.RHY);
     }
 
-    public Riistanhoitoyhdistys(RiistakeskuksenAlue alue, String nimiFI, String nimiSV, String officialRhyId) {
+    public Riistanhoitoyhdistys(final RiistakeskuksenAlue alue, final String nimiFI, final String nimiSV, final String officialRhyId) {
         this();
         setNameFinnish(nimiFI);
         setNameSwedish(nimiSV);
@@ -73,7 +84,7 @@ public class Riistanhoitoyhdistys extends Organisation {
         return getClosestAncestorOfType(OrganisationType.RKA).orElse(null);
     }
 
-    public void setRiistakeskuksenAlue(RiistakeskuksenAlue alue) {
+    public void setRiistakeskuksenAlue(final RiistakeskuksenAlue alue) {
         parentOrganisation = alue;
     }
 
@@ -81,7 +92,7 @@ public class Riistanhoitoyhdistys extends Organisation {
         return atCoast;
     }
 
-    public void setAtCoast(Boolean atCoast) {
+    public void setAtCoast(final Boolean atCoast) {
         this.atCoast = atCoast;
     }
 
@@ -103,5 +114,9 @@ public class Riistanhoitoyhdistys extends Organisation {
 
     public void setRotationStart(final LocalDate rotationStart) {
         this.rotationStart = rotationStart;
+    }
+
+    public Set<GISHirvitalousalue> getRelatedHtas() {
+        return relatedHtas;
     }
 }

@@ -84,7 +84,9 @@ public class ContactSearchFeature {
     }
 
     private static Predicate byOrgType(CriteriaBuilder cb, Join<?, Organisation> organisationJoin, OrganisationType orgType) {
-        return cb.equal(organisationJoin.get(Organisation_.organisationType), orgType);
+        final Predicate orgTypePredicate = cb.equal(organisationJoin.get(Organisation_.organisationType), orgType);
+        final Predicate orgActivePredicate = cb.isTrue(organisationJoin.get(Organisation_.active));
+        return cb.and(orgTypePredicate, orgActivePredicate);
     }
 
     private static Predicate byArea(CriteriaBuilder cb, Join<?, Organisation> organisationJoin, String areaCode) {
@@ -115,7 +117,9 @@ public class ContactSearchFeature {
     private static Predicate createPredicate(Root<Organisation> root, CriteriaBuilder cb, RhyContactSearchDTO dto) {
         final List<Predicate> predicates = new ArrayList<>();
 
-        predicates.add(cb.equal(root.get(Organisation_.organisationType), OrganisationType.RHY));
+        final Predicate rhyOrgTypePredicate = cb.equal(root.get(Organisation_.organisationType), OrganisationType.RHY);
+        final Predicate rhyActivePredicate = cb.isTrue(root.get(Organisation_.active));
+        predicates.add(cb.and(rhyOrgTypePredicate, rhyActivePredicate));
 
         if (dto.getAreaCode() != null) {
             Join<Organisation, Organisation> parentOrganisationtoJoin = root.join(Organisation_.parentOrganisation, JoinType.LEFT);

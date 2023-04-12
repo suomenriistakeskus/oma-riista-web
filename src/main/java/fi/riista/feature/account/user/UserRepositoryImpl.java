@@ -13,9 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.querydsl.core.group.GroupBy.groupBy;
 
 @Repository
 public class UserRepositoryImpl implements UserRepositoryCustom {
@@ -67,5 +70,29 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
                 .collect(Collectors.<Tuple, Long, String> toMap(
                         tuple -> tuple.get(USER.id),
                         tuple -> String.format("%s %s", tuple.get(USER.firstName), tuple.get(USER.lastName))));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<SystemUser> findActiveByPerson(Person person) {
+        return Optional.ofNullable(findActiveByPersonIn(Collections.singletonList(person)).get(person.getId()));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, SystemUser> findActiveByPersonIn(final List<Person> persons) {
+        final QSystemUser USER = QSystemUser.systemUser;
+        final QPerson PERSON = QPerson.person;
+
+        if (persons.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return jpqlQueryFactory
+                .from(USER)
+                .join(USER.person, PERSON)
+                .where(USER.active.isTrue())
+                .where(PERSON.in(persons))
+                .transform(groupBy(PERSON.id).as(USER));
     }
 }

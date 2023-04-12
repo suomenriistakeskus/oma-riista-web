@@ -55,8 +55,12 @@ angular.module('app.config.router', [])
 
             $log.error('Could not transition to UI router state: ' + toState.name);
 
-            if (_.isError(rejectionError)) {
-                Raven.captureException(rejectionError);
+            if (_.isError(rejectionError) && window.DD_LOGS) {
+                window.DD_LOGS.logger.error(rejectionError.name + ': ' + rejectionError.message, {
+                    _customDataHolder: {
+                        stack: rejectionError.stack
+                    }
+                });
             }
 
             if (toState.authenticate !== false) {

@@ -223,7 +223,7 @@
             }
         })
 
-        .controller('ClubMembersController', function (ClubMemberService, ClubMembers, ClubInvitations,
+        .controller('ClubMembersController', function (ClubMemberService, ClubMembers, ClubInvitations, FormPostService,
                                                        club, members, invitations) {
             var $ctrl = this;
 
@@ -235,6 +235,12 @@
                 ClubMemberService.showAddMembersBulkDialog(club).then(function () {
                     $ctrl.reloadInvitations();
                 });
+            };
+
+            $ctrl.exportMembers = function () {
+                var formSubmitAction = '/api/v1/club/' + club.id + '/export-members';
+                FormPostService.submitFormUsingBlankTarget(formSubmitAction, {});
+
             };
 
             $ctrl.reloadMembers = function () {

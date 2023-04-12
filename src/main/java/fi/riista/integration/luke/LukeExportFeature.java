@@ -183,7 +183,6 @@ public class LukeExportFeature {
 
             resultList.addAll(moosePermits.stream().map(moosePermit -> {
                 final Set<HuntingClub> clubs = moosePermit.getPermitPartners();
-                final Map<Long, Occupation> clubContacts = findClubContacts(clubs); // N+1
                 final HarvestPermitSpeciesAmount spa = allPermitsSpeciesAmounts.get(moosePermit.getId());
                 final List<HarvestPermitSpeciesAmount> amendmentSpas = amendmentPermitSpas.get(moosePermit.getId());
                 final Map<Long, BasicClubHuntingSummary> clubOverrides = basicSummaryRepo
@@ -193,7 +192,7 @@ public class LukeExportFeature {
 
                 final List<LEM_Club> clubPermitData = clubs.stream()
                         .sorted(comparing(Organisation::getId))
-                        .map(club -> MooselikeHarvestsObjectFactory.createClub(club, moosePermit, clubContacts,
+                        .map(club -> MooselikeHarvestsObjectFactory.createClub(club, moosePermit,
                                 clubGroups, groupDays, dayHarvests, dayObservations, harvestSpecimens,
                                 observationSpecimens, permitToClubToSummary, clubOverrides))
                         .filter(Objects::nonNull)
@@ -201,7 +200,7 @@ public class LukeExportFeature {
 
                 return MooselikeHarvestsObjectFactory.createPermit(
                         moosePermit.getPermitNumber(), moosePermit.getRhy().getOfficialCode(),
-                        moosePermit.getOriginalContactPerson(), spa, amendmentSpas, clubPermitData);
+                        null, spa, amendmentSpas, clubPermitData);
             }).collect(toList()));
 
             entityManager.clear(); //hopefully less memory used

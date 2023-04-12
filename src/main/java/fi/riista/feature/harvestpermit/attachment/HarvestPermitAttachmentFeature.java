@@ -11,6 +11,8 @@ import fi.riista.feature.permit.decision.revision.PermitDecisionRevision;
 import fi.riista.feature.permit.decision.revision.PermitDecisionRevisionAttachment;
 import fi.riista.feature.storage.FileDownloadService;
 import fi.riista.security.EntityPermission;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +24,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static fi.riista.util.F.mapNullable;
+
 @Component
 public class HarvestPermitAttachmentFeature {
+
+    private static final Logger LOG = LoggerFactory.getLogger(HarvestPermitAttachmentFeature.class);
 
     @Resource
     private RequireEntityService requireEntityService;
@@ -46,9 +52,22 @@ public class HarvestPermitAttachmentFeature {
             return Collections.emptyList();
         }
 
-        final List<PermitDecisionRevisionAttachment> revisionAttachments = harvestPermitLatestDecisionRevisionService.getLatestRevisionArchivePdfId(decision)
-                .map(PermitDecisionRevision::getSortedAttachments)
-                .orElse(Collections.emptyList());
+        final List<PermitDecisionRevisionAttachment> revisionAttachments =
+                harvestPermitLatestDecisionRevisionService.getLatestRevisionArchivePdfId(decision)
+                        .map(PermitDecisionRevision::getSortedAttachments)
+                        .map(list -> list.stream()
+                                .map(a-> {
+                                    // Sanity check, revisions should not have unordered attachments
+                                    if (a.getOrderingNumber() == null) {
+                                        LOG.warn("Unordered attachment(id:{}) found for revision(id:{})",
+                                                a.getId(),
+                                                mapNullable(a.getDecisionRevision(), PermitDecisionRevision::getId));
+                                    }
+                                    return a;
+                                })
+                                .filter(a -> a.getOrderingNumber() != null)
+                                .collect(Collectors.toList()))
+                        .orElse(Collections.emptyList());
 
         return revisionAttachments.stream()
                 .map(PermitDecisionAttachmentDTO::new)

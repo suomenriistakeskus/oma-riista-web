@@ -54,10 +54,6 @@
             <name>jcenter</name>
             <url>https://jcenter.bintray.com/</url>
         </repository>
-        <repository>
-            <id>version99</id>
-            <url>https://version99.qos.ch/</url>
-        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -77,15 +73,15 @@
         <maven.build.timestamp.format>yyyy-MM-dd_HHmm_z</maven.build.timestamp.format>
         <build.jvmsize>1024m</build.jvmsize>
 
-        <jdk.version>1.8</jdk.version>
+        <jdk.version>11</jdk.version>
         <org.aspectj.version>1.8.10</org.aspectj.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <javax.validation.version>2.0.1.Final</javax.validation.version>
         <jaxws.eclipse.version>2.3.3</jaxws.eclipse.version>
         <jaxws.metro.version>2.3.1</jaxws.metro.version>
         <spring.batch.version>3.0.10.RELEASE</spring.batch.version>
-        <spring.version>5.3.7</spring.version>
-        <spring.security.version>5.4.7</spring.security.version>
+        <spring.version>5.3.21</spring.version>
+        <spring.security.version>5.7.7</spring.security.version>
         <spring.retry.version>1.1.4.RELEASE</spring.retry.version>
         <spring.cloud.version>1.2.4.RELEASE</spring.cloud.version>
         <spring.session.version>1.3.0.RELEASE</spring.session.version>
@@ -97,12 +93,12 @@
         <commons.io.version>2.7</commons.io.version>
         <commons.codec.version>1.10</commons.codec.version>
         <commons.validator.version>1.4.1</commons.validator.version>
-        <sshj.version>0.26.0</sshj.version>
-        <handlebars.version>4.2.0</handlebars.version>
+        <sshj.version>0.33.0</sshj.version>
+        <handlebars.version>4.3.1</handlebars.version>
         <flexmark.version>0.32.18</flexmark.version>
         <jasypt.version>1.9.2</jasypt.version>
         <onelogin.saml.version>2.8.0</onelogin.saml.version>
-        <jsoup.version>1.14.2</jsoup.version>
+        <jsoup.version>1.14.3</jsoup.version>
         <google.phonenumber>8.0.0</google.phonenumber>
         <joda.time.version>2.9.7</joda.time.version>
         <joda.jsp.version>1.1.1</joda.jsp.version>
@@ -112,18 +108,17 @@
         <pdfbox.version>2.0.24</pdfbox.version>
         <barcode4j.version>2.1</barcode4j.version>
         <fcm.java.version>1.0</fcm.java.version>
-        <fcm.admin.version>8.0.0</fcm.admin.version>
-        <sentry.version>1.7.5</sentry.version>
+        <fcm.admin.version>9.1.1</fcm.admin.version>
         <vavr.version>0.10.0</vavr.version>
         <fixedformat4j.version>1.2.2</fixedformat4j.version>
         <!-- Do not upgrade unless Spring Cloud has support -->
-        <amazon.sdk.version>1.11.160</amazon.sdk.version>
+        <amazon.sdk.version>1.11.260</amazon.sdk.version>
 
         <h2.version>1.4.197</h2.version>
         <h2gis.version>1.5.0</h2gis.version>
         <hikaricp.version>3.4.1</hikaricp.version>
-        <postgresql.version>42.2.16</postgresql.version>
-        <liquibase.version>3.10.3</liquibase.version>
+        <postgresql.version>42.4.3</postgresql.version>
+        <liquibase.version>4.11.0</liquibase.version>
         <querydsl.version>4.3.1.1</querydsl.version>
         <hibernate.version>5.4.30.Final</hibernate.version>
         <hibernate.spatial.version>5.4.25.Final</hibernate.spatial.version>
@@ -133,15 +128,15 @@
 
         <apache.httpclient.version>4.5.13</apache.httpclient.version>
         <apache.httpcore.version>4.4.13</apache.httpcore.version>
-        <apache.poi.version>4.1.2</apache.poi.version>
-        <apache.tika.version>1.27</apache.tika.version>
+        <apache.poi.version>5.2.1</apache.poi.version>
+        <apache.tika.version>1.28.4</apache.tika.version>
 
         <slf4j.version>1.7.28</slf4j.version>
-        <jackson.version>2.12.2</jackson.version>
+        <jackson.version>2.14.2</jackson.version>
+        <jackson-databind.version>2.13.4.2</jackson-databind.version>
         <jackson.geojson.version>1.8</jackson.geojson.version>
-        <logback.version>1.2.3</logback.version>
-        <logback.syslog.version>1.0.0</logback.syslog.version>
-        <newrelic.agent.version>5.14.0</newrelic.agent.version>
+        <logback.version>1.2.10</logback.version>
+        <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
         <feign.version>9.7.0</feign.version>
         <swagger.core.version>1.5.20</swagger.core.version>
 
@@ -152,9 +147,11 @@
         <!-- Do not upgrade. Newer Surefire plugin XML is incompatible with Jenkins -->
         <surefire.version>2.18.1</surefire.version>
 
-        <jetty.plugin.version>9.4.20.v20190813</jetty.plugin.version>
+        <jetty.plugin.version>10.0.13</jetty.plugin.version>
         <jetty.http.port>9494</jetty.http.port>
         <jetty.stop.port>9966</jetty.stop.port>
+
+        <datadog.java.agent.version>1.7.0</datadog.java.agent.version>
 
         <!-- Only unit tests are run by default. -->
         <skip.unit.tests>false</skip.unit.tests>
@@ -189,6 +186,46 @@
             </properties>
         </profile>
         <profile>
+            <id>aws-staging</id>
+            <properties>
+                <build.profile.id>aws-staging</build.profile.id>
+            </properties>
+            <build>
+                <filters>
+                    <filter>filter-values-staging.properties</filter>
+                </filters>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-war-plugin</artifactId>
+                        <configuration>
+                            <warName>riistakeskus-${maven.build.timestamp}-${git.commit.id.abbrev}</warName>
+                            <filters>
+                                <filter>filter-values-staging.properties</filter>
+                            </filters>
+                            <webResources>
+                                <resource>
+                                    <directory>src/main/platform</directory>
+                                    <targetPath>.platform</targetPath>
+                                    <filtering>true</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>src/main/ebextensions_staging</directory>
+                                    <targetPath>.ebextensions</targetPath>
+                                    <filtering>true</filtering>
+                                </resource>
+                                <resource>
+                                    <directory>frontend/_public/frontend</directory>
+                                    <targetPath>/frontend</targetPath>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </webResources>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>prod</id>
             <properties>
                 <build.profile.id>prod</build.profile.id>
@@ -208,13 +245,13 @@
                             </filters>
                             <webResources>
                                 <resource>
-                                    <directory>src/main/ebextensions</directory>
-                                    <targetPath>.ebextensions</targetPath>
+                                    <directory>src/main/platform</directory>
+                                    <targetPath>.platform</targetPath>
                                     <filtering>true</filtering>
                                 </resource>
                                 <resource>
-                                    <directory>src/main/webapp/WEB-INF/newrelic</directory>
-                                    <targetPath>WEB-INF/newrelic</targetPath>
+                                    <directory>src/main/ebextensions</directory>
+                                    <targetPath>.ebextensions</targetPath>
                                     <filtering>true</filtering>
                                 </resource>
                                 <resource>
@@ -244,7 +281,7 @@
                     <plugin>
                         <groupId>org.owasp</groupId>
                         <artifactId>dependency-check-maven</artifactId>
-                        <version>6.3.2</version>
+                        <version>8.1.2</version>
                         <configuration>
                             <failBuildOnCVSS>0</failBuildOnCVSS>
                             <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
@@ -276,9 +313,9 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.jvnet.jax-ws-commons</groupId>
+                        <groupId>org.codehaus.mojo</groupId>
                         <artifactId>jaxws-maven-plugin</artifactId>
-                        <version>2.3</version>
+                        <version>2.6</version>
                         <executions>
                             <execution>
                                 <id>vtj-kyselyt</id>
@@ -301,20 +338,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                        <dependencies>
-                            <!-- Metro JAX-WS dependencies (TODO Replace Glassfish Metro with current Eclipse Metro) -->
-                            <dependency>
-                                <groupId>org.glassfish.metro</groupId>
-                                <artifactId>webservices-tools</artifactId>
-                                <version>${jaxws.metro.version}</version>
-                            </dependency>
-                            <!-- see https://java.net/jira/browse/WSIT-1672 -->
-                            <dependency>
-                                <groupId>org.glassfish.metro</groupId>
-                                <artifactId>webservices-rt</artifactId>
-                                <version>${jaxws.metro.version}</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
                 </plugins>
             </build>
@@ -326,7 +349,7 @@
                     <plugin>
                         <groupId>org.jvnet.jaxb2.maven2</groupId>
                         <artifactId>maven-jaxb22-plugin</artifactId>
-                        <version>0.13.2</version>
+                        <version>0.13.3</version>
                         <configuration>
                             <schemaDirectory>src/main/resources/xsd/</schemaDirectory>
                             <bindingDirectory>src/main/resources/xsd/</bindingDirectory>
@@ -459,6 +482,32 @@
                                     <schemaIncludes>
                                         <include>koulutusportaali/jht-suoritukset-v1.xsd</include>
                                     </schemaIncludes>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>koulutusportaali-muut-xsd-compile</id>
+                                <goals>
+                                    <goal>generate</goal>
+                                </goals>
+                                <phase>generate-sources</phase>
+                                <configuration>
+                                    <packageLevelAnnotations>true</packageLevelAnnotations>
+                                    <bindingIncludes>
+                                        <include>koulutusportaali/muut-suoritukset-v1.xjb</include>
+                                    </bindingIncludes>
+                                    <schemaIncludes>
+                                        <include>koulutusportaali/muut-suoritukset-v1.xsd</include>
+                                    </schemaIncludes>
+                                    <args>
+                                        <!-- Enabled JAXB RI customizations -->
+                                        <arg>-extension</arg>
+                                        <arg>-Xnamespace-prefix</arg>
+                                        <arg>-Xfluent-api</arg>
+                                        <arg>-XtoString</arg>
+                                        <arg>-Xequals</arg>
+                                        <arg>-XhashCode</arg>
+                                        <arg>-Xannotate</arg>
+                                    </args>
                                 </configuration>
                             </execution>
                             <execution>
@@ -802,7 +851,6 @@
                 <includes>
                     <include>configuration/*.properties</include>
                     <include>liquibase.properties</include>
-                    <include>sentry.properties</include>
                 </includes>
             </resource>
             <resource>
@@ -811,7 +859,6 @@
                 <excludes>
                     <exclude>configuration/*.properties</exclude>
                     <exclude>liquibase.properties</exclude>
-                    <exclude>sentry.properties</exclude>
                 </excludes>
             </resource>
         </resources>
@@ -821,7 +868,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <!-- Incremental compilation is broken in version 3.0 and 3.1
                    ref: http://jira.codehaus.org/browse/MCOMPILER-205 -->
-                <version>2.5.1</version>
+                <version>3.10.1</version>
                 <configuration>
                     <source>${jdk.version}</source>
                     <target>${jdk.version}</target>
@@ -1063,36 +1110,13 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.1.1</version>
-                <executions>
-                    <execution>
-                        <id>unpack-newrelic</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>unpack-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <includes>**/newrelic.jar</includes>
-                            <includeGroupIds>com.newrelic.agent.java</includeGroupIds>
-                            <includeArtifactIds>newrelic-java</includeArtifactIds>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                            <outputDirectory>${project.build.directory}/riistakeskus/WEB-INF/</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.plugin.version}</version>
                 <configuration>
                     <stopPort>${jetty.stop.port}</stopPort>
                     <stopKey>foo</stopKey>
-                    <scanIntervalSeconds>0</scanIntervalSeconds>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
                     <jvmArgs>-Xms384m -Xmx512m -XX:+TieredCompilation -XX:TieredStopAtLevel=1</jvmArgs>
                     <webApp>
                         <war>${project.basedir}/target/ROOT.war</war>
@@ -1168,7 +1192,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.7.201606060606</version>
+                <version>0.8.8</version>
                 <executions>
                     <execution>
                         <id>pre-unit-test</id>
@@ -1193,7 +1217,42 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.datadoghq</groupId>
+                                    <artifactId>dd-java-agent</artifactId>
+                                    <version>${datadog.java.agent.version}</version>
+                                    <type>jar</type>
+                                    <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/</outputDirectory>
+                                    <!-- java agent jar name is needed for java agent configuration, set jar name here manually. -->
+                                    <destFileName>dd-java-agent.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+        <extensions>
+            <!-- With JDK 11 and above, exception -->
+            <!-- NoSuchMethodError: 'java.lang.String javax.annotation.Resource.lookup()' -->
+            <!-- is thrown on startup, unless this extension is defined: -->
+            <extension>
+                <groupId>javax.annotation</groupId>
+                <artifactId>javax.annotation-api</artifactId>
+                <version>1.3.2</version>
+            </extension>
+        </extensions>
     </build>
     <reporting>
         <plugins>
@@ -1235,11 +1294,6 @@
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${h2.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>commons-logging</groupId>
-                <artifactId>commons-logging</artifactId>
-                <version>99-empty</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.data</groupId>
@@ -1414,11 +1468,12 @@
 
         <!-- Use explicit version to work around CVE-2020-26217, CVE-2020-26259, CVE-2020-26258,
         CVE-2021-21349, CVE-2021-21348, CVE-2021-21347, CVE-2021-21346, CVE-2021-21345, CVE-2021-21344,
-        CVE-2021-21343, CVE-2021-21342, CVE-2021-21341, CVE-2021-21351, CVE-2021-21350, CVE-2021-29505-->
+        CVE-2021-21343, CVE-2021-21342, CVE-2021-21341, CVE-2021-21351, CVE-2021-21350, CVE-2021-29505
+        CVE-2021-43859 -->
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
-            <version>1.4.18</version>
+            <version>1.4.20</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.batch</groupId>
@@ -1437,6 +1492,12 @@
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session</artifactId>
             <version>${spring.session.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -1450,6 +1511,12 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-aws-core</artifactId>
             <version>${spring.cloud.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -1527,7 +1594,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson-databind.version}</version>
         </dependency>
 
         <dependency>
@@ -1561,11 +1628,23 @@
             <version>${jackson.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
         <!-- Apache HTTP client -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>${apache.httpclient.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -1726,6 +1805,19 @@
             <groupId>com.wdtinc</groupId>
             <artifactId>mapbox-vector-tile</artifactId>
             <version>3.1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- CVE-2021-22569: can be removed after mapbox-vector-tile has upgraded its dependencies -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.19.6</version>
         </dependency>
 
         <dependency>
@@ -1860,6 +1952,12 @@
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
             <version>1.9.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- H2 test database -->
@@ -1934,6 +2032,12 @@
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -1956,14 +2060,18 @@
             </exclusions>
         </dependency>
 
-        <!-- Firebase Cloud Messaging Client for mobile push notifications -->
         <dependency>
             <groupId>com.google.firebase</groupId>
             <artifactId>firebase-admin</artifactId>
             <version>${fcm.admin.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
-        <!-- ToStringBuilder, EqualsBuilder, etc.. -->
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
@@ -2047,6 +2155,18 @@
             <version>2.3.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.7</version>
+        </dependency>
+
         <!-- Eclipse Metro JAX-WS is required by e.g. VTJ-API -->
 
         <dependency>
@@ -2067,19 +2187,6 @@
         </dependency>
 
         <dependency>
-            <groupId>io.sentry</groupId>
-            <artifactId>sentry</artifactId>
-            <version>${sentry.version}</version>
-        </dependency>
-
-        <!-- Support for @Trace -->
-        <dependency>
-            <groupId>com.newrelic.agent.java</groupId>
-            <artifactId>newrelic-api</artifactId>
-            <version>${newrelic.agent.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>io.swagger</groupId>
             <artifactId>swagger-annotations</artifactId>
             <version>${swagger.core.version}</version>
@@ -2095,6 +2202,12 @@
             <groupId>com.ancientprogramming.fixedformat4j</groupId>
             <artifactId>fixedformat4j</artifactId>
             <version>${fixedformat4j.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Logging dependencies -->
@@ -2112,9 +2225,10 @@
         </dependency>
 
         <dependency>
-            <groupId>com.papertrailapp</groupId>
-            <artifactId>logback-syslog4j</artifactId>
-            <version>${logback.syslog.version}</version>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logstash-logback-encoder.version}</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -2133,6 +2247,14 @@
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+
+        <!-- GPX export for POIs-->
+
+        <dependency>
+            <groupId>io.jenetics</groupId>
+            <artifactId>jpx</artifactId>
+            <version>1.7.0</version>
         </dependency>
 
         <!-- Testing dependencies -->
@@ -2185,19 +2307,10 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- The newrelic-java.zip dependency. -->
-        <dependency>
-            <groupId>com.newrelic.agent.java</groupId>
-            <artifactId>newrelic-java</artifactId>
-            <version>${newrelic.agent.version}</version>
-            <type>zip</type>
-            <scope>provided</scope>
-        </dependency>
-
         <dependency>
             <groupId>org.docx4j</groupId>
             <artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
-            <version>8.2.8</version>
+            <version>8.3.4</version>
             <exclusions>
                 <!-- JAXB runtime is provided by Eclipse Metro JAX-WS -->
                 <exclusion>

@@ -117,6 +117,11 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         final Person person3 = model().newPerson();
         final Person person4 = model().newPerson();
         final Person person5 = model().newPerson();
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
+        createNewUser("user3", person3);
+        createNewUser("user4", person4);
+        createNewUser("user5", person5);
 
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
@@ -152,7 +157,8 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         final HuntingClub club = model().newHuntingClub();
         final Person person1 = model().newPerson();
         final Person person2 = model().newPerson();
-
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
 
@@ -177,7 +183,8 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         final Person person1 = model().newPerson();
         final Person person2 = model().newPerson();
-
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
 
@@ -203,7 +210,8 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         final Person person1 = model().newPerson();
         final Person person2 = model().newPerson();
-
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
 
@@ -225,7 +233,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
     public void testClubToAllGroupMembers_DuplicateOccupations() {
         final HuntingClub club = model().newHuntingClub();
         final Person person = model().newPerson();
-
+        createNewUser("user1", person);
         final MobileClientDevice client = model().newMobileClientDevice(person);
 
         model().newOccupation(club, person, OccupationType.SEURAN_JASEN);
@@ -246,7 +254,8 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         final HuntingClub club = model().newHuntingClub();
         final Person person1 = model().newPerson();
         final Person person2 = model().newPerson();
-
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
 
@@ -269,7 +278,7 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         final HuntingClubGroup group = model().newHuntingClubGroup(club);
 
         final Person person = model().newPerson();
-
+        createNewUser("user1", person);
         final MobileClientDevice client = model().newMobileClientDevice(person);
 
         model().newOccupation(club, person, OccupationType.SEURAN_JASEN);
@@ -323,7 +332,10 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         final Person person2 = model().newPerson();
         final Person person3 = model().newPerson();
         final Person person4 = model().newPerson();
-
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
+        createNewUser("user3", person3);
+        createNewUser("user4", person4);
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
         final MobileClientDevice client3 = model().newMobileClientDevice(person3);
@@ -357,7 +369,8 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
 
         final Person person1 = model().newPerson();
         final Person person2 = model().newPerson();
-
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
 
@@ -391,7 +404,10 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         final Person person2 = model().newPerson();
         final Person person3 = model().newPerson();
         final Person person4 = model().newPerson();
-
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
+        createNewUser("user3", person3);
+        createNewUser("user4", person4);
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
         final MobileClientDevice client3 = model().newMobileClientDevice(person3);
@@ -429,7 +445,10 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         final Person person2 = model().newPerson();
         final Person person3 = model().newPerson();
         final Person person4 = model().newPerson();
-
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
+        createNewUser("user3", person3);
+        createNewUser("user4", person4);
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
         final MobileClientDevice client3 = model().newMobileClientDevice(person3);
@@ -544,7 +563,9 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         final Person person2 = model().newPerson();
         person2.setRhyMembership(rhy2);
         final Person person3 = model().newPerson();
-
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
+        createNewUser("user3", person3);
         final MobileClientDevice client1 = model().newMobileClientDevice(person1);
         final MobileClientDevice client2 = model().newMobileClientDevice(person2);
         final MobileClientDevice client3 = model().newMobileClientDevice(person3);
@@ -557,5 +578,55 @@ public class AnnouncementSubscriberPersonResolverTest extends EmbeddedDatabaseTe
         persistInNewTransaction();
 
         assertSubscribers(announcement, new TestReceiver(person1.getEmail(), client1));
+    }
+
+    @Test
+    public void testRhyToMembers_noEmailToUnregisteredMember() {
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys();
+
+        final Person registeredPerson1 = model().newPerson();
+        registeredPerson1.setRhyMembership(rhy);
+        final Person unregisteredPerson = model().newPerson();
+        unregisteredPerson.setRhyMembership(rhy);
+        createNewUser("user1", registeredPerson1);
+
+        final MobileClientDevice client1 = model().newMobileClientDevice(registeredPerson1);
+
+        final SystemUser user = model().newUser(model().newPerson());
+        final Riistanhoitoyhdistys from = model().newRiistanhoitoyhdistys();
+        final Announcement announcement = model().newAnnouncement(user, from, AnnouncementSenderType.RIISTAKESKUS);
+        announcement.setRhyMembershipSubscriber(rhy);
+
+        persistInNewTransaction();
+
+        assertSubscribers(announcement, new TestReceiver(registeredPerson1.getEmail(), client1));
+    }
+
+    @Test
+    public void testPersonDeniedAnnouncementEmail() {
+        final RiistakeskuksenAlue rka1 = model().newRiistakeskuksenAlue();
+        final Riistanhoitoyhdistys rhy1 = model().newRiistanhoitoyhdistys(rka1);
+        final Person person1 = model().newPerson();
+        final Person person2 = model().newPerson();
+        person2.setDenyAnnouncementEmail(true);
+
+        createNewUser("user1", person1);
+        createNewUser("user2", person2);
+
+        final MobileClientDevice client1 = model().newMobileClientDevice(person1);
+        final MobileClientDevice client2 = model().newMobileClientDevice(person2);
+
+        model().newOccupation(rhy1, person1, OccupationType.PUHEENJOHTAJA);
+        model().newOccupation(rhy1, person2, OccupationType.SRVA_YHTEYSHENKILO);
+
+        final List<TestSubscriber> subscribers = new LinkedList<>();
+        subscribers.add(new TestSubscriber(rka1, OccupationType.PUHEENJOHTAJA));
+        subscribers.add(new TestSubscriber(rka1, OccupationType.SRVA_YHTEYSHENKILO));
+
+        final Announcement announcement = createAnnouncement(subscribers);
+
+        persistInNewTransaction();
+
+        assertSubscribers(announcement, new TestReceiver(person1.getEmail(), client1), new TestReceiver(null, client2));
     }
 }

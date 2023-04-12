@@ -58,7 +58,6 @@ public class ShootingTestExportQueries {
                 .join(PARTICIPANT.shootingTestEvent, EVENT)
                 .join(EVENT.calendarEvent, CALENDAR_EVENT)
                 .where(createDatePredicate(CALENDAR_EVENT, searchPeriodEndDate),
-                        EVENT.lockedTime.isNotNull(),
                         PARTICIPANT.completed.isTrue(),
                         PARTICIPANT.hunterNumber.isNotNull(),
                         PARTICIPANT.hunterNumber.gt(exclusiveLowerBoundForHunterNumber))
@@ -112,11 +111,11 @@ public class ShootingTestExportQueries {
                 .join(EVENT.calendarEvent, CALENDAR_EVENT)
                 .join(CALENDAR_EVENT.organisation, RHY)
                 .where(createDatePredicate(CALENDAR_EVENT, searchPeriodEndDate),
-                        EVENT.lockedTime.isNotNull(),
                         PARTICIPANT.completed.isTrue(),
                         PARTICIPANT.totalDueAmount.eq(PARTICIPANT.paidAmount),
                         PARTICIPANT.hunterNumber.between(minHunterNumber, maxHunterNumber),
                         ATTEMPT.result.eq(QUALIFIED))
+                .orderBy(CALENDAR_EVENT.date.desc())
                 .fetch()
                 .stream()
                 .collect(groupingBy(

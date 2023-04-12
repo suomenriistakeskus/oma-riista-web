@@ -7,6 +7,8 @@ angular.module('app.club', [
     'app.club.permits',
     'app.club.reports',
     'app.club.harvestsummary',
+    'app.club.gamestatistics',
+    'app.club.deercensus',
     'app.clubgroup.members',
     'app.clubgroup.datacard',
     'app.clubgroup.controllers',
@@ -21,5 +23,6 @@ angular.module('app.club', [
     'app.clubhunting.add',
     'app.clubhunting.day',
     'app.clubhunting.show',
-    'app.clubhunting.fixgeolocation'
+    'app.clubhunting.fixgeolocation',
+    'app.clubpoi'
 ]);

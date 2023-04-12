@@ -30,14 +30,18 @@ public class SrvaEventExportExcelDTO {
         dto.setSrvaEventId(srvaEvent.getId());
         dto.setState(i18n.getTranslation(srvaEvent.getState()));
         dto.setEventName(i18n.getTranslation(srvaEvent.getEventName()));
+        dto.setDeportationOrderNumber(srvaEvent.getDeportationOrderNumber());
         dto.setEventType(i18n.getTranslation(srvaEvent.getEventType()));
         dto.setOtherTypeDescription(srvaEvent.getOtherTypeDescription());
+        dto.setEventTypeDetail(i18n.getTranslation(srvaEvent.getEventTypeDetail()));
+        dto.setOtherTypeDetailDescription(srvaEvent.getOtherEventTypeDetailDescription());
         dto.setDescription(srvaEvent.getDescription());
         dto.setAnimalSpecies(srvaEvent.getSpecies() != null
                 ? i18n.getTranslation(srvaEvent.getSpecies().getNameLocalisation()) : null);
         dto.setOtherSpeciesDescription(srvaEvent.getOtherSpeciesDescription());
         dto.setSpecimenAmount(srvaEvent.getTotalSpecimenAmount());
         dto.setEventResult(i18n.getTranslation(srvaEvent.getEventResult()));
+        dto.setEventResultDetail(i18n.getTranslation(srvaEvent.getEventResultDetail()));
         dto.setOtherMethodDescription(srvaEvent.getOtherMethodDescription());
         dto.setPersonCount(srvaEvent.getPersonCount());
         dto.setTimeSpent(srvaEvent.getTimeSpent());
@@ -103,11 +107,17 @@ public class SrvaEventExportExcelDTO {
     // (string) Name of event, localized
     private String eventName;
 
+    private String deportationOrderNumber;
+
     // (string) Type of event, localized
     private String eventType;
 
     // (String) Description of event type in case of eventType == OTHER
     private String otherTypeDescription;
+
+    private String eventTypeDetail;
+
+    private String otherTypeDetailDescription;
 
     // (string) Animal species name in Finnish
     private String animalSpecies;
@@ -168,6 +178,8 @@ public class SrvaEventExportExcelDTO {
     // (string) Result of event, localized
     private String eventResult;
 
+    private String eventResultDetail;
+
     // (string) Methods of event, localized
     private String eventMethods;
 
@@ -221,6 +233,14 @@ public class SrvaEventExportExcelDTO {
         this.eventName = eventName;
     }
 
+    public String getDeportationOrderNumber() {
+        return deportationOrderNumber;
+    }
+
+    public void setDeportationOrderNumber(final String deportationOrderNumber) {
+        this.deportationOrderNumber = deportationOrderNumber;
+    }
+
     public String getEventType() {
         return eventType;
     }
@@ -235,6 +255,22 @@ public class SrvaEventExportExcelDTO {
 
     public void setOtherTypeDescription(String otherTypeDescription) {
         this.otherTypeDescription = otherTypeDescription;
+    }
+
+    public String getEventTypeDetail() {
+        return eventTypeDetail;
+    }
+
+    public void setEventTypeDetail(final String eventTypeDetail) {
+        this.eventTypeDetail = eventTypeDetail;
+    }
+
+    public String getOtherTypeDetailDescription() {
+        return otherTypeDetailDescription;
+    }
+
+    public void setOtherTypeDetailDescription(final String otherTypeDetailDescription) {
+        this.otherTypeDetailDescription = otherTypeDetailDescription;
     }
 
     public String getAnimalSpecies() {
@@ -355,6 +391,14 @@ public class SrvaEventExportExcelDTO {
 
     public void setEventResult(String eventResult) {
         this.eventResult = eventResult;
+    }
+
+    public String getEventResultDetail() {
+        return eventResultDetail;
+    }
+
+    public void setEventResultDetail(final String eventResultDetail) {
+        this.eventResultDetail = eventResultDetail;
     }
 
     public String getEventMethods() {

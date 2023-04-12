@@ -1,7 +1,6 @@
 package fi.riista.feature.huntingclub.copy;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
-import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
@@ -28,9 +27,6 @@ public class CopyClubGroupService {
     private HuntingClubGroupRepository huntingClubGroupRepository;
 
     @Resource
-    private RequireEntityService requireEntityService;
-
-    @Resource
     private OccupationRepository occupationRepository;
 
     @Resource
@@ -38,7 +34,7 @@ public class CopyClubGroupService {
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public HuntingClubGroup copyGroup(final HuntingClubGroup originalGroup,
-                                       final HuntingClubArea huntingArea) {
+                                      final HuntingClubArea huntingArea) {
         final HuntingClubGroup group = new HuntingClubGroup();
         group.setParentOrganisation(originalGroup.getParentOrganisation());
         group.setSpecies(originalGroup.getSpecies());
@@ -54,15 +50,24 @@ public class CopyClubGroupService {
 
         final List<Occupation> newOccupations =
                 occupationRepository.findNotDeletedByOrganisation(originalGroup).stream()
-                .filter(o -> !o.getPerson().isDeceased())
-                .map(o -> new Occupation(
-                        o.getPerson(), group, o.getOccupationType(), o.getContactInfoShare(), o.getCallOrder()))
-                .collect(toList());
+                        .filter(o -> !o.getPerson().isDeceased())
+                        .map(o -> {
+                            final Occupation newOcc = new Occupation(o.getPerson(),
+                                    group,
+                                    o.getOccupationType(),
+                                    o.getContactInfoShare(),
+                                    o.getCallOrder());
+                            newOcc.setEmailVisibility(o.isEmailVisibility());
+                            newOcc.setNameVisibility(o.isNameVisibility());
+                            newOcc.setPhoneNumberVisibility(o.isPhoneNumberVisibility());
+                            return newOcc;
+                        })
+                        .collect(toList());
         occupationRepository.saveAll(newOccupations);
         return group;
     }
 
-    private String suffix(Locale locale) {
+    private String suffix(final Locale locale) {
         return " " + messageSource.getMessage("copy.suffix.caps", null, locale);
     }
 

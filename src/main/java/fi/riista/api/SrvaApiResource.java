@@ -7,6 +7,7 @@ import fi.riista.feature.gamediary.srva.SrvaEventDTO;
 import fi.riista.feature.gamediary.srva.SrvaEventExportExcelDTO;
 import fi.riista.feature.gamediary.srva.SrvaEventListExcelView;
 import fi.riista.feature.gamediary.srva.SrvaEventSearchDTO;
+import fi.riista.feature.gamediary.srva.SrvaEventSpecVersion;
 import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
 import fi.riista.feature.gamediary.srva.SrvaParametersDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
@@ -48,7 +49,7 @@ public class SrvaApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/parameters", method = RequestMethod.GET)
     public SrvaParametersDTO getSrvaParameters() {
-        return srvaCrudFeature.getSrvaParameters();
+        return srvaCrudFeature.getSrvaParameters(SrvaEventSpecVersion.MOST_RECENT);
     }
 
     @RequestMapping(value = "/srvaevent", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)

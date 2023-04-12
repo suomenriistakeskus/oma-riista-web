@@ -201,8 +201,9 @@
             CUSTOM: 'CUSTOM'
         })
 
-        .service('AnnouncementFormModal', function ($uibModal, $translate, NotificationService, ActiveRoleService,
-                                                    Announcements, AnnouncementSubscriberType, AnnouncementSubscriberMode) {
+        .service('AnnouncementFormModal', function ($uibModal, $translate, $q, NotificationService, ActiveRoleService,
+                                                    Announcements, AnnouncementSubscriberType,
+                                                    AnnouncementSubscriberMode, ModeratorPrivileges) {
             this.openModal = function (fromOrganisation, announcement, mode) {
 
                 switch (mode) {
@@ -473,7 +474,13 @@
                     $ctrl.announcement.fromOrganisation = pickOrganisation($ctrl.fromOrganisation);
                     $ctrl.announcement.subscriberOrganisations = _.map($ctrl.selectedOrganisations, pickOrganisation);
 
-                    showSendEmailDialog()
+                    checkEmailSendingAllowed()
+                        .then(function (emailSendingAllowed) {
+                            if (emailSendingAllowed) {
+                                return showSendEmailDialog();
+                            }
+                            return $q.when(false);
+                        })
                         .then(function (sendEmail) {
                             announcement.sendEmail = sendEmail;
                             TranslatedBlockUI.start("global.block.wait");
@@ -490,10 +497,33 @@
                         .finally(TranslatedBlockUI.stop);
                 };
 
+                function checkEmailSendingAllowed() {
+                    if (fromOrganisation.organisationType !== 'CLUB' &&
+                        fromOrganisation.organisationType !== 'RHY' &&
+                        !canSendEmailFromRkLevel()) {
+                        return $q.when(false);
+                    }
+                    return $q.when(true);
+                }
+
                 $ctrl.cancel = function () {
                     $uibModalInstance.dismiss('cancel');
                 };
 
+                function canSendEmailFromRkLevel() {
+                    if (ActiveRoleService.isAdmin()) {
+                        return true;
+                    }
+
+                    // Allow moderators to send emails only when non-RK level recipients selected and moderator
+                    // has bulk message privilege
+                    if (ActiveRoleService.isPrivilegedModerator(ModeratorPrivileges.bulkMessagePrivilege) &&
+                        _.isEmpty(
+                            _.filter($ctrl.announcement.subscriberOrganisations, ['organisationType', 'RK']))) {
+                        return true;
+                    }
+                    return false;
+                }
             }
 
         })

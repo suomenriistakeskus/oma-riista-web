@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.dogdisturbance.attachments', ['app
                 templateUrl: 'harvestpermit/applications/dogdisturbance/attachments/attachments.html',
                 controller: 'DerogationPermitWizardAttachmentsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     attachmentList: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.listAttachments({

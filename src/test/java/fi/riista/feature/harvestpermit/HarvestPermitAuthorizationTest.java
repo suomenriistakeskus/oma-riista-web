@@ -23,6 +23,7 @@ import java.util.Set;
 import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.CREATE_REMOVE_MOOSE_HARVEST_REPORT;
 import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.LIST_LEADERS;
 import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.UPDATE_ALLOCATIONS;
+import static fi.riista.feature.harvestpermit.HarvestPermitAuthorization.Permission.VIEW_OBSERVATION_SUMMARY;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_JASEN;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
@@ -77,7 +78,7 @@ public class HarvestPermitAuthorizationTest extends EmbeddedDatabaseTest {
         }
 
         onSavedAndAuthenticated(user, () -> assertHasPermissions(permit, asList(
-                READ, UPDATE, UPDATE_ALLOCATIONS, CREATE_REMOVE_MOOSE_HARVEST_REPORT, LIST_LEADERS)));
+                READ, UPDATE, UPDATE_ALLOCATIONS, CREATE_REMOVE_MOOSE_HARVEST_REPORT, LIST_LEADERS, VIEW_OBSERVATION_SUMMARY)));
     }
 
     @Test

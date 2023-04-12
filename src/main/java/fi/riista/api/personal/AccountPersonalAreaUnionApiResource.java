@@ -163,10 +163,21 @@ public class AccountPersonalAreaUnionApiResource {
 
     // PDF
 
-    @PostMapping(value = "/{id:\\d+}/print", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseEntity<?> print(@PathVariable final long id, final Locale locale,
-                                   @ModelAttribute @Valid final MapPdfParameters dto) {
-        final PersonalAreaUnionFeature.PdfData pdfData = personalAreaUnionFeature.exportPdf(id, locale, dto);
+    @PostMapping(value = "/{id:\\d+}/print-map", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> printMap(@PathVariable final long id, final Locale locale,
+                                      @ModelAttribute @Valid final MapPdfParameters dto) {
+        final PersonalAreaUnionFeature.PdfData pdfData = personalAreaUnionFeature.exportMapPdf(id, locale, dto);
+
+        return ResponseEntity.ok()
+                .contentType(MediaTypeExtras.APPLICATION_PDF)
+                .contentLength(pdfData.getData().length)
+                .headers(ContentDispositionUtil.header(pdfData.getFilename()))
+                .body(pdfData.getData());
+    }
+
+    @PostMapping(value = "/{id:\\d+}/print-partners", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> printPartners(@PathVariable final long id, final Locale locale) {
+        final PersonalAreaUnionFeature.PdfData pdfData = personalAreaUnionFeature.exportPartnersPdf(id, locale);
 
         return ResponseEntity.ok()
                 .contentType(MediaTypeExtras.APPLICATION_PDF)

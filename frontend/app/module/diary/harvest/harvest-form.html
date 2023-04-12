@@ -181,6 +181,10 @@
                 ng-if="!viewState.moderatorView"
                 harvest="entry"></diary-harvest-author-shooter>
 
+        <diary-harvest-hunting-club
+                game-species-code="entry.gameSpeciesCode"
+                harvest="entry">
+        </diary-harvest-hunting-club>
         <diary-harvest-season-fields harvest="entry"
                                      diary-parameters="viewState.parameters"
                                      fields="viewState.fields"></diary-harvest-season-fields>
@@ -217,7 +221,8 @@
             <div class="col-xs-8">
                 <textarea name="harvestReportMemo" id="harvestReportMemo"
                           class="form-control"
-                          ng-model="entry.harvestReportMemo"></textarea>
+                          ng-model="entry.harvestReportMemo"
+                          spellcheck="false"></textarea>
             </div>
         </div>
 
@@ -230,7 +235,8 @@
                 <textarea name="description" id="description"
                           class="form-control"
                           rows="6"
-                          ng-model="entry.description"></textarea>
+                          ng-model="entry.description"
+                          spellcheck="false"></textarea>
             </div>
         </div>
 

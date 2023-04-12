@@ -30,12 +30,13 @@ footer, header, hgroup, menu, nav, section {
 
 body {
     font-family: "Times New Roman", "Times", serif;
-    width: 180mm; /* 21cm - 3cm */
-    height: 277mm; /* 29.7cm - 2cm */
     margin-left: auto;
     margin-right: auto;
     font-size: 12pt;
     line-height: 1.2;
+    width: 210mm;
+    height: 297mm;
+    position: relative;
 }
 
 img {
@@ -60,6 +61,12 @@ hr {
     border: none;
     border-bottom: 1pt solid #999;
     margin: 7pt 0 7pt;
+}
+
+.header-separator {
+    border-bottom: 2pt solid #7c896b;
+    margin-left: 18mm;
+    margin-top: 1em;
 }
 
 sup {
@@ -89,17 +96,20 @@ ul {
 
 .container {
     position: relative;
-    margin-left: 0pt;
-    margin-right: 0pt;
+    margin-left: 40pt;
+    margin-right: 20pt;
+}
+
+.header-container {
+    padding-left: 15mm;
 }
 
 .header-text {
     position: absolute;
-    right: 0;
+    right: 15mm;
     top: 18pt;
     color: #333;
     font-weight: bolder;
-    /*line-height: 16pt;*/
 }
 
 .header-logo {
@@ -108,28 +118,45 @@ ul {
 }
 
 .footer {
+    left:0;
+    bottom:0;
+    right: 0;
     position: relative;
+    width: 100%;
     z-index: -2000;
     page-break-inside: avoid;
     page-break-after: avoid;
-    margin-left: -20pt;
-    margin-right: -20pt;
+}
+
+.footer-container {
+    background-color: #7c896b;
+    position: absolute;
+    left:0;
+    bottom:0;
+    right: 0;
+    width: 100%;
 }
 
 .footer-table {
-    position: absolute;
-    left: 20pt;
-    bottom: 10pt;
+    width: 170mm;
+    position: relative;
+    margin-left: 20mm;
+    margin-right: 20mm;
+    margin-top: 15pt;
+    margin-bottom: 15pt;
+
+    padding-left: 10pt;
+    padding-bottom: 10pt;
+
     font-size: 7pt;
     line-height: 9pt;
-    font-family: Arial, Helvetica, "Bitstream Vera Sans", sans-serif;
+    font-family: "Gill Sans", Arial, Helvetica, "Bitstream Vera Sans", sans-serif;
 }
 
 .footer-table td {
     padding-top: 2pt;
     padding-right: 15pt;
-    border-top: 1px solid #999;
-    color: #999;
+    color: white;
 }
 
 .footer-table td:last-child {

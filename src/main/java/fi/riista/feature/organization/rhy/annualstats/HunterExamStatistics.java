@@ -3,6 +3,8 @@ package fi.riista.feature.organization.rhy.annualstats;
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -14,10 +16,14 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.HUNTER_EXAM_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantFieldGroup.HUNTER_EXAM_STATISTICS;
 import static fi.riista.util.F.nullsafeMax;
 import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
@@ -26,11 +32,12 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class HunterExamStatistics
         implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsFieldsetParticipants,
         AnnualStatisticsManuallyEditableFields<HunterExamStatistics>,
         Serializable {
 
-    public static final HunterExamStatistics reduce(@Nullable final HunterExamStatistics a,
-                                                    @Nullable final HunterExamStatistics b) {
+    public static HunterExamStatistics reduce(@Nullable final HunterExamStatistics a,
+                                              @Nullable final HunterExamStatistics b) {
 
         final HunterExamStatistics result = new HunterExamStatistics();
         result.hunterExamEvents = nullableIntSum(a, b, HunterExamStatistics::getHunterExamEvents);
@@ -74,6 +81,9 @@ public class HunterExamStatistics
     @Column(name = "failed_hunter_exams")
     private Integer failedHunterExams;
 
+    @Column(name = "hunter_exam_attempt_results_overridden", nullable = false)
+    private boolean hunterExamAttemptResultsOverridden;
+
     // Metsästäjätutkinnon vastaanottajien määrä
     @Min(0)
     @Column(name = "hunter_exam_officials")
@@ -93,6 +103,7 @@ public class HunterExamStatistics
         copy.hunterExamEventsLastOverridden = this.hunterExamEventsLastOverridden;
         copy.passedHunterExams = this.passedHunterExams;
         copy.failedHunterExams = this.failedHunterExams;
+        copy.hunterExamAttemptResultsOverridden = this.hunterExamAttemptResultsOverridden;
         copy.hunterExamOfficials = this.hunterExamOfficials;
         copy.lastModified = this.lastModified;
         return copy;
@@ -115,13 +126,30 @@ public class HunterExamStatistics
     public void assignFrom(@Nonnull final HunterExamStatistics that) {
         // Includes only fields manually updateable by coordinator.
 
+        if (!Objects.equals(this.passedHunterExams, that.passedHunterExams) ||
+                !Objects.equals(this.failedHunterExams, that.failedHunterExams)) {
+            this.hunterExamAttemptResultsOverridden = true;
+        }
         this.passedHunterExams = that.passedHunterExams;
         this.failedHunterExams = that.failedHunterExams;
     }
 
     @Override
     public boolean isReadyForInspection() {
-        return F.allNotNull(hunterExamEvents, passedHunterExams, failedHunterExams, hunterExamOfficials);
+        return F.allNotNull(hunterExamEvents, passedHunterExams, failedHunterExams, hunterExamOfficials) && hasParticipants();
+    }
+
+    private boolean hasParticipants() {
+        return listMissingParticipants()._2.isEmpty();
+    }
+
+    @Override
+    public Tuple2<AnnualStatisticsParticipantFieldGroup, List<AnnualStatisticsParticipantField>> listMissingParticipants() {
+        final List<AnnualStatisticsParticipantField> missing = new ArrayList<>();
+        if (hunterExamEvents != null && hunterExamEvents > 0 &&  passedHunterExams + failedHunterExams <= 0) {
+            missing.add(HUNTER_EXAM_EVENTS);
+        }
+        return Tuple.of(HUNTER_EXAM_STATISTICS, missing);
     }
 
     @Override
@@ -174,6 +202,14 @@ public class HunterExamStatistics
 
     public void setFailedHunterExams(final Integer failedHunterExams) {
         this.failedHunterExams = failedHunterExams;
+    }
+
+    public boolean isHunterExamAttemptResultsOverridden() {
+        return hunterExamAttemptResultsOverridden;
+    }
+
+    public void setHunterExamAttemptResultsOverridden(final boolean hunterExamAttemptResultsOverridden) {
+        this.hunterExamAttemptResultsOverridden = hunterExamAttemptResultsOverridden;
     }
 
     public Integer getHunterExamOfficials() {

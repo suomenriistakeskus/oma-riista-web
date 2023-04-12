@@ -14,7 +14,12 @@ public interface HarvestPermitApplicationConflictPalstaRepositoryCustom {
                                                          HarvestPermitApplication firstApplication,
                                                          List<HarvestPermitApplication> otherApplicationList);
 
-    Map<Long, ConfictSummaryDTO> countConflictSummaries(final long batchId,
-                                                        HarvestPermitApplication application,
-                                                        List<HarvestPermitApplication> conflicting);
+    Map<Long, ConflictSummaryDTO> countConflictSummaries(final long batchId,
+                                                         HarvestPermitApplication application,
+                                                         List<HarvestPermitApplication> conflicting);
+
+    Map<Long, PalstaConflictSummaryDTO> getPalstaConflictSummaries(List<Integer> palstaIds,
+                                                                   HarvestPermitApplication application,
+                                                                   HarvestPermitApplication conflictingApplication
+    );
 }

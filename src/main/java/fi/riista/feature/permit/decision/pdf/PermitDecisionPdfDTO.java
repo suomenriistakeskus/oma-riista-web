@@ -13,6 +13,7 @@ import fi.riista.util.Locales;
 import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 import java.util.Objects;
 
 import static fi.riista.feature.permit.decision.PermitDecision.DecisionType.CANCEL_ANNUAL_RENEWAL;
@@ -22,6 +23,9 @@ public class PermitDecisionPdfDTO {
 
     private final boolean swedish;
     private final String permitNumber;
+
+    private final List<String> additionalPermitNumbers;
+    private final boolean draft;
     private final PermitDecisionDocument document;
     private final PermitDecisionDocumentHeadingDTO heading;
     private final PermitHolderDTO permitHolder;
@@ -63,7 +67,9 @@ public class PermitDecisionPdfDTO {
 
     public PermitDecisionPdfDTO(final @Nonnull String permitNumber,
                                 final @Nonnull PermitDecision decision,
-                                final @Nonnull PermitDecisionDocument document) {
+                                final @Nonnull PermitDecisionDocument document,
+                                final @Nonnull List<String> additionalPermitNumbers,
+                                final boolean draft) {
         Objects.requireNonNull(decision);
         Objects.requireNonNull(document);
         Objects.requireNonNull(decision.getContactPerson());
@@ -71,6 +77,8 @@ public class PermitDecisionPdfDTO {
 
         this.swedish = Locales.isSwedish(decision.getLocale());
         this.permitNumber = Objects.requireNonNull(permitNumber);
+        this.draft = draft;
+        this.additionalPermitNumbers = additionalPermitNumbers;
         this.publishDate = decision.getPublishDate() != null ? decision.getPublishDate().toLocalDateTime() : null;
         this.document = document;
         this.heading = new PermitDecisionDocumentHeadingDTO(decision.getLocale(), decision.getDecisionName());
@@ -88,6 +96,14 @@ public class PermitDecisionPdfDTO {
 
     public String getPermitNumber() {
         return permitNumber;
+    }
+
+    public List<String> getAdditionalPermitNumbers() {
+        return additionalPermitNumbers;
+    }
+
+    public boolean isDraft() {
+        return draft;
     }
 
     public boolean isSwedish() {

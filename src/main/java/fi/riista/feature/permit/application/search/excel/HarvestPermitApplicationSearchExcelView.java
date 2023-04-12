@@ -15,14 +15,17 @@ import org.springframework.web.servlet.view.document.AbstractXlsxView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static fi.riista.util.DateUtil.DATE_FORMAT_FINNISH;
 import static fi.riista.util.DateUtil.now;
 import static fi.riista.util.F.mapNullable;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -91,15 +94,17 @@ public class HarvestPermitApplicationSearchExcelView extends AbstractXlsxView {
                         appendRow(helper, dto, LocalisedString.fromMap(appliedSpecies.getName()), appliedAmount);
                     } else {
                         // Decision and application species available
-                        final List<Integer> grantedYears = decisionSpeciesAmounts.keySet().stream()
-                                .distinct()
-                                .sorted()
-                                .collect(toList());
+                        final int officialCode = appliedSpecies.getCode();
+                        final Float appliedAmount = appliedAmounts.get(officialCode).getSpecimenAmount();
+                        final List<Integer> grantedYears = Optional.ofNullable(decisionSpeciesAmounts.get(officialCode))
+                                .map(e -> e.keySet().stream().distinct().sorted().collect(toList()))
+                                .orElseGet(Collections::emptyList);
 
                         grantedYears.forEach(grantedYear -> {
-                            final int officialCode = appliedSpecies.getCode();
-                            final Float appliedAmount = appliedAmounts.get(officialCode).getSpecimenAmount();
-                            final Float decisionAmount = decisionSpeciesAmounts.get(grantedYear).get(officialCode).getSpecimenAmount();
+                            final Float decisionAmount = Optional.ofNullable(decisionSpeciesAmounts.get(officialCode))
+                                    .map(e -> e.get(grantedYear))
+                                    .map(ApplicationSearchDecisionSpeciesAmountDTO::getSpecimenAmount)
+                                    .orElse(null);
                             appendRow(helper, dto, LocalisedString.fromMap(appliedSpecies.getName()), appliedAmount, grantedYear, decisionAmount);
                         });
                     }

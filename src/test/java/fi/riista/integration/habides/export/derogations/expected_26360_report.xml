@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <derogations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" country="FI" userIdentity="FIMMM" labelLanguage="en" xml:lang="en" xsi:noNamespaceSchemaLocation="http://dd.eionet.europa.eu/schemas/habides-2.0/derogations.xsd">
-    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-1-2019-1-000-00035-5-26360" user_derogation_ref="2019-1-000-00035-5" userIdentity="FIMMM" status="complete">
+    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-001-2019-1-000-00035-5-26360" user_derogation_ref="2019-1-000-00035-5" userIdentity="FIMMM" status="complete">
         <species>Avis periculum</species>
         <speciesGroup></speciesGroup>
         <coversAllSpecies></coversAllSpecies>
@@ -60,7 +60,7 @@
         <supervisoryMeasure>Testikeskus Yksi</supervisoryMeasure>
         <comments>2019-01-01 - 2019-06-30, 2019-09-01 - 2019-12-31</comments>
     </derogation>
-    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-1-2019-1-000-00105-3-26360" user_derogation_ref="2019-1-000-00105-3" userIdentity="FIMMM" status="complete">
+    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-002-2019-1-000-00105-3-26360" user_derogation_ref="2019-1-000-00105-3" userIdentity="FIMMM" status="complete">
         <species>Avis periculum</species>
         <speciesGroup></speciesGroup>
         <coversAllSpecies></coversAllSpecies>
@@ -118,7 +118,7 @@
         <supervisoryMeasure>Testikeskus Kaksi</supervisoryMeasure>
         <comments>2019-01-01 - 2019-06-30</comments>
     </derogation>
-    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-1-2019-1-000-00501-7-26360" user_derogation_ref="2019-1-000-00501-7" userIdentity="FIMMM" status="complete">
+    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-003-2019-1-000-00501-7-26360" user_derogation_ref="2019-1-000-00501-7" userIdentity="FIMMM" status="complete">
         <species>Avis periculum</species>
         <speciesGroup></speciesGroup>
         <coversAllSpecies></coversAllSpecies>
@@ -177,7 +177,7 @@
         <supervisoryMeasure>Testikeskus Kaksi</supervisoryMeasure>
         <comments>2019-01-01 - 2019-06-30</comments>
     </derogation>
-    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-1-2019-1-000-00547-3-26360" user_derogation_ref="2019-1-000-00547-3" userIdentity="FIMMM" status="complete">
+    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-004-2019-1-000-00547-3-26360" user_derogation_ref="2019-1-000-00547-3" userIdentity="FIMMM" status="complete">
         <species>Avis periculum</species>
         <speciesGroup></speciesGroup>
         <coversAllSpecies></coversAllSpecies>

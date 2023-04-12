@@ -1,0 +1,82 @@
+<div class="row">
+    <div class="col-xs-12">
+        <h2 translate="jht.menu.harvestSeasons"></h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-3">
+        <label for="yearSelect" translate="global.huntingYear"></label>
+        <select name="yearSelect" id="yearSelect"
+                class="form-control"
+                ng-model="$ctrl.selectedYear"
+                ng-options="year for year in $ctrl.years"
+                ng-change="$ctrl.yearChanged()">
+            <option disabled value="">{{'club.hunting.selectHuntingYear' | translate}}</option>
+        </select>
+    </div>
+
+    <div class="col-xs-3">
+        <label for="gameSpecies" translate="global.species"></label>
+        <select name="gameSpecies" id="gameSpecies"
+                class="form-control"
+                ng-model="$ctrl.selectedSpecies"
+                ng-change="$ctrl.speciesChanged()"
+                ng-options="(s | rI18nNameFilter:'translated') group by (s.gameCategory | translate) for s in $ctrl.filterList | orderBy:'name.translated' track by s.code">
+            <option value="">{{'club.hunting.selectSpecies' | translate}}</option>
+        </select>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-6">
+        <button class="btn btn-primary r-harvest-season-add"
+                id="add-button"
+                translate="jht.harvestSeason.list.addSeason"
+                ng-click="$ctrl.add()">
+        </button>
+    </div>
+    <div class="col-xs-6 text-right">
+        <button class="btn btn-primary r-harvest-season-add"
+                id="copy-button"
+                translate="jht.harvestSeason.list.copySeasons"
+                ng-click="$ctrl.copy()">
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <ul class="nav nav-pills r-harvest-season-filters">
+            <li ng-class="{'active': $ctrl.filter === 'all'}">
+                <a class="r-harvest-season-filter-text" ng-click="$ctrl.filterChanged('all')" translate="jht.harvestSeason.gameCategory.all"></a>
+            </li>
+            <li ng-class="{'active': $ctrl.filter === 'quota'}">
+                <a class="r-harvest-season-filter-text" ng-click="$ctrl.filterChanged('quota')" translate="jht.harvestSeason.gameCategory.quota"></a>
+            </li>
+            <li ng-class="{'active': $ctrl.filter === 'fowl'}">
+                <a class="r-harvest-season-filter-text" ng-click="$ctrl.filterChanged('fowl')" translate="jht.harvestSeason.gameCategory.fowl"></a>
+            </li>
+            <li ng-class="{'active': $ctrl.filter === 'mammal'}">
+                <a class="r-harvest-season-filter-text" ng-click="$ctrl.filterChanged('mammal')" translate="jht.harvestSeason.gameCategory.mammal"></a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12" ng-if="$ctrl.isQuotaShown()">
+        <h4 translate="jht.harvestSeason.gameCategory.quota"></h4>
+        <harvestseasons-quotas seasons="$ctrl.quotaSeasons" edit="$ctrl.edit(season)"></harvestseasons-quotas>
+    </div>
+
+    <div class="col-xs-12" ng-if="$ctrl.isFowlShown()">
+        <h4 translate="jht.harvestSeason.gameCategory.fowl"></h4>
+        <harvestseasons-seasons seasons="$ctrl.birdSeasons" edit="$ctrl.edit(season)" remove="$ctrl.remove(season)"></harvestseasons-seasons>
+    </div>
+
+    <div class="col-xs-12" ng-if="$ctrl.isMammalShown()">
+        <h4 translate="jht.harvestSeason.gameCategory.mammal"></h4>
+        <harvestseasons-seasons seasons="$ctrl.mammalSeasons" edit="$ctrl.edit(season)" remove="$ctrl.remove(season)"></harvestseasons-seasons>
+    </div>
+</div>

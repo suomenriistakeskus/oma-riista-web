@@ -212,8 +212,11 @@ public class Harvest extends GameDiaryEntry implements HasHarvestReportState {
     @Column
     private String deerHuntingOtherTypeDescription;
 
-    @Transient
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     private HuntingClub huntingClub;
+
+    @Transient
+    private HuntingClub huntingClubForStatistics;
 
     public Harvest() {
         super();
@@ -621,6 +624,14 @@ public class Harvest extends GameDiaryEntry implements HasHarvestReportState {
 
     public void setHuntingClub(HuntingClub huntingClub) {
         this.huntingClub = huntingClub;
+    }
+
+    public HuntingClub getHuntingClubForStatistics() {
+        return huntingClubForStatistics;
+    }
+
+    public void setHuntingClubForStatistics(HuntingClub huntingClubForStatistics) {
+        this.huntingClubForStatistics = huntingClubForStatistics;
     }
 
     public DeerHuntingType getDeerHuntingType() {

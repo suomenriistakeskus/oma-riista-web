@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.weapontransportation.reason', ['ap
                 templateUrl: 'harvestpermit/applications/weapontransportation/reason/reason.html',
                 controller: 'WeaponTransportationWizardReasonController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     reason: function (applicationId, WeaponTransportationPermitApplication) {
                         return WeaponTransportationPermitApplication.getReason({id: applicationId}).$promise;

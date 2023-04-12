@@ -112,6 +112,8 @@
     <xs:simpleType name="observationType">
         <xs:restriction base="xs:token">
             <xs:enumeration value="NAKO"/>
+            <xs:enumeration value="POIKUE"/>
+            <xs:enumeration value="PARI"/>
             <xs:enumeration value="JALKI"/>
             <xs:enumeration value="ULOSTE"/>
             <xs:enumeration value="AANI"/>

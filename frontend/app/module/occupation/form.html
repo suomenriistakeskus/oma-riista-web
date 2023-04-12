@@ -28,6 +28,7 @@
         <div class="form-group" ng-if="isBoardType()">
             <label class="col-xs-4 control-label">
                 <span translate="occupation.boardRepresentations"></span>
+                <span class="glyphicon glyphicon-asterisk text-danger"></span>
             </label>
 
             <div class="col-xs-8">
@@ -35,8 +36,11 @@
                         name="boardRepresentation" id="boardRepresentation"
                         ng-model="occupation.boardRepresentation"
                         ng-options="('occupation.boardRepresentation.' + o | translate) disable when isBoardRoleDisabled(o) for o in boardRepresentationRoles"
+                        ng-required="organisation.organisationType !== 'RHY' && isBoardType()"
                         ie10-optgroup-fix>
-                    <option value="" translate="occupation.boardRepresentation.nothing"></option>
+                    <option value="">
+                        {{organisation.organisationType === 'RHY' ? ('occupation.boardRepresentation.nothing' | translate) : ''}}
+                    </option>
                 </select>
             </div>
         </div>

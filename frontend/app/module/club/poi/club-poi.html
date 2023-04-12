@@ -1,0 +1,107 @@
+<div class="r-club-areas-layout">
+    <div class="left-column club-poi-list">
+        <form>
+            <div class="row">
+                <div class="col-xs-6">
+                    <h3 translate="club.menu.poi"></h3>
+                </div>
+                <div class="col-xs-6 text-right">
+                    <button class="create-poi-button dropdown" uib-dropdown dropdown-append-to-body
+                            uib-dropdown-toggle
+                            ng-show="$ctrl.canEdit">
+                        <span class="fa fa-plus"></span>
+                        <span translate="club.area.poi.createNew"></span>
+                        <ul class="dropdown-menu " uib-dropdown-menu>
+                            <li ng-repeat="type in $ctrl.typeOptions">
+                                <a ng-click="$ctrl.createNewPoi(type)">
+                                    <span translate="club.area.poi.type.{{::type}}"></span>
+                                </a>
+                            </li>
+                        </ul>
+                    </button>
+                </div>
+            </div>
+
+            <div class="row" ng-show="$ctrl.pois.length > 0">
+                <div class="col-xs-6 form-group">
+                    <label class="control-label form-control-static" for="poiListFilter"
+                           translate="club.area.poi.poiType">
+                    </label>
+                    <select name="poiListFilter" id="poiListFilter" class="form-control"
+                            ng-options="type as ('club.area.poi.type.' +type) | translate for type in $ctrl.typeOptions"
+                            ng-model="$ctrl.filterMode" ng-change="$ctrl.filterChanged()">
+                        <option value="" translate="global.showAll"></option>
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <uib-accordion close-others="true">
+            <div uib-accordion-group class="panel-default"
+                 template-url="common/accordion-group.html"
+                 ng-click="$ctrl.selectPoi(poi)"
+                 ng-if="!$ctrl.filterMode || $ctrl.filterMode === poi.type"
+                 ng-repeat="poi in $ctrl.pois | orderBy:'visibleId' track by poi.id"
+                 is-open="poi.isOpen">
+
+                <uib-accordion-heading>
+                    <div class="row poi-list-item-header">
+                        <div class="col-xs-1 text-center">
+                            <span ng-class="$ctrl.getAreaToggleClasses(poi)"></span>
+                        </div>
+
+                        <div class="col-xs-5">
+                            <span ng-bind="::poi.visibleId"></span>
+                            <span ng-bind="::poi.description"></span>
+                        </div>
+                        <div class="col-xs-3 text-right">
+                            <span translate="club.area.poi.type.{{::poi.type}}"></span>
+                        </div>
+                        <div ng-switch="::poi.locations.length" class="col-xs-2 text-right">
+                            <span ng-switch-when="0" class="fa fa-exclamation text-danger poi-group"
+                                  uib-tooltip="{{'club.area.poi.noLocationsTooltip' | translate }}"
+                                  tooltip-popup-delay="0" tooltip-placement="top"></span>
+                            <span ng-switch-when="1" class="fa fa-map-marker text-primary poi-group"
+                                  ng-click="$ctrl.zoomTo(poi)"></span>
+                            <div ng-switch-default="">
+                                <div class="poi-group-multi-location" ng-click="$ctrl.zoomTo(poi)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </uib-accordion-heading>
+
+                <club-poi-details editable="$ctrl.canEdit" poi="poi" on-delete-poi="$ctrl.deletePoi(id)"
+                                  on-edit-poi="$ctrl.editPoi(id)"></club-poi-details>
+            </div>
+        </uib-accordion>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <button type="button" ng-if="$ctrl.pois.length > 0" class="btn btn-default"
+                        ng-click="$ctrl.exportExcel()">
+                    <span class="fa fa-file"></span>
+                    <span translate="global.button.exportToExcel"></span>
+                </button>
+            </div>
+            <div class="col-xs-6">
+                <button type="button" ng-if="$ctrl.pois.length > 0" class="btn btn-default"
+                        ng-click="$ctrl.exportGpx()">
+                    <span class="fa fa-file"></span>
+                    <span translate="club.area.poi.exportGpx"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-column">
+        <club-poi-map
+                editable="false"
+                selected-poi="$ctrl.selectedPoi"
+                default-bounds="$ctrl.rhyBounds"
+                poi-locations="$ctrl.visibleMarkers"
+                on-map-clicked="$ctrl.onMapClicked(geoLocation)"
+                on-marker-clicked="$ctrl.onMarkerClick(markerId)"
+                on-marker-click="$ctrl.markerClicked(poiId, locationId)">
+        </club-poi-map>
+    </div>
+</div>

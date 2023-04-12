@@ -21,6 +21,11 @@
                 ng-if="$ctrl.isUserOwnProfile">
         </account-profile-password>
 
+        <account-profile-unregister-user-account
+                profile="$ctrl.profile"
+                is-user-own-profile="$ctrl.isUserOwnProfile">
+        </account-profile-unregister-user-account>
+
         <account-profile-deactivate ng-if="!$ctrl.profile.foreignPerson"
                                     profile="$ctrl.profile">
         </account-profile-deactivate>
@@ -41,6 +46,7 @@
 
         <account-profile-clubs ng-if="::!$ctrl.profile.foreignPerson"
                                club-occupations="$ctrl.profile.clubOccupations"
+                               hunting-leader-occupations="$ctrl.huntingLeaderOccupations"
                                is-user-own-profile="$ctrl.isUserOwnProfile"
                                person-id="$ctrl.personId">
         </account-profile-clubs>
@@ -49,9 +55,9 @@
                                      occupations="$ctrl.profile.occupations">
         </account-profile-occupations>
 
-        <account-profile-jht ng-if="::!$ctrl.profile.foreignPerson"
-                             jht-trainings="$ctrl.jhtTrainings">
-        </account-profile-jht>
+        <account-profile-trainings ng-if="::!$ctrl.profile.foreignPerson"
+                                   jht-trainings="$ctrl.jhtTrainings" occupation-trainings="$ctrl.occupationTrainings">
+        </account-profile-trainings>
 
         <account-profile-feature-activation ng-if="::!$ctrl.profile.foreignPerson"
                                             profile="$ctrl.profile">

@@ -221,9 +221,11 @@ angular.module('app.harvestpermit.management', [])
             });
     })
 
-    .controller('HarvestPermitDashboardController', function ($state, $location, FormPostService, NotificationService,
+    .controller('HarvestPermitDashboardController', function ($state, $location, AnnualPermitPdfUrl, FormPostService,
+                                                              NotificationService,
                                                               EditHarvestPermitContactPersonsModal,
                                                               HarvestPermitPdfUrl, HarvestPermitAttachmentUrl,
+                                                              HarvestPermitPeriodEditModal,
                                                               MoosePermitLeadersService, ActiveRoleService,
                                                               PermitEndOfHuntingReportModal,
                                                               HarvestPermitAmendmentApplicationService,
@@ -251,6 +253,10 @@ angular.module('app.harvestpermit.management', [])
                 nestRemovalPermitUsages && nestRemovalPermitUsages.length > 0 ? nestRemovalPermitUsages[0].lastModifier : null;
             $ctrl.permitUsageLastModifier =
                 permitUsages && permitUsages.length > 0 ? permitUsages[0].lastModifier : null;
+            $ctrl.paymentStarted = false;
+            $ctrl.canEditPeriods = !permit.harvestReportState &&
+                PermitTypeCode.isRenewalPermitType(permit.permitTypeCode) &&
+                $ctrl.isModerator;
         };
 
         var reloadState = function () {
@@ -266,11 +272,21 @@ angular.module('app.harvestpermit.management', [])
             FormPostService.submitFormUsingBlankTarget(HarvestPermitPdfUrl.get(permitNumber));
         };
 
+        $ctrl.isAnnualRenewalPermit = function () {
+            return PermitTypeCode.isRenewalPermitType($ctrl.permit.permitTypeCode);
+        };
+
+        $ctrl.downloadAnnualPermitPdf = function () {
+            FormPostService.submitFormUsingBlankTarget(AnnualPermitPdfUrl.getRenewalPdf(permit.id));
+        };
+
         $ctrl.downloadAttachment = function (a) {
             FormPostService.submitFormUsingBlankTarget(HarvestPermitAttachmentUrl.get(permit.id, a.id));
         };
 
         $ctrl.startPayment = function () {
+            $ctrl.paymentStarted = true;
+
             $state.go('permitmanagement.payment.confirmation', {
                 permitId: permit.id,
                 invoiceId: duePayment.id
@@ -285,6 +301,10 @@ angular.module('app.harvestpermit.management', [])
             return PermitTypeCode.hasSpeciesAmounts($ctrl.permit.permitTypeCode);
         };
 
+        $ctrl.editPeriods = function () {
+            HarvestPermitPeriodEditModal.open($ctrl.permit).then($state.reload);
+        };
+
         function hasOnlySpecimenGranted(permit) {
             var specimenGranted = !!_.find(permit.speciesAmounts, function (spa) {
                 return spa.amount && spa.amount > 0;
@@ -292,5 +312,52 @@ angular.module('app.harvestpermit.management', [])
             return specimenGranted && _.every(permit.speciesAmounts, function (spa) {
                 return spa.eggAmount === null && spa.constructionAmount === null && spa.nestAmount === null;
             });
+        }
+    })
+    .service('HarvestPermitPeriodEditModal', function ($uibModal) {
+        this.open = function (permit) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/management/annual-renewal-periods.html',
+                controllerAs: '$ctrl',
+                controller: ModalController,
+                size: 'lg',
+                resolve: {
+                    permit: _.constant(permit)
+                }
+            }).result;
+        };
+
+        function ModalController($uibModalInstance, $scope, $timeout, $translate,
+                                 ConfirmationDialogService, HarvestPermits, NotificationService,
+                                 PermitDecisionRenewal, permit) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.permit = permit;
+                $ctrl.speciesAmounts = angular.copy(permit.speciesAmounts);
+            };
+
+            $ctrl.close = function () {
+                $uibModalInstance.dismiss('cancel');
+            };
+
+            $ctrl.savePeriods = function () {
+                var periods = _.chain($ctrl.speciesAmounts)
+                    .map(function (spa) {
+                        return {
+                            speciesCode: spa.gameSpecies.code,
+                            beginDate: spa.beginDate,
+                            endDate: spa.endDate,
+                            beginDate2: spa.beginDate2,
+                            endDate2: spa.endDate2
+                        };
+                    })
+                    .value();
+
+                HarvestPermits.moderatePeriods({permitId: permit.id, periods: periods}).$promise.then(function () {
+                    NotificationService.showDefaultSuccess();
+                    $uibModalInstance.close();
+                });
+            };
         }
     });

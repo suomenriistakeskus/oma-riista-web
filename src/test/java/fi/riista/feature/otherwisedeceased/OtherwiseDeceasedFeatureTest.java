@@ -10,8 +10,11 @@ import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.organization.OrganisationNameDTO;
+import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDateTime;
@@ -20,22 +23,30 @@ import org.junit.Test;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_LYNX;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WOLF;
 import static fi.riista.test.Asserts.assertThat;
+import static fi.riista.util.DateUtil.currentYear;
 import static java.util.Collections.emptyList;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -87,38 +98,201 @@ public class OtherwiseDeceasedFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test(expected = AccessDeniedException.class)
-    public void listByYear_moderatorMustHavePrivilege() {
-        onSavedAndAuthenticated(notAuthorised, () -> feature.listByYear(2021));
+    public void searchPage_moderatorMustHavePrivilege() {
+        onSavedAndAuthenticated(notAuthorised, () -> feature.searchPage(new OtherwiseDeceasedFilterDTO(), PageRequest.of(0, 10)));
     }
 
     @Test
-    public void listByYear_returnsEmptyListIfNoneFound() {
+    public void searchPage_returnsEmptyListIfNoneFound() {
         onSavedAndAuthenticated(privilegedModerator, () -> {
-            final List<OtherwiseDeceasedBriefDTO> results = feature.listByYear(2021);
-            assertThat(results, hasSize(0));
+            final OtherwiseDeceasedFilterDTO dto = new OtherwiseDeceasedFilterDTO();
+            dto.setBeginDate(DateUtil.beginOfCalendarYear(currentYear()).toLocalDate());
+            dto.setEndDate(DateUtil.beginOfCalendarYear(currentYear() + 1).toLocalDate());
+            final Slice<OtherwiseDeceasedBriefDTO> dtos = feature.searchPage(dto, PageRequest.of(0, 10));
+            assertThat(dtos.getContent(), hasSize(0));
         });
     }
 
     @Test
-    public void listByYear_andOnlyByThatYear() {
-        final OtherwiseDeceased item = es.newOtherwiseDeceased(new DateTime(2021, 1, 1, 0, 0, Constants.DEFAULT_TIMEZONE));
+    public void searchPage_andOnlyByThatYear() {
+        final OtherwiseDeceased item =
+                es.newOtherwiseDeceased(new DateTime(2021, 1, 1, 0, 0, Constants.DEFAULT_TIMEZONE)); // 1.1.2021 0:00
         es.newOtherwiseDeceased(new DateTime(2020, 12, 31, 23, 59, 59, 999, Constants.DEFAULT_TIMEZONE));
-        es.newOtherwiseDeceased(new DateTime(2022, 1, 1, 0, 0, Constants.DEFAULT_TIMEZONE));
+        es.newOtherwiseDeceased(new DateTime(2022, 1, 1, 0, 1, Constants.DEFAULT_TIMEZONE)); // 1.1.2022 0:01
 
         onSavedAndAuthenticated(privilegedModerator, () -> {
             runInTransaction(() -> {
-                final List<OtherwiseDeceasedBriefDTO> results = feature.listByYear(2021);
+                final OtherwiseDeceasedFilterDTO dto = new OtherwiseDeceasedFilterDTO();
+                dto.setBeginDate(DateUtil.beginOfCalendarYear(2021).toLocalDate());
+                dto.setEndDate(DateUtil.beginOfCalendarYear(2022).minusDays(1).toLocalDate());
+                final Slice<OtherwiseDeceasedBriefDTO> dtos = feature.searchPage(dto, PageRequest.of(0, 10));
+                final List<OtherwiseDeceasedBriefDTO> results = dtos.getContent();
+
                 assertThat(results, hasSize(1));
 
                 final OtherwiseDeceasedBriefDTO result = results.get(0);
-                assertThat(result.getPointOfTime(), equalTo(item.getPointOfTime().toLocalDateTime()));
-                assertThat(result.getCause(), equalTo(item.getCause()));
-                assertThat(result.getGameSpeciesCode(), equalTo(item.getSpecies().getOfficialCode()));
-                assertThat(result.getMunicipality().getNameFI(),
-                           equalTo(item.getMunicipality().getNameLocalisation().getFinnish()));
-                assertThat(result.getRhy().getNameFI(), equalTo(item.getRhy().getNameFinnish()));
-                assertThat(result.getRka().getNameFI(), equalTo(item.getRka().getNameFinnish()));
+                assertEquals(item, result);
             });
+        });
+    }
+
+    @Test
+    public void searchPage_speciesFiltering() {
+        withRhy(rhy -> {
+            final GameSpecies lynxSpecies = es.newGameSpecies(OFFICIAL_CODE_LYNX);
+            final GameSpecies wolfSpecies = es.newGameSpecies(OFFICIAL_CODE_WOLF);
+            final OtherwiseDeceased lynx = createEntity(rhy, lynxSpecies);
+            createEntity(rhy, wolfSpecies);
+
+            onSavedAndAuthenticated(privilegedModerator, () -> {
+                runInTransaction(() -> {
+                    final OtherwiseDeceasedFilterDTO dto = new OtherwiseDeceasedFilterDTO();
+                    dto.setBeginDate(DateUtil.beginOfCalendarYear(2021).toLocalDate());
+                    dto.setEndDate(DateUtil.beginOfCalendarYear(2022).minusDays(1).toLocalDate());
+                    dto.setGameSpeciesCode(OFFICIAL_CODE_LYNX);
+                    final Slice<OtherwiseDeceasedBriefDTO> dtos = feature.searchPage(dto, PageRequest.of(0, 10));
+                    final List<OtherwiseDeceasedBriefDTO> results = dtos.getContent();
+
+                    assertThat(results, hasSize(1));
+
+                    final OtherwiseDeceasedBriefDTO result = results.get(0);
+                    assertEquals(lynx, result);
+                });
+            });
+
+        });
+    }
+
+    @Test
+    public void searchPage_rkaFiltering() {
+        withRhy(rhyInOtherRka -> {
+            final GameSpecies lynxSpecies = es.newGameSpecies(OFFICIAL_CODE_LYNX);
+            createEntity(rhyInOtherRka, lynxSpecies);
+
+            withRhy(rhy -> {
+                final Riistanhoitoyhdistys otherRhyInSameRka =
+                        es.newRiistanhoitoyhdistys((RiistakeskuksenAlue) rhy.getRiistakeskuksenAlue());
+
+                final OtherwiseDeceased lynx = createEntity(rhy, lynxSpecies);
+                final OtherwiseDeceased otherLynx = createEntity(otherRhyInSameRka, lynxSpecies);
+
+                onSavedAndAuthenticated(privilegedModerator, () -> {
+                    runInTransaction(() -> {
+                        final OtherwiseDeceasedFilterDTO dto = new OtherwiseDeceasedFilterDTO();
+                        dto.setBeginDate(DateUtil.beginOfCalendarYear(2021).toLocalDate());
+                        dto.setEndDate(DateUtil.beginOfCalendarYear(2022).minusDays(1).toLocalDate());
+                        dto.setRkaOfficialCode(rhy.getRiistakeskuksenAlue().getOfficialCode());
+
+                        final Slice<OtherwiseDeceasedBriefDTO> dtos = feature.searchPage(dto, PageRequest.of(0, 10));
+
+                        assertThat(dtos.getContent(), hasSize(2));
+
+                        final Map<String, OtherwiseDeceasedBriefDTO> indexed =
+                                F.index(dtos.getContent(), briefDto -> briefDto.getRhy().getOfficialCode());
+
+                        assertEquals(lynx, indexed.get(rhy.getOfficialCode()));
+                        assertEquals(otherLynx, indexed.get(otherRhyInSameRka.getOfficialCode()));
+                    });
+                });
+
+            });
+        });
+    }
+
+    @Test
+    public void searchPage_rejectedFiltering() {
+        withRhy(rhy -> {
+            final GameSpecies lynxSpecies = es.newGameSpecies(OFFICIAL_CODE_LYNX);
+            final OtherwiseDeceased lynx = createEntity(rhy, lynxSpecies);
+            final OtherwiseDeceased rejectedLynx = createEntity(rhy, lynxSpecies);
+            rejectedLynx.setRejected(true);
+
+            onSavedAndAuthenticated(privilegedModerator, () -> {
+                runInTransaction(() -> {
+                    final OtherwiseDeceasedFilterDTO dto = new OtherwiseDeceasedFilterDTO();
+                    dto.setBeginDate(DateUtil.beginOfCalendarYear(2021).toLocalDate());
+                    dto.setEndDate(DateUtil.beginOfCalendarYear(2022).minusDays(1).toLocalDate());
+
+                    final Slice<OtherwiseDeceasedBriefDTO> valid = feature.searchPage(dto, PageRequest.of(0, 10));
+
+                    dto.setShowRejected(true);
+                    final Slice<OtherwiseDeceasedBriefDTO> rejected = feature.searchPage(dto, PageRequest.of(0, 10));
+
+                    assertThat(valid.getContent(), hasSize(1));
+                    assertEquals(lynx, valid.getContent().get(0));
+
+                    assertThat(valid.getContent(), hasSize(1));
+                    assertEquals(rejectedLynx, rejected.getContent().get(0));
+                });
+            });
+
+        });
+    }
+
+    @Test
+    public void searchPage_rhyFiltering() {
+        withRhy(rhyInOtherRka -> {
+            final GameSpecies lynxSpecies = es.newGameSpecies(OFFICIAL_CODE_LYNX);
+            createEntity(rhyInOtherRka, lynxSpecies);
+
+            withRhy(rhy -> {
+                final Riistanhoitoyhdistys otherRhyInSameRka =
+                        es.newRiistanhoitoyhdistys((RiistakeskuksenAlue) rhy.getRiistakeskuksenAlue());
+
+                final OtherwiseDeceased lynx = createEntity(rhy, lynxSpecies);
+                final OtherwiseDeceased otherLynx = createEntity(otherRhyInSameRka, lynxSpecies);
+
+                onSavedAndAuthenticated(privilegedModerator, () -> {
+                    runInTransaction(() -> {
+                        final OtherwiseDeceasedFilterDTO dto = new OtherwiseDeceasedFilterDTO();
+                        dto.setBeginDate(DateUtil.beginOfCalendarYear(2021).toLocalDate());
+                        dto.setEndDate(DateUtil.beginOfCalendarYear(2022).minusDays(1).toLocalDate());
+                        dto.setRkaOfficialCode(rhy.getRiistakeskuksenAlue().getOfficialCode());
+                        dto.setRhyOfficialCode(rhy.getOfficialCode());
+
+                        final Slice<OtherwiseDeceasedBriefDTO> dtos = feature.searchPage(dto, PageRequest.of(0, 10));
+
+                        assertThat(dtos.getContent(), hasSize(1));
+
+                        assertEquals(lynx, dtos.getContent().get(0));
+                    });
+                });
+
+            });
+        });
+
+    }
+
+    @Test
+    public void searchPage_paging() {
+        withRhy(rhy -> {
+            final GameSpecies lynxSpecies = es.newGameSpecies(OFFICIAL_CODE_LYNX);
+            final GameSpecies wolfSpecies = es.newGameSpecies(OFFICIAL_CODE_WOLF);
+
+            final OtherwiseDeceased lynx = createEntity(rhy, lynxSpecies);
+            final OtherwiseDeceased wolf = createEntity(rhy, wolfSpecies);
+            wolf.setPointOfTime(lynx.getPointOfTime().plusHours(1)); // Newer should be first
+
+            onSavedAndAuthenticated(privilegedModerator, () -> {
+                runInTransaction(() -> {
+                    final OtherwiseDeceasedFilterDTO dto = new OtherwiseDeceasedFilterDTO();
+                    dto.setBeginDate(DateUtil.beginOfCalendarYear(2021).toLocalDate());
+                    dto.setEndDate(DateUtil.beginOfCalendarYear(2022).minusDays(1).toLocalDate());
+
+                    final Slice<OtherwiseDeceasedBriefDTO> sliceWithWolf = feature.searchPage(dto, PageRequest.of(0, 1));
+
+                    assertThat(sliceWithWolf.getContent(), hasSize(1));
+                    assertThat(sliceWithWolf.hasNext(), is(true));
+                    assertEquals(wolf, sliceWithWolf.getContent().get(0));
+
+                    final Slice<OtherwiseDeceasedBriefDTO> sliceWithLynx = feature.searchPage(dto, PageRequest.of(1, 1));
+
+                    assertThat(sliceWithLynx.getContent(), hasSize(1));
+                    assertThat(sliceWithLynx.hasNext(), is(false));
+                    assertEquals(lynx, sliceWithLynx.getContent().get(0));
+                });
+            });
+
         });
     }
 
@@ -165,16 +339,16 @@ public class OtherwiseDeceasedFeatureTest extends EmbeddedDatabaseTest {
         item.setWeight(null);
         item.setDescription(null);
         item.setAdditionalInfo(null);
-        item.setCauseOther(null);
-        item.setSourceOther(null);
+        item.setCauseDescription(null);
+        item.setSourceDescription(null);
         onSavedAndAuthenticated(privilegedModerator, () -> {
             runInTransaction(() -> {
                 OtherwiseDeceasedDTO result = feature.getDetails(item.getId());
                 assertThat(result.getWeight(), is(nullValue()));
                 assertThat(result.getDescription(), is(nullValue()));
                 assertThat(result.getAdditionalInfo(), is(nullValue()));
-                assertThat(result.getCauseOther(), is(nullValue()));
-                assertThat(result.getSourceOther(), is(nullValue()));
+                assertThat(result.getCauseDescription(), is(nullValue()));
+                assertThat(result.getSourceDescription(), is(nullValue()));
                 assertThatEquals(result, item);
                 checkOutgoingDtoFields(result);
             });
@@ -204,6 +378,46 @@ public class OtherwiseDeceasedFeatureTest extends EmbeddedDatabaseTest {
             final OtherwiseDeceasedDTO input = newOtherwiseDeceasedDTO();
             input.setCause(cause);
             input.setSource(source);
+            saveAndCheckDTO(input);
+        });
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void save_andCreate_descriptionNeededWhenCauseOther() {
+        onSavedAndAuthenticated(privilegedModerator, () -> {
+            final OtherwiseDeceasedDTO input = newOtherwiseDeceasedDTO();
+            input.setCause(OtherwiseDeceasedCause.OTHER);
+            input.setCauseDescription("");
+            saveAndCheckDTO(input);
+        });
+    }
+
+    @Theory
+    public void save_andCreate_descriptionAllowedForAllCauses(final OtherwiseDeceasedCause cause) {
+        onSavedAndAuthenticated(privilegedModerator, () -> {
+            final OtherwiseDeceasedDTO input = newOtherwiseDeceasedDTO();
+            input.setCause(cause);
+            input.setCauseDescription("causeDescription");
+            saveAndCheckDTO(input);
+        });
+    }
+
+    @Test(expected = ConstraintViolationException.class)
+    public void save_andCreate_descriptionNeededWhenSourceOther() {
+        onSavedAndAuthenticated(privilegedModerator, () -> {
+            final OtherwiseDeceasedDTO input = newOtherwiseDeceasedDTO();
+            input.setSource(OtherwiseDeceasedSource.OTHER);
+            input.setSourceDescription("");
+            saveAndCheckDTO(input);
+        });
+    }
+
+    @Theory
+    public void save_andCreate_descriptionAllowedForAllCauses(final OtherwiseDeceasedSource source) {
+        onSavedAndAuthenticated(privilegedModerator, () -> {
+            final OtherwiseDeceasedDTO input = newOtherwiseDeceasedDTO();
+            input.setSource(source);
+            input.setSourceDescription("sourceDescription");
             saveAndCheckDTO(input);
         });
     }
@@ -447,12 +661,12 @@ public class OtherwiseDeceasedFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private void checkSavedDtoFields(final OtherwiseDeceasedDTO dto) {
-        if (dto.getCauseOther() != null) {
-            assertThat(dto.getCause(), equalTo(OtherwiseDeceasedCause.OTHER), "causeOther has value but cause is not OTHER");
+        if (dto.getCause() == OtherwiseDeceasedCause.OTHER) {
+            assertThat(dto.getCauseDescription(), is(not(isEmptyString())), "value OTHER but cause description is empty");
         }
 
-        if (dto.getSourceOther() != null) {
-            assertThat(dto.getSource(), equalTo(OtherwiseDeceasedSource.OTHER), "sourceOther has value but source is not OTHER");
+        if (dto.getSource() == OtherwiseDeceasedSource.OTHER) {
+            assertThat(dto.getSourceDescription(), is(not(isEmptyString())), "value OTHER but source description is empty");
         }
     }
 
@@ -468,9 +682,9 @@ public class OtherwiseDeceasedFeatureTest extends EmbeddedDatabaseTest {
         assertThat(dto.getRhy().getNameLocalisation(), equalTo(entity.getRhy().getNameLocalisation()), "rhy name mismatch");
         assertThat(dto.getRka().getNameLocalisation(), equalTo(entity.getRka().getNameLocalisation()), "rka name mismatch");
         assertThat(dto.getCause(), equalTo(entity.getCause()), "cause mismatch");
-        assertThat(dto.getCauseOther(), equalTo(entity.getCauseOther()), "cause mismatch");
+        assertThat(dto.getCauseDescription(), equalTo(entity.getCauseDescription()), "cause mismatch");
         assertThat(dto.getSource(), equalTo(entity.getSource()), "source mismatch");
-        assertThat(dto.getSourceOther(), equalTo(entity.getSourceOther()), "sourceOther mismatch");
+        assertThat(dto.getSourceDescription(), equalTo(entity.getSourceDescription()), "sourceOther mismatch");
         assertThat(dto.getDescription(), equalTo(entity.getDescription()), "description mismatch");
         assertThat(dto.getAdditionalInfo(), equalTo(entity.getAdditionalInfo()), "additional info mismatch");
         assertThat(dto.isRejected(), equalTo(entity.isRejected()), "rejected mismatch");
@@ -491,8 +705,8 @@ public class OtherwiseDeceasedFeatureTest extends EmbeddedDatabaseTest {
                                   final OtherwiseDeceasedAttachment entity) {
         assertThat(dto.getId(), equalTo(entity.getId()), "attachment id mismatch");
         assertThat(dto.getFilename(),
-                   equalTo(entity.getAttachmentMetadata().getOriginalFilename()),
-                   "attachment filename mismatch");
+                equalTo(entity.getAttachmentMetadata().getOriginalFilename()),
+                "attachment filename mismatch");
     }
 
     private void assertThatChangesEquals(final List<OtherwiseDeceasedChangeDTO> dtos,
@@ -527,15 +741,34 @@ public class OtherwiseDeceasedFeatureTest extends EmbeddedDatabaseTest {
         dto.setPointOfTime(LocalDateTime.now());
         dto.setNoExactLocation(someBoolean());
         dto.setGeoLocation(location1);
-        //dto.setMunicipality()
-        //dto.setRhy()
-        //dto.setRka()
+
         dto.setCause(some(OtherwiseDeceasedCause.class));
-        dto.setCauseOther("Cause other " + nextLong());
+        dto.setCauseDescription("Cause other " + nextLong());
         dto.setSource(some(OtherwiseDeceasedSource.class));
-        dto.setSourceOther("Source other " + nextLong());
+        dto.setSourceDescription("Source other " + nextLong());
         dto.setDescription("Description " + nextLong());
         dto.setAdditionalInfo("Additional ingo " + nextLong());
         return dto;
+    }
+
+
+    private static void assertEquals(final OtherwiseDeceased lynx, final OtherwiseDeceasedBriefDTO result) {
+        assertThat(result.getPointOfTime(), equalTo(lynx.getPointOfTime().toLocalDateTime()));
+        assertThat(result.getCause(), equalTo(lynx.getCause()));
+        assertThat(result.getGameSpeciesCode(), equalTo(lynx.getSpecies().getOfficialCode()));
+        assertThat(result.getMunicipality().getNameFI(),
+                equalTo(lynx.getMunicipality().getNameLocalisation().getFinnish()));
+        assertThat(result.getRhy().getNameFI(), equalTo(lynx.getRhy().getNameFinnish()));
+        assertThat(result.getRka().getNameFI(), equalTo(lynx.getRka().getNameFinnish()));
+    }
+
+    private OtherwiseDeceased createEntity(final Riistanhoitoyhdistys rhy, final GameSpecies species) {
+        return es.newOtherwiseDeceased(
+                new DateTime(2021, 1, 1, 0, 0, Constants.DEFAULT_TIMEZONE),
+                OtherwiseDeceasedCause.HIGHWAY_ACCIDENT,
+                species,
+                rhy,
+                (RiistakeskuksenAlue) rhy.getRiistakeskuksenAlue(),
+                false);
     }
 }

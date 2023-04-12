@@ -1,4 +1,4 @@
-<div class="alert alert-info">
+<div class="alert alert-info wizard-info">
     <span class="fa fa-info-circle"></span>
     <div class="alert-content">
             <p class="alert-title" translate="harvestpermit.wizard.dogdisturbance.eventDetails.{{$ctrl.eventType}}.instructionsTitle"></p>
@@ -28,13 +28,13 @@
 <div ng-show="!$ctrl.event.skipped">
 
     <div class="row r-dog-disturbance">
-        <span class="col-xs-4 mandatory-field"
+        <span class="col-sm-4 mandatory-field"
               translate="harvestpermit.wizard.dogdisturbance.eventDetails.contactName">
         </span>
-        <span class="col-xs-3 mandatory-field"
+        <span class="col-sm-3 mandatory-field"
               translate="harvestpermit.wizard.dogdisturbance.eventDetails.contactPhone">
         </span>
-        <span class="col-xs-3"
+        <span class="col-sm-3"
               translate="harvestpermit.wizard.dogdisturbance.eventDetails.contactMail">
         </span>
     </div>
@@ -68,7 +68,7 @@
     <ng-form name="dogForm" class="r-dog-disturbance" r-force-show-errors-check-validity>
         <div class="row">
 
-            <div class="col-xs-3 form-group">
+            <div class="col-sm-3 form-group">
                 <label for="species"
                        class="mandatory-field"
                        translate="global.species">
@@ -79,7 +79,7 @@
                 </select>
             </div>
 
-            <div class="col-xs-3 form-group" ng-class="{ 'has-error': (dogForm.dogsAmount.$touched && dogForm.dogsAmount.$invalid) }">
+            <div class="col-sm-3 form-group" ng-class="{ 'has-error': (dogForm.dogsAmount.$touched && dogForm.dogsAmount.$invalid) }">
                 <label for="dogsAmount"
                        class="mandatory-field"
                        translate="harvestpermit.wizard.dogdisturbance.eventDetails.dogsAmount"></label>
@@ -94,7 +94,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-3" ng-class="{ 'has-error': ((dogForm.beginDate.$touched || !!dogForm.beginDate.$modelValue) && dogForm.beginDate.$invalid) }">
+            <div class="col-sm-3" ng-class="{ 'has-error': ((dogForm.beginDate.$touched || !!dogForm.beginDate.$modelValue) && dogForm.beginDate.$invalid) }">
                 <label for="beginDate"
                        class="mandatory-field"
                        translate="global.beginDate">
@@ -121,7 +121,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-3 required" ng-class="{ 'has-error': ((dogForm.endDate.$touched || !!dogForm.endDate.$modelValue) && dogForm.endDate.$invalid) }">
+            <div class="col-sm-3 required" ng-class="{ 'has-error': ((dogForm.endDate.$touched || !!dogForm.endDate.$modelValue) && dogForm.endDate.$invalid) }">
                 <label for="endDate"
                        class="mandatory-field"
                        translate="global.endDate">
@@ -159,7 +159,8 @@
                        translate="harvestpermit.wizard.dogdisturbance.eventDetails.{{$ctrl.eventType}}.descriptionTitle"></label>
                 <div class="form-group" id="eventDescription">
                     <textarea name="eventDescription" class="form-control" rows="6" required
-                              ng-model="$ctrl.event.eventDescription"></textarea>
+                              ng-model="$ctrl.event.eventDescription"
+                              spellcheck="false"></textarea>
                     <div class="help-block has-error"
                          ng-show="dogForm.eventDescription.$touched && dogForm.eventDescription.$invalid"
                          ng-messages="dogForm.eventDescription.$error">

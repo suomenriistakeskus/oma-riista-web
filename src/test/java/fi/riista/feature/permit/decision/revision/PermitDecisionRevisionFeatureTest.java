@@ -2,9 +2,12 @@ package fi.riista.feature.permit.decision.revision;
 
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.decision.PermitDecisionDocumentTransformer;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachment;
+import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachmentRepository;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.DateUtil;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
@@ -17,7 +20,15 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
@@ -29,6 +40,9 @@ public class PermitDecisionRevisionFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
     private PermitDecisionRevisionFeature feature;
+
+    @Resource
+    private PermitDecisionRevisionAttachmentRepository revisionAttachmentRepository;
 
     private PermitDecision decision;
     private PermitDecisionRevision revision;
@@ -104,6 +118,35 @@ public class PermitDecisionRevisionFeatureTest extends EmbeddedDatabaseTest {
         feature.getAttachment(decision.getId(), otherDecisionRevisionAttachment.getId());
 
         fail("Should throw an exception");
+    }
+
+    @Test
+    public void testUnorderedAttachmentNotCopiedIntoRevision() {
+        withRhy(rhy -> {
+
+            final PermitDecision permitDecision = model().newPermitDecision(rhy);
+            final PermitDecisionAttachment orderedAttachment = model().newPermitDecisionAttachment(permitDecision);
+            orderedAttachment.setOrderingNumber(1);
+            final PermitDecisionAttachment unorderedAttachment = model().newPermitDecisionAttachment(permitDecision);
+            unorderedAttachment.setOrderingNumber(null);
+
+            final PermitDecisionRevision revision = model().newPermitDecisionRevision(decision);
+            persistInNewTransaction();
+
+            authenticate(moderator);
+
+            runInTransaction(() ->
+                    feature.createAttachments(revision, Arrays.asList(orderedAttachment, unorderedAttachment)));
+
+            runInTransaction(() -> {
+                final List<PermitDecisionRevisionAttachment> list =
+                        revisionAttachmentRepository.findAllByDecisionRevision(revision);
+                assertThat(list, hasSize(1));
+
+                final PermitDecisionRevisionAttachment attachment = list.get(0);
+                assertThat(attachment.getDecisionAttachment().getId(), equalTo(orderedAttachment.getId()));
+            });
+        });
     }
 
 }

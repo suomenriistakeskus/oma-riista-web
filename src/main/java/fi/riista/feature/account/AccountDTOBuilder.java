@@ -78,6 +78,7 @@ public class AccountDTOBuilder {
         dto.setFirstName(person.getFirstName());
         dto.setByName(person.getByName());
         dto.setLastName(person.getLastName());
+        dto.setUnregisterRequestedTime(DateUtil.toLocalDateTimeNullSafe(person.getUnregisterRequestedTime()));
         dto.setHomeMunicipality(person.getHomeMunicipalityName().getAnyTranslation(person.getLanguageCode()));
         dto.setLanguageCode(person.getLanguageCode());
         dto.setPhoneNumber(person.getPhoneNumber());
@@ -122,6 +123,8 @@ public class AccountDTOBuilder {
 
         dto.setOccupations(F.mapNonNullsToList(person.getNotClubSpecificOccupations(), MyOccupationDTO::create));
         dto.setClubOccupations(createClubOccupationDTOs(person.getClubSpecificOccupations()));
+
+        dto.setDenyAnnouncementEmail(person.isDenyAnnouncementEmail());
 
         return this;
     }

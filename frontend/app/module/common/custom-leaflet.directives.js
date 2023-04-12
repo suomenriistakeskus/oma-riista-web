@@ -120,6 +120,12 @@ angular.module('app.custom-leaflet.directives', ['ui-leaflet'])
                             markerData.clickHandler(markerData.id);
                         });
                     }
+
+                    if (markerData.dragHandler) {
+                        marker.on("dragend", function (event) {
+                            markerData.dragHandler(markerData.id, event.target.getLatLng());
+                        });
+                    }
                 };
 
                 mapController.getMap().then(function (map) {
@@ -177,7 +183,11 @@ angular.module('app.custom-leaflet.directives', ['ui-leaflet'])
 
                                 // Bind popup
                                 if (isDefined(markerData.message)) {
-                                    marker.bindPopup('', markerData.popupOptions);
+                                    marker.bindPopup(markerData.message, markerData.popupOptions);
+                                }
+
+                                if (isDefined(markerData.tooltipMessage)) {
+                                    marker.bindTooltip(markerData.tooltipMessage, markerData.tooltipOptions);
                                 }
 
                                 var groupOptions = isDefined(markerData.groupOption) ? markerData.groupOption : null;

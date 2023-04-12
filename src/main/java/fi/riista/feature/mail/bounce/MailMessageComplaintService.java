@@ -1,11 +1,13 @@
 package fi.riista.feature.mail.bounce;
 
+import com.querydsl.jpa.JPQLQueryFactory;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,6 +18,9 @@ public class MailMessageComplaintService {
 
     @Resource
     private MailMessageComplaintRepository mailMessageComplaintRepository;
+
+    @Resource
+    private JPQLQueryFactory queryFactory;
 
     @Transactional
     public void storeComplaint(final AmazonSesComplaintNotification complaintNotification) {
@@ -44,5 +49,18 @@ public class MailMessageComplaintService {
         }
 
         mailMessageComplaintRepository.saveAll(result);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> findEmailsWithComplaintIn(final List<String> emails) {
+        if (emails.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final QMailMessageComplaint COMPLAINT = QMailMessageComplaint.mailMessageComplaint;
+        return queryFactory.select(COMPLAINT.recipientEmailAddress)
+                .from(COMPLAINT)
+                .where(COMPLAINT.recipientEmailAddress.in(emails))
+                .fetch();
     }
 }

@@ -20,6 +20,7 @@
 
     angular.module('app.occupation.nomination', [])
         .service('OccupationNominationService', OccupationNominationService)
+        .service('JHTTrainingService', JHTTrainingService)
         .controller('OccupationNominationListController', OccupationNominationListController)
         .controller('AddTrainingDialogController', AddTrainingDialogController)
         .controller('AddMultiTrainingDialogController', AddMultiTrainingDialogController)
@@ -58,7 +59,8 @@
                                          FormPostService,
                                          OccupationNominations,
                                          JHTOccupationTypes,
-                                         JHTTrainings) {
+                                         JHTTrainings,
+                                         JHTTrainingService) {
         var self = this;
 
         this.getCounts = function (rhyOfficialCode, occupationType) {
@@ -85,7 +87,8 @@
                 areaCode: null,
                 rhyCode: defaultRhy ? defaultRhy.officialCode : null,
                 occupationType: _.head(JHTOccupationTypes),
-                nominationStatus: 'KOULUTUS'
+                nominationStatus: 'KOULUTUS',
+                beginDate: JHTTrainingService.getTrainingValidityStartDate()
             };
         };
 
@@ -95,6 +98,10 @@
             if (params.nominationStatus === 'KOULUTUS' && (
                 params.searchType === 'PERSON' ||
                 params.searchType === 'TRAINING_LOCATION')) {
+
+                if (params.nominationStatus === 'KOULUTUS'){
+                    result.beginDate = params.minDate;
+                }
                 return result;
             }
 
@@ -195,8 +202,19 @@
         };
     }
 
+    function JHTTrainingService() {
+        var self = this;
+
+        self.jhtTrainingValidityMonths = 6;
+
+        self.getTrainingValidityStartDate = function (){
+            return moment().subtract( self.jhtTrainingValidityMonths, 'months').format('YYYY-MM-DD');
+        };
+    }
+
     function OccupationNominationListController($q, dialogs, $translate,
                                                 OccupationNominationService,
+                                                JHTTrainingService,
                                                 NotificationService,
                                                 JHTOccupationTypes,
                                                 JHTTrainings,
@@ -207,15 +225,29 @@
                                                 resultList) {
         var $ctrl = this;
 
-        $ctrl.activeRhy = activeRhy;
-        $ctrl.searchParams = searchParams;
-        $ctrl.resultList = resultList;
-        $ctrl.isModerator = ActiveRoleService.isModerator();
-        $ctrl.occupationTypes = JHTOccupationTypes;
-        $ctrl.selectAllModel = false;
-        $ctrl.counts = {};
 
-        reloadCounts();
+        $ctrl.$onInit = function () {
+            $ctrl.activeRhy = activeRhy;
+            $ctrl.searchParams = searchParams;
+            $ctrl.resultList = resultList;
+            $ctrl.isModerator = ActiveRoleService.isModerator();
+            $ctrl.occupationTypes = JHTOccupationTypes;
+            $ctrl.selectAllModel = false;
+            $ctrl.counts = {};
+            $ctrl.minDate = JHTTrainingService.getTrainingValidityStartDate();
+
+            $ctrl.proposeTraining = !$ctrl.activeRhy ? _.noop
+                : _.partial(executeAction, false, createAction(JHTTrainings, 'propose', {rhyId: $ctrl.activeRhy.id}));
+            $ctrl.deleteTraining = _.partial(executeAction, true, function (id) {
+                return JHTTrainings.delete({id: id}).$promise;
+            });
+            $ctrl.propose = _.partial(executeAction, false, createAction(OccupationNominations, 'propose'));
+            $ctrl.cancel = _.partial(executeAction, true, createAction(OccupationNominations, 'cancel'));
+            $ctrl.reject = _.partial(executeAction, true, createAction(OccupationNominations, 'reject'));
+
+            $ctrl.reset();
+            reloadCounts();
+        };
 
         function reloadCounts() {
             var occupationType = $ctrl.searchParams.occupationType;
@@ -288,8 +320,16 @@
             var searchType = $ctrl.searchParams.searchType;
 
             return nominationStatus === 'KOULUTUS' && searchType === 'HOME_RHY' ||
+                nominationStatus === 'KOULUTUS' && searchType === 'PREVIOUS_OCCUPATION' ||
                 nominationStatus === 'KOULUTUS' && searchType === 'TRAINING_LOCATION' ||
                 $ctrl.isModerator;
+        };
+
+        $ctrl.calculateMinDate = function () {
+            if ($ctrl.searchParams.nominationStatus === 'KOULUTUS') {
+                return $ctrl.minDate;
+            }
+            return null;
         };
 
         $ctrl.getRowHeaderDate = function (row) {
@@ -312,6 +352,9 @@
 
         $ctrl.reset = function () {
             $ctrl.searchParams = OccupationNominationService.resetSearchParameters($ctrl.searchParams, $ctrl.activeRhy);
+            if ($ctrl.searchParams.nominationStatus === 'KOULUTUS' && $ctrl.showDateFilter()) {
+                $ctrl.searchParams.beginDate = $ctrl.minDate;
+            }
         };
 
         $ctrl.onSearchTypeChange = function () {
@@ -416,14 +459,7 @@
             });
         }
 
-        $ctrl.proposeTraining = !$ctrl.activeRhy ? _.noop
-            : _.partial(executeAction, false, createAction(JHTTrainings, 'propose', {rhyId: $ctrl.activeRhy.id}));
-        $ctrl.deleteTraining = _.partial(executeAction, true, function (id) {
-            return JHTTrainings.delete({id: id}).$promise;
-        });
-        $ctrl.propose = _.partial(executeAction, false, createAction(OccupationNominations, 'propose'));
-        $ctrl.cancel = _.partial(executeAction, true, createAction(OccupationNominations, 'cancel'));
-        $ctrl.reject = _.partial(executeAction, true, createAction(OccupationNominations, 'reject'));
+
 
         $ctrl.accept = function (id) {
             if (id === 'selected' && _.isEmpty(getSelectedIds())) {

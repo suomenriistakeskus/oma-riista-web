@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.weapontransportation.justification
                 templateUrl: 'harvestpermit/applications/weapontransportation/justification/justification.html',
                 controller: 'WeaponTransportationWizardJustificationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     justification: function (applicationId, WeaponTransportationPermitApplication) {
                         return WeaponTransportationPermitApplication.getJustification({id: applicationId}).$promise;

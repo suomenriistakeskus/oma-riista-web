@@ -2,11 +2,22 @@
   position: absolute;
   top: 10px;
   left: 55px;
+  right: 15px;
   overflow: auto;
   z-index: 550;
 
   .btn-toolbar {
     margin-left: 0;
+
+    .help-btn {
+      float: right;
+      button.btn {
+        border-radius: 20px;
+        border: 2px solid @brand-primary;
+        color: @brand-primary;
+        background-color: white;
+      }
+    }
   }
 
   .btn {
@@ -17,6 +28,68 @@
 
   .btn:first-child {
     margin-left: 0;
+  }
+}
+
+.map-help-panel {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  .top {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    h1 {
+      margin-top: 0;
+    }
+
+    .close-btn {
+      border: 1px solid @brand-primary;
+      border-radius: 4px;
+      background-color: white;
+      color: @brand-primary;
+      padding: 6px 12px;
+      margin-top: 10px;
+      font-weight: bold;
+
+    }
+  }
+  .help-link-list {
+    list-style: none;
+    li {
+      margin: 8px 0;
+
+      button {
+        border:none;
+        background-color: unset;
+
+        text-decoration: underline;
+        color: @brand-primary;
+        font-size: 1.75rem;
+        font-weight: bold;
+
+      }
+    }
+  }
+  .content {
+    border-top: 1px solid #ddd;
+    ol {
+      padding-left: 15px;
+    }
+    img {
+      margin: 8px 0;
+    }
+    .alert {
+      display: flex;
+      align-content: center;
+
+      span {
+        height: 28px;
+        line-height: 28px;
+        display: inline-block;
+      }
+    }
   }
 }
 
@@ -238,8 +311,8 @@
 
   display: inline-block;
   left: 40px;
-  margin-left: 0px;
-  margin-top: 0px;
+  margin-left: 0;
+  margin-top: 0;
   position: absolute;
   width: 500px;
   z-index: 801;
@@ -255,3 +328,39 @@
   }
 
 }
+
+.map-overlay-additional-controls-container {
+  position: absolute;
+  top: 100px;
+  left: 10px;
+  overflow: auto;
+  z-index: 550;
+  
+}
+
+
+.leaflet-control-layers .leaflet-control-layers-list {
+  @media (max-height: 900px) {
+    height: 270px;
+  }
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.leaflet-control-layers-list::-webkit-scrollbar {
+  background-color: white;
+  border-radius: 10px;
+  width: 15px;
+}
+
+.leaflet-control-layers-list::-webkit-scrollbar-thumb {
+  background-color: grey;
+  border-radius: 10px;
+  border: 5px solid white;
+}
+
+.leaflet-control-layers-list::-webkit-scrollbar-thumb:vertical {
+  height: 20px!important;
+  width: 15px;
+}
+

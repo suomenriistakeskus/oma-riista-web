@@ -4,6 +4,9 @@ import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.dto.BaseEntityEventDTO;
 import org.joda.time.DateTime;
 
+import java.util.List;
+import java.util.Map;
+
 public class RhyAnnualStatisticsDTO extends BaseEntityDTO<Long> {
 
     private Long id;
@@ -64,6 +67,8 @@ public class RhyAnnualStatisticsDTO extends BaseEntityDTO<Long> {
 
     private Boolean readyForInspection;
     private Boolean completeForApproval;
+
+    private Map<AnnualStatisticsParticipantFieldGroup, List<AnnualStatisticsParticipantField>> missingParticipants;
 
     private BaseEntityEventDTO submitEvent;
 
@@ -343,6 +348,14 @@ public class RhyAnnualStatisticsDTO extends BaseEntityDTO<Long> {
 
     public void setCompleteForApproval(final Boolean completeForApproval) {
         this.completeForApproval = completeForApproval;
+    }
+
+    public Map<AnnualStatisticsParticipantFieldGroup, List<AnnualStatisticsParticipantField>> getMissingParticipants() {
+        return missingParticipants;
+    }
+
+    public void setMissingParticipants(final Map<AnnualStatisticsParticipantFieldGroup, List<AnnualStatisticsParticipantField>> missingParticipants) {
+        this.missingParticipants = missingParticipants;
     }
 
     public BaseEntityEventDTO getSubmitEvent() {

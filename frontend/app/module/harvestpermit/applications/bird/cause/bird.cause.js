@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.bird.cause', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/bird/cause/cause.html',
                 controller: 'BirdPermitWizardCauseController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     permitCause: function (BirdPermitApplication, applicationId) {
                         return BirdPermitApplication.getCurrentPermitCause({id: applicationId}).$promise;

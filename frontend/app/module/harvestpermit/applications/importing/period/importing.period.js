@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.importing.period', ['app.metadata'
                 templateUrl: 'harvestpermit/applications/importing/period/period.html',
                 controller: 'ImportingPermitWizardPeriodController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesPeriodList: function (ImportingPermitApplication, applicationId) {
                         return ImportingPermitApplication.getSpeciesPeriods({id: applicationId}).$promise;

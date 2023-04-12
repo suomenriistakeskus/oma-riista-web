@@ -61,9 +61,9 @@ public class HarvestPermitApplicationConflictPalstaRepositoryImpl implements Har
 
     @Override
     @Transactional(readOnly = true)
-    public Map<Long, ConfictSummaryDTO> countConflictSummaries(final long batchId,
-                                                               final HarvestPermitApplication application,
-                                                               final List<HarvestPermitApplication> conflicting) {
+    public Map<Long, ConflictSummaryDTO> countConflictSummaries(final long batchId,
+                                                                final HarvestPermitApplication application,
+                                                                final List<HarvestPermitApplication> conflicting) {
         final NumberExpression<Integer> mhCountExpression = new CaseBuilder()
                 .when(CONFLICT_PALSTA.metsahallitus.isTrue()).then(1)
                 .otherwise(0)
@@ -74,9 +74,20 @@ public class HarvestPermitApplicationConflictPalstaRepositoryImpl implements Har
                 .otherwise(0)
                 .sum();
 
+        final NumberExpression<Double> privateAreaSumExpression = new CaseBuilder()
+                .when(CONFLICT_PALSTA.metsahallitus.isFalse()).then(CONFLICT_PALSTA.conflictAreaSize)
+                .otherwise(0.0)
+                .sum();
+
+        final NumberExpression<Double> privateAreaWaterSumExpression = new CaseBuilder()
+                .when(CONFLICT_PALSTA.metsahallitus.isFalse()).then(CONFLICT_PALSTA.conflictAreaWaterSize)
+                .otherwise(0.0)
+                .sum();
+
         return jpqlQueryFactory
                 .select(CONFLICT_PALSTA.firstApplication.id, CONFLICT_PALSTA.secondApplication.id,
-                        mhCountExpression, privateCountExpression, CONFLICT_PALSTA.conflictAreaSize.sum())
+                        mhCountExpression, privateCountExpression, CONFLICT_PALSTA.conflictAreaSize.sum(),
+                        CONFLICT_PALSTA.conflictAreaWaterSize.sum(), privateAreaSumExpression, privateAreaWaterSumExpression)
                 .from(CONFLICT_PALSTA)
                 .where(CONFLICT_PALSTA.batchId.eq(batchId))
                 .where(palstaPredicate(application, conflicting))
@@ -89,9 +100,45 @@ public class HarvestPermitApplicationConflictPalstaRepositoryImpl implements Har
                     final Integer mhCount = t.get(mhCountExpression);
                     final Integer privateCount = t.get(privateCountExpression);
                     final Double conflictSum = t.get(CONFLICT_PALSTA.conflictAreaSize.sum());
-                    return new ConfictSummaryDTO(applicationId, mhCount, privateCount, conflictSum);
+                    final Double conflictWaterSum = t.get(CONFLICT_PALSTA.conflictAreaWaterSize.sum());
+                    final Double privateAreaSum = t.get(privateAreaSumExpression);
+                    final Double privateAreaWaterSum = t.get(privateAreaWaterSumExpression);
+                    return new ConflictSummaryDTO(applicationId, mhCount, privateCount, conflictSum, conflictWaterSum, privateAreaSum, privateAreaWaterSum);
                 })
-                .collect(toMap(ConfictSummaryDTO::getApplicationId, Function.identity()));
+                .collect(toMap(ConflictSummaryDTO::getApplicationId, Function.identity()));
 
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, PalstaConflictSummaryDTO> getPalstaConflictSummaries(final List<Integer> palstaIds, final HarvestPermitApplication application, final HarvestPermitApplication conflictingApplication) {
+        final NumberExpression<Integer> mhCountExpression = new CaseBuilder()
+                .when(CONFLICT_PALSTA.metsahallitus.isTrue()).then(1)
+                .otherwise(0)
+                .sum();
+
+        final NumberExpression<Integer> privateCountExpression = new CaseBuilder()
+                .when(CONFLICT_PALSTA.metsahallitus.isFalse()).then(1)
+                .otherwise(0)
+                .sum();
+
+        return jpqlQueryFactory
+                .select(CONFLICT_PALSTA.palstaId,
+                        mhCountExpression, privateCountExpression, CONFLICT_PALSTA.conflictAreaSize.sum(),
+                        CONFLICT_PALSTA.conflictAreaWaterSize.sum())
+                .from(CONFLICT_PALSTA)
+                .where(CONFLICT_PALSTA.palstaId.in(palstaIds))
+                .where(palstaPredicate(application, conflictingApplication))
+                .groupBy(CONFLICT_PALSTA.palstaId)
+                .fetch().stream()
+                .map(t -> {
+                    final Integer palstaId = t.get(CONFLICT_PALSTA.palstaId);
+                    final Integer mhCount = t.get(mhCountExpression);
+                    final Integer privateCount = t.get(privateCountExpression);
+                    final Double conflictSum = t.get(CONFLICT_PALSTA.conflictAreaSize.sum());
+                    final Double conflictWaterSum = t.get(CONFLICT_PALSTA.conflictAreaWaterSize.sum());
+                    return new PalstaConflictSummaryDTO(palstaId, mhCount, privateCount, conflictSum, conflictWaterSum);
+                })
+                .collect(toMap(PalstaConflictSummaryDTO::getPalstaId, Function.identity()));
     }
 }

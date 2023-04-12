@@ -21,6 +21,7 @@ import javax.validation.constraints.Size;
 import java.util.Collections;
 import java.util.List;
 
+import static fi.riista.feature.organization.calendar.CalendarEventType.METSASTAJAKURSSI;
 import static fi.riista.feature.organization.calendar.CalendarEventType.additionalEventsAllowedTypes;
 
 public class CalendarEventDTO extends BaseEntityDTO<Long> {
@@ -59,6 +60,9 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
         dto.setAdditionalCalendarEvents(additionalCalendarEvents);
 
         dto.setRemoteEvent(event.isRemoteEvent());
+
+        dto.setPassedAttempts(event.getPassedAttempts());
+        dto.setFailedAttempts(event.getFailedAttempts());
 
         return dto;
     }
@@ -107,6 +111,12 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
 
     private boolean remoteEvent;
 
+    @Min(0)
+    private Integer passedAttempts;
+
+    @Min(0)
+    private Integer failedAttempts;
+
     @AssertTrue
     public boolean isAdditionalEventsInfoValid() {
         return F.isNullOrEmpty(additionalCalendarEvents)
@@ -116,6 +126,11 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
     @AssertTrue
     public boolean isValidRemoteEvent() {
         return !remoteEvent || calendarEventType.isRemoteEventAllowed();
+    }
+
+    @AssertTrue
+    public boolean isEndTimeValid() {
+        return calendarEventType != METSASTAJAKURSSI || endTime != null;
     }
 
     @Override
@@ -264,5 +279,21 @@ public class CalendarEventDTO extends BaseEntityDTO<Long> {
 
     public void setRemoteEvent(final boolean remoteEvent) {
         this.remoteEvent = remoteEvent;
+    }
+
+    public Integer getPassedAttempts() {
+        return passedAttempts;
+    }
+
+    public void setPassedAttempts(final Integer passedAttempts) {
+        this.passedAttempts = passedAttempts;
+    }
+
+    public Integer getFailedAttempts() {
+        return failedAttempts;
+    }
+
+    public void setFailedAttempts(final Integer failedAttempts) {
+        this.failedAttempts = failedAttempts;
     }
 }

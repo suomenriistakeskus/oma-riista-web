@@ -130,32 +130,48 @@
         </div>
     </div>
 
-    <table class="table table-condensed" style="margin-top: 10px">
-        <thead>
-        <tr>
-            <th colspan="4">
-                <span translate="harvestpermit.application.fragment.intersectingProperties"></span>
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="p in $ctrl.data.propertyNumbers track by p.propertyNumber">
-            <td width="20%">
-                <span ng-bind="p.propertyNumber | formatPropertyIdentifier"></span>
-            </td>
-            <td width="10%">
-                <span class="sr-only" ng-if="p.metsahallitus">MH</span>
-                <span class="fa fa-tree text-primary" ng-if="p.metsahallitus"></span>
-            </td>
-            <td width="20%">
-                <span ng-bind="p.propertyArea | prettyAreaSize"></span>
-            </td>
-            <td>
-                <span ng-bind="p.propertyName"></span>
-            </td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-condensed" style="margin-top: 10px">
+            <thead>
+            <tr>
+                <th colspan="6">
+                    <span translate="harvestpermit.application.fragment.intersectingProperties"></span>
+                </th>
+            </tr>
+            <tr>
+                <th class="col-xs-2" translate="harvestpermit.application.fragment.propertyIdentifier"></th>
+                <th class="col-xs-2"></th>
+                <th class="col-xs-2" translate="harvestpermit.application.fragment.totalAreaSize"></th>
+                <th class="col-xs-2" translate="harvestpermit.application.fragment.landAreaSize"></th>
+                <th class="col-xs-2" translate="harvestpermit.application.fragment.waterAreaSize"></th>
+                <th class="col-xs-2"></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="p in $ctrl.data.propertyNumbers track by p.propertyNumber">
+                <td class="col-xs-2">
+                    <span ng-bind="p.propertyNumber | formatPropertyIdentifier"></span>
+                </td>
+                <td class="col-xs-2">
+                    <span class="sr-only" ng-if="p.metsahallitus">MH</span>
+                    <span class="fa fa-tree text-primary" ng-if="p.metsahallitus"></span>
+                </td>
+                <td class="col-xs-2">
+                    <span ng-bind="p.propertyArea | prettyAreaSize"></span>
+                </td>
+                <td class="col-xs-2">
+                    <span ng-bind="p.propertyLandArea | prettyAreaSize"></span>
+                </td>
+                <td class="col-xs-2">
+                    <span ng-bind="p.propertyWaterArea | prettyAreaSize"></span>
+                </td>
+                <td class="col-xs-2">
+                    <span ng-bind="p.propertyName"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <div class="modal-footer">

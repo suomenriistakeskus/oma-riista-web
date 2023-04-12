@@ -12,12 +12,34 @@
             </div>
 
             <div class="col-xs-6 text-right">
-                <a class="r-account-area-print-link"
-                   ng-if="a.status === 'READY'"
-                   ng-click="$ctrl.printArea(a)">
-                    <span class="fa fa-2x fa-lg fa-print"></span>
-                    <span translate="global.button.print" class="r-account-area-info-text"></span>
-                </a>
+                <div ng-if="a.status === 'READY'"
+                     class="btn-group r-dropdown-align-right" uib-dropdown>
+                    <button type="button" class="btn btn-default r-print-dropdown-btn" uib-dropdown-toggle>
+                        <span class="fa fa-2x fa-lg fa-print"></span>
+                        &nbsp;
+                        <span translate="global.button.print" class="r-account-area-info-text"></span>
+                        &nbsp;
+                        <span class="caret"></span>
+                    </button>
+
+                    <ul class="dropdown-menu" uib-dropdown-menu>
+                        <li>
+                            <a ng-click="$ctrl.printAreaMap(a)">
+                                <span class="fa fa-print"></span>
+                                &nbsp;
+                                <span translate="account.personalAreaUnion.print.map"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a ng-click="$ctrl.printAreaPartners(a)">
+                                <span class="fa fa-print"></span>
+                                &nbsp;
+                                <span translate="account.personalAreaUnion.print.partners"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
                 <button type="button" class="btn btn-primary"
                         ng-if="!$ctrl.isAreaLocked(a)"
                         ng-click="$ctrl.addPartner(a)">

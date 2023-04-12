@@ -2,6 +2,7 @@ package fi.riista.feature.gamediary.harvest.fields;
 
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.HasGameSpeciesCode;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -13,9 +14,9 @@ public class LegallyMandatoryFieldsMooselike {
 
     public static Specimen getSpecimenFields(final int huntingYear,
                                              final int gameSpeciesCode,
-                                             final boolean isClientSupportFor2020Fields) {
+                                             final HarvestSpecVersion specVersion) {
 
-        return new Specimen(huntingYear, gameSpeciesCode, isClientSupportFor2020Fields);
+        return new Specimen(huntingYear, gameSpeciesCode, specVersion);
     }
 
     public static class Report implements RequiredHarvestFields.Report, HasGameSpeciesCode {
@@ -105,7 +106,9 @@ public class LegallyMandatoryFieldsMooselike {
 
         protected Specimen(final int huntingYear,
                            final int gameSpeciesCode,
-                           final boolean isClientSupportFor2020Fields) {
+                           final HarvestSpecVersion specVersion) {
+
+            final boolean isClientSupportFor2020Fields = specVersion.supportsAntlerFields2020();
 
             this.gameSpeciesCode = gameSpeciesCode;
             this.fields2020Enabled = isClientSupportFor2020Fields && huntingYear >= 2020;

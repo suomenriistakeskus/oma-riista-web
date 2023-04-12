@@ -141,6 +141,14 @@ angular.module('app.clubhunting', [])
         $ctrl.isAddObservationVisible = ClubHuntingViewData.isAddObservationVisible;
         $ctrl.isCreateHuntingDayVisible = ClubHuntingViewData.isCreateHuntingDayVisible;
 
+        $scope.goToStore = function () {
+            Helpers.goToStore();
+        };
+        $scope.showStoreButton = function () {
+            var system = Helpers.getMobileOperatingSystem();
+            return system === 'android' || system === 'ios';
+        };
+
         $ctrl.addHarvest = function () {
             var clubId = ClubHuntingViewData.getHuntingClubId();
             var groupId = ClubHuntingViewData.getHuntingGroupId();

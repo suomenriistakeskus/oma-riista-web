@@ -1,17 +1,18 @@
 package fi.riista.feature.largecarnivorereport;
 
 import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecision.DecisionType;
+import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
 import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 import static java.util.Objects.requireNonNull;
 
@@ -21,7 +22,7 @@ public class LargeCarnivorePermitInfoDTO {
                                                            @Nonnull final HarvestPermitApplicationSpeciesAmount applicationSpa,
                                                            final PermitDecision decision,
                                                            final HarvestPermit permit,
-                                                           final HarvestPermitSpeciesAmount permitSpa,
+                                                           final PermitDecisionSpeciesAmount decisionSpa,
                                                            final Integer harvests,
                                                            @Nonnull final LocalisedString rhy,
                                                            @Nonnull final LocalisedString rka,
@@ -31,12 +32,12 @@ public class LargeCarnivorePermitInfoDTO {
                 F.mapNullable(permit, HarvestPermit::getPermitNumber),
                 F.mapNullable(decision, PermitDecision::getDecisionType),
                 F.mapNullable(decision, PermitDecision::getLockedDate),
-                F.mapNullable(permitSpa, HarvestPermitSpeciesAmount::getBeginDate),
-                F.mapNullable(permitSpa, HarvestPermitSpeciesAmount::getEndDate),
-                F.mapNullable(permitSpa, HarvestPermitSpeciesAmount::getBeginDate2),
-                F.mapNullable(permitSpa, HarvestPermitSpeciesAmount::getEndDate2),
+                F.mapNullable(decisionSpa, PermitDecisionSpeciesAmount::getBeginDate),
+                F.mapNullable(decisionSpa, PermitDecisionSpeciesAmount::getEndDate),
+                F.mapNullable(decisionSpa, PermitDecisionSpeciesAmount::getBeginDate2),
+                F.mapNullable(decisionSpa, PermitDecisionSpeciesAmount::getEndDate2),
                 requireNonNull(applicationSpa).getSpecimenAmount(),
-                F.mapNullable(permitSpa, HarvestPermitSpeciesAmount::getSpecimenAmount),
+                F.mapNullable(decisionSpa, PermitDecisionSpeciesAmount::getSpecimenAmount),
                 harvests,
                 requireNonNull(rhy),
                 requireNonNull(rka),
@@ -142,5 +143,37 @@ public class LargeCarnivorePermitInfoDTO {
 
     public boolean isOnReindeerArea() {
         return onReindeerArea;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (o == this) {
+            return true;
+        } else if (!(o instanceof LargeCarnivorePermitInfoDTO)) {
+            return false;
+        } else {
+            final LargeCarnivorePermitInfoDTO that = (LargeCarnivorePermitInfoDTO) o;
+
+            return Objects.equals(this.applicationNumber, that.applicationNumber)
+                    && Objects.equals(this.permitNumber, that.permitNumber)
+                    && Objects.equals(this.decisionType, that.decisionType)
+                    && Objects.equals(this.decisionTime, that.decisionTime)
+                    && Objects.equals(this.beginDate, that.beginDate)
+                    && Objects.equals(this.endDate, that.endDate)
+                    && Objects.equals(this.beginDate2, that.beginDate2)
+                    && Objects.equals(this.endDate2, that.endDate2)
+                    && Objects.equals(this.applied, that.applied)
+                    && Objects.equals(this.granted, that.granted)
+                    && Objects.equals(this.harvests, that.harvests)
+                    && Objects.equals(this.rhy, that.rhy)
+                    && Objects.equals(this.rka, that.rka)
+                    && Objects.equals(this.onReindeerArea, that.onReindeerArea);
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(applicationNumber, permitNumber, decisionType, decisionTime, beginDate, endDate, beginDate2,
+                endDate2, applied, granted, harvests, rhy, rka, onReindeerArea);
     }
 }

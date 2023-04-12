@@ -83,31 +83,57 @@ public class PersonalAreaUnionPrintService {
     }
 
     @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public byte[] createPdf(final PersonalAreaUnion union, final Locale locale,
+    public byte[] createPdf(final HarvestPermitArea harvestPermitArea,
+                            final Locale locale,
                             final MapPdfModel mapPdfModel,
                             final MapPdfParameters dto) {
-        final HarvestPermitArea harvestPermitArea = union.getHarvestPermitArea();
 
-        Preconditions.checkState(harvestPermitArea.getStatus() == HarvestPermitArea.StatusCode.READY);
+        final byte[] mapPdfData = renderMap(harvestPermitArea, mapPdfModel, dto);
+        final byte[] partnersPdfData = renderPartners(harvestPermitArea, locale);
 
-        final byte[] mapPdfData = mapPdfRemoteService.renderPdf(dto, mapPdfModel);
+        try (final InputStream mapStream = new ByteArrayInputStream(mapPdfData);
+             final PDDocument mapDocument = PDDocument.load(mapStream);
+             final InputStream partnersStream = new ByteArrayInputStream(partnersPdfData);
+             final PDDocument partnersDocument = PDDocument.load(partnersStream)) {
 
-        try (final InputStream is = new ByteArrayInputStream(mapPdfData);
-             final PDDocument pdfDocument = PDDocument.load(is)) {
-
-            final List<HarvestPermitAreaPartnerDTO> partners =
-                    harvestPermitAreaPartnerService.listPartners(harvestPermitArea, locale);
-
-            for (List<HarvestPermitAreaPartnerDTO> partition : Lists.partition(partners, 8)) {
-                renderPageOfPartners(pdfDocument, locale, partition);
+            for (final PDPage page : partnersDocument.getPages()) {
+                mapDocument.addPage(page);
             }
 
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            mapDocument.save(bos);
+            mapDocument.close();
+            partnersDocument.close();
+            return bos.toByteArray();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public byte[] renderMap(final HarvestPermitArea harvestPermitArea,
+                                final MapPdfModel mapPdfModel,
+                                final MapPdfParameters dto) {
+        Preconditions.checkState(harvestPermitArea.getStatus() == HarvestPermitArea.StatusCode.READY);
+        return mapPdfRemoteService.renderPdf(dto, mapPdfModel);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public byte[] renderPartners(final HarvestPermitArea harvestPermitArea,
+                                     final Locale locale) {
+        final List<HarvestPermitAreaPartnerDTO> partners =
+                harvestPermitAreaPartnerService.listPartners(harvestPermitArea, locale);
+
+        try (final PDDocument pdfDocument = new PDDocument()) {
+            for (final List<HarvestPermitAreaPartnerDTO> partition : Lists.partition(partners, 8)) {
+                renderPageOfPartners(pdfDocument, locale, partition);
+            }
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             pdfDocument.save(bos);
             pdfDocument.close();
             return bos.toByteArray();
-
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -81,6 +81,22 @@
                     </c:when>
                 </c:choose>
             </tr>
+            <c:if test="${model.eventResultDetail != null}">
+                <tr>
+                    <td><fmt:message key="SrvaReport.resultDetail"/></td>
+                    <c:choose>
+                        <c:when test="${model.eventResultDetail == 'ANIMAL_CONTACTED_AND_DEPORTED'}">
+                            <td><fmt:message key="SrvaEventResultDetailsEnum.ANIMAL_CONTACTED_AND_DEPORTED"/></td>
+                        </c:when>
+                        <c:when test="${model.eventResultDetail == 'ANIMAL_CONTACTED'}">
+                            <td><fmt:message key="SrvaEventResultDetailsEnum.ANIMAL_CONTACTED"/></td>
+                        </c:when>
+                        <c:when test="${model.eventResultDetail == 'UNCERTAIN_RESULT'}">
+                            <td><fmt:message key="SrvaEventResultDetailsEnum.UNCERTAIN_RESULT"/></td>
+                        </c:when>
+                    </c:choose>
+                </tr>
+            </c:if>
             <tr>
                 <td><fmt:message key="SrvaReport.author"/></td>
                 <td><c:out value="${model.author.byName}"/>&nbsp;<c:out value="${model.author.lastName}"/></td>
@@ -105,6 +121,12 @@
                     </c:when>
                 </c:choose>
             </tr>
+            <c:if test="${model.deportationOrderNumber != null}">
+                <tr>
+                    <td><fmt:message key="SrvaReport.deportationOrderNumber"/></td>
+                    <td><c:out value="${model.deportationOrderNumber}"/></td>
+                </tr>
+            </c:if>
             <tr>
                 <td><fmt:message key="SrvaReport.eventType"/></td>
                 <c:choose>
@@ -137,6 +159,43 @@
                     </c:when>
                 </c:choose>
             </tr>
+            <c:if test="${model.eventTypeDetail != null}">
+                <tr>
+                    <td><fmt:message key="SrvaReport.eventTypeDetail"/></td>
+                    <c:choose>
+                        <c:when test="${model.eventTypeDetail == 'CARED_HOUSE_AREA'}">
+                            <td><fmt:message key="SrvaEventTypeDetailsEnum.CARED_HOUSE_AREA"/></td>
+                        </c:when>
+                        <c:when test="${model.eventTypeDetail == 'FARM_ANIMAL_BUILDING'}">
+                            <td><fmt:message key="SrvaEventTypeDetailsEnum.FARM_ANIMAL_BUILDING"/></td>
+                        </c:when>
+                        <c:when test="${model.eventTypeDetail == 'URBAN_AREA'}">
+                            <td><fmt:message key="SrvaEventTypeDetailsEnum.URBAN_AREA"/></td>
+                        </c:when>
+                        <c:when test="${model.eventTypeDetail == 'CARCASS_AT_FOREST'}">
+                            <td><fmt:message key="SrvaEventTypeDetailsEnum.CARCASS_AT_FOREST"/></td>
+                        </c:when>
+                        <c:when test="${model.eventTypeDetail == 'CARCASS_NEAR_HOUSES_AREA'}">
+                            <td><fmt:message key="SrvaEventTypeDetailsEnum.CARCASS_NEAR_HOUSES_AREA"/></td>
+                        </c:when>
+                        <c:when test="${model.eventTypeDetail == 'GARBAGE_CAN'}">
+                            <td><fmt:message key="SrvaEventTypeDetailsEnum.GARBAGE_CAN"/></td>
+                        </c:when>
+                        <c:when test="${model.eventTypeDetail == 'BEEHIVE'}">
+                            <td><fmt:message key="SrvaEventTypeDetailsEnum.BEEHIVE"/></td>
+                        </c:when>
+                        <c:when test="${model.eventTypeDetail == 'OTHER'}">
+                            <td>
+                                <fmt:message key="SrvaEventTypeDetailsEnum.OTHER"/>
+                                <c:if test="${model.otherTypeDetailDescription != null}">
+                                    <br>
+                                    <span class="other-description"><c:out value="${model.otherTypeDetailDescription}"/></span>
+                                </c:if>
+                            </td>
+                        </c:when>
+                    </c:choose>
+                </tr>
+            </c:if>
             <c:choose>
                 <c:when test="${model.methods == null || model.methods.size() == 0}">
                     <tr>
@@ -160,6 +219,12 @@
                                 </c:when>
                                 <c:when test="${method.name == 'SOUND_EQUIPMENT'}">
                                     <td><fmt:message key="SrvaMethodEnum.SOUND_EQUIPMENT"/></td>
+                                </c:when>
+                                <c:when test="${method.name == 'VEHICLE'}">
+                                    <td><fmt:message key="SrvaMethodEnum.VEHICLE"/></td>
+                                </c:when>
+                                <c:when test="${method.name == 'CHASING_WITH_PEOPLE'}">
+                                    <td><fmt:message key="SrvaMethodEnum.CHASING_WITH_PEOPLE"/></td>
                                 </c:when>
                                 <c:when test="${method.name == 'TRACED_WITH_DOG'}">
                                     <td><fmt:message key="SrvaMethodEnum.TRACED_WITH_DOG"/></td>

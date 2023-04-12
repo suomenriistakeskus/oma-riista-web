@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.bird.damage', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/bird/damage/damage.html',
                 controller: 'DerogationPermitWizardDamageController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesDamageList: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.getSpeciesDamage({id: applicationId}).$promise;

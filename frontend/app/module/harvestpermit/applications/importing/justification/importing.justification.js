@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.importing.justification', ['app.me
                 templateUrl: 'harvestpermit/applications/importing/justification/justification.html',
                 controller: 'ImportingPermitWizardJustificationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     justification: function (ImportingPermitApplication, applicationId) {
                         return ImportingPermitApplication.getJustification({id: applicationId}).$promise;

@@ -7,7 +7,7 @@ import fi.riista.integration.common.repository.IntegrationRepository;
 import fi.riista.integration.lupahallinta.parser.PermitCSVImporter;
 import fi.riista.integration.lupahallinta.parser.PermitCSVLine;
 import io.vavr.Tuple3;
-import liquibase.util.csv.opencsv.CSVReader;
+import liquibase.util.csv.CSVReader;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,50 +54,61 @@ public class HarvestPermitImportFeature {
         final List<String> messages = new ArrayList<>();
         final Set<String> permitNumbers = new HashSet<>();
 
-        try (final CSVReader r = new CSVReader(reader, SEPARATOR, QUOTE_CHAR)) {
+        final List<String[]> lines = readCSVFile(reader);
+        final boolean hasHeader = "yhteyshenkilo".equals(lines.get(0)[0]);
 
-            final List<String[]> lines = r.readAll();
-            final boolean hasHeader = "yhteyshenkilo".equals(lines.get(0)[0]);
+        final List<HarvestPermit> addedOrChanged = new ArrayList<>();
+        for (int i = 0; i < lines.size(); i++) {
+            if (hasHeader && i == 0) {
+                //skip header
+                continue;
+            }
 
-            final List<HarvestPermit> addedOrChanged = new ArrayList<>();
-            for (int i = 0; i < lines.size(); i++) {
-                if (hasHeader && i == 0) {
-                    //skip header
+            final Tuple3<HarvestPermit, List<String>, PermitCSVLine> parsed = parser.process(lines.get(i));
+            final HarvestPermit permit = parsed._1();
+            final List<String> errors = parsed._2();
+            final String permitNumber = parsed._3() != null ? parsed._3().getPermitNumber() : null;
+
+            checkPermitUnique(errors, permitNumbers, permit);
+
+            if (CollectionUtils.isEmpty(errors)) {
+                if (permit == null) {
+                    LOG.info("Skipping line:" + i + " permitNumber:" + permitNumber);
                     continue;
                 }
-
-                final Tuple3<HarvestPermit, List<String>, PermitCSVLine> parsed = parser.process(lines.get(i));
-                final HarvestPermit permit = parsed._1();
-                final List<String> errors = parsed._2();
-                final String permitNumber = parsed._3() != null ? parsed._3().getPermitNumber() : null;
-
-                checkPermitUnique(errors, permitNumbers, permit);
-
-                if (CollectionUtils.isEmpty(errors)) {
-                    if (permit == null) {
-                        LOG.info("Skipping line:" + i + " permitNumber:" + permitNumber);
-                        continue;
-                    }
-                    if (permit.getSpeciesAmounts().isEmpty()) {
-                        addEmptySpeciesAmountsMessage(messages, permit);
-                    }
-                    permit.setParsingInfo(requestInfo + ":" + i);
-                    addedOrChanged.add(permit);
-                } else {
-                    allErrors.add(new HarvestPermitImportResultDTO.PermitParsingError(i, permitNumber, errors));
+                if (permit.getSpeciesAmounts().isEmpty()) {
+                    addEmptySpeciesAmountsMessage(messages, permit);
                 }
-                entityManager.flush();
-                entityManager.clear();
+                permit.setParsingInfo(requestInfo + ":" + i);
+                addedOrChanged.add(permit);
+            } else {
+                allErrors.add(new HarvestPermitImportResultDTO.PermitParsingError(i, permitNumber, errors));
             }
-            if (allErrors.isEmpty()) {
-                updateLhSyncTime(addedOrChanged, lhSyncTime);
-                harvestPermitRepository.saveAll(addedOrChanged);
+            entityManager.flush();
+            entityManager.clear();
+        }
+        if (allErrors.isEmpty()) {
+            updateLhSyncTime(addedOrChanged, lhSyncTime);
+            harvestPermitRepository.saveAll(addedOrChanged);
 
-                return new HarvestPermitImportResultDTO(addedOrChanged.size(), messages);
-            }
+            return new HarvestPermitImportResultDTO(addedOrChanged.size(), messages);
         }
 
         throw new HarvestPermitImportException(allErrors);
+    }
+
+    private static List<String[]> readCSVFile(final Reader reader) {
+        final List<String[]> lines = new ArrayList<>();
+
+        try (final CSVReader r = new CSVReader(reader, SEPARATOR, QUOTE_CHAR)) {
+            for (String[] line = r.readNext(); line != null; line = r.readNext()) {
+                lines.add(line);
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException("Error in reading CSV file", ex);
+        }
+
+        return lines;
     }
 
     private static void checkPermitUnique(List<String> errors, Set<String> permitNumbers, HarvestPermit permit) {

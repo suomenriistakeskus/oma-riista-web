@@ -120,7 +120,7 @@ public class OtherwiseDeceasedExportFeatureTest extends EmbeddedDatabaseTest {
             assertThat(actual.getGeoLocation().getLatitude(), equalTo(expected.getGeoLocation().getLatitude()), "latitude mismatch");
             assertThat(actual.getGeoLocation().getLongitude(), equalTo(expected.getGeoLocation().getLongitude()), "longitude mismatch");
             assertThat(actual.getGeoLocation().isNoExactLocation(), equalTo(expected.getNoExactLocation()), "noExactLocation mismatch");
-            assertThat(actual.getCauseOther(), equalTo(expected.getCauseOther()), "causeOther mismatch");
+            assertThat(actual.getCauseOther(), equalTo(expected.getCauseDescription()), "causeOther mismatch");
             assertThat(actual.getDescription(), equalTo(expected.getDescription()), "description mismatch");
             assertThat(actual.getAge().value(), equalTo(expected.getAge().name()), "age mismatch");
             assertThat(actual.getGender().value(), equalTo(expected.getGender().name()), "gender mismatch");

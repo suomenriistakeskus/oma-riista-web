@@ -27,21 +27,21 @@ public class HuntingClubStatisticsFeature {
     private SQLQueryFactory sqlQueryFactory;
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
     public List<HuntingClubStatisticsRow> calculate(final boolean includePermitHolders) {
         return new HuntingClubStatistics(new HuntingClubStatisticsRkaQueries(queryFactory))
                 .calculate(listClubsWithPermit(includePermitHolders));
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
     public List<HuntingClubStatisticsRow> calculate() {
         return new HuntingClubStatistics(new HuntingClubStatisticsRkaQueries(queryFactory))
                 .calculate(listClubsWithPermit(true));
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
     public List<HuntingClubStatisticsRow> calculateByRka(final Long rkaId, final boolean includePermitHolders) {
         return new HuntingClubStatistics(new HuntingClubStatisticsRhyQueries(queryFactory, rkaId))
                 .calculate(listClubsWithPermit(includePermitHolders));

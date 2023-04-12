@@ -1,0 +1,47 @@
+<div>
+    <div>
+        <h3 translate="news.heading"></h3>
+        <button type="button" ng-click="$ctrl.add()" class="btn btn-primary r-news-button-add">
+            <span translate="news.add"></span>
+        </button>
+    </div>
+
+    <slice-pager slice="$ctrl.slice" load-page="$ctrl.loadPage(page)"></slice-pager>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-condensed">
+            <thead>
+            <tr>
+                <th class="col-xs-2 r-news-list-header-cell" translate="news.published"></th>
+                <th class="col-xs-6 r-news-list-header-cell" translate="news.title"></th>
+                <th class="col-xs-2"></th>
+                <th class="col-xs-2"></th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr ng-repeat="news in $ctrl.slice.content track by news.id">
+                <td class="r-news-list-cell">
+                    <div ng-bind="news.publishDate |date:'d.M.yyyy'"></div>
+                    <div ng-bind="news.publishTime"></div>
+                </td>
+                <td class="r-news-list-cell">
+                    <span ng-bind="news.titleFi"></span> / <span ng-bind="news.titleSv"></span>
+                </td>
+                <td class="r-news-list-button-container">
+                    <button type="button" ng-click="$ctrl.remove(news)" class="btn btn-link">
+                        <span class="glyphicon glyphicon-remove r-news-remove-button-icon"></span>
+                        <span class="r-news-remove-button-title" translate="news.remove"></span>
+                    </button>
+                </td>
+                <td class="r-news-list-button-container">
+                    <button type="button" ng-click="$ctrl.edit(news)" class="btn btn-primary">
+                        <span class="glyphicon glyphicon-edit"></span>
+                        <span translate="news.edit"></span>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

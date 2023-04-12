@@ -6,6 +6,7 @@ import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.account.user.UserAuthorizationHelper;
+import fi.riista.feature.common.training.TrainingType;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
 import fi.riista.feature.organization.RiistakeskuksenAlueRepository;
 import fi.riista.feature.organization.jht.nomination.OccupationNomination;
@@ -31,6 +32,7 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -42,12 +44,14 @@ import static fi.riista.feature.organization.jht.nomination.OccupationNomination
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.ESITETTY;
 import static fi.riista.feature.organization.jht.nomination.OccupationNomination.NominationStatus.NIMITETTY;
 import static fi.riista.feature.organization.occupation.Occupation.FOREIGN_PERSON_ELIGIBLE_FOR_OCCUPATION;
+import static fi.riista.util.DateUtil.today;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 @Component
 public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTraining, JHTTrainingDTO> {
 
+    public static final int TRAINING_VALIDITY_MONTHS = 6;
     @Resource
     private JHTTrainingRepository jhtTrainingRepository;
 
@@ -103,7 +107,7 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
     @Override
     protected void delete(final JHTTraining entity) {
         checkState(entity.getExternalId() == null, "cannot delete when externalId != null");
-        checkState(entity.getTrainingType() == JHTTraining.TrainingType.LAHI,
+        checkState(entity.getTrainingType() == TrainingType.LAHI,
                 "cannot delete when trainingType != LAHI");
         super.delete(entity);
     }
@@ -119,6 +123,8 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
         final Optional<Person> person = getPerson(dto);
         final Optional<RiistakeskuksenAlue> rka = getRka(dto.getAreaCode());
         final Optional<Riistanhoitoyhdistys> rhy = getRhy(dto.getRhyCode());
+
+        LocalDate trainingValidityStart = today().minusMonths(TRAINING_VALIDITY_MONTHS);
 
         Preconditions.checkArgument(rhy.isPresent()
                         || !rka.isPresent()
@@ -150,6 +156,9 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
 
             trainingDTO.setNominated(selectedPersonIds.contains(personId));
             trainingDTO.setAccepted(acceptedPersonIds.contains(personId));
+            trainingDTO.setExpired(trainingDTO.getTrainingDate().isBefore(trainingValidityStart)
+                    ? true
+                    : false);
         }
 
         return dtoList;
@@ -222,11 +231,7 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
         final SystemUser activeUser = activeUserService.requireActiveUser();
 
         if (activeUser.getRole() == SystemUser.Role.ROLE_USER && activeUser.getPerson() != null) {
-            final List<JHTTraining> byPerson = jhtTrainingRepository.findByPerson(activeUser.getPerson());
-
-            return jhtTrainingDTOTransformer.apply(byPerson.stream()
-                    .filter(training -> !training.isArtificialTraining())
-                    .collect(toList()));
+            return listForPerson(activeUser.getPerson());
         }
 
         return Collections.emptyList();
@@ -236,7 +241,26 @@ public class JHTTrainingCrudFeature extends AbstractCrudFeature<Long, JHTTrainin
     public List<JHTTrainingDTO> listForPerson(final long personId) {
         final Person person = requireEntityService.requirePerson(personId, EntityPermission.READ);
 
-        return jhtTrainingDTOTransformer.apply(jhtTrainingRepository.findByPerson(person));
+        return listForPerson(person);
+    }
+
+    @Transactional(readOnly = true)
+    List<JHTTrainingDTO> listForPerson(final Person person) {
+        final List<JHTTraining> byPerson = jhtTrainingRepository.findByPersonOrderByTrainingDateDesc(person);
+
+        final List<OccupationType> usedOccupationTypes = new ArrayList<>();
+
+        return jhtTrainingDTOTransformer.apply(byPerson.stream()
+                .filter(training -> !training.isArtificialTraining())
+                .filter(training -> {
+                    if (usedOccupationTypes.contains(training.getOccupationType())) {
+                        return false;
+                    }
+                    usedOccupationTypes.add(training.getOccupationType());
+                    return true;
+                })
+                .collect(toList()));
+
     }
 
     @Transactional(readOnly = true)

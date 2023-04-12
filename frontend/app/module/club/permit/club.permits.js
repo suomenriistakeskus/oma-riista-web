@@ -126,7 +126,7 @@ angular.module('app.club.permits', [])
                         return MoosePermitSelection.updateSelectedPermitId($stateParams);
                     },
                     statistics: function (MoosePermits, permitId, selectedYearAndSpecies) {
-                        return MoosePermits.rhyStatistics({
+                        return MoosePermits.rhyStatisticsForClub({
                             permitId: permitId,
                             speciesCode: selectedYearAndSpecies.species
                         }).$promise;

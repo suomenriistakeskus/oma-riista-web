@@ -27,12 +27,14 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.validation.Valid;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
+import static org.springframework.util.StringUtils.hasText;
 
 @Entity
 @Access(value = AccessType.FIELD)
@@ -53,9 +55,9 @@ public class OtherwiseDeceased extends LifecycleEntity<Long> {
                                            @Nonnull final Organisation rhy,
                                            @Nonnull final Organisation rka,
                                            @Nonnull final OtherwiseDeceasedCause cause,
-                                           final String causeOther,
+                                           final String causeDescription,
                                            @Nonnull final OtherwiseDeceasedSource source,
-                                           final String sourceOther,
+                                           final String sourceDescription,
                                            final String description,
                                            final String additionalInfo) {
         requireNonNull(species);
@@ -81,9 +83,9 @@ public class OtherwiseDeceased extends LifecycleEntity<Long> {
         entity.setRhy(rhy);
         entity.setRka(rka);
         entity.setCause(cause);
-        entity.setCauseOther(cause == OtherwiseDeceasedCause.OTHER ? causeOther : null);
+        entity.setCauseDescription(causeDescription);
         entity.setSource(source);
-        entity.setSourceOther(source == OtherwiseDeceasedSource.OTHER ? sourceOther : null);
+        entity.setSourceDescription(sourceDescription);
         entity.setDescription(description);
         entity.setAdditionalInfo(additionalInfo);
         entity.setRejected(false);
@@ -145,8 +147,8 @@ public class OtherwiseDeceased extends LifecycleEntity<Long> {
 
     @Size(max = 255)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    @Column
-    private String causeOther;
+    @Column(name = "cause_other")
+    private String causeDescription;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -155,8 +157,8 @@ public class OtherwiseDeceased extends LifecycleEntity<Long> {
 
     @Size(max = 255)
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    @Column
-    private String sourceOther;
+    @Column(name = "source_other")
+    private String sourceDescription;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     @Column(columnDefinition = "TEXT")
@@ -279,12 +281,12 @@ public class OtherwiseDeceased extends LifecycleEntity<Long> {
         this.cause = cause;
     }
 
-    public String getCauseOther() {
-        return causeOther;
+    public String getCauseDescription() {
+        return causeDescription;
     }
 
-    public void setCauseOther(final String causeOther) {
-        this.causeOther = causeOther;
+    public void setCauseDescription(final String causeDescription) {
+        this.causeDescription = causeDescription;
     }
 
     public OtherwiseDeceasedSource getSource() {
@@ -295,12 +297,12 @@ public class OtherwiseDeceased extends LifecycleEntity<Long> {
         this.source = source;
     }
 
-    public String getSourceOther() {
-        return sourceOther;
+    public String getSourceDescription() {
+        return sourceDescription;
     }
 
-    public void setSourceOther(final String sourceOther) {
-        this.sourceOther = sourceOther;
+    public void setSourceDescription(final String sourceDescription) {
+        this.sourceDescription = sourceDescription;
     }
 
     public String getDescription() {
@@ -335,5 +337,14 @@ public class OtherwiseDeceased extends LifecycleEntity<Long> {
 
     public void setRejected(final boolean rejected) {
         this.rejected = rejected;
+    }
+
+    @AssertTrue
+    public boolean isCauseDescriptionSetWhenCauseOther() {
+        return cause != OtherwiseDeceasedCause.OTHER || hasText(causeDescription);
+    }
+    @AssertTrue
+    public boolean isSourceDescriptionSetWhenCauseOther() {
+        return source != OtherwiseDeceasedSource.OTHER || hasText(sourceDescription);
     }
 }

@@ -243,8 +243,7 @@
                                min="0" ng-max="a.permitAreaSize" step="1"
                                class="form-control input-sm no-spinner totalHuntingArea"
                                ng-model="a.totalHuntingArea"
-                               ng-disabled="!a.moderatorOverridden"
-                               ng-required="!$ctrl.isEitherHuntingAreaPresent(a) && a.moderatorOverridden"/>
+                               ng-disabled="!a.moderatorOverridden"/>
                     </div>
                 </td>
                 <td>
@@ -253,8 +252,7 @@
                                min="0" ng-max="getMaxForEffectiveHuntingArea(a)" step="1"
                                class="form-control input-sm no-spinner effectiveHuntingArea"
                                ng-model="a.effectiveHuntingArea"
-                               ng-disabled="!a.moderatorOverridden"
-                               ng-required="!$ctrl.isEitherHuntingAreaPresent(a) && a.moderatorOverridden"/>
+                               ng-disabled="!a.moderatorOverridden"/>
                     </div>
                 </td>
 
@@ -264,8 +262,7 @@
                                min="0" max="99999" step="1"
                                class="form-control input-sm no-spinner"
                                ng-model="a.remainingPopulationInTotalArea"
-                               ng-disabled="!a.moderatorOverridden"
-                               ng-required="$ctrl.isRemainingPopulationForTotalAreaRequired(a) && a.moderatorOverridden"/>
+                               ng-disabled="!a.moderatorOverridden"/>
                     </div>
                 </td>
                 <td>
@@ -274,8 +271,7 @@
                                min="0" ng-max="getMaxForRemainingPopulationInEffectiveHuntingArea(a)" step="1"
                                class="form-control input-sm no-spinner"
                                ng-model="a.remainingPopulationInEffectiveArea"
-                               ng-disabled="!a.moderatorOverridden"
-                               ng-required="$ctrl.isRemainingPopulationForEffectiveAreaRequired(a) && a.moderatorOverridden"/>
+                               ng-disabled="!a.moderatorOverridden"/>
                     </div>
                 </td>
             </tr>

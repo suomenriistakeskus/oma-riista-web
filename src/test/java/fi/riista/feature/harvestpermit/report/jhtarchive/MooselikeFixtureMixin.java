@@ -27,6 +27,8 @@ import fi.riista.util.DateUtil;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static fi.riista.util.DateUtil.currentYear;
+
 public interface MooselikeFixtureMixin extends FixtureMixin {
 
     default void withMooselikeHarvestFixture(final Consumer<MooselikeFixture> consumer) {
@@ -64,7 +66,7 @@ public interface MooselikeFixtureMixin extends FixtureMixin {
             club = es.newHuntingClub(rhy);
             application = es.newHarvestPermitApplication(rhy, es.newHarvestPermitArea(), HarvestPermitCategory.MOOSELIKE);
             decision = es.newPermitDecision(application);
-            permit = es.newMooselikePermit(rhy);
+            permit = es.newMooselikePermit(rhy, currentYear());
             permit.setPermitDecision(decision);
 
             moose = es.newGameSpecies(GameSpecies.OFFICIAL_CODE_MOOSE, GameCategory.GAME_MAMMAL, "hirvi", "hirvi", "hirvi");

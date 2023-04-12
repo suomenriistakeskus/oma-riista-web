@@ -14,12 +14,6 @@ angular.module('app.occupation.services', [])
         'METSASTYKSENVALVOJA',
         'RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA'
     ])
-    .constant('BoardRepresentationRoles', [
-        'METSAHALLITUKSEN_EDUSTAJA',
-        'MAANOMISTAJIEN_EDUSTAJA',
-        'METSAHALLITUKSEN_VARAEDUSTAJA',
-        'MAANOMISTAJIEN_VARAEDUSTAJA'
-    ])
     .factory('Occupations', function ($resource) {
         return $resource('api/v1/organisation/:orgId/occupation/:id', {orgId: "@orgId", id: "@id"}, {
             query: {
@@ -133,7 +127,8 @@ angular.module('app.occupation.services', [])
         };
     })
 
-    .service('OccupationDialogService', function ($uibModal, Occupations, OccupationPermissionService) {
+    .service('OccupationDialogService', function ($uibModal, Occupations, OccupationPermissionService,
+                                                  OccupationBoardRepresentationRoles, Organisations) {
         function filterOccupations(occupationTypes, showBoardOnly) {
             return OccupationPermissionService.filterOccupationTypes(
                 showBoardOnly && occupationTypes.board
@@ -152,6 +147,12 @@ angular.module('app.occupation.services', [])
                     currentBoardRoles: _.constant(currentBoardRoles),
                     existingPersons: function () {
                         return Occupations.listCandidatePersons({orgId: orgId}).$promise;
+                    },
+                    boardRepresentationRoles: function () {
+                        return OccupationBoardRepresentationRoles.query({orgId: orgId}).$promise;
+                    },
+                    organisation: function () {
+                        return Organisations.get({id: orgId}).$promise;
                     }
                 },
                 controller: 'OccupationFormController'
@@ -169,6 +170,12 @@ angular.module('app.occupation.services', [])
                     currentBoardRoles: _.constant(currentBoardRoles),
                     existingPersons: function () {
                         return Occupations.listCandidatePersons({orgId: orgId}).$promise;
+                    },
+                    boardRepresentationRoles: function () {
+                        return OccupationBoardRepresentationRoles.query({orgId: orgId}).$promise;
+                    },
+                    organisation: function () {
+                        return Organisations.get({id: orgId}).$promise;
                     }
                 },
                 controller: 'OccupationFormController'
@@ -179,7 +186,9 @@ angular.module('app.occupation.services', [])
 
     .service('OccupationPermissionService', function (ActiveRoleService, JHTOccupationTypes) {
         function onlyModeratorCanModify(occupationType) {
-            return occupationType === 'TOIMINNANOHJAAJA' || _.includes(JHTOccupationTypes, occupationType);
+            return occupationType === 'TOIMINNANOHJAAJA'
+                || _.includes(JHTOccupationTypes, occupationType)
+                || occupationType === 'PETOYHDYSHENKILO';
         }
 
         this.canModify = function (occupation) {
@@ -194,5 +203,12 @@ angular.module('app.occupation.services', [])
     })
     .factory('OccupationContactInfoVisibilityRules', function ($resource) {
             return $resource('api/v1/organisation/occupation/contact-info-visibility-rules', {}, {});
+    })
+    .factory('OccupationBoardRepresentationRoles', function ($resource) {
+        return $resource('api/v1/organisation/:orgId/boardRepresentationRoles', {orgId: "@orgId"}, {
+            query: {
+                method: 'GET',
+                isArray: true
+            }
+        });
     });
-

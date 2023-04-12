@@ -59,9 +59,7 @@ angular.module('app.harvestpermit.management.override', [])
 
         $ctrl.isValid = function (form) {
             var summaries = _.filter($ctrl.huntingSummaries, 'moderatorOverridden');
-            return summaries.length > 0 && form.$valid &&
-                _.every(summaries, huntingAreaDefined) &&
-                _.every(summaries, remainingPopulationDefined);
+            return summaries.length > 0 && form.$valid;
         };
 
         $ctrl.submit = function () {
@@ -101,30 +99,6 @@ angular.module('app.harvestpermit.management.override', [])
 
         $ctrl.countTotalSumOf = function (key) {
             return _.sumBy($ctrl.huntingSummaries, key);
-        };
-
-        $ctrl.isEitherHuntingAreaPresent = function (clubData) {
-            return _.isFinite(clubData.totalHuntingArea) || _.isFinite(clubData.effectiveHuntingArea);
-        };
-
-        $ctrl.isRemainingPopulationForTotalAreaRequired = function (clubData) {
-            var effectiveHuntingAreaDefined = _.isFinite(clubData.effectiveHuntingArea);
-
-            return !_.isFinite(clubData.remainingPopulationInTotalArea) &&
-                !effectiveHuntingAreaDefined ||
-                !_.isFinite(clubData.remainingPopulationInEffectiveArea) &&
-                _.isFinite(clubData.totalHuntingArea) &&
-                effectiveHuntingAreaDefined;
-        };
-
-        $ctrl.isRemainingPopulationForEffectiveAreaRequired = function (clubData) {
-            var totalHuntingAreaDefined = _.isFinite(clubData.totalHuntingArea);
-
-            return !_.isFinite(clubData.remainingPopulationInEffectiveArea) &&
-                !totalHuntingAreaDefined ||
-                !_.isFinite(clubData.remainingPopulationInTotalArea) &&
-                totalHuntingAreaDefined &&
-                _.isFinite(clubData.effectiveHuntingArea);
         };
 
         $ctrl.getMaxForEffectiveHuntingArea = function (clubData) {

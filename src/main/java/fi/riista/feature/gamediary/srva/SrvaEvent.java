@@ -157,6 +157,22 @@ public class SrvaEvent extends LifecycleEntity<Long> {
         }
     }
 
+    // SRVA V2 fields
+
+    @Column(columnDefinition = "text")
+    private String deportationOrderNumber;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private SrvaEventTypeDetailsEnum eventTypeDetail;
+
+    @Column(columnDefinition = "text")
+    private String otherEventTypeDetailDescription;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private SrvaEventResultDetailsEnum eventResultDetail;
+
     @AssertTrue
     protected boolean isExclusiveSpeciesOrOtherSpeciesDescription() {
         return species != null && otherSpeciesDescription == null ||
@@ -401,5 +417,37 @@ public class SrvaEvent extends LifecycleEntity<Long> {
 
     public void setApproverAsPerson(Person approverAsPerson) {
         this.approverAsPerson = approverAsPerson;
+    }
+
+    public String getDeportationOrderNumber() {
+        return deportationOrderNumber;
+    }
+
+    public void setDeportationOrderNumber(final String deportationOrderNumber) {
+        this.deportationOrderNumber = deportationOrderNumber;
+    }
+
+    public SrvaEventTypeDetailsEnum getEventTypeDetail() {
+        return eventTypeDetail;
+    }
+
+    public void setEventTypeDetail(final SrvaEventTypeDetailsEnum eventTypeDetail) {
+        this.eventTypeDetail = eventTypeDetail;
+    }
+
+    public String getOtherEventTypeDetailDescription() {
+        return otherEventTypeDetailDescription;
+    }
+
+    public void setOtherEventTypeDetailDescription(final String otherEventTypeDetailDescription) {
+        this.otherEventTypeDetailDescription = otherEventTypeDetailDescription;
+    }
+
+    public SrvaEventResultDetailsEnum getEventResultDetail() {
+        return eventResultDetail;
+    }
+
+    public void setEventResultDetail(final SrvaEventResultDetailsEnum eventResultDetail) {
+        this.eventResultDetail = eventResultDetail;
     }
 }

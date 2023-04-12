@@ -9,15 +9,19 @@ import fi.riista.feature.huntingclub.statistics.HuntingClubHarvestStatisticsDTO;
 import fi.riista.feature.huntingclub.statistics.HuntingClubHarvestStatisticsFeature;
 import fi.riista.feature.huntingclub.statistics.HuntingClubStatisticsFeature;
 import fi.riista.feature.huntingclub.statistics.HuntingClubStatisticsRow;
+import fi.riista.feature.huntingclub.statistics.gamestatistics.GameStatisticsDTO;
+import fi.riista.feature.huntingclub.statistics.gamestatistics.GameStatisticsFeature;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,20 +46,23 @@ public class ClubApiResource {
     @Resource
     private HuntingClubStatisticsFeature huntingClubStatisticsFeature;
 
+    @Resource
+    private GameStatisticsFeature gameStatisticsFeature;
+
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(method = RequestMethod.POST)
+    @PostMapping
     public HuntingClubDTO createHuntingClub(@Validated @RequestBody final CreateHuntingClubDTO dto) {
         return crudFeature.create(dto.toHuntingClubDTO());
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}", method = RequestMethod.GET)
+    @GetMapping(value = "/{id:\\d+}")
     public HuntingClubDTO read(@PathVariable Long id) {
         return crudFeature.read(id);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/{id:\\d+}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id:\\d+}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public HuntingClubDTO updateClub(@PathVariable final long id,
                                      @RequestBody @Validated HuntingClubDTO dto) {
 
@@ -64,20 +71,20 @@ public class ClubApiResource {
     }
 
     @ResponseStatus(HttpStatus.CREATED)
-    @RequestMapping(value = "/{id:\\d+}/location", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id:\\d+}/location", consumes = MediaType.APPLICATION_JSON_VALUE)
     public GeoLocation updateLocation(@PathVariable final long id,
                                       @RequestBody @Validated GeoLocation geoLocation) {
 
         return crudFeature.updateLocation(id, geoLocation);
     }
 
-    @RequestMapping(value = "/{id:\\d+}/active/{active:\\d+}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/{id:\\d+}/active/{active:\\d+}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void updateActive(@PathVariable final long id, @PathVariable int active) {
         crudFeature.updateActive(id, active != 0);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}/huntingdata", method = RequestMethod.POST)
+    @PostMapping(value = "/{id:\\d+}/huntingdata")
     public ModelAndView exportHuntingData(@PathVariable final long id,
                                           @RequestParam final int gameSpeciesCode,
                                           @RequestParam final int huntingYear) {
@@ -85,14 +92,14 @@ public class ClubApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/{id:\\d+}/harvestsummary", method = RequestMethod.GET)
-    public HuntingClubHarvestStatisticsDTO getHarvestSummary(@PathVariable final long id,
-                                                             @RequestParam final int calendarYear) {
-        return huntingClubHarvestSummaryFeature.getSummary(id, calendarYear);
+    @PostMapping(value = "/harvestsummary")
+    public HuntingClubHarvestStatisticsDTO getHarvestSummary(
+            @RequestBody @Validated final ClubHarvestSummaryRequestDTO dto) {
+        return huntingClubHarvestSummaryFeature.getSummary(dto);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @RequestMapping(value = "/moderator/huntingclubmetrics", method = RequestMethod.GET,
+    @GetMapping(value = "/moderator/huntingclubmetrics",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public List<HuntingClubStatisticsRow> huntingClubMetrics(
             @RequestParam(required = false) final Long rkaId,
@@ -104,4 +111,20 @@ public class ClubApiResource {
         return huntingClubStatisticsFeature.calculate(includePermitHolders);
     }
 
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{id:\\d+}/gamestatistics/moose")
+    public GameStatisticsDTO getMooseGameStatistics(@PathVariable final long id) {
+        return gameStatisticsFeature.getMooseStatisticsForHuntingClub(id);
+    }
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{id:\\d+}/gamestatistics/deer")
+    public GameStatisticsDTO getDeerGameStatistics(@PathVariable final long id) {
+        return gameStatisticsFeature.getDeerStatisticsForHuntingClub(id);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{id:\\d+}/gamestatistics/deercensus")
+    public GameStatisticsDTO getDeerCensusGameStatistics(@PathVariable final long id) {
+        return gameStatisticsFeature.getDeerCensusStatisticsForHuntingClub(id);
+    }
 }

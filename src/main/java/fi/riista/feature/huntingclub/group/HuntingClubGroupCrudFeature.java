@@ -3,6 +3,8 @@ package fi.riista.feature.huntingclub.group;
 import com.google.common.base.Preconditions;
 import fi.riista.feature.AbstractCrudFeature;
 import fi.riista.feature.RequireEntityService;
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.account.user.UserRepository;
 import fi.riista.feature.common.entity.EntityLifecycleFields;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gamediary.GameSpecies;
@@ -22,10 +24,15 @@ import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayRepository;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImport;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImportRepository;
 import fi.riista.feature.huntingclub.permit.endofhunting.HuntingFinishingService;
+import fi.riista.feature.organization.occupation.Occupation;
+import fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityDTO;
 import fi.riista.feature.organization.occupation.OccupationRepository;
+import fi.riista.feature.organization.occupation.OccupationService;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.storage.FileStorageService;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.security.EntityPermission;
+import fi.riista.util.Collect;
 import fi.riista.util.F;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Component;
@@ -33,11 +40,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -85,6 +96,12 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
     @Resource
     private HarvestPermitLockedByDateService harvestPermitLockedByDateService;
 
+    @Resource
+    private HuntingClubGroupLeaderEmailService huntingClubGroupLeaderEmailService;
+
+    @Resource
+    private UserRepository userRepository;
+
     @Override
     protected JpaRepository<HuntingClubGroup, Long> getRepository() {
         return huntingClubGroupRepository;
@@ -110,17 +127,12 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
 
             final List<MooseDataCardImport> imports = mooseDataCardImportRepository.findByGroupOrderByIdAsc(group);
 
-            if (imports.stream()
-                    .map(LifecycleEntity::getLifecycleFields)
-                    .map(EntityLifecycleFields::getDeletionTime)
-                    .anyMatch(Objects::isNull)) {
+            if (imports.stream().map(LifecycleEntity::getLifecycleFields).map(EntityLifecycleFields::getDeletionTime).anyMatch(Objects::isNull)) {
 
                 throw new CannotModifyMooseDataCardHuntingGroupException("Cannot delete moose data card group when non-deleted imports exist");
             }
 
-            final List<PersistentFileMetadata> fileMetadataList = imports.stream()
-                    .flatMap(imp -> Stream.of(imp.getXmlFileMetadata(), imp.getPdfFileMetadata()))
-                    .collect(toList());
+            final List<PersistentFileMetadata> fileMetadataList = imports.stream().flatMap(imp -> Stream.of(imp.getXmlFileMetadata(), imp.getPdfFileMetadata())).collect(toList());
 
             mooseDataCardImportRepository.deleteByGroup(group);
 
@@ -132,8 +144,7 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
         huntingClubGroupRepository.delete(group);
     }
 
-    private static boolean changeDetectedToFieldsLockedAfterHuntingStarted(final HuntingClubGroup group,
-                                                                           final HuntingClubGroupDTO dto) {
+    private static boolean changeDetectedToFieldsLockedAfterHuntingStarted(final HuntingClubGroup group, final HuntingClubGroupDTO dto) {
 
         final boolean equalHuntingYear = dto.getHuntingYear() == group.getHuntingYear();
         final boolean equalSpeciesCode = Objects.equals(dto.getGameSpeciesCode(),
@@ -193,9 +204,8 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
     }
 
     private HuntingClubArea getHuntingArea(final HuntingClubGroupDTO dto) {
-        return Optional.ofNullable(dto.getHuntingAreaId())
-                .map(huntingAreaId -> requireEntityService.requireHuntingClubArea(huntingAreaId, EntityPermission.READ))
-                .orElse(null);
+        return Optional.ofNullable(dto.getHuntingAreaId()).map(huntingAreaId ->
+                requireEntityService.requireHuntingClubArea(huntingAreaId, EntityPermission.READ)).orElse(null);
     }
 
     private HarvestPermit getHarvestPermit(final HuntingClubGroupDTO dto) {
@@ -215,8 +225,8 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
 
     private boolean groupHasHuntingData(final HuntingClubGroup group) {
         // Only moose groups have data stored in hunting days preventing deletion
-        return group.getSpecies().isMoose() && groupHuntingDayRepository.groupHasHuntingDays(group) ||
-                clubHuntingStatusService.groupHasDiaryEntriesLinkedToHuntingDay(group);
+        return group.getSpecies().isMoose() && groupHuntingDayRepository.groupHasHuntingDays(group)
+                || clubHuntingStatusService.groupHasDiaryEntriesLinkedToHuntingDay(group);
     }
 
     @Transactional(readOnly = true)
@@ -232,15 +242,86 @@ public class HuntingClubGroupCrudFeature extends AbstractCrudFeature<Long, Hunti
     }
 
     @Transactional
+    public HuntingClubGroupDTO update(final HuntingClubGroupDTO dto) {
+        final HuntingClubGroup entity = requireEntity(dto.getId());
+
+        activeUserService.assertHasPermission(entity, getUpdatePermission(entity, dto));
+        final Person activePerson = activeUserService.requireActiveUser().getPerson();
+
+        checkForUpdateConflict(dto, entity);
+
+        // TODO: Figure out if this could be done without overriding update from super class
+        final boolean permitModified = dto.getPermit() != null && dto.getPermit().getId() != F.getId(entity.getHarvestPermit());
+
+        updateEntity(entity, dto);
+
+        if (permitModified) {
+            unifyUsersPermitVisibilitiesByReference(entity);
+        }
+
+        // Must use saveAndFlush() to update returned consistencyVersion == dto.revision
+        final HuntingClubGroup persisted = getRepository().saveAndFlush(entity);
+        afterUpdate(persisted, dto);
+
+        if (permitModified) {
+            sendGroupLeaderNotificationEmails(persisted, persisted.getHarvestPermit());
+        }
+        return toDTO(persisted);
+    }
+
+    private void unifyUsersPermitVisibilitiesByReference(final HuntingClubGroup entity) {
+        List<Occupation> activeLeaderOccupations =
+                occupationRepository.findActiveByHarvestPermitAndOccupationType(
+                        entity.getHarvestPermit(), RYHMAN_METSASTYKSENJOHTAJA);
+
+        Map<Long, List<Occupation>> referenceOccupationsByPersonId = activeLeaderOccupations.stream()
+                .filter(o -> o.getOrganisation().getId() != entity.getId())
+                .collect(Collect.groupingByIdOf(Occupation::getPerson));
+
+        Map<Long, List<Occupation>> occupationsToUpdateByPersonId = activeLeaderOccupations.stream()
+                .filter(o -> o.getOrganisation().getId() == entity.getId())
+                .collect(Collect.groupingByIdOf(Occupation::getPerson));
+
+        referenceOccupationsByPersonId.entrySet().forEach(e ->
+                e.getValue().stream().findFirst().ifPresent(referenceOccupation ->
+                        occupationsToUpdateByPersonId.getOrDefault(e.getKey(), Collections.emptyList())
+                                .forEach(occupationToUpdate -> {
+                                    occupationToUpdate.setContactInfoShare(referenceOccupation.getContactInfoShare());
+                                    occupationToUpdate.setNameVisibility(referenceOccupation.isNameVisibility());
+                                    occupationToUpdate.setPhoneNumberVisibility(referenceOccupation.isPhoneNumberVisibility());
+                                    occupationToUpdate.setEmailVisibility(referenceOccupation.isEmailVisibility());
+                                })));
+
+    }
+
+    @Transactional
     public HuntingClubGroupDTO copy(final Long originalGroupId, final HuntingClubGroupCopyDTO dto) {
-        final HuntingClubGroup originalGroup = requireEntityService.requireHuntingGroup(originalGroupId,
-                HuntingClubGroupAuthorization.Permission.COPY);
-        final HuntingClubArea huntingArea = requireEntityService.requireHuntingClubArea(dto.getHuntingAreaId(),
-                EntityPermission.READ);
+        final HuntingClubGroup originalGroup =
+                requireEntityService.requireHuntingGroup(originalGroupId, HuntingClubGroupAuthorization.Permission.COPY);
+        final HuntingClubArea huntingArea =
+                requireEntityService.requireHuntingClubArea(dto.getHuntingAreaId(), EntityPermission.READ);
 
         Preconditions.checkState(Objects.equals(huntingArea.getHuntingYear(), dto.getHuntingYear()),
                 "hunting area year must match with selected year");
 
-        return toDTO(copyClubGroupService.copyGroup(originalGroup, huntingArea));
+        final HuntingClubGroup persisted = copyClubGroupService.copyGroup(originalGroup, huntingArea);
+        if (persisted.getHarvestPermit() != null) {
+            sendGroupLeaderNotificationEmails(persisted, persisted.getHarvestPermit());
+        }
+        return toDTO(persisted);
+    }
+
+    private void sendGroupLeaderNotificationEmails(final HuntingClubGroup huntingClubGroup,
+                                                   final HarvestPermit permit) {
+        List<Occupation> occupations =
+                occupationRepository.findNotDeletedByOrganisationAndType(huntingClubGroup, RYHMAN_METSASTYKSENJOHTAJA);
+
+        ArrayList<Person> persons = F.mapNonNullsToList(occupations, Occupation::getPerson);
+        Map<Long, SystemUser> usersByPerson = userRepository.findActiveByPersonIn(persons);
+        occupations.stream()
+                .filter(o -> usersByPerson.get(o.getPerson().getId()) != null)
+                .forEach(leader ->
+                        huntingClubGroupLeaderEmailService.sendGroupLeaderNotificationEmail(
+                                leader, permit, huntingClubGroup.getParentOrganisation(), huntingClubGroup));
     }
 }

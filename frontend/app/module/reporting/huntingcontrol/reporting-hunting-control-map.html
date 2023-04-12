@@ -1,0 +1,104 @@
+<div class="hunting-control-sidebar-layout sidebar-layout">
+    <riista-sidebar-collapse></riista-sidebar-collapse>
+
+    <div class="left-column">
+        <h5 translate="rhy.huntingControlEvent.status"></h5>
+        <div class="checkbox" ng-repeat="status in $ctrl.searchParams.statuses">
+            <label>
+                <input type="checkbox" ng-model="status.isChecked">
+                <span translate="{{status.name}}"></span>
+            </label>
+        </div>
+
+        <h5 translate="rhy.huntingControlEvent.type"></h5>
+        <div class="checkbox" ng-repeat="type in $ctrl.searchParams.types">
+            <label>
+                <input type="checkbox" ng-model="type.isChecked">
+                <span translate="{{type.name}}"></span>
+            </label>
+        </div>
+
+        <h5 translate="rhy.huntingControlEvent.cooperation"></h5>
+        <div class="checkbox" ng-repeat="coop in $ctrl.searchParams.cooperationTypes">
+            <label>
+                <input type="checkbox" ng-model="coop.isChecked">
+                <span translate="{{coop.name}}"></span>
+            </label>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-6">
+                <h5 translate="global.beginDate"></h5>
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" name="beginDate" id="beginDate"
+                           class="form-control"
+                           ng-model="$ctrl.searchParams.dateRange.beginDate"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           datepicker-append-to-body="true"
+                           max-date="$ctrl.searchParams.dateRange.endDate"/>
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+            <div class="col-xs-6">
+                <h5 translate="global.endDate"></h5>
+                <div class="input-group" ng-controller="DatePickerController">
+                    <input type="text" name="endDate" id="endDate"
+                           class="form-control"
+                           ng-model="$ctrl.searchParams.dateRange.endDate"
+                           uib-datepicker-popup is-open="isDatePickerOpen"
+                           datepicker-append-to-body="true"
+                           min-date="$ctrl.searchParams.dateRange.beginDate"
+                           max-date="today()"/>
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <h5 translate="srva.form.selectArea"></h5>
+        <organisation-select-by-rhy tabs="$ctrl.tabs"
+                                    organisation-changed="$ctrl.orgChanged(type, code)"></organisation-select-by-rhy>
+
+        <div class="text-right">
+            <button type="button" class="btn btn-default"
+                    ng-click="$ctrl.exportExcel()">
+                <span class="glyphicon glyphicon-search"></span> &nbsp;
+                <span translate="reporting.common.toExcel"></span>
+            </button>
+
+            <button type="button" class="btn btn-primary"
+                    ng-click="$ctrl.search()">
+                <span class="glyphicon glyphicon-search"></span>&nbsp;
+                <span translate="global.button.search"></span>
+            </button>
+        </div>
+
+        <div ng-show="$ctrl.markers.length <= 0" class="col-xs-12 well">
+            <h5 translate="gamediary.search.noresults"></h5>
+        </div>
+    </div>
+
+    <div class="main-column">
+        <leaflet class="r-cursor-pointer"
+                 id="huntingControlEventsMap"
+                 r-viewport-height
+                 defaults="$ctrl.mapDefaults"
+                 layers="$ctrl.mapDefaults.mmlLayers"
+                 controls="$ctrl.mapDefaults.controls"
+                 lf-center="$ctrl.mapState.center"
+                 bounds="$ctrl.mapState.viewBounds"
+                 event-broadcast="$ctrl.mapEvents"
+                 width="100%">
+            <marker-cluster id="huntingControlEventsMapMarkers" leaflet-markers="$ctrl.markers"></marker-cluster>
+        </leaflet>
+    </div>
+</div>

@@ -16,6 +16,7 @@ import java.util.Objects;
 
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
+import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_JASEN;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
@@ -43,7 +44,7 @@ public class OccupationAuthorization extends AbstractEntityAuthorization<Occupat
         allowCRUD(SEURAN_YHDYSHENKILO, RYHMAN_METSASTYKSENJOHTAJA);
 
         allow(EntityPermission.CREATE, Role.PERSONAL_CLUB_MEMBERSHIP);
-        allow(EntityPermission.READ, SEURAN_JASEN, RYHMAN_JASEN);
+        allow(EntityPermission.READ, SEURAN_JASEN, RYHMAN_JASEN, METSASTYKSENVALVOJA);
         allow(EntityPermission.DELETE, SEURAN_JASEN, RYHMAN_JASEN, Role.PERSONAL_CLUB_MEMBERSHIP);
 
         allow(OccupationPermission.UPDATE_CONTACT_INFO_VISIBILITY, Role.PERSONAL_OCCUPATION, ROLE_ADMIN, ROLE_MODERATOR);
@@ -70,6 +71,9 @@ public class OccupationAuthorization extends AbstractEntityAuthorization<Occupat
             if (organisationType == OrganisationType.RHY) {
                 collector.addAuthorizationRole(TOIMINNANOHJAAJA, () ->
                         userAuthorizationHelper.isCoordinator(occupationOrganisation, activePerson));
+
+                collector.addAuthorizationRole(METSASTYKSENVALVOJA, () ->
+                        userAuthorizationHelper.hasRoleInOrganisation(occupationOrganisation, activePerson, METSASTYKSENVALVOJA));
 
             } else if (organisationType == OrganisationType.CLUB) {
                 collector.addAuthorizationRole(SEURAN_YHDYSHENKILO, () ->

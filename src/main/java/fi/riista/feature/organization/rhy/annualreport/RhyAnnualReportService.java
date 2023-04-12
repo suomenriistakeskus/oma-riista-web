@@ -214,8 +214,11 @@ public class RhyAnnualReportService {
 
         // 4. Metsästyksenvalvonta
         final HuntingControlStatistics huntingControl = dto.getAnnualStatistics().getHuntingControl();
-        final int huntingControlEvents = getIntValueOrZero(huntingControl.getHuntingControlEvents());
-        variables.put("huntingControlEvents", Integer.toString(huntingControlEvents));
+        final int subsidizableHuntingControlEvents = getIntValueOrZero(huntingControl.getHuntingControlEvents());
+        final int nonSubsidizableHuntingControlEvents = getIntValueOrZero(huntingControl.getNonSubsidizableHuntingControlEvents());
+        variables.put("huntingControlEvents", Integer.toString(subsidizableHuntingControlEvents + nonSubsidizableHuntingControlEvents));
+        variables.put("subsidizableHuntingControlEvents", Integer.toString(subsidizableHuntingControlEvents));
+        variables.put("nonSubsidizableHuntingControlEvents", Integer.toString(nonSubsidizableHuntingControlEvents));
         final int huntingControllers = getIntValueOrZero(huntingControl.getHuntingControllers());
         variables.put("huntingControllers", Integer.toString(huntingControllers));
 
@@ -465,11 +468,10 @@ public class RhyAnnualReportService {
                                    final Integer nonSubsidizableEventCount,
                                    final Integer nonSubsidizableParticipantCount,
                                    final List<Tuple5<String, Integer, Integer, Integer, Integer>> list) {
-        final int events = getIntValueOrZero(eventCount) + getIntValueOrZero(nonSubsidizableEventCount);
-        if (events > 0) {
-            final int subsidizableEvents = getIntValueOrZero(events);
+        final int subsidizableEvents = getIntValueOrZero(eventCount);
+        final Integer nonSubsidizableEvents = getIntValueOrZero(nonSubsidizableEventCount);
+        if (subsidizableEvents > 0 || nonSubsidizableEvents > 0) {
             final int participants = getIntValueOrZero(participantCount);
-            final Integer nonSubsidizableEvents = getIntValueOrZero(nonSubsidizableEventCount);
             final Integer nonSubsidizableParticipants = getIntValueOrZero(nonSubsidizableParticipantCount);
             list.add(Tuple.of(placeholder, subsidizableEvents, participants, nonSubsidizableEvents, nonSubsidizableParticipants));
         }

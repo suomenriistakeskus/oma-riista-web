@@ -15,6 +15,7 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.test.rules.HibernateStatisticsVerifier;
 import fi.riista.test.rules.SpringRuleConfigurer;
 import fi.riista.util.DateUtil;
+import fi.riista.util.MockTimeProvider;
 import fi.riista.util.NumberGenerator;
 import fi.riista.util.NumberSequence;
 import fi.riista.util.TransactionalTaskExecutor;
@@ -22,6 +23,7 @@ import fi.riista.util.ValueGeneratorMixin;
 import io.vavr.Lazy;
 import org.hibernate.stat.Statistics;
 import org.joda.time.DateTime;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.springframework.data.domain.Persistable;
@@ -87,6 +89,11 @@ public abstract class SpringContextIntegrationTest extends SpringRuleConfigurer
     public void initTest() {
         this.testStartTime = DateUtil.now();
         reset();
+    }
+
+    @After
+    public void tearDown() {
+        MockTimeProvider.assertMockNotActive();
     }
 
     protected void reset() {

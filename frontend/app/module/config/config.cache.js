@@ -32,6 +32,11 @@ angular.module('app.config.cache', [])
             maxAge: 2 * 1000, // 2 seconds
             deleteOnExpire: 'aggressive'
         });
+        CacheFactory.createCache('accountTaxationTodoCountCache', {
+            storageMode: 'memory',
+            maxAge: 2 * 1000, // 2 seconds
+            deleteOnExpire: 'aggressive'
+        });
         CacheFactory.createCache('areasContactSearchCache', {
             storageMode: 'sessionStorage',
             maxAge: 30 * 60 * 1000, // 30 min

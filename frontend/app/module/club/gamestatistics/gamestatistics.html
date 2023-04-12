@@ -1,0 +1,114 @@
+<div class="row game-statistics-page">
+    <div class="col-md-12">
+        <div ng-if="$ctrl.isCurrentYearDeerCensusNotificationVisible"
+             class="growl-item alert alert-success custom-alert-container">
+            <span>{{'club.gamestatistics.deerCensusNotification.text' | translate: {
+                currentYear:$ctrl.currentYear, previousYear:$ctrl.previousYear } }}</span>
+            <a class="btn btn-primary custom-alert-button" ng-click="$ctrl.openDeerCensusForm()"
+               translate="club.gamestatistics.deerCensusNotification.button"></a>
+        </div>
+
+        <h2>
+            <span translate="club.gamestatistics.gamestatistics"></span>
+        </h2>
+        <h3>
+            <span ng-if="$ctrl.isMooseView || $ctrl.isDeerView"
+                  translate="club.gamestatistics.huntingSummaryData"></span>
+            <span ng-if="$ctrl.isDeerCensusView"
+                  translate="club.gamestatistics.deerCensus"></span>
+        </h3>
+    </div>
+        <div class="col-md-8 buttons">
+            <a class="btn mb-2" ng-click="$ctrl.showMooseStatistics()"
+               ng-class="{'btn-primary': $ctrl.isMooseView, 'btn-default link-button': !$ctrl.isMooseView}"
+               translate="club.gamestatistics.mooseHunting"></a>
+            <a class="btn mb-2" ng-click="$ctrl.showDeerStatistics()"
+               ng-class="{'btn-primary': $ctrl.isDeerView, 'btn-default link-button': !$ctrl.isDeerView}"
+               translate="club.gamestatistics.deerHunting"></a>
+            <a class="btn mb-2" ng-click="$ctrl.showDeerCensusStatistics()"
+               ng-class="{'btn-primary': $ctrl.isDeerCensusView, 'btn-default link-button': !$ctrl.isDeerCensusView}"
+               translate="club.gamestatistics.springDeerCensus"></a>
+        </div>
+
+        <div ng-show="$ctrl.isMooseView">
+            <div class="col-md-12">
+
+                <div class="mt-10" ng-if="$ctrl.isMooseDataForMultiplePermitsWarningVisible"
+                      translate="club.gamestatistics.multiplePermitsWarning"></div>
+
+                <h3 translate="club.gamestatistics.remainingMoosesInArea"></h3>
+                <h4 translate="club.gamestatistics.totalArea"></h4>
+                <div id="remainingMoosesInTotalAreaChart"></div>
+                <h4 translate="club.gamestatistics.effectiveArea"></h4>
+                <div id="remainingMoosesInEffectiveAreaChart"></div>
+
+                <h3 translate="club.gamestatistics.deceasedMooses"></h3>
+                <h4 translate="club.gamestatistics.allDeceasedMooses"></h4>
+                <div id="deadMoosesChart"></div>
+
+                <div class="table-container">
+                    <div ng-include="'club/gamestatistics/deceased-mooses-table.html'"></div>
+                </div>
+
+                <hr/>
+                <h3 translate="club.gamestatistics.otherMooselike"></h3>
+                <div id="deersChart"></div>
+                <hr/>
+
+                <h3 translate="club.gamestatistics.beaver"></h3>
+            </div>
+            <div class="col-md-6">
+                <h4><span translate="club.gamestatistics.beaversAmountOfInhabitedWinterNests"></span><br>&nbsp;</h4>
+                <div id="beaverChart1"></div>
+            </div>
+            <div class="col-md-6">
+                <h4 translate="club.gamestatistics.beaversHarvestAmount"></h4>
+                <div id="beaverChart2"></div>
+            </div>
+            <div class="col-md-6">
+                <h4 translate="club.gamestatistics.beaversAreaOfDamage"></h4>
+                <div id="beaverChart3"></div>
+            </div>
+            <div class="col-md-6">
+                <h4 translate="club.gamestatistics.beaversAreaOccupiedByWater"></h4>
+                <div id="beaverChart4"></div>
+            </div>
+
+            <div class="col-md-12">
+                <hr/>
+                <h3 translate="club.gamestatistics.wildBoar"></h3>
+            </div>
+            <div class="col-md-6">
+                <h4 translate="club.gamestatistics.wildBoarsEstimatedAmountOfSpecimens"></h4>
+                <div id="wildBoarChart1"></div>
+            </div>
+            <div class="col-md-6">
+                <h4 translate="club.gamestatistics.wildBoarsEstimatedAmountOfSowWithPiglets"></h4>
+                <div id="wildBoarChart2"></div>
+            </div>
+        </div>
+
+        <div ng-show="$ctrl.isDeerView">
+            <div class="col-md-12">
+                <h3 translate="club.gamestatistics.whiteTailDeerRemainingPopulation"></h3>
+                <h4 translate="club.gamestatistics.whiteTailDeerRemainingPopulationInTotalArea"></h4>
+                <div id="deerChart1"></div>
+                <h4 translate="club.gamestatistics.whiteTailDeerRemainingPopulationInEffectiveArea"></h4>
+                <div id="deerChart2"></div>
+            </div>
+        </div>
+
+        <div ng-show="$ctrl.isDeerCensusView">
+            <div class="col-md-12 buttons mt-20">
+                <a class="btn btn-default link-button mb-2" ng-if="$ctrl.isViewDeerCensusButtonVisible"
+                   ng-click="$ctrl.openDeerCensusView()"
+                   translate="club.gamestatistics.openDeerCensusView"></a>
+                <a class="btn btn-primary mb-2" ng-if="$ctrl.isEditDeerCensusAllowed"
+                   ng-click="$ctrl.openDeerCensusForm()"
+                   translate="club.gamestatistics.openDeerCensusForm"></a>
+            </div>
+            <div class="col-md-12 mt-10">
+                <div id="deerCensusChart"></div>
+            </div>
+        </div>
+</div>

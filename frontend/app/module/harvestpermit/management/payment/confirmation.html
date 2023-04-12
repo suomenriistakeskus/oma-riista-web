@@ -6,7 +6,7 @@
 </p>
 
 <div class="row">
-    <div class="col-xs-3">
+    <div class="col-sm-3">
         <p><strong translate="invoice.info"></strong></p>
 
         <p style="margin-bottom: 6px">
@@ -19,7 +19,7 @@
         </p>
     </div>
 
-    <div class="col-xs-3">
+    <div class="col-sm-3">
         <p><strong translate="invoice.items"></strong></p>
 
         <p style="margin-bottom: 6px"><span ng-bind="::$ctrl.invoice.invoiceDescription"></span>,</p>
@@ -27,7 +27,7 @@
            translate="harvestpermit.management.invoiceType.{{::$ctrl.invoice.invoiceType}}"></p>
     </div>
 
-    <div class="col-xs-3">
+    <div class="col-sm-3">
         <p><strong translate="payment.payer"></strong></p>
 
         <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.from.name"></p>
@@ -35,7 +35,7 @@
         <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.from.addressLine2"></p>
     </div>
 
-    <div class="col-xs-3">
+    <div class="col-sm-3">
         <p><strong translate="payment.payee"></strong></p>
 
         <p style="margin-bottom: 6px" ng-bind="::$ctrl.invoice.to.name"></p>
@@ -45,22 +45,74 @@
     </div>
 </div>
 
-<hr class="">
+<hr>
 
-<div class="row">
-    <div class="col-xs-6">
-        <button class="btn btn-link"
-                ui-sref="permitmanagement.payment.due">
-            <span translate="harvestpermit.management.cancelPayment"></span>
-        </button>
+<div ng-if="$ctrl.paymentOptionsAvailable">
+
+    <div>
+        <span ng-bind-html="::$ctrl.terms"></span>
     </div>
 
-    <div class="col-xs-6 text-right">
-        <button type="button" class="btn btn-lg btn-primary"
-                ng-click="$ctrl.makePayment()">
-            <span translate="harvestpermit.management.proceedPayment"></span>
-            &nbsp;
-            <span class="fa fa-chevron-right"></span>
-        </button>
+    <div class="payment-options-select">
+        <div ng-if="$ctrl.groupsByKey.BANK">
+            <h4 ng-bind="::$ctrl.groupsByKey.BANK.name"></h4>
+
+            <div class="row">
+                <div class="col-md-9 col-xs-12">
+                    <button ng-repeat="p in $ctrl.providers track by $index"
+                            ng-class="{'selected': $ctrl.isSelected(p)}"
+                            ng-if="'BANK' === p.group" class="payment-provider-button"
+                            ng-click="$ctrl.selectProvider(p)">
+                        <img ng-src="{{::p.svg}}" alt="{{::p.name}}">
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div ng-if="$ctrl.groupsByKey.CREDIT_CARD">
+            <h4 ng-bind="::$ctrl.groupsByKey.CREDIT_CARD.name"></h4>
+
+            <div class="row">
+                <div class="col-md-9 col-xs-12">
+                    <button ng-repeat="p in $ctrl.providers track by $index"
+                            ng-if="'CREDIT_CARD' === p.group" class="payment-provider-button"
+                            ng-click="$ctrl.selectProvider(p)">
+                        <img ng-src="{{::p.svg}}" alt="{{::p.name}}">
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div ng-if="$ctrl.groupsByKey.MOBILE">
+            <h4 ng-bind="::$ctrl.groupsByKey.MOBILE.name"></h4>
+
+            <div class="row">
+                <div class="col-md-9 col-xs-12">
+                    <button ng-repeat="p in $ctrl.providers track by $index"
+                            ng-if="'MOBILE' === p.group" class="payment-provider-button"
+                            ng-click="$ctrl.selectProvider(p)">
+                        <img ng-src="{{::p.svg}}" alt="{{::p.name}}">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="payment-confirmation-section">
+        <div class="alert-content">
+            <button type="button" class="btn btn-lg btn-primary"
+                    ng-disabled="!$ctrl.selectedProvider" ng-click="$ctrl.makePayment()">
+                <span translate="harvestpermit.management.proceedPayment"></span>
+                <span ng-if="!!$ctrl.selectedProvider">({{$ctrl.selectedProvider.name}})
+            </span>
+                &nbsp;
+                <span class="fa fa-chevron-right"></span>
+            </button>
+        </div>
     </div>
 </div>
+
+<div ng-if="!$ctrl.paymentOptionsAvailable">
+    <span class="fa fa-exclamation-triangle text-danger"></span>
+    <span class="text-danger" translate="payment.optionsNotAvailable"></span>
+</div>
+

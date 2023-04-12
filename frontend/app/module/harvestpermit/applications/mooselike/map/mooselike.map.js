@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mooselike.map', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/mooselike/map/map.html',
                 controller: 'MooselikePermitWizardMapController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     permitArea: function (MooselikePermitApplication, applicationId) {
                         return MooselikePermitApplication.getArea({

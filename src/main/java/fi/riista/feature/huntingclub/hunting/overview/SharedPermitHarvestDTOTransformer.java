@@ -49,7 +49,7 @@ public class SharedPermitHarvestDTOTransformer extends HarvestDTOTransformerBase
                 .withCanEdit(false)
                 .build();
 
-        final HuntingClub club = harvest.getHuntingClub();
+        final HuntingClub club = harvest.getHuntingClubForStatistics();
 
         if (club != null) {
             final HuntingClubDTO clubDTO = new HuntingClubDTO();

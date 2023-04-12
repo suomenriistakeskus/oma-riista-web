@@ -125,6 +125,16 @@
                 <span class="glyphicon pull-right"
                       ng-class="$ctrl.toolStyle('exclude.lasso.remove', 'glyphicon-ok', '')"></span>
                 </a>
-            </li>    </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="btn-group help-btn" role="group">
+        <button type="button"
+                class="btn"
+                ng-click="$ctrl.openHelp()">
+            <span class="fa fa-fw fa-solid fa-question-circle"></span>
+            <span translate="global.map.editor.toolbar.help"></span>
+        </button>
     </div>
 </div>

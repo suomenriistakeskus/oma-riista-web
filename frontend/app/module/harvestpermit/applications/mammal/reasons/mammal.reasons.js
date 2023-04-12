@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mammal.reasons', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/mammal/reasons/reasons.html',
                 controller: 'MammalPermitWizardJustificationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     permitCause: function (MammalPermitApplication, applicationId) {
                         return MammalPermitApplication.getCurrentPermitCause({id: applicationId}).$promise;

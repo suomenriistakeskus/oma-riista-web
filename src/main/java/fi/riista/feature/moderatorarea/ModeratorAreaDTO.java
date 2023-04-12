@@ -11,11 +11,11 @@ import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.util.DtoUtil;
 import fi.riista.validation.DoNotValidate;
-import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
 public class ModeratorAreaDTO extends BaseEntityDTO<Long> {
@@ -95,7 +95,7 @@ public class ModeratorAreaDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 
@@ -105,7 +105,7 @@ public class ModeratorAreaDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setRev(Integer rev) {
+    public void setRev(final Integer rev) {
         this.rev = rev;
     }
 

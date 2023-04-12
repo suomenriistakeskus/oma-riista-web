@@ -23,17 +23,41 @@
     <meta name="theme-color" content="#00a300">
     <title>'Oma riista' on Suomen riistakeskuksen helppokäyttöinen sähköisen asioinnin palvelu metsästäjille ja rhy toiminnanohjaajille.</title>
     <spring:eval var="rev" expression="@runtimeEnvironmentUtil.revision"/>
+    <spring:eval var="commitId" expression="@runtimeEnvironmentUtil.commitId"/>
     <spring:eval var="environmentId" expression="@runtimeEnvironmentUtil.environmentId"/>
     <spring:eval var="isProductionEnvironment" expression="@runtimeEnvironmentUtil.productionEnvironment"/>
-    <spring:eval var="sentryDsn" expression="@sentryConfig.sentryDsnPublic"/>
+    <spring:eval var="mmlOpenAPIKey" expression="@runtimeEnvironmentUtil.mmlOpenAPIKey"/>
+    <spring:eval var="ddClientToken" expression="@runtimeEnvironmentUtil.ddClientToken"/>
     <c:set var="sourcePrefix" value="${contextPath}/v/${rev}"/>
+
+    <script type="text/javascript" src="https://www.datadoghq-browser-agent.com/datadog-logs-v4.js"></script>
+    <script>
+        window.DD_LOGS && DD_LOGS.init({
+            clientToken: '${ddClientToken}',
+            site: 'datadoghq.eu',
+            service: 'oma-riista-web',
+            env: '${environmentId}',
+            version: '${commitId}',
+            forwardErrorsToLogs: true,
+            sampleRate: 100,
+            beforeSend: (log) => {
+                // Copy stack from _customDataHolder
+                if (log._customDataHolder && !log.error.stack) {
+                    log.error['stack'] = log._customDataHolder.stack;
+                    delete log._customDataHolder;
+                }
+                // If exception is from angular, it should have been already logged, we can skip console log.
+                if (log.error && log.error.origin === 'console' && log.error.stack && _.isString(log.error.stack) && log.error.stack.indexOf('at angular.') !== -1) {
+                    return false;
+                }
+            }
+        });
+    </script>
     <script>
         <%@ include file="/frontend/js/lib/angular-loader.min.js" %>
         <%@ include file="/frontend/js/lib/loadjs.min.js" %>
         loadjs([
-            'css!https://fonts.googleapis.com/css?family=Open+Sans:300,400,700|Roboto+Slab:400,700',
             'css!/v/${styleVersion}/css/app.css',
-            'https://cdn.ravenjs.com/3.27.0/raven.min.js',
             '/v/${vendorOtherVersion}/js/vendor.other.min.js',
             '/v/${vendorAngularVersion}/js/vendor.angular.min.js',
             '/v/${templatesVersion}/js/templates.js',
@@ -41,35 +65,38 @@
         ], 'app', {
             numRetries: 1
         });
-        loadjs.ready('app', {
+        loadjs.ready(['app'], {
             success: function () {
-                var sentryDsn = '${sentryDsn}';
+                Dropzone.autoDiscover = false;
 
-                if (sentryDsn) {
-                    // configure the SDK as you normally would
-                    Raven.config(sentryDsn, {
-                        release: '${rev}',
-                        environment: '${environmentId}-frontend'
-                    }).install();
+                angular.module('app.metadata', [])
+                    .constant('environmentId', '${environmentId}')
+                    .constant('isProductionEnvironment', ${isProductionEnvironment})
+                    .constant('appRevision', '${rev}')
+                    .constant('versionUrlPrefix', '${sourcePrefix}')
+                    .constant('mmlOpenAPIKey', '${mmlOpenAPIKey}');
+                angular.bootstrap(document, ['app'], {
+                    strictDi: true
+                });
+            },
+            error: function(depsNotFound) {
+                if (window.DD_LOGS) {
+                    window.DD_LOGS.logger.error("depsNotFound: " + depsNotFound);
                 }
 
                 Dropzone.autoDiscover = false;
-
-                Raven.context(function () {
-                    angular.module('app.metadata', [])
-                        .constant('environmentId', '${environmentId}')
-                        .constant('isProductionEnvironment', ${isProductionEnvironment})
-                        .constant('appRevision', '${rev}')
-                        .constant('versionUrlPrefix', '${sourcePrefix}');
-                    angular.bootstrap(document, ['app'], {
-                        strictDi: true
-                    });
-                });
+                angular.module('app.metadata', [])
+                    .constant('environmentId', '${environmentId}')
+                    .constant('isProductionEnvironment', ${isProductionEnvironment})
+                    .constant('appRevision', '${rev}')
+                    .constant('versionUrlPrefix', '${sourcePrefix}')
+                    .constant('mmlOpenAPIKey', '${mmlOpenAPIKey}');
+                angular.bootstrap(document, ['app'], { strictDi: true });
             }
         });
     </script>
 </head>
-<body>
+<body class="site-background">
 <div style="display: none">
     'Oma riista' on Suomen riistakeskuksen helppokäyttöinen sähköisen asioinnin palvelu metsästäjille ja rhy
     toiminnanohjaajille.
@@ -122,11 +149,9 @@
 <site-nav></site-nav>
 
 <div class="wrapper">
-    <div class="site-background"></div>
-
     <div class="main-content" ui-view autoscroll="false"></div>
 </div>
-
+<div riista-spacing-when-footer-hidden-css class="footer-spacing"></div>
 <footer riista-footer-css
         ng-include="'layout/footer.html'">
 </footer>

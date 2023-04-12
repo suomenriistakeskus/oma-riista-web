@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.deportation.applicant', ['app.meta
                 templateUrl: 'harvestpermit/applications/deportation/applicant/applicant.html',
                 controller: 'DeportationWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

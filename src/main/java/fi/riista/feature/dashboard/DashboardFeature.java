@@ -13,6 +13,11 @@ import fi.riista.feature.announcement.AnnouncementSenderType;
 import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
 import fi.riista.feature.huntingclub.QHuntingClub;
 import fi.riista.feature.huntingclub.area.QHuntingClubArea;
+import fi.riista.feature.huntingclub.area.query.HuntingClubAreaPoiQuery;
+import fi.riista.feature.huntingclub.poi.PointOfInterestType;
+import fi.riista.feature.huntingclub.poi.QPoiIdAllocation;
+import fi.riista.feature.huntingclub.poi.QPoiLocation;
+import fi.riista.feature.huntingclub.poi.QPoiLocationGroup;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.QOrganisation;
 import fi.riista.feature.organization.calendar.QCalendarEvent;
@@ -59,9 +64,12 @@ public class DashboardFeature {
     @Resource
     private DashboardMooselikeHuntingService dashboardMooselikeHuntingService;
 
+    private HuntingClubAreaPoiQuery huntingClubAreaPoiQuery;
+
     @Autowired
     public void setDataSource(final DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.huntingClubAreaPoiQuery = new HuntingClubAreaPoiQuery(jdbcTemplate);
     }
 
     @Transactional(readOnly = true)
@@ -117,22 +125,22 @@ public class DashboardFeature {
     private void countModerators(DashboardUsersDTO dto) {
         // Moderaattorit jotka ovat rekisteröityneet
         dto.setCountModeratorWithPassword(jdbcTemplate.queryForObject(
-                "SELECT COUNT(password) FROM system_user WHERE role = 'ROLE_MODERATOR'"
+                "SELECT COUNT(password) FROM \"system_user\" WHERE role = 'ROLE_MODERATOR'"
                 , Long.class));
 
         // Kaikki moderaattorit
         dto.setCountAllModerators(jdbcTemplate.queryForObject(
-                "SELECT COUNT(user_id) FROM system_user WHERE role = 'ROLE_MODERATOR'"
+                "SELECT COUNT(user_id) FROM \"system_user\" WHERE role = 'ROLE_MODERATOR'"
                 , Long.class));
     }
 
     private void countCoordinators(DashboardUsersDTO dto) {
         // Rekisteröityneet toiminnanohjaajat
         dto.setCountRHYToiminnanohjaajaWithPassword(jdbcTemplate.queryForObject(
-                "SELECT COUNT(DISTINCT person_id) FROM system_user" +
-                        " WHERE role = 'ROLE_USER' AND password IS NOT NULL" +
+                "SELECT COUNT(DISTINCT person_id) FROM \"system_user\" su" +
+                        " WHERE su.role = 'ROLE_USER' AND su.password IS NOT NULL" +
                         " AND EXISTS (SELECT occupation_id FROM occupation o" +
-                        " WHERE o.person_id = system_user.person_id" +
+                        " WHERE o.person_id = su.person_id" +
                         " AND now() BETWEEN COALESCE(begin_date, now()) AND COALESCE(end_date, now())" +
                         " AND occupation_type = 'TOIMINNANOHJAAJA')", Long.class));
 
@@ -237,6 +245,74 @@ public class DashboardFeature {
                         HarvestPermitApplication.Status.DRAFT,
                         HarvestPermitApplication.Status.HIDDEN))
                 .fetchCount());
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardPOIsDTO getMetricsPOIs() {
+        final DashboardPOIsDTO dto = new DashboardPOIsDTO();
+        countPOIbs(dto);
+        return dto;
+    }
+
+    private void countPOIbs(DashboardPOIsDTO dto) {
+        final QPoiLocation POI_LOCATION = QPoiLocation.poiLocation;
+        final QPoiLocationGroup POI_LOCATION_GROUP = QPoiLocationGroup.poiLocationGroup;
+
+        dto.setIndividualSightingPlaceCount(
+                queryFactory
+                        .from(POI_LOCATION)
+                        .join(POI_LOCATION.poi, POI_LOCATION_GROUP)
+                        .where(POI_LOCATION_GROUP.type.eq(PointOfInterestType.SIGHTING_PLACE)).fetchCount()
+        );
+        dto.setIndividualMineralLickCount(
+                queryFactory
+                        .from(POI_LOCATION)
+                        .join(POI_LOCATION.poi, POI_LOCATION_GROUP)
+                        .where(POI_LOCATION_GROUP.type.eq(PointOfInterestType.MINERAL_LICK)).fetchCount()
+        );
+        dto.setIndividualFeedingPlaceCount(
+                queryFactory
+                        .from(POI_LOCATION)
+                        .join(POI_LOCATION.poi, POI_LOCATION_GROUP)
+                        .where(POI_LOCATION_GROUP.type.eq(PointOfInterestType.FEEDING_PLACE)).fetchCount()
+        );
+        dto.setIndividualOtherCount(
+                queryFactory
+                        .from(POI_LOCATION)
+                        .join(POI_LOCATION.poi, POI_LOCATION_GROUP)
+                        .where(POI_LOCATION_GROUP.type.eq(PointOfInterestType.OTHER)).fetchCount()
+        );
+
+        dto.setGroupSightingPlaceCount(
+                queryFactory
+                        .from(POI_LOCATION_GROUP)
+                        .where(POI_LOCATION_GROUP.type.eq(PointOfInterestType.SIGHTING_PLACE)).fetchCount()
+        );
+        dto.setGroupMineralLickCount(
+                queryFactory
+                        .from(POI_LOCATION_GROUP)
+                        .where(POI_LOCATION_GROUP.type.eq(PointOfInterestType.MINERAL_LICK)).fetchCount()
+        );
+        dto.setGroupFeedingPlaceCount(
+                queryFactory
+                        .from(POI_LOCATION_GROUP)
+                        .where(POI_LOCATION_GROUP.type.eq(PointOfInterestType.FEEDING_PLACE)).fetchCount()
+        );
+        dto.setGroupOtherCount(
+                queryFactory
+                        .from(POI_LOCATION_GROUP)
+                        .where(POI_LOCATION_GROUP.type.eq(PointOfInterestType.OTHER)).fetchCount()
+        );
+        dto.setAreaPOICount(huntingClubAreaPoiQuery.getAreaPOICount());
+
+        dto.setClubPOICount(
+                queryFactory
+                        .from(POI_LOCATION_GROUP)
+                        .groupBy(POI_LOCATION_GROUP.poiIdAllocation)
+                        .fetchCount()
+        );
+
+
     }
 
     @Transactional(readOnly = true)

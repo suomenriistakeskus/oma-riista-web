@@ -15,6 +15,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
@@ -55,7 +56,11 @@ public class AdditionalCalendarEvent extends LifecycleEntity<Long> {
         setEndTime(endTime);
         setCalendarEvent(calendarEvent);
         setVenue(venue);
+    }
 
+    @AssertTrue
+    public boolean isEndTimeValid() {
+        return calendarEvent.getCalendarEventType() != CalendarEventType.METSASTAJAKURSSI || endTime != null;
     }
 
     public LocalDate getDateAsLocalDate() {

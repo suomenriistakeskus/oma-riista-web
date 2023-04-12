@@ -20,6 +20,15 @@ angular.module('app.jht.controllers', ['app.admin.users'])
 
                     $ctrl.isAuthorizedForOtherwiseDeceased = ActiveRoleService.isAdmin() ||
                         AvailableRoleService.hasPrivilege(ModeratorPrivileges.otherwiseDeceased);
+
+                    $ctrl.isAuthorizedForApplicationSchedule = ActiveRoleService.isAdmin() ||
+                        AvailableRoleService.hasPrivilege(ModeratorPrivileges.moderateApplicationSchedule);
+
+                    $ctrl.isAuthorizedForHarvestSeasons = ActiveRoleService.isAdmin() ||
+                        AvailableRoleService.hasPrivilege(ModeratorPrivileges.moderateHarvestSeasons);
+
+                    $ctrl.isAuthorizedForHarvestReportReviwew = ActiveRoleService.isAdmin() ||
+                        AvailableRoleService.hasPrivilege(ModeratorPrivileges.reviewHarvestReportDelays);
                 },
                 resolve: {
                     renewalTodos: function (ModeratorTodos) {
@@ -103,6 +112,7 @@ angular.module('app.jht.controllers', ['app.admin.users'])
                             searchParameters.nominationStatus = 'ESITETTY';
                             searchParameters.rhyCode = $stateParams.rhyCode;
                             searchParameters.occupationType = $stateParams.occupationType;
+                            searchParameters.beginDate = null;
                         }
 
                         return searchParameters;
@@ -115,6 +125,12 @@ angular.module('app.jht.controllers', ['app.admin.users'])
             .state('jht.harvestreport', {
                 abstract: true,
                 url: '/harvestreport',
+                template: '<ui-view autoscroll="false"/>'
+            })
+
+            .state('jht.harvestreportreview', {
+                abstract: true,
+                url: '/harvestreportreview',
                 template: '<ui-view autoscroll="false"/>'
             })
 

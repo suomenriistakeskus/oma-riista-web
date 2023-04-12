@@ -44,7 +44,7 @@ public class HarvestPermitAcceptHarvestFeature {
     private CommitHookService commitHookService;
 
     @Transactional
-    public void changeAcceptedToPermit(@Nonnull HarvestPermitAcceptHarvestDTO dto) {
+    public void changeAcceptedToPermit(@Nonnull final HarvestPermitAcceptHarvestDTO dto) {
         Objects.requireNonNull(dto);
 
         final Harvest harvest = harvestRepository.getOne(dto.getHarvestId());
@@ -95,9 +95,7 @@ public class HarvestPermitAcceptHarvestFeature {
                     : activeUser.getPerson());
 
             if (!harvestPermit.isHarvestsAsList()) {
-                commitHookService.runInTransactionAfterCommit(() -> {
-                    harvestReportNotificationService.sendNotificationForHarvest(harvest.getId());
-                });
+                commitHookService.runInTransactionAfterCommit(() -> harvestReportNotificationService.sendNotificationForHarvest(harvest.getId()));
             }
 
         } else {
@@ -112,25 +110,27 @@ public class HarvestPermitAcceptHarvestFeature {
         final int huntingYear = DateUtil.huntingYearContaining(harvest.getPointOfTimeAsLocalDate());
         final int gameSpeciesCode = harvest.getSpecies().getOfficialCode();
         final HarvestReportingType reportingType = HarvestReportingType.PERMIT;
+        final boolean withPermit = harvest.getHarvestPermit() != null;
 
         final GroupHuntingDay huntingDayOfGroup = harvest.getHuntingDayOfGroup();
         final boolean associatedWithHuntingDay = huntingDayOfGroup != null;
         final boolean legallyMandatoryFieldsOnly = ofNullable(huntingDayOfGroup)
                 .map(GroupHuntingDay::isCreatedBySystem)
                 .orElse(false);
+        final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED;
 
         final RequiredHarvestFields.Report reportFieldRequirements = RequiredHarvestFields
                 .getFormFields(huntingYear, gameSpeciesCode, reportingType, legallyMandatoryFieldsOnly);
 
         final RequiredHarvestFields.Specimen specimenFieldRequirements = RequiredHarvestFields.getSpecimenFields(
                 huntingYear, gameSpeciesCode, harvest.getHuntingMethod(), reportingType, legallyMandatoryFieldsOnly,
-                HarvestSpecVersion.CURRENTLY_SUPPORTED);
+                specVersion, withPermit);
 
         new HarvestFieldValidator(reportFieldRequirements, harvest).validateAll().throwOnErrors();
 
-        for (HarvestSpecimen harvestSpecimen : harvest.getSortedSpecimens()) {
+        for (final HarvestSpecimen harvestSpecimen : harvest.getSortedSpecimens()) {
             new HarvestSpecimenValidator(specimenFieldRequirements, harvestSpecimen, gameSpeciesCode,
-                    associatedWithHuntingDay)
+                    associatedWithHuntingDay, specVersion, withPermit)
                     .validateAll()
                     .throwOnErrors();
         }

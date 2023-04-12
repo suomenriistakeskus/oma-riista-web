@@ -1,27 +1,24 @@
 <div class="row">
-    <div class="col-xs-3">
+    <div class="col-sm-3">
         <h4 ng-bind="$ctrl.species.name | rI18nNameFilter | capitalize" style="margin:0"></h4>
     </div>
 
-    <div class="col-xs-9">
+    <div class="col-sm-9">
         <div class="form-group" ng-class="{ 'has-error': $ctrl.parentForm[$ctrl.appearedInputId].$invalid }">
-            <label class="control-label col-xs-7">
+            <label class="control-label col-sm-7">
                 <span translate="club.hunting.mooseHuntingSummary.appearance"></span>
-                <small class="glyphicon glyphicon-asterisk text-danger"></small>
             </label>
 
-            <div class="col-xs-5">
+            <div class="col-sm-5">
                 <div class="btn-group btn-group-justified">
                     <label class="btn btn-default"
                            uib-btn-radio="false"
-                           required
                            ng-model="$ctrl.appearance.appeared">
                         <span translate="global.no"></span>
                     </label>
 
                     <label class="btn btn-default"
                            uib-btn-radio="true"
-                           required
                            ng-model="$ctrl.appearance.appeared">
                         <span translate="global.yes"></span>
                     </label>
@@ -31,13 +28,13 @@
 
         <div ng-if="$ctrl.appearance.appeared">
             <div class="form-group" show-errors>
-                <label for="{{ $ctrl.trendOfGrowthSelectId }}" class="control-label col-xs-7">
+                <label for="{{ $ctrl.trendOfGrowthSelectId }}" class="control-label col-sm-7">
                     <span class="text-right"
                           translate="club.hunting.mooseHuntingSummary.trendOfMooselikePopulationGrowth"></span>
                     <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
 
-                <div class="col-xs-5">
+                <div class="col-sm-5">
                     <select name="{{ $ctrl.trendOfGrowthSelectId }}" id="{{ $ctrl.trendOfGrowthSelectId }}"
                             class="form-control"
                             ng-model="$ctrl.appearance.trendOfPopulationGrowth"
@@ -55,12 +52,12 @@
             </div>
 
             <div class="form-group" show-errors ng-if="!$ctrl.isBeaver">
-                <label for="{{ $ctrl.estimatedAmountOfSpecimensInputId }}" class="control-label col-xs-7">
+                <label for="{{ $ctrl.estimatedAmountOfSpecimensInputId }}" class="control-label col-sm-7">
                     <span translate="club.hunting.mooseHuntingSummary.estimatedAmountOfSpecimens"></span>
                     <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
 
-                <div class="col-xs-5">
+                <div class="col-sm-5">
                     <div class="input-group">
                         <input type="number"
                                id="{{ $ctrl.estimatedAmountOfSpecimensInputId }}"
@@ -82,12 +79,12 @@
             </div>
 
             <div class="form-group" show-errors ng-if="$ctrl.isBeaver">
-                <label for="{{ $ctrl.amountOfInhabitedWinterNestsInputId }}" class="control-label col-xs-7">
+                <label for="{{ $ctrl.amountOfInhabitedWinterNestsInputId }}" class="control-label col-sm-7">
                     <span translate="club.hunting.mooseHuntingSummary.amountOfInhabitedWinterNests"></span>
                     <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
 
-                <div class="col-xs-5">
+                <div class="col-sm-5">
                     <div class="input-group">
                         <input type="number"
                                name="{{ $ctrl.amountOfInhabitedWinterNestsInputId }}"
@@ -109,12 +106,12 @@
             </div>
 
             <div class="form-group" show-errors ng-if="$ctrl.isWildBoar">
-                <label for="{{ $ctrl.estimatedAmountOfSowWithPigletsInputId }}" class="control-label col-xs-7">
+                <label for="{{ $ctrl.estimatedAmountOfSowWithPigletsInputId }}" class="control-label col-sm-7">
                     <span translate="club.hunting.mooseHuntingSummary.estimatedAmountOfSowWithPiglets"></span>
                     <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
 
-                <div class="col-xs-5">
+                <div class="col-sm-5">
                     <div class="input-group">
                         <input type="number"
                                name="{{ $ctrl.estimatedAmountOfSowWithPigletsInputId }}"
@@ -136,12 +133,12 @@
             </div>
 
             <div class="form-group" show-errors ng-if="$ctrl.isBeaver">
-                <label for="{{ $ctrl.beaverHarvestAmountInputId }}" class="control-label col-xs-7">
+                <label for="{{ $ctrl.beaverHarvestAmountInputId }}" class="control-label col-sm-7">
                     <span translate="club.hunting.mooseHuntingSummary.beaverHarvestAmount"></span>
                     <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
 
-                <div class="col-xs-5">
+                <div class="col-sm-5">
                     <div class="input-group">
                         <input type="number"
                                name="{{ $ctrl.beaverHarvestAmountInputId }}"
@@ -163,12 +160,12 @@
             </div>
 
             <div class="form-group" show-errors ng-if="$ctrl.isBeaver">
-                <label for="{{ $ctrl.areaOfDamageInputId }}" class="control-label col-xs-7">
+                <label for="{{ $ctrl.areaOfDamageInputId }}" class="control-label col-sm-7">
                     <span class="text-right" translate="club.hunting.mooseHuntingSummary.areaOfDamage"></span>
                     <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
 
-                <div class="col-xs-5">
+                <div class="col-sm-5">
                     <div class="input-group">
                         <input type="number"
                                id="{{ $ctrl.areaOfDamageInputId }}"
@@ -190,12 +187,12 @@
             </div>
 
             <div class="form-group" show-errors ng-if="$ctrl.isBeaver">
-                <label for="{{ $ctrl.areaOccupiedByWaterInputId }}" class="control-label col-xs-7">
+                <label for="{{ $ctrl.areaOccupiedByWaterInputId }}" class="control-label col-sm-7">
                     <span translate="club.hunting.mooseHuntingSummary.areaOccupiedByWater"></span>
                     <small class="glyphicon glyphicon-asterisk text-danger"></small>
                 </label>
 
-                <div class="col-xs-5">
+                <div class="col-sm-5">
                     <div class="input-group">
                         <input type="number"
                                id="{{ $ctrl.areaOccupiedByWaterInputId }}"
@@ -218,17 +215,18 @@
 
             <div ng-if="$ctrl.isBeaver">
                 <div class="form-group" show-errors>
-                    <label for="{{ $ctrl.additionalBeaverInfoInputId }}" class="control-label col-xs-7">
+                    <label for="{{ $ctrl.additionalBeaverInfoInputId }}" class="control-label col-sm-7">
                         <span translate="club.hunting.mooseHuntingSummary.additionalBeaverInfo"></span>
                     </label>
 
-                    <div class="col-xs-5">
+                    <div class="col-sm-5">
                         <textarea name="{{ $ctrl.additionalBeaverInfoInputId }}"
                                   id="{{ $ctrl.additionalBeaverInfoInputId }}"
                                   class="form-control"
                                   focus-me
                                   ng-model="$ctrl.appearance.additionalInfo"
-                                  rows="4"></textarea>
+                                  rows="4"
+                                  spellcheck="false"></textarea>
                     </div>
                 </div>
             </div>

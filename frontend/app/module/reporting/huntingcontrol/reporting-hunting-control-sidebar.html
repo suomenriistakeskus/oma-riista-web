@@ -1,0 +1,109 @@
+<div class="content">
+    <div ng-switch="event.status">
+        <div ng-switch-when="PROPOSED" class="status proposed">
+            <span class="fa fa-exclamation-triangle"></span>
+            <span translate="rhy.huntingControlEvent.eventStatus.PROPOSED"></span>
+        </div>
+        <div ng-switch-when="REJECTED" class="status rejected">
+            <span class="fa fa-times-circle"></span>
+            <span translate="rhy.huntingControlEvent.eventStatus.REJECTED"></span>
+        </div>
+        <div ng-switch-default class="status accepted">
+            <span class="fa fa-check-square"></span>
+            <span translate="rhy.huntingControlEvent.eventStatus.ACCEPTED"></span>
+        </div>
+    </div>
+
+    <div>
+        <h5 translate="rhy.huntingControlEvent.datetime"></h5>
+        <span>{{event.date |date:'d.M.yyyy'}}</span>
+        <span>{{event.beginTime}}&nbsp;-&nbsp;{{event.endTime}}</span>
+    </div>
+
+    <div>
+        <h5 translate="rhy.huntingControlEvent.type"></h5>
+        <div class="split-long-lines" ng-switch="!!event.eventType">
+            <div ng-switch-when="true" translate="rhy.huntingControlEvent.eventType.{{event.eventType}}"></div>
+            <div ng-switch-when="false" ng-bind="event.title | truncateCharacters:50"></div>
+        </div>
+    </div>
+
+    <div>
+        <h5 translate="rhy.huntingControlEvent.inspectors"></h5>
+        <div ng-repeat="inspector in event.inspectors | orderBy: '+lastName' track by inspector.id">
+            <div>
+                <span ng-bind="::inspector.firstName"></span>
+                <span ng-bind="::inspector.lastName"></span>
+            </div>
+        </div>
+    </div>
+    <div>
+        <h5 translate="rhy.huntingControlEvent.cooperation"></h5>
+        <div ng-repeat="coop in event.cooperationTypes | orderBy:'+' track by coop">
+            {{ 'rhy.huntingControlEvent.cooperationType.' + coop | translate }}
+        </div>
+    </div>
+    <div>
+        <h5 translate="rhy.huntingControlEvent.otherParticipants"></h5>
+        <dov ng-switch="!!event.otherParticipants">
+            <div ng-switch-when="true" ng-bind="::event.otherParticipants"></div>
+            <div ng-switch-when="false">-</div>
+        </dov>
+    </div>
+    <div>
+        <h5 translate="rhy.huntingControlEvent.wolfTerritory"></h5>
+        <div ng-switch="event.wolfTerritory">
+            <div ng-switch-when="true" translate="global.yes"></div>
+            <div ng-switch-when="false" translate="global.no"></div>
+        </div>
+    </div>
+    <div>
+        <h5 translate="rhy.huntingControlEvent.customers"></h5>
+        <span ng-bind="::event.customers"></span>
+    </div>
+    <div>
+        <h5 translate="rhy.huntingControlEvent.proofOrders"></h5>
+        <span ng-bind="::event.proofOrders"></span>
+    </div>
+    <div>
+        <h5 translate="rhy.huntingControlEvent.description"></h5>
+        <div ng-switch="!!event.description">
+            <td ng-switch-when="true" ng-bind="::event.description"></td>
+            <td ng-switch-when="false">-</td>
+        </div>
+    </div>
+    <div>
+        <h5 translate="rhy.huntingControlEvent.locationDescription"></h5>
+        <div ng-switch="!!event.locationDescription">
+            <div ng-switch-when="true" ng-bind="event.locationDescription"></div>
+            <div ng-switch-when="false">-</div>
+        </div>
+    </div>
+    <div>
+        <h5 translate="rhy.huntingControlEvent.subsidized"></h5>
+        <div ng-switch="event.status">
+            <div ng-switch-when="ACCEPTED_SUBSIDIZED" translate="rhy.huntingControlEvent.subsidizedEvent.yes"></div>
+            <div ng-switch-when="ACCEPTED" translate="rhy.huntingControlEvent.subsidizedEvent.no"></div>
+            <div ng-switch-default translate="rhy.huntingControlEvent.subsidizedEvent.maybe"></div>
+        </div>
+    </div>
+
+    <div>
+        <h5 translate="rhy.huntingControlEvent.attachments"></h5>
+        <div ng-switch="!!event.attachments">
+            <div ng-switch-when="true">
+                <r-hunting-controller-event-attachments attachments="event.attachments"
+                                                        can-delete="false">
+                </r-hunting-controller-event-attachments>
+            </div>
+            <div ng-switch-when="false">-</div>
+        </div>
+    </div>
+</div>
+
+<div class="buttons">
+    <button type="button"
+            class="btn btn-default"
+            ng-click="cancel()"
+            translate="global.button.close"></button>
+</div>

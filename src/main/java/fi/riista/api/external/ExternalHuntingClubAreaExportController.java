@@ -2,7 +2,6 @@ package fi.riista.api.external;
 
 import fi.riista.integration.koiratutka.export.ExportRequestDTO;
 import fi.riista.integration.koiratutka.export.HuntingClubAreaExportFeature;
-import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,11 +30,26 @@ public class ExternalHuntingClubAreaExportController {
             final WebRequest request) {
 
         try {
-            return huntingClubAreaExportFeature.export(dto, request);
+            return huntingClubAreaExportFeature.export(dto, request, false);
 
         } catch (Exception ex) {
             LOG.error("Export error", ex);
-            Sentry.capture(ex);
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error");
+        }
+    }
+
+    @RequestMapping(value = "/api/v1/export/hunting-area-with-poi-by-id/{externalId}",
+            method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity<?> exportGeoJsonHuntingAreaWithPoi(
+            final @Valid @ModelAttribute ExportRequestDTO dto,
+            final WebRequest request) {
+
+        try {
+            return huntingClubAreaExportFeature.export(dto, request, true);
+
+        } catch (Exception ex) {
+            LOG.error("Export with poi error", ex);
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("error");
         }

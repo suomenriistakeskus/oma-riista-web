@@ -16,6 +16,30 @@ angular.module('app.moosepermit.reports', [])
                 .value();
         };
     })
+    .service('LukeTocMappingService', function (LukeTocMapping2020, LukeTocMapping) {
+        this.getTitle = function (presentationName, fileName, year) {
+            if (year < 2021 && LukeTocMapping2020.tocMapping[presentationName]) {
+                return LukeTocMapping2020.tocMapping[presentationName][fileName].name || '';
+            }
+
+            if (LukeTocMapping.tocMapping[presentationName]) {
+                return LukeTocMapping.tocMapping[presentationName][fileName].name || '';
+            }
+
+            return '';
+        };
+    })
+    .constant('LukeTocMapping2020', {
+        tocMapping: {
+            'WTD_OBSERVATION_TABLE_FULL_2020': {
+                '1': {name: 'Havainnot vuosittain'},
+                '2': {name: 'Havainnot kuukausittain'},
+                '3': {name: 'Vuosittaiset havainnot metsästystavoittain'},
+                '4': {name: 'Kuukausittaiset havainnot metsästystavoittain'},
+                '5': {name: 'Kauden havainnot metsästystavan mukaan'}
+            }
+        }
+    })
     .constant('LukeTocMapping', {
         tocMapping: {
             'MOOSE_FIGURE': {
@@ -145,13 +169,12 @@ angular.module('app.moosepermit.reports', [])
             'WTD_OBSERVATION_TABLE_FULL': {
                 '1': {name: 'Havainnot vuosittain'},
                 '2': {name: 'Havainnot kuukausittain'},
-                '3': {name: 'Vuosittaiset havainnot metsästystavoittain'},
-                '4': {name: 'Kuukausittaiset havainnot metsästystavoittain'},
-                '5': {name: 'Kauden havainnot metsästystavan mukaan'}
+                '3': {name: 'Kauden havainnot metsästystavan mukaan'},
+                '4': {name: 'Vuosittaiset havainnot metsästystavoittain'},
+                '5': {name: 'Kuukausittaiset havainnot metsästystavoittain'}
             },
             'WTD_HARVEST_ANTLER_FIGURE': {
                 'hist_1': {name: 'Sarvipiikkien lukumäärä'},
-                'hist_2': {name: 'Sarvien kärkiväli'},
                 'hist_3': {name: 'Sarventyven ympärysmitta'},
                 'hist_4': {name: 'Sarven pituus'},
                 'hist_5': {name: 'Sarvien sisäleveys'}
@@ -215,14 +238,14 @@ angular.module('app.moosepermit.reports', [])
         $ctrl.isPresentationTable = function () {
             return presentationName === 'MOOSE_TABLE_COMPARISON' || presentationName === 'MOOSE_TABLE_FULL' ||
                 presentationName === 'WTD_OBSERVATION_TABLE_FULL' || presentationName === 'WTD_HARVEST_TABLE_FULL' ||
-                presentationName === 'WTD_PRE2020_TABLE_FULL';
+                presentationName === 'WTD_PRE2020_TABLE_FULL' || presentationName === 'WTD_OBSERVATION_TABLE_FULL_2020';
         };
 
         $ctrl.url = LukeUrlService.get(permitId, clubId, orgName, presentationName, file, ActiveRoleService.getActiveOccupationId());
     })
     .controller('MoosePermitReportsFilterController', function ($state, $stateParams, $q, $filter, $translate, $httpParamSerializer,
                                                                 $timeout, ActiveRoleService,
-                                                                LukeTocMapping,
+                                                                LukeTocMappingService,
                                                                 MoosePermitListSelectedHuntingYearService,
                                                                 MoosePermitSelection, LukeUrlService,
                                                                 clubId, permits, permitId, selectedYearAndSpecies, huntingYears, lukeReportParams) {
@@ -272,10 +295,7 @@ angular.module('app.moosepermit.reports', [])
         };
 
         $ctrl.tocText = function (presentation, file) {
-            if (LukeTocMapping.tocMapping[presentation.name]) {
-                return LukeTocMapping.tocMapping[presentation.name][file].name || '';
-            }
-            return '';
+            return LukeTocMappingService.getTitle(presentation.name, file, $ctrl.selectedYearAndSpecies.huntingYear);
         };
 
         $ctrl.isOrgSelected = function (org) {
@@ -321,7 +341,7 @@ angular.module('app.moosepermit.reports', [])
         $ctrl.isPresentationTable = function () {
             return $ctrl.presentation.name === 'MOOSE_TABLE_COMPARISON' || $ctrl.presentation.name === 'MOOSE_TABLE_FULL' ||
                 $ctrl.presentation.name === 'WTD_OBSERVATION_TABLE_FULL' || $ctrl.presentation.name === 'WTD_HARVEST_TABLE_FULL' ||
-                $ctrl.presentation.name === 'WTD_PRE2020_TABLE_FULL';
+                $ctrl.presentation.name === 'WTD_PRE2020_TABLE_FULL' || $ctrl.presentation.name === 'WTD_OBSERVATION_TABLE_FULL_2020';
         };
 
         $ctrl.url = function (file) {

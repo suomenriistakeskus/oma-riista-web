@@ -75,7 +75,7 @@ public class PersonalAreaUnionFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test(expected = AccessDeniedException.class)
-    public void testAuthorization_pdfExportOtherUser() {
+    public void testAuthorization_pdfMapExportOtherUser() {
         final PersonalAreaUnion union = model().newPersonalAreaUnion("unioni", person);
         model().newHarvestPermitAreaPartner(union.getHarvestPermitArea(), partnerArea1);
 
@@ -86,7 +86,17 @@ public class PersonalAreaUnionFeatureTest extends EmbeddedDatabaseTest {
             mapPdfParameters.setPaperSize(MapPdfParameters.PaperSize.A4);
             mapPdfParameters.setLayer(MapPdfBasemap.MAASTOKARTTA);
 
-            feature.exportPdf(union.getId(), Locales.FI, mapPdfParameters);
+            feature.exportMapPdf(union.getId(), Locales.FI, mapPdfParameters);
+        });
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void testAuthorization_pdfPartnersExportOtherUser() {
+        final PersonalAreaUnion union = model().newPersonalAreaUnion("unioni", person);
+        model().newHarvestPermitAreaPartner(union.getHarvestPermitArea(), partnerArea1);
+
+        onSavedAndAuthenticated(createNewUser(), () -> {
+            feature.exportPartnersPdf(union.getId(), Locales.FI);
         });
     }
 

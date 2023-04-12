@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 
 @RestController
@@ -41,6 +42,6 @@ public class MobileAccountRegistrationApiResource {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping(value = URI_RESET_PASSWORD)
     public void forgotPassword(@RequestBody @Validated MobileForgotPasswordDTO dto, HttpServletRequest request) {
-        passwordResetFeature.sendPasswordResetEmail(dto.getEmail(), request);
+        passwordResetFeature.sendPasswordResetEmail(dto.getEmail(), Optional.of(dto.getLang()), request);
     }
 }

@@ -20,6 +20,7 @@ import fi.riista.feature.permit.application.fragment.ListApplicationAreaFragment
 import fi.riista.feature.permit.application.fragment.PrintApplicationAreaFragmentDTO;
 import fi.riista.feature.permit.application.fragment.PrintApplicationAreaFragmentFeature;
 import fi.riista.feature.permit.application.fragment.PrintApplicationAreaFragmentListDTO;
+import fi.riista.feature.permit.application.fragment.PrintApplicationAreaFragmentMapModel;
 import fi.riista.feature.permit.application.geometry.HarvestPermitApplicationGeometryFeature;
 import fi.riista.feature.permit.application.metsahallitus.MetsahallitusAreaPermitImportFeature;
 import fi.riista.feature.permit.application.metsahallitus.MetsahallitusAreaPermitNumbersDTO;
@@ -39,7 +40,6 @@ import fi.riista.feature.permit.area.HarvestPermitArea;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaHuntingYearException;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerDTO;
 import fi.riista.feature.permit.area.partner.MetsahallitusYearMismatchException;
-import fi.riista.integration.mapexport.MapPdfModel;
 import fi.riista.integration.mapexport.MapPdfParameters;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
@@ -343,16 +343,19 @@ public class MoosePermitApplicationApiResource {
                                    final @ModelAttribute @Valid MapPdfParameters dto) {
         final PrintApplicationAreaFragmentDTO fragmentData =
                 printApplicationAreaFragmentFeature.getFragmentData(applicationId, fragmentId);
-        final MapPdfModel mapModel = printApplicationAreaFragmentFeature.getMapModel(fragmentData, dto.getOverlay(),
+        final PrintApplicationAreaFragmentMapModel mapModel = printApplicationAreaFragmentFeature.getMapModelWithApproachMap(
+                applicationId,
+                fragmentData,
+                dto,
                 locale);
 
         final byte[] pdfData =
-                printApplicationAreaFragmentFeature.createSingleFragmentPdf(fragmentData, mapModel, dto, locale);
+                printApplicationAreaFragmentFeature.createSingleFragmentWithApproachPdf(fragmentData, mapModel, locale);
 
         return ResponseEntity.ok()
                 .contentType(MediaTypeExtras.APPLICATION_PDF)
                 .contentLength(pdfData.length)
-                .headers(ContentDispositionUtil.header(mapModel.getExportFileName()))
+                .headers(ContentDispositionUtil.header(mapModel.getFilename()))
                 .body(pdfData);
     }
 
@@ -401,7 +404,7 @@ public class MoosePermitApplicationApiResource {
     public ResponseEntity<?> printConflictMap(final Locale locale,
                                               @RequestBody @Valid final PrintApplicationConflictRequestDTO dto) throws IOException {
         final PrintApplicationConflictMapModel model = printApplicationConflictFeature.getModel(dto, locale);
-        final byte[] pdfData = printApplicationConflictFeature.createPdf(model, dto.getMapParameters());
+        final byte[] pdfData = printApplicationConflictFeature.createPdf(model, locale);
         final String fileName = Constants.FILENAME_TS_PATTERN.print(DateUtil.now()) + "_konflikti.pdf";
 
         return ResponseEntity.ok()

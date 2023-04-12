@@ -3,8 +3,10 @@ package fi.riista.feature.gamediary.harvest.specimen;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.HasGameSpeciesCode;
 import fi.riista.feature.gamediary.fixture.HarvestSpecimenType;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.fields.LegallyMandatoryFieldsMooselike;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
+import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestSpecimenField;
 import fi.riista.util.NumberGenerator;
 import fi.riista.util.NumberSequence;
 import fi.riista.util.ValueGeneratorMixin;
@@ -25,6 +27,7 @@ import java.util.stream.Stream;
 import static fi.riista.feature.gamediary.GameSpecies.MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING;
 import static fi.riista.util.DateUtil.huntingYear;
 import static java.util.stream.Collectors.toList;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.Mockito.spy;
@@ -38,17 +41,20 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
         private final int huntingYear;
         private final int speciesCode;
         private final HarvestSpecimenType specimenType;
-        private final boolean isClientSupportFor2020Fields;
+        private final HarvestSpecVersion specVersion;
+        private final boolean withPermit;
 
         Tuple(final int huntingYear,
               final int speciesCode,
               final HarvestSpecimenType specimenType,
-              final boolean isClientSupportFor2020Fields) {
+              final HarvestSpecVersion specVersion,
+              final boolean withPermit) {
 
             this.huntingYear = huntingYear;
             this.speciesCode = speciesCode;
             this.specimenType = specimenType;
-            this.isClientSupportFor2020Fields = isClientSupportFor2020Fields;
+            this.specVersion = specVersion;
+            this.withPermit = withPermit;
         }
 
         @Override
@@ -58,29 +64,34 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
 
         public boolean isValidCombination() {
             return specimenType != HarvestSpecimenType.ANTLERS_LOST
-                    || isClientSupportFor2020Fields && huntingYear >= 2020;
+                    || specVersion.supportsAntlerFields2020() && huntingYear >= 2020;
         }
 
         public Object[] toObjectArray() {
-            return new Object[]{huntingYear, speciesCode, specimenType, isClientSupportFor2020Fields};
+            return new Object[]{huntingYear, speciesCode, specimenType, specVersion, withPermit};
         }
     }
 
-    @Parameters(name = "{index}: huntingYear={0}; speciesCode={1}; specimenType={2}; isClientSupportFor2020Fields={3}")
+    @Parameters(name = "{index}: huntingYear={0}; speciesCode={1}; specimenType={2}; specVersion={3}")
     public static Iterable<Object[]> data() {
         return IntStream
                 .rangeClosed(2016, huntingYear())
                 .boxed()
                 .flatMap(huntingYear -> MOOSE_AND_DEER_CODES_REQUIRING_PERMIT_FOR_HUNTING
                         .stream()
-                        .flatMap(speciesCode -> Arrays.stream(HarvestSpecimenType.values())
-                                .flatMap(specimenType -> Stream.of(true, false)
-                                        .map(isClientSupportFor2020Fields ->
-                                                new Tuple(huntingYear,
-                                                        speciesCode,
-                                                        specimenType,
-                                                        isClientSupportFor2020Fields)
-                                        ))))
+                        .flatMap(speciesCode -> Stream.of(true, false)
+                                .flatMap(withPermit -> Arrays.stream(HarvestSpecimenType.values())
+                                        .flatMap(specimenType -> Stream.of(
+                                                        HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_ANTLER_FIELDS_2020,
+                                                        HarvestSpecVersion.LOWEST_VERSION_SUPPORTING_MANDATORY_AGE_AND_GENDER_FIELDS_FOR_MOOSELIKE_HARVEST)
+
+                                                .map(specVersion ->
+                                                        new Tuple(huntingYear,
+                                                                speciesCode,
+                                                                specimenType,
+                                                                specVersion,
+                                                                withPermit)
+                                                )))))
                 .filter(Tuple::isValidCombination)
                 .map(Tuple::toObjectArray)
                 .collect(toList());
@@ -96,7 +107,10 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
     public HarvestSpecimenType specimenType;
 
     @Parameter(3)
-    public boolean isClientSupportFor2020Fields;
+    public HarvestSpecVersion specVersion;
+
+    @Parameter(4)
+    public boolean withPermit;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -115,7 +129,7 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
 
     @Before
     public void setup() {
-        // Mocking needed becase JPA static metamodel is not available in unit tests.
+        // Mocking needed because JPA static metamodel is not available in unit tests.
         specimen = spy(new HarvestSpecimen());
         specimen.setAge(specimenType.getAge());
         specimen.setGender(specimenType.getGender());
@@ -127,10 +141,10 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
 
     private void test(final Consumer<HarvestSpecimenValidator> consumer) {
         final RequiredHarvestFields.Specimen specimenRequirements = LegallyMandatoryFieldsMooselike
-                .getSpecimenFields(huntingYear, gameSpeciesCode, isClientSupportFor2020Fields);
+                .getSpecimenFields(huntingYear, gameSpeciesCode, specVersion);
 
         final HarvestSpecimenValidator builder = new HarvestSpecimenValidator(
-                specimenRequirements, specimen, gameSpeciesCode, true);
+                specimenRequirements, specimen, gameSpeciesCode, true, specVersion, withPermit);
 
         consumer.accept(builder);
         builder.throwOnErrors();
@@ -147,7 +161,10 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
     @Test
     public void testValidateAge_whenNotValidForClubHunting() {
         assumeTrue(specimenType.isAgeUnknown());
-        expectInvalid(HarvestSpecimenFieldName.AGE, GameAge.UNKNOWN);
+
+        if (!(specVersion.supportsMandatoryAgeAndGenderFieldsForMooselikeHarvest() && withPermit)) {
+            expectInvalid(HarvestSpecimenFieldName.AGE, GameAge.UNKNOWN);
+        }
 
         test(HarvestSpecimenValidator::validateAge);
     }
@@ -212,7 +229,7 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
     public void testValidateAntlersLost_whenGiven() {
         assumeFalse(specimenType == HarvestSpecimenType.ANTLERS_LOST);
 
-        if (!isClientSupportFor2020Fields || huntingYear < 2020 || !specimenType.isAdultMale()) {
+        if (!specVersion.supportsAntlerFields2020() || huntingYear < 2020 || !specimenType.isAdultMale()) {
             expectIllegal(HarvestSpecimenFieldName.ANTLERS_LOST);
         }
 
@@ -222,7 +239,7 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
 
     @Test
     public void testValidateAntlersLost_whenMissing() {
-        if (isClientSupportFor2020Fields && huntingYear >= 2020 && specimenType.isAdultMale()) {
+        if (specVersion.supportsAntlerFields2020() && huntingYear >= 2020 && specimenType.isAdultMale()) {
             expectMissing(HarvestSpecimenFieldName.ANTLERS_LOST);
         }
 
@@ -232,7 +249,7 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
 
     @Test
     public void testValidateAntlersType_whenGiven() {
-        if (isClientSupportFor2020Fields && huntingYear >= 2020) {
+        if (specVersion.supportsAntlerFields2020() && huntingYear >= 2020) {
             if (!isMoose() || !specimenType.isAdultMaleAndAntlersPresent()) {
                 expectIllegal(HarvestSpecimenFieldName.ANTLERS_TYPE);
             }
@@ -251,7 +268,7 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
 
     @Test
     public void testValidateAntlersWidth_whenGiven() {
-        if (isClientSupportFor2020Fields && huntingYear >= 2020) {
+        if (specVersion.supportsAntlerFields2020() && huntingYear >= 2020) {
             if (!(isFallowDeer() || isMoose() || isWhiteTailedDeer() || isWildForestReindeer())
                     || !specimenType.isAdultMaleAndAntlersPresent()) {
 
@@ -302,7 +319,7 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
 
     @Test
     public void testValidateAntlersGirth_whenGiven() {
-        if (!isClientSupportFor2020Fields
+        if (!specVersion.supportsAntlerFields2020()
                 || huntingYear < 2020
                 || !(isMoose() || isWhiteTailedDeer())
                 || !specimenType.isAdultMaleAndAntlersPresent()) {
@@ -321,7 +338,7 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
 
     @Test
     public void testValidateAntlersLength_whenGiven() {
-        if (!isClientSupportFor2020Fields
+        if (!specVersion.supportsAntlerFields2020()
                 || huntingYear < 2020
                 || !(isRoeDeer() || isWhiteTailedDeer())
                 || !specimenType.isAdultMaleAndAntlersPresent()) {
@@ -340,7 +357,7 @@ public class HarvestSpecimenValidator_LegallyMandatoryMooselikeFieldsTest
 
     @Test
     public void testValidateAntlersInnerWidth_whenGiven() {
-        if (!isClientSupportFor2020Fields
+        if (!specVersion.supportsAntlerFields2020()
                 || huntingYear < 2020
                 || !isWhiteTailedDeer()
                 || !specimenType.isAdultMaleAndAntlersPresent()) {

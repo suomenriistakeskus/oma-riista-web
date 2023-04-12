@@ -14,12 +14,13 @@ import java.util.Set;
 public class NominationDecisionSearchDTO {
 
     public enum StatusSearch {
-        // Päätös käsittelyssä
         DRAFT,
         // Lukittu
         LOCKED,
         // Julkaistu
-        PUBLISHED
+        PUBLISHED,
+        // Päätös avoin (ei käsittelijää)
+        DECISION_OPEN
     }
 
     @Min(0)

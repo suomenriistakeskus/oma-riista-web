@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.research.methods', ['app.metadata'
                 templateUrl: 'harvestpermit/applications/research/methods/methods.html',
                 controller: 'DerogationPermitWizardMethodsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     forbiddenMethods: function (ResearchPermitApplication, applicationId) {
                         return ResearchPermitApplication.getCurrentDeviationJustification({id: applicationId}).$promise;

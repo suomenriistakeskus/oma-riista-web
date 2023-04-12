@@ -9,24 +9,44 @@ angular.module('app.club.harvestsummary', [])
 
     .controller('ClubHarvestSummaryController',
         function ($state, $stateParams, $translate,
-                  GameCategory, club, summary, year) {
+                  Helpers, GameCategory, Clubs, club) {
             var $ctrl = this;
 
-            $ctrl.$onInit = function() {
+            $ctrl.$onInit = function () {
+                $ctrl.searchPerformed = false;
                 $ctrl.club = club;
+                var year = new Date().getFullYear().toString();
+                $ctrl.beginDate = year + '-01-01';
+                $ctrl.endDate = year + '-12-31';
 
-                $ctrl.mammalSummary = _.filter(summary.items, ['species.categoryId', GameCategory.GAME_MAMMAL]);
-                $ctrl.fowlSummary = _.filter(summary.items, ['species.categoryId', GameCategory.FOWL]);
-                $ctrl.unprotectedSummary = _.filter(summary.items, ['species.categoryId', GameCategory.UNPROTECTED]);
+                $ctrl.mammalSummary = [];
+                $ctrl.fowlSummary = [];
+                $ctrl.unprotectedSummary = [];
 
-                $ctrl.year= year;
-                $ctrl.years = _.range(2014, new Date().getFullYear() + 1);
+                $ctrl.searchSummary = function () {
+                    Clubs.harvestSummary({clubId: club.id, begin: $ctrl.beginDate, end: $ctrl.endDate}).$promise
+                        .then(function (summary) {
+                            $ctrl.searchPerformed = true;
 
-                $ctrl.yearChanged = function () {
-                    var params = angular.copy($stateParams);
-                    params.year = $ctrl.year;
+                            $ctrl.mammalSummary =
+                                _.filter(summary.items, ['species.categoryId', GameCategory.GAME_MAMMAL]);
+                            $ctrl.fowlSummary =
+                                _.filter(summary.items, ['species.categoryId', GameCategory.FOWL]);
+                            $ctrl.unprotectedSummary =
+                                _.filter(summary.items, ['species.categoryId', GameCategory.UNPROTECTED]);
+                        });
 
-                    $state.transitionTo($state.current, params, {reload: true, inherit: false, notify: true});
+                };
+
+                $ctrl.isIntervalIllegal = function () {
+                    var b = Helpers.toMoment($ctrl.beginDate, 'YYYY-MM-DD');
+                    var e = Helpers.toMoment($ctrl.endDate, 'YYYY-MM-DD');
+
+                    if (b && e) {
+                        // Maximum period is 1 year
+                        return e.diff(b, 'years') >= 1;
+                    }
+                    return false;
                 };
             };
         })

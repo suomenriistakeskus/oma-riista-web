@@ -1,9 +1,6 @@
 package fi.riista.feature.gamediary.mobile;
 
 import fi.riista.feature.gamediary.DeerHuntingType;
-import fi.riista.feature.gamediary.HasHuntingDayId;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
-import fi.riista.feature.gamediary.harvest.HarvestSpecVersionSupport;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationDTOBase;
@@ -15,6 +12,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import static fi.riista.feature.gamediary.observation.ObservationType.NAKO;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_PENKKA;
@@ -42,6 +40,11 @@ public class MobileObservationDTO extends ObservationDTOBase {
 
     public boolean requiresBeaverObservationTypeTranslation() {
         return getObservationSpecVersion().requiresBeaverObservationTypeTranslationForMobile(getGameSpeciesCode());
+    }
+
+    public boolean requiresBirdLitterOrCoupleObservationTypeTranslation() {
+        return !getObservationSpecVersion().supportsBirdLitterAndCoupleObservationTypes() &&
+                (getObservationType() == ObservationType.PARI || getObservationType() == ObservationType.POIKUE);
     }
 
     // Accessors -->
@@ -178,6 +181,9 @@ public class MobileObservationDTO extends ObservationDTOBase {
                 if (oType == PESA_KEKO || oType == PESA_PENKKA || oType == PESA_SEKA) {
                     dto.setObservationType(PESA);
                 }
+            }
+            if (dto.requiresBirdLitterOrCoupleObservationTypeTranslation()) {
+                dto.setObservationType(NAKO);
             }
 
             return self();

@@ -202,6 +202,66 @@ angular.module('app.common.map.directives', [])
         }
     )
 
+    .directive('rGeolocationListener',
+        function ($parse, leafletMarkersHelpers, versionUrlPrefix, MapUtil, WGS84) {
+            var location = {};
+
+            function updateCoordinates(lat, lng) {
+                location.latitude = lat;
+                location.longitude = lng;
+            }
+
+            return {
+                restrict: "A",
+                scope: false,
+                replace: false,
+                require: 'leaflet',
+                controller: function () {
+                    this.getLocation = function () {
+                        return location;
+                    };
+                },
+
+                link: function (scope, element, attrs, mapController) {
+                    var geoLocationListener = $parse(attrs.rGeolocationListener);
+                    var geoLocationEditableGetter = $parse(attrs.rGeolocationEditable);
+
+                    function _assignGeolocationToScope(latlng) {
+                        var geoLocation = WGS84.toETRS(latlng.lat, latlng.lng);
+                        var lat = Math.round(geoLocation.lat);
+                        var lng = Math.round(geoLocation.lng);
+                        if (lat && lng) {
+                            geoLocationListener.assign(scope, {
+                                latitude: lat,
+                                longitude: lng,
+                                accuracy: 0,
+                                source: 'MANUAL'
+                            });
+                            updateCoordinates(lat, lng);
+                        }
+                    }
+
+                    mapController.getMap().then(function (map) {
+                        var mapClickHandler = function (leafletEvent) {
+                            _assignGeolocationToScope(leafletEvent.latlng);
+                        };
+
+
+                        scope.$watchGroup([geoLocationListener, geoLocationEditableGetter], function (vals) {
+                            var editable = vals[1];
+
+                            if (editable) {
+                                map.on('click', mapClickHandler);
+                            } else {
+                                map.off('click', mapClickHandler);
+                            }
+                        });
+                    });
+                }
+            };
+        }
+    )
+
     .directive('rGeolocationMarker',
         function ($parse, leafletMarkersHelpers, versionUrlPrefix, MapUtil, WGS84, GIS) {
             var location = {};
@@ -446,7 +506,7 @@ angular.module('app.common.map.directives', [])
         };
     })
 
-    .directive('rNaturaAreaInfo', function($parse, WGS84, GIS) {
+    .directive('rNaturaAreaInfo', function ($parse, WGS84, GIS) {
         return {
             restrict: "A",
             scope: false,

@@ -1,6 +1,7 @@
 package fi.riista.feature.organization.jht.training;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fi.riista.feature.common.training.TrainingType;
 import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.organization.address.AddressDTO;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -147,7 +148,7 @@ public class JHTTrainingDTO extends BaseEntityDTO<Long> {
     private OccupationType occupationType;
 
     @NotNull
-    private JHTTraining.TrainingType trainingType;
+    private TrainingType trainingType;
 
     @NotNull
     private LocalDate trainingDate;
@@ -155,6 +156,8 @@ public class JHTTrainingDTO extends BaseEntityDTO<Long> {
     @NotBlank
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String trainingLocation;
+
+    private Boolean expired;
 
     @Valid
     @NotNull
@@ -205,11 +208,11 @@ public class JHTTrainingDTO extends BaseEntityDTO<Long> {
         this.occupationType = occupationType;
     }
 
-    public JHTTraining.TrainingType getTrainingType() {
+    public TrainingType getTrainingType() {
         return trainingType;
     }
 
-    public void setTrainingType(final JHTTraining.TrainingType trainingType) {
+    public void setTrainingType(final TrainingType trainingType) {
         this.trainingType = trainingType;
     }
 
@@ -227,6 +230,14 @@ public class JHTTrainingDTO extends BaseEntityDTO<Long> {
 
     public void setTrainingLocation(final String trainingLocation) {
         this.trainingLocation = trainingLocation;
+    }
+
+    public Boolean isExpired() {
+        return expired;
+    }
+
+    public void setExpired(Boolean expired) {
+        this.expired = expired;
     }
 
     public PersonDTO getPerson() {

@@ -33,7 +33,7 @@ public class HarvestReportSearchRepository {
 
     @Resource
     private JPQLQueryFactory jpqlQueryFactory;
-
+    
     @Transactional(readOnly = true, noRollbackFor = RuntimeException.class, propagation = Propagation.MANDATORY)
     public List<Harvest> queryForList(final HarvestReportSearchDTO params) {
         final List<Harvest> harvestList = createBaseQuery(params)

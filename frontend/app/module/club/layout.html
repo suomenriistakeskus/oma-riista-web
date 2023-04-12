@@ -9,8 +9,24 @@
                 <a ui-sref="club.announcements" translate="announcements.list.title"></a>
             </li>
 
-            <li active-if-state-includes="club.area,club.map">
-                <a ui-sref="club.area.list({ id: club.id })" translate="club.menu.areas"></a>
+            <li class="dropdown" active-if-state-includes="club.area,club.map,club.area.poi.**"
+                uib-dropdown dropdown-append-to-body>
+                <a uib-dropdown-toggle>
+                    <span translate="club.menu.areas"></span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
+                    <li ui-sref-active="active">
+                        <a ui-sref="club.area.list({ id: club.id })" ui-sref-opts="{inherit: false}">
+                            <span translate="club.menu.areas"></span>
+                        </a>
+                    </li>
+                    <li ui-sref-active="active">
+                        <a ui-sref="club.area.poi.list({ id: club.id })" ui-sref-opts="{reload: true, inherit: false}">
+                            <span translate="club.menu.poi"></span>
+                        </a>
+                    </li>
+                </ul>
             </li>
 
             <li active-if-state-includes="club.members">
@@ -29,11 +45,26 @@
             </li>
 
             <li active-if-state-includes="club.moosepermit">
-                <a ui-sref="club.moosepermit" translate="club.menu.permits"></a>
+                <a ui-sref="club.moosepermit">
+                    <span translate="club.menu.permits"></span>
+                    <span ng-if="::todos.partnerHuntingSummaryMissing" class="r-account-todo">!</span>
+                </a>
             </li>
 
-            <li active-if-state-includes="club.harvestsummary">
-                <a ui-sref="club.harvestsummary({ id: club.id })" translate="club.menu.harvestsummary"></a>
+            <li class="dropdown" active-if-state-includes="club.harvestsummary,club.gamestatistics"
+                uib-dropdown dropdown-append-to-body>
+                <a uib-dropdown-toggle>
+                    <span translate="club.menu.statistics"></span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
+                    <li ui-sref-active="active">
+                        <a ui-sref="club.harvestsummary({ id: club.id })" translate="club.menu.harvestsummary"></a>
+                    </li>
+                    <li ui-sref-active="active">
+                        <a ui-sref="club.gamestatistics({ id: club.id })" translate="club.menu.gamestatistics"></a>
+                    </li>
+                </ul>
             </li>
             <li active-if-state-includes="club.reports">
                 <a ui-sref="club.reports({ id: club.id })" translate="club.menu.reports"></a>

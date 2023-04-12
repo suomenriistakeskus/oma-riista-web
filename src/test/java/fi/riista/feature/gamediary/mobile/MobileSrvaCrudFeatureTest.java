@@ -6,6 +6,8 @@ import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.error.RevisionConflictException;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.image.GameDiaryImageRepository;
+import fi.riista.feature.gamediary.mobile.srva.MobileSrvaCrudFeature;
+import fi.riista.feature.gamediary.mobile.srva.MobileSrvaEventDTO;
 import fi.riista.feature.gamediary.srva.SrvaApprovedException;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
@@ -18,7 +20,15 @@ import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.test.TestUtils;
 import fi.riista.util.DateUtil;
+import fi.riista.util.MockTimeProvider;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
+import org.joda.time.Minutes;
+import org.junit.After;
 import org.junit.Test;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,11 +40,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static fi.riista.test.Asserts.assertThat;
+import static fi.riista.util.DateUtil.now;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+@RunWith(Theories.class)
 public class MobileSrvaCrudFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
@@ -45,6 +63,11 @@ public class MobileSrvaCrudFeatureTest extends EmbeddedDatabaseTest {
 
     @Resource
     private GameDiaryImageRepository gameDiaryImageRepo;
+
+    @After
+    public void tearDown() {
+        MockTimeProvider.resetMock();
+    }
 
     @Test
     public void testListSrvaEventsForActiveUser() {
@@ -180,7 +203,7 @@ public class MobileSrvaCrudFeatureTest extends EmbeddedDatabaseTest {
                 inputDto.setRhyId(rhy.getId());
 
                 final MobileSrvaEventDTO savedDto = mobileSrvaCrudFeature.createSrvaEvent(inputDto);
-                savedDto.setRev(savedDto.getRev()-1);
+                savedDto.setRev(savedDto.getRev() - 1);
                 mobileSrvaCrudFeature.updateSrvaEvent(savedDto);
             });
         });
@@ -291,5 +314,238 @@ public class MobileSrvaCrudFeatureTest extends EmbeddedDatabaseTest {
         mobileSrvaEventDTO.setMobileClientRefId(getNumberGenerator().nextLong());
 
         return mobileSrvaEventDTO;
+    }
+
+    @Theory
+    public void testFetchPageForActiveUser(final SrvaEventSpecVersion version) {
+        withPerson(person -> withRhy(rhy -> {
+            final List<SrvaEvent> list = TestUtils.createList(1, () -> model().newSrvaEvent(person, rhy));
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final MobileDiaryEntryPageDTO<MobileSrvaEventDTO> page =
+                        mobileSrvaCrudFeature.fetchPageForActiveUser(null, version);
+
+                assertThat(page.getContent(), hasSize(1));
+                assertThat(page.isHasMore(), is(false));
+                assertThat(page.getLatestEntry(), equalTo(ldt(list.get(0).getModificationTime())));
+            });
+        }));
+    }
+
+    @Theory
+    public void testFetchPageForActiveUser_doesNotReturnWithSameTimestamp(final SrvaEventSpecVersion version) {
+        withPerson(person -> withRhy(rhy -> {
+            final List<SrvaEvent> list = TestUtils.createList(1, () -> model().newSrvaEvent(person, rhy));
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final MobileDiaryEntryPageDTO<MobileSrvaEventDTO> page =
+                        mobileSrvaCrudFeature.fetchPageForActiveUser(null, version);
+
+                assertThat(page.getContent(), hasSize(1));
+                assertThat(page.isHasMore(), is(false));
+                assertThat(page.getLatestEntry(), equalTo(ldt(list.get(0).getModificationTime())));
+
+                final MobileDiaryEntryPageDTO<MobileSrvaEventDTO> secondPage =
+                        mobileSrvaCrudFeature.fetchPageForActiveUser(page.getLatestEntry(), version);
+                assertThat(secondPage.getContent(), is(empty()));
+                assertThat(secondPage.isHasMore(), is(false));
+                assertThat(secondPage.getLatestEntry(), is(nullValue()));
+            });
+        }));
+    }
+
+    @Theory
+    public void testFetchPageForActiveUser_modifiedAfterNewestEvent(final SrvaEventSpecVersion version) {
+        withPerson(person -> withRhy(rhy -> {
+            final List<SrvaEvent> list = TestUtils.createList(1, () -> model().newSrvaEvent(person, rhy));
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final MobileDiaryEntryPageDTO<MobileSrvaEventDTO> page =
+                        mobileSrvaCrudFeature.fetchPageForActiveUser(
+                                ldt(list.get(0).getModificationTime().plusSeconds(1)), version);
+
+                assertThat(page.getContent(), is(empty()));
+                assertThat(page.isHasMore(), is(false));
+                assertThat(page.getLatestEntry(), is(nullValue()));
+            });
+        }));
+    }
+
+    @Theory
+    public void testFetchPageForActiveUser_moreThanOnePage_differentTimeStamp(final SrvaEventSpecVersion version) {
+        withPerson(person -> withRhy(rhy -> {
+            MockTimeProvider.mockTime(now().minusHours(1).getMillis());
+
+            final List<SrvaEvent> list = TestUtils.createList(51, () -> {
+                MockTimeProvider.advance(Minutes.minutes(1));
+                final SrvaEvent event = model().newSrvaEvent(person, rhy);
+                persistInNewTransaction();
+                return event;
+            });
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final MobileDiaryEntryPageDTO<MobileSrvaEventDTO> page =
+                        mobileSrvaCrudFeature.fetchPageForActiveUser(null, version);
+
+                assertThat(page.getContent(), hasSize(50));
+                assertThat(page.isHasMore(), is(true));
+                assertThat(page.getLatestEntry(), equalTo(ldt(list.get(49).getModificationTime())));
+            });
+        }));
+    }
+
+    private LocalDateTime ldt(final DateTime modificationTime) {
+        return DateUtil.toLocalDateTimeNullSafe(modificationTime);
+    }
+
+    @Theory
+    public void testFetchPageForActiveUser_moreThanOnePage_differentTimeStamp_fetchSecondPage(final SrvaEventSpecVersion version) {
+        withPerson(person -> withRhy(rhy -> {
+            MockTimeProvider.mockTime(now().minusHours(1).getMillis());
+
+            final List<SrvaEvent> list = TestUtils.createList(51, () -> {
+                MockTimeProvider.advance(Minutes.minutes(1));
+                final SrvaEvent event = model().newSrvaEvent(person, rhy);
+                persistInNewTransaction();
+                return event;
+            });
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                // When searching with timestamp of the second last item, only the last one should be returned
+                final MobileDiaryEntryPageDTO<MobileSrvaEventDTO> page =
+                        mobileSrvaCrudFeature.fetchPageForActiveUser(ldt(list.get(49).getModificationTime()), version);
+
+                assertThat(page.getContent(), hasSize(1));
+                assertThat(page.isHasMore(), is(false));
+                assertThat(page.getLatestEntry(), equalTo(ldt(list.get(50).getModificationTime())));
+                assertThat(page.getContent().get(0).getId(), equalTo(list.get(50).getId()));
+            });
+        }));
+    }
+
+    @Theory
+    public void testFetchPageForActiveUser_pagingDoesNotReturnDuplicates(final SrvaEventSpecVersion version) {
+        withPerson(person -> withRhy(rhy -> {
+            MockTimeProvider.mockTime(now().minusHours(1).getMillis());
+            final LocalDateTime firstBatchTime = DateUtil.toLocalDateTimeNullSafe(now());
+
+            final List<SrvaEvent> list = TestUtils.createList(50, () -> model().newSrvaEvent(person, rhy));
+            persistInNewTransaction();
+
+            MockTimeProvider.advance(1);
+            final LocalDateTime secondBatchTime = DateUtil.toLocalDateTimeNullSafe(now());
+            final List<SrvaEvent> secondList = TestUtils.createList(1, () -> model().newSrvaEvent(person, rhy));
+            persistInNewTransaction();
+
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                final MobileDiaryEntryPageDTO<MobileSrvaEventDTO> page =
+                        mobileSrvaCrudFeature.fetchPageForActiveUser(null, version);
+
+                assertThat(page.getContent(), hasSize(50));
+                assertThat(page.isHasMore(), is(true));
+                assertThat(page.getLatestEntry(), equalTo(firstBatchTime));
+
+
+                final MobileDiaryEntryPageDTO<MobileSrvaEventDTO> secondPage =
+                        mobileSrvaCrudFeature.fetchPageForActiveUser(page.getLatestEntry(), version);
+
+                assertThat(secondPage.getContent(), hasSize(1));
+                assertThat(secondPage.isHasMore(), is(false));
+                assertThat(secondPage.getLatestEntry(), equalTo(secondBatchTime));
+                assertThat(secondPage.getContent().get(0).getId(), equalTo(secondList.get(0).getId()));
+            });
+        }));
+    }
+
+    @Theory
+    public void testFetchPageForActiveUser_moreThanOnePage_sameTimeStamp(final SrvaEventSpecVersion version) {
+        withPerson(person -> withRhy(rhy -> {
+            MockTimeProvider.mockTime(now().minusHours(1).getMillis());
+
+            final List<SrvaEvent> list = TestUtils.createList(51, () -> model().newSrvaEvent(person, rhy));
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                // When more that pageful of entries found with same modification time, extra items are returned
+                // in the list
+                final MobileDiaryEntryPageDTO<MobileSrvaEventDTO> page =
+                        mobileSrvaCrudFeature.fetchPageForActiveUser(null, version);
+
+                assertThat(page.getContent(), hasSize(51));
+                assertThat(page.isHasMore(), is(true)); // Does not actually have more in this special case
+                assertThat(page.getLatestEntry(), equalTo(ldt(list.get(50).getModificationTime())));
+
+                final MobileDiaryEntryPageDTO<MobileSrvaEventDTO> secondPage =
+                        mobileSrvaCrudFeature.fetchPageForActiveUser(ldt((list.get(50).getModificationTime())), version);
+
+                assertThat(secondPage.getContent(), is(empty()));
+                assertThat(secondPage.isHasMore(), is(false));
+                assertThat(secondPage.getLatestEntry(), is(nullValue()));
+            });
+        }));
+    }
+
+    @Test
+    public void testGetDeletedEvents() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        model().newDeletedSrvaEvent(now, 1L, user.getPerson().getId());
+
+        onSavedAndAuthenticated(user, () -> {
+            final LocalDateTime deletionTime = ldt(now.minusSeconds(1));
+            final MobileDeletedDiaryEntriesDTO deletedEvents = mobileSrvaCrudFeature.getDeletedEvents(deletionTime);
+            assertThat(deletedEvents.getEntryIds(), hasSize(1));
+            assertThat(deletedEvents.getEntryIds().get(0), equalTo(1L));
+            assertThat(deletedEvents.getLatestEntry(), equalTo(ldt(now)));
+        });
+    }
+
+    @Test
+    public void testGetDeletedEvents_nullTimeStamp() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        model().newDeletedSrvaEvent(now, 1L, user.getPerson().getId());
+
+        onSavedAndAuthenticated(user, () -> {
+            final MobileDeletedDiaryEntriesDTO deletedEvents = mobileSrvaCrudFeature.getDeletedEvents(null);
+            assertThat(deletedEvents.getEntryIds(), hasSize(1));
+            assertThat(deletedEvents.getEntryIds().get(0), equalTo(1L));
+            assertThat(deletedEvents.getLatestEntry(), equalTo(ldt(now)));
+        });
+    }
+
+    @Test
+    public void testGetDeletedEvents_onlyNewerDeletionTimesReturned() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        model().newDeletedSrvaEvent(now, 1L, user.getPerson().getId());
+
+        onSavedAndAuthenticated(user, () -> {
+            final MobileDeletedDiaryEntriesDTO deletedEvents = mobileSrvaCrudFeature.getDeletedEvents(ldt(now));
+            assertThat(deletedEvents.getEntryIds(), hasSize(0));
+            assertThat(deletedEvents.getLatestEntry(), is(nullValue()));
+        });
+    }
+
+    @Test
+    public void testGetDeletedEvents_onlyOwnEventDeletionTimesReturned() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        model().newDeletedSrvaEvent(now, 1L, user.getPerson().getId() + 1);
+
+        onSavedAndAuthenticated(user, () -> {
+            final MobileDeletedDiaryEntriesDTO deletedEvents =
+                    mobileSrvaCrudFeature.getDeletedEvents(ldt(now.minusSeconds(1)));
+            assertThat(deletedEvents.getEntryIds(), hasSize(0));
+            assertThat(deletedEvents.getLatestEntry(), is(nullValue()));
+        });
     }
 }

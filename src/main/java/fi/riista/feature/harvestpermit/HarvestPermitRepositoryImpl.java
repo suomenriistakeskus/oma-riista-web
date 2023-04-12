@@ -21,6 +21,7 @@ import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.permit.DocumentNumberUtil;
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
+import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.QPermitDecision;
 import fi.riista.feature.permit.decision.species.QPermitDecisionSpeciesAmount;
 import fi.riista.util.DateUtil;
@@ -264,32 +265,5 @@ public class HarvestPermitRepositoryImpl implements HarvestPermitRepositoryCusto
                             group.getList(GAME_SPECIES.nameLocalisation()));
                 })
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
-    public List<HarvestPermit> findByHuntingYearAndSpeciesAndCategory(final int huntingYear,
-                                                                      final GameSpecies species,
-                                                                      final HarvestPermitCategory category) {
-        final QHarvestPermitSpeciesAmount SPA = QHarvestPermitSpeciesAmount.harvestPermitSpeciesAmount;
-        final QHarvestPermit PERMIT = QHarvestPermit.harvestPermit;
-        final QGameSpecies SPECIES = QGameSpecies.gameSpecies;
-        final QPermitDecision DECISION = QPermitDecision.permitDecision;
-        final QHarvestPermitApplication APP = QHarvestPermitApplication.harvestPermitApplication;
-
-        final LocalDate huntingYearStart = DateUtil.huntingYearBeginDate(huntingYear);
-        final LocalDate huntingYearEnd = DateUtil.huntingYearEndDate(huntingYear);
-
-        return jpqlQueryFactory
-                .select(PERMIT)
-                .from(SPA)
-                .innerJoin(SPA.harvestPermit, PERMIT)
-                .innerJoin(SPA.gameSpecies, SPECIES)
-                .innerJoin(PERMIT.permitDecision, DECISION)
-                .innerJoin(DECISION.application, APP)
-                .where(SPECIES.eq(species)
-                        .and(SPA.beginDate.between(huntingYearStart, huntingYearEnd))
-                        .and(APP.harvestPermitCategory.eq(category)))
-                .fetch();
     }
 }

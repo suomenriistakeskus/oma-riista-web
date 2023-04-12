@@ -1,5 +1,6 @@
 package fi.riista.integration.koulutusportaali;
 
+import fi.riista.feature.common.training.TrainingType;
 import fi.riista.feature.organization.jht.training.JHTTraining;
 import fi.riista.feature.organization.jht.training.JHTTrainingRepository;
 import fi.riista.feature.organization.occupation.OccupationType;
@@ -30,7 +31,7 @@ public class JHTTrainingImportService {
         for (final JHT_Suoritus suoritus : batch) {
             final JHTTraining training = new JHTTraining();
             training.setExternalId(requireNonNull(suoritus.getId()));
-            training.setTrainingType(JHTTraining.TrainingType.SAHKOINEN);
+            training.setTrainingType(TrainingType.SAHKOINEN);
             training.setPerson(requirePerson(suoritus));
             training.setOccupationType(transformJhtOccupationType(requireNonNull(suoritus.getTehtavaTyyppi())));
             training.setTrainingDate(requireNonNull(suoritus.getSuoritusPvm()));

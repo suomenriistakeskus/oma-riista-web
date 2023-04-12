@@ -2,9 +2,11 @@ package fi.riista.integration.habides.export.derogations;
 
 import com.google.common.collect.ImmutableSet;
 import com.querydsl.core.group.GroupBy;
+import com.querydsl.core.types.EntityPath;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPQLQueryFactory;
 import com.querydsl.sql.SQLQueryFactory;
 import fi.riista.feature.common.decision.DecisionStatus;
@@ -22,6 +24,7 @@ import fi.riista.feature.harvestpermit.usage.QPermitUsage;
 import fi.riista.feature.organization.QRiistakeskuksenAlue;
 import fi.riista.feature.organization.rhy.QRiistanhoitoyhdistys;
 import fi.riista.feature.permit.PermitTypeCode;
+import fi.riista.feature.permit.application.QHarvestPermitApplication;
 import fi.riista.feature.permit.application.bird.QBirdPermitApplication;
 import fi.riista.feature.permit.application.gamemanagement.QGameManagementPermitApplication;
 import fi.riista.feature.permit.application.mammal.QMammalPermitApplication;
@@ -35,6 +38,8 @@ import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethod;
 import fi.riista.feature.permit.decision.methods.QPermitDecisionForbiddenMethod;
 import fi.riista.sql.SQRhy;
 import fi.riista.util.JaxbUtils;
+import io.vavr.Tuple;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -57,6 +62,7 @@ import static fi.riista.feature.common.decision.DecisionStatus.DRAFT;
 import static fi.riista.feature.common.decision.DecisionStatus.LOCKED;
 import static fi.riista.feature.common.decision.DecisionStatus.PUBLISHED;
 import static fi.riista.util.Collect.idSet;
+import static fi.riista.util.Collect.tuplesToMap;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -288,12 +294,12 @@ public class HabidesExportFeature {
         }
 
         final QNestRemovalPermitApplication NEST_REMOVAL_APP = QNestRemovalPermitApplication.nestRemovalPermitApplication;
+        final QHarvestPermitApplication GENERIC_APP = NEST_REMOVAL_APP.harvestPermitApplication;
         final Set<Long> applicationIds = decisions.stream().map(PermitDecision::getApplication).collect(idSet());
         final NumberPath<Long> appId = NEST_REMOVAL_APP.harvestPermitApplication.id;
+        final StringPath areaDescription = NEST_REMOVAL_APP.areaDescription;
 
-        return queryFactory.from(NEST_REMOVAL_APP)
-                .where(appId.in(applicationIds))
-                .transform(groupBy(appId).as(NEST_REMOVAL_APP.areaDescription));
+        return getAppIdToAreaDescriptionOrRhy(NEST_REMOVAL_APP, GENERIC_APP, appId, areaDescription, applicationIds);
     }
 
     private Map<Long, String> queryGameManagementPermitLocations(final Collection<PermitDecision> decisions) {
@@ -302,12 +308,12 @@ public class HabidesExportFeature {
         }
 
         final QGameManagementPermitApplication GAME_MANAGEMENT_APP = QGameManagementPermitApplication.gameManagementPermitApplication;
+        final QHarvestPermitApplication GENERIC_APP = GAME_MANAGEMENT_APP.harvestPermitApplication;
         final Set<Long> applicationIds = decisions.stream().map(PermitDecision::getApplication).collect(idSet());
         final NumberPath<Long> appId = GAME_MANAGEMENT_APP.harvestPermitApplication.id;
+        final StringPath areaDescription = GAME_MANAGEMENT_APP.areaDescription;
 
-        return queryFactory.from(GAME_MANAGEMENT_APP)
-                .where(appId.in(applicationIds))
-                .transform(groupBy(appId).as(GAME_MANAGEMENT_APP.areaDescription));
+        return getAppIdToAreaDescriptionOrRhy(GAME_MANAGEMENT_APP, GENERIC_APP, appId, areaDescription, applicationIds);
     }
 
     private Map<Long, String> queryMammalPermitLocations(final Collection<PermitDecision> decisions) {
@@ -316,12 +322,38 @@ public class HabidesExportFeature {
         }
 
         final QMammalPermitApplication MAMMAL_PERMIT_APP = QMammalPermitApplication.mammalPermitApplication;
+        final QHarvestPermitApplication GENERIC_APP = MAMMAL_PERMIT_APP.harvestPermitApplication;
         final Set<Long> applicationIds = decisions.stream().map(PermitDecision::getApplication).collect(idSet());
         final NumberPath<Long> appId = MAMMAL_PERMIT_APP.harvestPermitApplication.id;
+        final StringPath areaDescription = MAMMAL_PERMIT_APP.areaDescription;
 
-        return queryFactory.from(MAMMAL_PERMIT_APP)
+        return getAppIdToAreaDescriptionOrRhy(MAMMAL_PERMIT_APP, GENERIC_APP, appId, areaDescription, applicationIds);
+    }
+
+    private Map<Long, String> getAppIdToAreaDescriptionOrRhy(final EntityPath application,
+                                                             final QHarvestPermitApplication genericApp,
+                                                             final NumberPath<Long> appId,
+                                                             final StringPath areaDescription,
+                                                             final Collection<Long> applicationIds) {
+
+        final QHarvestPermitApplication APP = QHarvestPermitApplication.harvestPermitApplication;
+        final QRiistanhoitoyhdistys RHY = QRiistanhoitoyhdistys.riistanhoitoyhdistys;
+
+        return queryFactory.
+                select(appId, areaDescription, RHY.nameFinnish)
+                .from(application)
+                .join(genericApp, APP)
+                .join(APP.rhy, RHY)
                 .where(appId.in(applicationIds))
-                .transform(groupBy(appId).as(MAMMAL_PERMIT_APP.areaDescription));
+                .fetch().stream()
+                .map(t -> {
+                    String location = t.get(areaDescription);
+                    if (StringUtils.isBlank(location)) {
+                        location = t.get(RHY.nameFinnish);
+                    }
+                    return Tuple.of(t.get(appId), location);
+                })
+                .collect(tuplesToMap());
     }
 
     private Map<String, String> queryRhyNutsAreas() {

@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.gamemanagement.species', ['app.met
                 templateUrl: 'harvestpermit/applications/gamemanagement/species/species.html',
                 controller: 'GameManagementPermitWizardSpeciesController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesAmount: function (GameManagementPermitApplication, applicationId) {
                         return GameManagementPermitApplication.getSpeciesAmount({id: applicationId}).$promise;

@@ -1,4 +1,4 @@
-<div class="alert alert-info">
+<div class="alert alert-info wizard-info">
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
@@ -12,13 +12,13 @@
 <form name="speciesPeriodForm" r-force-show-errors-check-validity>
     <div ng-repeat="s in ::$ctrl.speciesPeriodList track by s.gameSpeciesCode">
         <div class="row">
-            <div class="col-xs-2">
+            <div class="col-sm-2">
                 <div class="form-control-static" style="padding-top: 30px">
                     <strong ng-bind="s.gameSpeciesCode | translateSpeciesCode | uppercase"></strong>
                 </div>
             </div>
 
-            <div class="col-xs-3">
+            <div class="col-sm-3">
                 <div class="form-group" show-errors>
                     <label class="control-label" for="beginDate-{{::s.gameSpeciesCode}}"
                            translate="harvestpermit.wizard.period.beginDate"></label>
@@ -51,7 +51,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-3">
+            <div class="col-sm-3">
                 <div class="form-group" show-errors>
                     <label class="control-label" for="endDate-{{::s.gameSpeciesCode}}"
                            translate="harvestpermit.wizard.period.endDate"></label>
@@ -84,7 +84,7 @@
                 </div>
             </div>
 
-            <div class="col-xs-3" style="padding-top: 25px">
+            <div class="col-sm-3" style="padding-top: 25px">
                 <div ng-show="$ctrl.isIntervalOverSpeciesLimit(s)" ng-switch="::s.maxPeriod">
                     <span class="text-danger" translate="harvestpermit.wizard.mammal.period.speciesMaxPeriod21DaysInfo"
                           ng-switch-when="21"></span>
@@ -95,7 +95,7 @@
         </div>
 
         <div class="row">
-            <div class="col-xs-6 col-xs-offset-2">
+            <div class="col-sm-6 col-sm-offset-2">
                 <div class="form-group" show-errors>
                     <label class="control-label"
                            for="additionalPeriodInfo-{{::s.gameSpeciesCode}}"
@@ -104,7 +104,8 @@
                     <textarea class="form-control" rows="2"
                               name="additionalPeriodInfo-{{::s.gameSpeciesCode}}"
                               id="additionalPeriodInfo-{{::s.gameSpeciesCode}}"
-                              ng-model="s.additionalPeriodInfo"></textarea>
+                              ng-model="s.additionalPeriodInfo"
+                              spellcheck="false"></textarea>
                 </div>
             </div>
         </div>
@@ -132,7 +133,7 @@
 
     <div ng-if="$ctrl.validityYears > 1">
         <div class="row">
-            <div class="col-xs-6 col-xs-offset-2">
+            <div class="col-sm-6 col-sm-offset-2">
                 <div class="form-group">
                     <h5 translate="harvestpermit.wizard.mammal.period.extendedPeriodGroundsTitle"></h5>
                     <div class="btn-group btn-group-justified">
@@ -179,7 +180,7 @@
                translate="harvestpermit.wizard.mammal.period.extendedPeriodNotApplicableWarning"></p>
             </div>
         <div class="row">
-            <div class="col-xs-6 col-xs-offset-2">
+            <div class="col-sm-6 col-sm-offset-2">
                 <div class="form-group" show-errors>
                     <label class="control-label"
                            for="protectedAreaName"
@@ -194,7 +195,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-xs-6 col-xs-offset-2">
+            <div class="col-sm-6 col-sm-offset-2">
                 <div class="form-group" show-errors>
                     <label class="control-label"
                            for="extendedPeriodGroundsDescription"
@@ -203,7 +204,8 @@
                     <textarea class="form-control" rows="2"
                               name="extendedPeriodGroundsDescription"
                               id="extendedPeriodGroundsDescription"
-                              ng-model="$ctrl.extendedPeriodGroundsDescription"></textarea>
+                              ng-model="$ctrl.extendedPeriodGroundsDescription"
+                              spellcheck="false"></textarea>
                 </div>
             </div>
         </div>

@@ -113,8 +113,8 @@ public class HuntingClubGroupMemberExportFeatureTest extends EmbeddedDatabaseTes
     public void testContactShareNone() {
         withMooseHuntingGroupFixture(fixture -> {
 
-            setupContactInfo(fixture.groupMemberOccupation, fixture.groupMember, null);
-            setupContactInfo(fixture.groupLeaderOccupation, fixture.groupLeader, null);
+            setupContactInfo(fixture.groupMemberClubOccupation, fixture.groupMember, null);
+            setupContactInfo(fixture.groupLeaderClubOccupation, fixture.groupLeader, null);
 
             onSavedAndAuthenticated(createNewModerator(), tx(() -> assertExport(fixture, null, 2, false)));
         });
@@ -124,8 +124,8 @@ public class HuntingClubGroupMemberExportFeatureTest extends EmbeddedDatabaseTes
     public void testContactShareOnlyOfficials() {
         withMooseHuntingGroupFixture(fixture -> {
 
-            setupContactInfo(fixture.groupMemberOccupation, fixture.groupMember, ContactInfoShare.ONLY_OFFICIALS);
-            setupContactInfo(fixture.groupLeaderOccupation, fixture.groupLeader, ContactInfoShare.ONLY_OFFICIALS);
+            setupContactInfo(fixture.groupMemberClubOccupation, fixture.groupMember, ContactInfoShare.ONLY_OFFICIALS);
+            setupContactInfo(fixture.groupLeaderClubOccupation, fixture.groupLeader, ContactInfoShare.ONLY_OFFICIALS);
 
             onSavedAndAuthenticated(createNewModerator(), tx(() -> assertExport(fixture, null, 2, true)));
         });
@@ -135,8 +135,8 @@ public class HuntingClubGroupMemberExportFeatureTest extends EmbeddedDatabaseTes
     public void testContactShareAllMember() {
         withMooseHuntingGroupFixture(fixture -> {
 
-            setupContactInfo(fixture.groupMemberOccupation, fixture.groupMember, ContactInfoShare.ALL_MEMBERS);
-            setupContactInfo(fixture.groupLeaderOccupation, fixture.groupLeader, ContactInfoShare.ALL_MEMBERS);
+            setupContactInfo(fixture.groupMemberClubOccupation, fixture.groupMember, ContactInfoShare.ALL_MEMBERS);
+            setupContactInfo(fixture.groupLeaderClubOccupation, fixture.groupLeader, ContactInfoShare.ALL_MEMBERS);
 
             onSavedAndAuthenticated(createNewModerator(), tx(() -> assertExport(fixture, null, 2, true)));
         });

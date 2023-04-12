@@ -41,6 +41,18 @@ angular.module('app.account.directives', [])
                         if (rhyId) {
                             Account.countShootingTestTodo({rhyId: rhyId}).$promise.then(setTodoCount);
                         }
+                    } else if (key === 'unfinishedTaxationReports') {
+                        rhyId = getRhyId();
+
+                        if (rhyId) {
+                            Account.countTaxationTodo({rhyId: rhyId}).$promise.then(setTodoCount);
+                        }
+                    } else if (key === 'unfinishedHuntingControlEvents') {
+                        rhyId = getRhyId();
+
+                        if (rhyId) {
+                            Account.countHuntingControlEventTodo({rhyId: rhyId}).$promise.then(setTodoCount);
+                        }
                     } else {
                         console.warn('invalid key:', key);
                     }
@@ -59,19 +71,19 @@ angular.module('app.account.directives', [])
 
                 if (!contactShare) {
                     scope.classes = 'fa fa-ban text-danger';
-                    scope.key = 'club.config.contactShare.none';
+                    scope.key = 'club.config.contactShare.null';
                     if (large) {
                         scope.style = 'font-size:22px';
                     }
                 } else if (contactShare === 'ONLY_OFFICIALS') {
                     scope.classes = 'fa fa-user-secret';
-                    scope.key = 'club.config.contactShare.onlyOfficials';
+                    scope.key = 'club.config.contactShare.ONLY_OFFICIALS';
                     if (large) {
                         scope.style = 'font-size:22px';
                     }
                 } else if (contactShare === 'ALL_MEMBERS') {
                     scope.classes = 'fa fa-users';
-                    scope.key = 'club.config.contactShare.allMembers';
+                    scope.key = 'club.config.contactShare.ALL_MEMBERS';
                     if (large) {
                         scope.style = 'font-size:20px;margin-bottom:2px';
                     }
@@ -80,5 +92,47 @@ angular.module('app.account.directives', [])
                 }
             },
             template: '<span style="{{style}};" class="{{classes}}" uib-tooltip="{{key | translate}}"></span>'
+        };
+    })
+    .directive('rClubContactInfoVisibility', function ($log) {
+        return {
+            restrict: 'A',
+            scope: {
+                contactVisibility: '&rClubContactInfoVisibility',
+                large: '&rClubContactInfoVisibilityLarge',
+                withLabel: '&rClubContactInfoVisibilityWithLabel'},
+            replace: false,
+            link: function (scope, element, attrs) {
+                var contactVisibility = scope.contactVisibility();
+                var large = scope.large();
+                var withLabel = scope.withLabel();
+
+                if(!withLabel) {
+                    scope.labelStyle = 'display:none;';
+                }
+
+                if (contactVisibility === 'NAME') {
+                    scope.classes = 'fa fa-user';
+                    scope.key = 'club.config.name';
+                    if (large) {
+                        scope.style = 'font-size:22px';
+                    }
+                } else if (contactVisibility === 'PHONE') {
+                    scope.classes = 'fa fa-phone';
+                    scope.key = 'club.config.phoneNumber';
+                    if (large) {
+                        scope.style = 'font-size:22px';
+                    }
+                } else if (contactVisibility === 'EMAIL') {
+                    scope.classes = 'fa fa-envelope';
+                    scope.key = 'club.config.email';
+                    if (large) {
+                        scope.style = 'font-size:20px;margin-bottom:2px';
+                    }
+                } else {
+                    $log.debug('rClubContactInfoVisibility Unknown contact info visibility value:', contactVisibility);
+                }
+            },
+            template: '<span style="{{style}};" class="{{classes}}" uib-tooltip="{{key | translate}}"></span><div style="{{labelStyle}}">{{key | translate}}</div>'
         };
     });

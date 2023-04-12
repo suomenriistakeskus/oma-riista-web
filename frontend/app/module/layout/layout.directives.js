@@ -76,6 +76,20 @@ angular.module('app.layout.directives', [])
             }
         };
     })
+    .directive('riistaSpacingWhenFooterHiddenCss', function ($state) {
+        return {
+            restrict: 'A',
+            controller: function ($scope, $element) {
+                $scope.$on('$stateChangeSuccess', function () {
+                    if ($state.current.hideFooter === true) {
+                        $element.addClass('active');
+                    } else {
+                        $element.removeClass('active');
+                    }
+                });
+            }
+        };
+    })
 
     .directive('riistaSidebarCollapse', function ($window, $document, $rootScope) {
         var globalState = {
@@ -108,8 +122,8 @@ angular.module('app.layout.directives', [])
             restrict: 'E',
             priority: -100,
             template: "<div class='close-button'><a ng-click='$ctrl.toggleSidebar()'>" +
-            "<span class='glyphicon glyphicon-resize-small' ng-show='$ctrl.isFullScreen()'></span>" +
-            "<span class='glyphicon glyphicon-resize-full' ng-show='!$ctrl.isFullScreen()'></span></a></div>",
+                "<span class='glyphicon glyphicon-resize-small' ng-show='$ctrl.isFullScreen()'></span>" +
+                "<span class='glyphicon glyphicon-resize-full' ng-show='!$ctrl.isFullScreen()'></span></a></div>",
             link: function ($scope, element, attrs) {
                 var parentEl = element.parent();
 
@@ -175,7 +189,7 @@ angular.module('app.layout.directives', [])
         return {
             restrict: 'A',
             template: '<a class="btn-modal-close" aria-hidden="true" ng-click="$dismiss(\'cancel\')">' +
-            '<span class="fa fa-close"></span></a>',
+                '<span class="fa fa-close"></span></a>',
             replace: true
         };
     })
@@ -202,6 +216,64 @@ angular.module('app.layout.directives', [])
                         element.removeClass('active');
                     }
                 }
+            }
+        };
+    })
+    .directive('riistaMobileMenu', function ($window, $document) {
+        function updateLayout(elements) {
+            if (elements.subNav().hasClass('mobile-hidden')) {
+                elements.subNav().removeClass('mobile-hidden');
+            } else {
+                elements.subNav().addClass('mobile-hidden');
+            }
+        }
+
+        return {
+            restrict: 'E',
+            priority: -100,
+            template: "<a class='mobile-menu-dropdown-toggle' ng-class='$ctrl.buttonStyle()' ng-click='$ctrl.toggleMobileMenu()'>" +
+                "<span class='fa fa-bars' aria-hidden='true' />" +
+                "</a>" +
+                "<div class='mobile-menu-overlay' ng-class='$ctrl.buttonStyle()' ng-click='$ctrl.toggleMobileMenu()' />",
+            link: function ($scope) {
+                $scope.elements = {
+                    subNav: function () {
+                        return $document.find('.r-subnav-navbar');
+                    },
+                };
+
+                $scope.$watch(
+                    function () {
+                        return $.find('ul.r-subnav-nav >li > a').length;
+                    },
+                    function (value) {
+                        if (value === 0) {
+                            return;
+                        }
+                        var links = $.find('ul.r-subnav-nav >li > a');
+
+                        for (var idx = 0; idx < links.length; idx++) {
+                            links[idx].addEventListener('click', function () {
+                                updateLayout($scope.elements);
+                            }, false);
+                        }
+
+                    });
+
+                updateLayout($scope.elements);
+            },
+            scope: true,
+            controllerAs: '$ctrl',
+            controller: function ($scope) {
+                var $ctrl = this;
+
+                $ctrl.toggleMobileMenu = function () {
+                    updateLayout($scope.elements);
+                };
+                $ctrl.buttonStyle = function () {
+                    var subNav = $scope.elements.subNav();
+                    return subNav.length < 1 || subNav.hasClass('mobile-hidden') ? '' : 'active';
+                };
             }
         };
     });

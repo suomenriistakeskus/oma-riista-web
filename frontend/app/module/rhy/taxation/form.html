@@ -1,0 +1,595 @@
+<div class="taxation-modal-header modal-header">
+    <button riista-modal-close></button>
+    <h3 class="modal-title">
+        <span translate="rhy.taxationPlan.formTitle"></span>
+        <span>{{$ctrl.selectedMooseArea.name}} > {{$ctrl.rhy.name}} > {{$ctrl.selectedSpecies.name}}: {{$ctrl.selectedYear.name}}</span>
+    </h3>
+</div>
+
+<div class="modal-body taxation-modal">
+    <form name="taxationForm" role="form" novalidate autocomplete="off">
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="hasTaxationPlanning" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.noTaxationPlanning"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-4">
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" name="hasTaxationPlanning" id="hasTaxationPlanning"
+                               class="r-non-labeled-checkbox"
+                               ng-true-value="false"
+                               ng-false-value="true"
+                               ng-model="$ctrl.data.hasTaxationPlanning"/>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="planningBasisPopulation" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.planningBasisPopulation"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+
+            <div class="col-xs-12 col-sm-4 form-group" show-errors>
+                <div class="input-group" show-errors>
+                    <label for="planningBasisPopulation" class="control-label">
+                        <span translate="rhy.taxationPlan.pieces"></span>
+                    </label>
+                    <input type="number" name="planningBasisPopulation" id="planningBasisPopulation"
+                           class="form-control"
+                           min="0" max="99999" step="1"
+                           autocomplete="off"
+                           ng-model="$ctrl.data.planningBasisPopulation"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                </div>
+                <div class="help-block has-error"
+                     ng-show="taxationForm.planningBasisPopulation.$touched && taxationForm.planningBasisPopulation.$invalid"
+                     ng-messages="taxationForm.planningBasisPopulation.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-9 col-md-offset-2">
+                <b translate="rhy.taxationPlan.planningGoalTitle"></b>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="plannedRemainingPopulation" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.plannedRemainingPopulation"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-4 form-group" show-errors>
+                <div class="input-group" show-errors>
+                    <label for="plannedRemainingPopulation" class="control-label">
+                        <span translate="rhy.taxationPlan.piecesPer1000HA"></span>
+                    </label>
+                    <input type="number" name="plannedRemainingPopulation" id="plannedRemainingPopulation"
+                           class="form-control"
+                           min="0" max="999" step="0.1"
+                           autocomplete="off"
+                           r-decimal-separator-fix
+                           ng-model="$ctrl.data.plannedRemainingPopulation"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                </div>
+                <div class="help-block has-error"
+                     ng-show="taxationForm.plannedRemainingPopulation.$touched && taxationForm.plannedRemainingPopulation.$invalid"
+                     ng-messages="taxationForm.plannedRemainingPopulation.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="genderDistribution" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.genderDistribution"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-4 form-group" show-errors>
+                <div class="input-group" show-errors>
+                    <label for="genderDistribution" class="control-label">
+                        <span translate="rhy.taxationPlan.femalePerMale"></span>
+                    </label>
+                    <input type="number" name="genderDistribution" id="genderDistribution"
+                           class="form-control"
+                           min="0" max="999" step="0.1"
+                           autocomplete="off"
+                           r-decimal-separator-fix
+                           ng-model="$ctrl.data.genderDistribution"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                </div>
+                <div class="help-block has-error"
+                     ng-show="taxationForm.genderDistribution.$touched && taxationForm.genderDistribution.$invalid"
+                     ng-messages="taxationForm.genderDistribution.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="youngPercent" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.youngPercent"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-4 form-group" show-errors>
+                <label for="youngPercent" class="control-label">
+                    <span translate="rhy.taxationPlan.youngDistribution"></span>
+                </label>
+                <div class="input-group" show-errors>
+                    <input type="number" name="youngPercent" id="youngPercent"
+                           class="form-control has-feedback"
+                           autocomplete="off"
+                           min="0" max="100"
+                           ng-model="$ctrl.data.youngPercent"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <span class="input-group-addon">%</span>
+                </div>
+                <div class="help-block has-error"
+                     ng-show="taxationForm.youngPercent.$touched && taxationForm.youngPercent.$invalid"
+                     ng-messages="taxationForm.youngPercent.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-9 col-md-offset-2">
+                <b translate="rhy.taxationPlan.plannedCatchTitle"></b>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="plannedUtilizationRateOfThePermits" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.plannedUtilizationRateOfThePermits"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-4 form-group" show-errors>
+                <div class="input-group" show-errors>
+                    <input type="number" name="plannedUtilizationRateOfThePermits"
+                           id="plannedUtilizationRateOfThePermits"
+                           class="form-control has-feedback"
+                           autocomplete="off"
+                           min="0" max="100"
+                           ng-model="$ctrl.data.plannedUtilizationRateOfThePermits"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <span class="input-group-addon">%</span>
+                </div>
+                <div class="help-block has-error"
+                     ng-show="taxationForm.plannedUtilizationRateOfThePermits.$touched && taxationForm.plannedUtilizationRateOfThePermits.$invalid"
+                     ng-messages="taxationForm.plannedUtilizationRateOfThePermits.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="shareOfBankingPermits" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.shareOfBankingPermits"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-4 form-group" show-errors>
+                <div class="input-group" show-errors>
+                    <input type="number" name="shareOfBankingPermits" id="shareOfBankingPermits"
+                           class="form-control has-feedback"
+                           autocomplete="off"
+                           min="0" max="100"
+                           ng-model="$ctrl.data.shareOfBankingPermits"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <span class="input-group-addon">%</span>
+                </div>
+                <div class="help-block has-error"
+                     ng-show="taxationForm.shareOfBankingPermits.$touched && taxationForm.shareOfBankingPermits.$invalid"
+                     ng-messages="taxationForm.shareOfBankingPermits.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="plannedPermitMin" class="control-label form-label-big">
+                    <span translate="rhy.taxationPlan.plannedPermit"></span>
+                    <span translate="rhy.taxationPlan.pieces"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-2">
+                <div class="input-group" show-errors>
+                    <label for="plannedPermitMin" class="control-label">
+                        <span translate="rhy.taxationPlan.minTitle"></span>
+                    </label>
+
+                    <input type="number" name="plannedPermitMin" id="plannedPermitMin"
+                           class="form-control"
+                           min="0" max="9999"
+                           autocomplete="off"
+                           placeholder="min"
+                           ng-model="$ctrl.data.plannedPermitMin"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <div class="help-block has-error"
+                         ng-show="taxationForm.plannedPermitMin.$touched && taxationForm.plannedPermitMin.$invalid"
+                         ng-messages="taxationForm.plannedPermitMin.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-2">
+                <div class="input-group" show-errors>
+                    <label for="plannedPermitMax" class="control-label">
+                        <span translate="rhy.taxationPlan.maxTitle"></span>
+                    </label>
+                    <input type="number" name="plannedPermitMax" id="plannedPermitMax"
+                           class="form-control"
+                           min="0" max="9999"
+                           autocomplete="off"
+                           placeholder="max"
+                           ng-model="$ctrl.data.plannedPermitMax"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <div class="help-block has-error"
+                         ng-show="taxationForm.plannedPermitMax.$touched && taxationForm.plannedPermitMax.$invalid"
+                         ng-messages="taxationForm.plannedPermitMax.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-11">
+                <div class="error-text text-danger"
+                     ng-show="$ctrl.isGreaterThan($ctrl.data.plannedPermitMin, $ctrl.data.plannedPermitMax)"
+                     translate="rhy.taxationPlan.errorMinIsGreaterThanMax"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="plannedCatchMin" class="control-label form-label-big">
+                    <span translate="rhy.taxationPlan.plannedCatch"></span>
+                    <span translate="rhy.taxationPlan.pieces"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-2">
+                <div class="input-group" show-errors>
+                    <label for="plannedCatchMin" class="control-label">
+                        <span translate="rhy.taxationPlan.minTitle"></span>
+                    </label>
+                    <input type="number" name="plannedCatchMin" id="plannedCatchMin"
+                           class="form-control"
+                           min="0" max="99999"
+                           autocomplete="off"
+                           placeholder="min"
+                           ng-model="$ctrl.data.plannedCatchMin"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <div class="help-block has-error"
+                         ng-show="taxationForm.plannedCatchMin.$touched && taxationForm.plannedCatchMin.$invalid"
+                         ng-messages="taxationForm.plannedCatchMin.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-2">
+                <div class="input-group" show-errors>
+                    <label for="plannedCatchMax" class="control-label">
+                        <span translate="rhy.taxationPlan.maxTitle"></span>
+                    </label>
+                    <input type="number" name="plannedCatchMax" id="plannedCatchMax"
+                           class="form-control"
+                           min="0" max="99999"
+                           autocomplete="off"
+                           placeholder="max"
+                           ng-model="$ctrl.data.plannedCatchMax"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <div class="help-block has-error"
+                         ng-show="taxationForm.plannedCatchMax.$touched && taxationForm.plannedCatchMax.$invalid"
+                         ng-messages="taxationForm.plannedCatchMax.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-11">
+                <div class="error-text text-danger"
+                     ng-show="$ctrl.isGreaterThan($ctrl.data.plannedCatchMin, $ctrl.data.plannedCatchMax)"
+                     translate="rhy.taxationPlan.errorMinIsGreaterThanMax"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="plannedPermitDensityMin" class="control-label form-label-big">
+                    <span translate="rhy.taxationPlan.plannedPermitDensity"></span>
+                    <span translate="rhy.taxationPlan.piecesPer1000HA"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-2">
+                <div class="input-group" show-errors>
+                    <label for="plannedPermitDensityMin" class="control-label">
+                        <span translate="rhy.taxationPlan.minTitle"></span>
+                    </label>
+                    <input type="number" name="plannedPermitDensityMin" id="plannedPermitDensityMin"
+                           class="form-control"
+                           min="0" max="999" step="0.1"
+                           autocomplete="off"
+                           placeholder="min"
+                           r-decimal-separator-fix
+                           ng-model="$ctrl.data.plannedPermitDensityMin"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <div class="help-block has-error"
+                         ng-show="taxationForm.plannedPermitDensityMin.$touched && taxationForm.plannedPermitDensityMin.$invalid"
+                         ng-messages="taxationForm.plannedPermitDensityMin.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-2">
+                <div class="input-group" show-errors>
+                    <label for="plannedPermitDensityMax" class="control-label">
+                        <span translate="rhy.taxationPlan.maxTitle"></span>
+                    </label>
+                    <input type="number" name="plannedPermitDensityMax" id="plannedPermitDensityMax"
+                           class="form-control"
+                           min="0" max="999" step="0.1"
+                           autocomplete="off"
+                           placeholder="max"
+                           r-decimal-separator-fix
+                           ng-model="$ctrl.data.plannedPermitDensityMax"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <div class="help-block has-error"
+                         ng-show="taxationForm.plannedPermitDensityMax.$touched && taxationForm.plannedPermitDensityMax.$invalid"
+                         ng-messages="taxationForm.plannedPermitDensityMax.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-11">
+                <div class="error-text text-danger"
+                     ng-show="$ctrl.isGreaterThan($ctrl.data.plannedPermitDensityMin, $ctrl.data.plannedPermitDensityMax)"
+                     translate="rhy.taxationPlan.errorMinIsGreaterThanMax"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="plannedPreyDensityMin" class="control-label form-label-big">
+                    <span translate="rhy.taxationPlan.plannedPreyDensity"></span>
+                    <span translate="rhy.taxationPlan.piecesPer1000HA"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-2">
+                <div class="input-group" show-errors>
+                    <label for="plannedPreyDensityMin" class="control-label">
+                        <span translate="rhy.taxationPlan.minTitle"></span>
+                    </label>
+                    <input type="number" name="plannedPreyDensityMin" id="plannedPreyDensityMin"
+                           class="form-control"
+                           min="0" max="999" step="0.1"
+                           autocomplete="off"
+                           placeholder="min"
+                           r-decimal-separator-fix
+                           ng-model="$ctrl.data.plannedPreyDensityMin"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <div class="help-block has-error"
+                         ng-show="taxationForm.plannedPreyDensityMin.$touched && taxationForm.plannedPreyDensityMin.$invalid"
+                         ng-messages="taxationForm.plannedPreyDensityMin.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12 col-sm-2">
+                <div class="input-group" show-errors>
+                    <label for="plannedPreyDensityMax" class="control-label">
+                        <span translate="rhy.taxationPlan.maxTitle"></span>
+                    </label>
+                    <input type="number" name="plannedPreyDensityMax" id="plannedPreyDensityMax"
+                           class="form-control"
+                           min="0" max="999" step="0.1"
+                           autocomplete="off"
+                           placeholder="max"
+                           r-decimal-separator-fix
+                           ng-model="$ctrl.data.plannedPreyDensityMax"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <div class="help-block has-error"
+                         ng-show="taxationForm.plannedPreyDensityMax.$touched && taxationForm.plannedPreyDensityMax.$invalid"
+                         ng-messages="taxationForm.plannedPreyDensityMax.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-11">
+                <div class="error-text text-danger"
+                     ng-show="$ctrl.isGreaterThan($ctrl.data.plannedPreyDensityMin, $ctrl.data.plannedPreyDensityMax)"
+                     translate="rhy.taxationPlan.errorMinIsGreaterThanMax"></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="plannedCatchYoungPercent" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.plannedCatchYoungPercent"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-4 form-group" show-errors>
+                <div class="input-group" show-errors>
+                    <input type="number" name="plannedCatchYoungPercent" id="plannedCatchYoungPercent"
+                           class="form-control has-feedback"
+                           autocomplete="off"
+                           min="0" max="100"
+                           ng-model="$ctrl.data.plannedCatchYoungPercent"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <span class="input-group-addon">%</span>
+                </div>
+                <div class="help-block has-error"
+                     ng-show="taxationForm.plannedCatchYoungPercent.$touched && taxationForm.plannedCatchYoungPercent.$invalid"
+                     ng-messages="taxationForm.plannedCatchYoungPercent.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="plannedCatchMalePercent" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.plannedCatchMalePercent"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-4 form-group" show-errors>
+                <div class="input-group" show-errors>
+                    <input type="number" name="plannedCatchMalePercent" id="plannedCatchMalePercent"
+                           class="form-control has-feedback"
+                           autocomplete="off"
+                           min="0" max="100"
+                           ng-model="$ctrl.data.plannedCatchMalePercent"
+                           ng-disabled="$ctrl.isDisabled()"
+                           ng-required="!$ctrl.isDisabled()">
+                    <span class="input-group-addon">%</span>
+                </div>
+                <div class="help-block has-error"
+                     ng-show="taxationForm.plannedCatchMalePercent.$touched && taxationForm.plannedCatchMalePercent.$invalid"
+                     ng-messages="taxationForm.plannedCatchMalePercent.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+
+        <hr/>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="stakeholdersConsulted" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.stakeholdersConsulted"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-4">
+                <div class="input-group input-group r-dropdown-align-right"
+                     ng-controller="DatePickerController">
+                    <input type="text" name="stakeholdersConsulted" id="stakeholdersConsulted"
+                           class="form-control"
+                           uib-datepicker-popup
+                           datepicker-options="$ctrl.dateOptions"
+                           is-open="isDatePickerOpen"
+                           date-between-min-max
+                           max-date="$ctrl.dateOptions.maxDate"
+                           ng-model="$ctrl.data.stakeholdersConsulted">
+                    <span class="input-group-btn">
+                    <button type="button" class="btn btn-default" tabindex="-1"
+                            ng-click="toggleDatePopup($event)">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </button>
+                </span>
+                </div>
+                <div class="help-block has-error"
+                     ng-show="taxationForm.stakeholdersConsulted.$touched && taxationForm.stakeholdersConsulted.$invalid"
+                     ng-messages="taxationForm.stakeholdersConsulted.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-7">
+                <label for="approvedAtTheBoardMeeting" class="control-label form-label">
+                    <span translate="rhy.taxationPlan.approvedAtTheBoardMeeting"></span>
+                </label>
+            </div>
+            <div class="col-xs-12 col-sm-4">
+                <div class="input-group input-group r-dropdown-align-right"
+                     ng-controller="DatePickerController">
+                    <input type="text" name="approvedAtTheBoardMeeting" id="approvedAtTheBoardMeeting"
+                           class="form-control"
+                           uib-datepicker-popup
+                           datepicker-options="$ctrl.dateOptions"
+                           is-open="isDatePickerOpen"
+                           date-between-min-max
+                           max-date="$ctrl.dateOptions.maxDate"
+                           ng-model="$ctrl.data.approvedAtTheBoardMeeting"
+                           r-validate-greater-or-equal="$ctrl.data.stakeholdersConsulted">
+
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" tabindex="-1"
+                                ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </button>
+                    </span>
+                </div>
+                <div class="help-block has-error"
+                     ng-show="taxationForm.approvedAtTheBoardMeeting.$touched && taxationForm.approvedAtTheBoardMeeting.$invalid"
+                     ng-messages="taxationForm.approvedAtTheBoardMeeting.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                    <div ng-message="greaterOrEqual">
+                        <span translate="rhy.taxationPlan.errorStakeHoldersConsultedAfterBoardMeeting"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-sm-9 col-md-offset-2">
+                <div class="form-group">
+                    <label for="justification" class="control-label">
+                        <span translate="rhy.taxationPlan.justification"></span>
+                    </label>
+                    <textarea name="justification" id="justification" class="form-control" rows="6"
+                              ng-model="$ctrl.data.justification"
+                              spellcheck="false"></textarea>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="row">
+        <div class="col-xs-12 col-sm-9 col-md-offset-2 ">
+            <span translate="rhy.taxationPlan.attachmentDescription"></span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xs-12 col-sm-9 col-md-offset-2">
+            <r-common-dropzone id="attachments"
+                               url="{{$ctrl.attachmentBaseUri}}"
+                               attachments="$ctrl.data.attachments"
+                               on-download-attachment="$ctrl.downloadAttachment"
+                               on-delete-attachment="$ctrl.deleteAttachment">
+            </r-common-dropzone>
+        </div>
+    </div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()" translate="global.button.cancel"></button>
+
+    <button type="submit" class="btn btn-primary"
+            ng-click="$ctrl.saveAsDraft()"
+            ng-disabled="!isValid(taxationForm)"
+            translate="rhy.taxationPlan.saveDraft"></button>
+    <button type="submit" class="btn btn-primary"
+            ng-click="$ctrl.save()"
+            ng-disabled="!isValid(taxationForm)"
+            translate="rhy.taxationPlan.confirm"></button>
+</div>

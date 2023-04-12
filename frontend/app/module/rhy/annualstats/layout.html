@@ -91,10 +91,26 @@
             </div>
         </div>
     </div>
+    <div class="col-xs-12" ng-if="$ctrl.activeTabMissingParticipants().length > 0">
+        <div class="row">
+            <div class="r-annual-statistics-top-notifications">
+                <div>
+                    <span class="fa fa-warning fa-2x">&nbsp;</span>
+                    <span translate="rhy.annualStats.missingParticipants.notificationContent"></span>
+                </div>
+                <ul>
+                    <li ng-repeat="errCode in $ctrl.activeTabMissingParticipants()">
+                        <span>{{::'rhy.annualStats.missingParticipants.' + errCode | translate}}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="r-annual-statistics-tabset">
     <rhy-annual-statistics-tabset active-tab="$ctrl.activeTab"
+                                  statistics="::$ctrl.statistics"
                                   on-active-tab-changed="$ctrl.onActiveTabChanged(activeTab)">
     </rhy-annual-statistics-tabset>
 </div>

@@ -7,8 +7,12 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingFinishedException;
 import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.DateUtil;
+import fi.riista.util.MockTimeProvider;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -51,6 +55,16 @@ public class GroupHuntingDayCrudFeatureTest extends EmbeddedDatabaseTest impleme
 
     @Resource
     private UserAuthorizationHelper userAuthHelper;
+
+    @Before
+    public void setup() {
+        MockTimeProvider.mockTime(DateUtil.toDateTimeNullSafe(new LocalDate(2022, 8, 2)).getMillis());
+    }
+
+    @After
+    public void tearDown() {
+        MockTimeProvider.resetMock();
+    }
 
     @Test
     public void testCreateHuntingDay_withHounds_thenNumberOfHoundsIsSet() {

@@ -52,5 +52,6 @@ angular.module('app', [
     'app.reporting',
     'app.rhy',
     'app.srva',
-    'app.shootingtest'
+    'app.shootingtest',
+    'app.news'
 ]);

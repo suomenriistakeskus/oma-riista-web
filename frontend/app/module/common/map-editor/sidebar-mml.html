@@ -1,14 +1,5 @@
-<form>
-    <div class="form-group">
-        <label class="checkbox-inline">
-            <input type="checkbox" name="showOnlyChanged" id="showOnlyChanged" ng-model="$ctrl.showOnlyChanged">
-            <span translate="global.map.editor.tab.mml.showOnlyChanged"></span>
-        </label>
-    </div>
-</form>
-
-<button type="button" class="btn btn-default btn-block"
-        style="margin-bottom: 10px"
+<button type="button"
+        class="btn btn-default btn-block r-sidebar-btn"
         ng-click="$ctrl.showBulkInsert()">
     <span class="fa fa-lg fa-fw fa-filter"></span>
     <span translate="global.map.editor.tab.mml.massInsert"></span>
@@ -18,9 +9,30 @@
     <span translate="global.map.editor.tab.mml.emptySelection"></span>
 </p>
 
+<div class="btn-group btn-group-justified r-sidebar-btn">
+    <label class="btn btn-default r-tab-button"
+           ng-model="$ctrl.selectedTab"
+           uib-btn-radio="'all'"
+           ng-click="$ctrl.showOnlyChanged = false">
+        <span class="text-primary fa fa-fw fa-2x fa-check-circle r-area-updated-tab-icon"></span>
+        &nbsp;
+        <span class="r-area-updated-tab-text" translate="global.map.editor.tab.mml.showAll"></span>
+    </label>
+
+    <label class="btn btn-default r-tab-button"
+           ng-model="$ctrl.selectedTab"
+           uib-btn-radio="'changed'"
+           ng-click="$ctrl.showOnlyChanged = true">
+        <span class="text-danger fa fa-fw fa-2x fa-exclamation-triangle r-area-updated-tab-icon"></span>
+        &nbsp;
+        <span class="r-area-updated-tab-text"  translate="global.map.editor.tab.mml.onlyChanged"></span>
+    </label>
+</div>
+
 <div ng-if="!$ctrl.showOnlyChanged">
     <ul class="list-group" vs-repeat vs-scroll-parent=".left-column">
         <li class="list-group-item"
+            ng-class="f.properties.changed ? 'r-list-item-changed' : ''"
             ng-click="$ctrl.zoomFeature(f); $event.stopPropagation();"
             ng-repeat="f in $ctrl.getFeatureList() track by f.id"
             ng-mouseenter="$ctrl.setHighlight(f)"
@@ -32,10 +44,15 @@
                 </div>
                 <div class="col-xs-4">
                     <strong ng-bind="f | featureAreaSize"></strong>
-                    <span ng-show="f.properties.changed"
-                          class="glyphicon glyphicon-warning-sign text-danger"></span>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-xs-3 text-right" ng-if="f.properties.changed">
+                    <button type="button" class="btn btn-default btn-xs"
+                            ng-click="$ctrl.updateChangedFeature(f); $event.stopPropagation();">
+                        <span translate="global.map.editor.tab.mml.fix"></span>
+                        <span class="glyphicon glyphicon-wrench text-info"></span>
+                    </button>
+                </div>
+                <div class="col-xs-3 text-right" ng-if="!f.properties.changed">
                     <button type="button" class="btn btn-default btn-xs"
                             ng-click="$ctrl.removeFeature(f); $event.stopPropagation();">
                         <span translate="global.button.delete"></span>
@@ -63,11 +80,14 @@
             <div class="row">
                 <div class="col-xs-5"
                      uib-tooltip="{{ ::('global.map.editor.tab.mml.tooltipPropertyNumber' | translate) }}">
-                    <span ng-bind="f.properties.number | formatPropertyIdentifier"></span>
-                    <br/>
-                    <span ng-show="f.properties.number != f.properties.new_palsta_tunnus"
-                          class="text-danger"
-                          ng-bind="f.properties.new_palsta_tunnus | formatPropertyIdentifier"></span>
+                    <span class="fa fa-2x fa-exclamation-triangle text-danger r-alert-sign"></span>
+                    <div class="r-property-info">
+                        <span ng-bind="f.properties.number | formatPropertyIdentifier"></span>
+                        <br/>
+                        <span ng-show="f.properties.number != f.properties.new_palsta_tunnus"
+                              class="text-danger"
+                              ng-bind="f.properties.new_palsta_tunnus | formatPropertyIdentifier"></span>
+                    </div>
                 </div>
                 <div class="col-xs-4"
                      uib-tooltip="{{ ::('global.map.editor.tab.mml.tooltipAreaSize' | translate) }}">
@@ -84,7 +104,7 @@
                         <strong ng-bind="f | featureAreaSizeDiff"></strong>
                     </div>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-xs-3 text-right r-fix-button">
                     <button type="button" class="btn btn-default btn-xs"
                             ng-click="$ctrl.updateChangedFeature(f); $event.stopPropagation();">
                         <span translate="global.map.editor.tab.mml.fix"></span>

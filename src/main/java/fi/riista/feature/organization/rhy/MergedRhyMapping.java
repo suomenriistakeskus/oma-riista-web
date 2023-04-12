@@ -58,6 +58,10 @@ public class MergedRhyMapping {
     public static final String OLD_RIISTAVESI_465 = "465";
     public static final String OLD_NURMES_408 = "408";
     public static final String OLD_VALTIMO_415 = "415";
+    public static final String OLD_JÄPPILÄ_059 = "059";
+    public static final String OLD_PIEKSÄMÄKI_066 = "066";
+    public static final String OLD_KESÄLAHTI_405 = "405";
+    public static final String OLD_KITEE_406 = "406";
 
     public static final String NEW_HAUKIVUORI_VIRTASALMI_076 = "076";
     public static final String NEW_SAVONLINNA_077 = "077";
@@ -69,6 +73,8 @@ public class MergedRhyMapping {
     public static final String NEW_TAMPERE_382 = "382";
     public static final String NEW_KOILLIS_SAVO_475 = "475";
     public static final String NEW_YLÄ_KARJALA_416 = "416";
+    public static final String NEW_PIEKSÄMÄKI_079 = "079";
+    public static final String NEW_KESKI_KARJALA_417 = "417";
 
     /* package */ static final List<RhyMerge> OFFICIAL_MERGES = asList(
             new RhyMerge(2014, OLD_HAUKIVUORI_054, NEW_HAUKIVUORI_VIRTASALMI_076),
@@ -96,7 +102,11 @@ public class MergedRhyMapping {
             new RhyMerge(2020, OLD_TUUSNIEMI_470, NEW_KOILLIS_SAVO_475),
             new RhyMerge(2020, OLD_RIISTAVESI_465, NEW_KOILLIS_SAVO_475),
             new RhyMerge(2020, OLD_NURMES_408, NEW_YLÄ_KARJALA_416),
-            new RhyMerge(2020, OLD_VALTIMO_415, NEW_YLÄ_KARJALA_416));
+            new RhyMerge(2020, OLD_VALTIMO_415, NEW_YLÄ_KARJALA_416),
+            new RhyMerge(2023, OLD_JÄPPILÄ_059, NEW_PIEKSÄMÄKI_079),
+            new RhyMerge(2023, OLD_PIEKSÄMÄKI_066, NEW_PIEKSÄMÄKI_079),
+            new RhyMerge(2023, OLD_KESÄLAHTI_405, NEW_KESKI_KARJALA_417),
+            new RhyMerge(2023, OLD_KITEE_406, NEW_KESKI_KARJALA_417));
 
     private static List<RhyMerge> MERGES;
     private static Map<String, String> MERGE_MAPPINGS;

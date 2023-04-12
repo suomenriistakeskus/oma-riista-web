@@ -79,7 +79,7 @@ public class HarvestReportListExcelViewTest implements DefaultEntitySupplierProv
         AtomicBoolean shooterNameFound = new AtomicBoolean(false);
         sheet.rowIterator().forEachRemaining(row->{
             row.cellIterator().forEachRemaining(cell->{
-                if ( cell.getCellTypeEnum().equals(CellType.STRING)){
+                if ( cell.getCellType().equals(CellType.STRING)){
 
                     if (cell.getStringCellValue().contains(author.getLastName())) {
                         authorNameFound.set(true);

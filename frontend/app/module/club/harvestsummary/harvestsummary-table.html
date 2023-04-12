@@ -7,7 +7,7 @@
     </thead>
 
     <tbody>
-    <tr ng-repeat="item in ::$ctrl.items | orderBy: '-count'">
+    <tr ng-repeat="item in $ctrl.items | orderBy: '-count'">
         <td>{{item.species.name | rI18nNameFilter}}</td>
         <td class="text-center">{{item.count}}</td>
     </tr>

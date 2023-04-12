@@ -94,7 +94,7 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
 
         final List<ENTITY> ret = createNewSpecimens(parent, filterSpecimensWithContent(dtos), version);
 
-        validateResultSpecimens(parent, ret);
+        validateResultSpecimens(parent, ret, version);
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("{}(id={}): Added {} new specimen(s), set total amount to {}",
@@ -185,7 +185,7 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
         });
         resultSpecimens.addAll(0, entitiesToBeUpdated);
 
-        validateResultSpecimens(parent, resultSpecimens);
+        validateResultSpecimens(parent, resultSpecimens, version);
 
         // To have specimen revisions updated for DTO transformation.
         if (!entitiesToBeUpdated.isEmpty()) {
@@ -220,7 +220,8 @@ public abstract class AbstractSpecimenService<PARENT extends BaseEntity<Long>, E
     }
 
     protected void validateResultSpecimens(@Nonnull final PARENT parent,
-                                           @Nonnull final List<ENTITY> outputSpecimens) {
+                                           @Nonnull final List<ENTITY> outputSpecimens,
+                                           @Nonnull final VERSION version) {
 
     }
 

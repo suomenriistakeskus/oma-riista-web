@@ -6,6 +6,7 @@ angular.module('app.common', [
     'app.common.services',
     'app.common.filters',
     'app.common.download',
+    'app.common.dropzone',
     'app.common.pagination.slice',
     'app.common.huntingyear',
     'app.common.species',
@@ -27,5 +28,6 @@ angular.module('app.common', [
     'app.common.decision.handler',
     'app.common.decision.document.text',
     'app.common.decision.revisions',
-    'app.common.antler-guide'
+    'app.common.antler-guide',
+    'app.common.huntingclubsearch'
 ]);

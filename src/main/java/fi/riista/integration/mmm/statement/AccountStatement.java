@@ -10,15 +10,14 @@ import java.util.List;
 import static java.util.Objects.requireNonNull;
 
 public class AccountStatement {
-
-    private final LocalDate statementDate;
     private final List<AccountStatementLine> lines;
 
     private String filename;
-    private LocalDate filenameDate;
 
-    public AccountStatement(@Nonnull final LocalDate statementDate, @Nonnull final List<AccountStatementLine> lines) {
-        this.statementDate = requireNonNull(statementDate, "statementDate is null");
+    private LocalDate filenameDate;
+    private Integer fileNumber;
+
+    public AccountStatement(@Nonnull final List<AccountStatementLine> lines) {
         this.lines = requireNonNull(lines, "lines is null");
     }
 
@@ -28,10 +27,6 @@ public class AccountStatement {
     }
 
     // Accessors -->
-
-    public LocalDate getStatementDate() {
-        return statementDate;
-    }
 
     public List<AccountStatementLine> getLines() {
         return lines;
@@ -51,5 +46,14 @@ public class AccountStatement {
 
     public void setFilenameDate(final LocalDate filenameDate) {
         this.filenameDate = filenameDate;
+    }
+
+
+    public Integer getFileNumber() {
+        return fileNumber;
+    }
+
+    public void setFileNumber(final Integer fileNumber) {
+        this.fileNumber = fileNumber;
     }
 }

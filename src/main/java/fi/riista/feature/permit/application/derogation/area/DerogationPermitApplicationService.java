@@ -99,6 +99,8 @@ public class DerogationPermitApplicationService {
             case NEST_REMOVAL:
                 return nestRemovalPermitApplicationRepository.findByHarvestPermitApplication(application);
             case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 return lawSectionTenPermitApplicationRepository.findByHarvestPermitApplication(application);
             case WEAPON_TRANSPORTATION:
                 return weaponTransportationPermitApplicationRepository.findByHarvestPermitApplication(application);
@@ -166,7 +168,9 @@ public class DerogationPermitApplicationService {
                 nestRemovalPermitApplicationRepository.save(existing);
                 break;
             }
-            case LAW_SECTION_TEN: {
+            case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE: {
                 final LawSectionTenPermitApplication existing =
                         lawSectionTenPermitApplicationRepository.findByHarvestPermitApplication(application);
                 Preconditions.checkState(existing != null, "Law section 10 application not found.");

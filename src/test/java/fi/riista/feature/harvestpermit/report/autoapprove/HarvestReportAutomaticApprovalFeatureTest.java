@@ -64,7 +64,7 @@ public class HarvestReportAutomaticApprovalFeatureTest extends EmbeddedDatabaseT
     @Test
     public void wildBoarAutomaticallyApproved() {
         final DateTime harvestPointOfTime = DateUtil.now();
-        final DateTime harvestReportModified = DateUtil.now().minusDays(1);
+        final DateTime harvestReportModified = DateUtil.now().minusDays(1).minusMinutes(1);
 
         runTest(OFFICIAL_CODE_WILD_BOAR, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, true);
     }
@@ -72,7 +72,7 @@ public class HarvestReportAutomaticApprovalFeatureTest extends EmbeddedDatabaseT
     @Test
     public void roeDeerAutomaticallyApproved() {
         final DateTime harvestPointOfTime = DateUtil.now();
-        final DateTime harvestReportModified = DateUtil.now().minusDays(1);
+        final DateTime harvestReportModified = DateUtil.now().minusDays(1).minusMinutes(1);
 
         runTest(OFFICIAL_CODE_ROE_DEER, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, true);
     }
@@ -80,7 +80,7 @@ public class HarvestReportAutomaticApprovalFeatureTest extends EmbeddedDatabaseT
     @Theory
     public void waterBirdsAutomaticallyApproved(final int gameSpeciesCode) {
         final DateTime harvestPointOfTime = DateUtil.now();
-        final DateTime harvestReportModified = DateUtil.now().minusDays(1);
+        final DateTime harvestReportModified = DateUtil.now().minusDays(1).minusMinutes(1);
 
         runTest(gameSpeciesCode, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, true);
     }
@@ -89,7 +89,7 @@ public class HarvestReportAutomaticApprovalFeatureTest extends EmbeddedDatabaseT
     public void otherSpeciesNotAutomaticallyApproved() {
         final int speciesCode = 1;
         final DateTime harvestPointOfTime = DateUtil.now();
-        final DateTime harvestReportModified = DateUtil.now().minusDays(1);
+        final DateTime harvestReportModified = DateUtil.now().minusDays(1).minusMinutes(1);
 
         runTest(speciesCode, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, false);
     }
@@ -106,7 +106,7 @@ public class HarvestReportAutomaticApprovalFeatureTest extends EmbeddedDatabaseT
 
     private void testWrongState(HarvestReportState state) {
         final DateTime harvestPointOfTime = DateUtil.now();
-        final DateTime harvestReportModified = DateUtil.now().minusDays(1);
+        final DateTime harvestReportModified = DateUtil.now().minusDays(1).minusMinutes(1);
 
         runTest(OFFICIAL_CODE_ROE_DEER, state, harvestPointOfTime, harvestReportModified, false);
     }
@@ -114,7 +114,7 @@ public class HarvestReportAutomaticApprovalFeatureTest extends EmbeddedDatabaseT
     @Test
     public void roeDeerHarvestReportModifiedLessThan24HoursAgo() {
         final DateTime harvestPointOfTime = DateUtil.now();
-        final DateTime harvestReportModified = DateUtil.now().minusDays(1).plusSeconds(1);
+        final DateTime harvestReportModified = DateUtil.now().minusDays(1).plusMinutes(1);
 
         runTest(OFFICIAL_CODE_ROE_DEER, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, false);
     }
@@ -122,7 +122,7 @@ public class HarvestReportAutomaticApprovalFeatureTest extends EmbeddedDatabaseT
     @Theory
     public void waterBirdsHarvestReportModifiedLessThan24HoursAgo(final int gameSpeciesCode) {
         final DateTime harvestPointOfTime = DateUtil.now();
-        final DateTime harvestReportModified = DateUtil.now().minusDays(1).plusSeconds(1);
+        final DateTime harvestReportModified = DateUtil.now().minusDays(1).plusMinutes(1);
 
         runTest(gameSpeciesCode, SENT_FOR_APPROVAL, harvestPointOfTime, harvestReportModified, false);
     }

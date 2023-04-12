@@ -27,6 +27,7 @@ angular.module('app.harvestpermit.decision.actions', [])
             listAttachments: {method: 'GET', url: apiPrefix + '/attachment', isArray: true},
             getAttachment: {method: 'POST', url: apiPrefix + '/attachment/:attachmentId'},
             deleteAttachment: {method: 'DELETE', url: apiPrefix + '/attachment/:attachmentId'},
+            createActions: {method: 'POST', url: apiPrefix + '/copy-actions'}
         });
     })
 
@@ -80,7 +81,7 @@ angular.module('app.harvestpermit.decision.actions', [])
     })
 
     .service('PermitDecisionActionListModal', function ($uibModal) {
-        this.open = function (decisionId) {
+        this.open = function (decisionId, referenceActions) {
             return $uibModal.open({
                 templateUrl: 'harvestpermit/decision/actions/action-list.html',
                 size: 'lg',
@@ -90,18 +91,20 @@ angular.module('app.harvestpermit.decision.actions', [])
                     decisionId: _.constant(decisionId),
                     actions: function (PermitDecisionAction) {
                         return PermitDecisionAction.query({decisionId: decisionId}).$promise;
-                    }
+                    },
+                    referenceActions: _.constant(referenceActions)
                 }
             }).result;
         };
 
         function ModalController($uibModalInstance, NotificationService, PermitDecisionAction,
                                  PermitDecisionActionEditModal, PermitDecisionActionAttachmentModal,
-                                 decisionId, actions) {
+                                 PermitDecisionActionCopyModal, decisionId, actions, referenceActions) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
                 $ctrl.actions = actions;
+                $ctrl.referenceActions = referenceActions;
             };
 
             $ctrl.close = function () {
@@ -148,6 +151,17 @@ angular.module('app.harvestpermit.decision.actions', [])
                     $ctrl.actions = res;
                 });
             }
+
+            $ctrl.copyFromReference = function () {
+                PermitDecisionActionCopyModal.open($ctrl.referenceActions, decisionId).then(function (copied) {
+                    NotificationService.showDefaultSuccess();
+                    reload();
+                }, function (status) {
+                    if (status === 'error') {
+                        NotificationService.showDefaultFailure();
+                    }
+                });
+            };
         }
     })
     .service('PermitDecisionActionEditModal', function ($uibModal) {
@@ -164,7 +178,7 @@ angular.module('app.harvestpermit.decision.actions', [])
             }).result;
         };
 
-        function ModalController($uibModalInstance, $filter, Helpers,
+        function ModalController($scope, $uibModalInstance, $filter, Helpers,$translate,
                                  PermitDecisionAction, DecisionActionConstants,
                                  action, decisionId) {
             var $ctrl = this;
@@ -183,6 +197,31 @@ angular.module('app.harvestpermit.decision.actions', [])
                 };
 
                 $ctrl.selectedAction = initAction(action);
+            };
+
+            $ctrl.onDateChanged = function (newVal, oldVal) {
+                var expectedText = getText(oldVal, $ctrl.selectedAction.actionType, $ctrl.selectedAction.communicationType);
+                var expectedDecisionText = getText(oldVal, $ctrl.selectedAction.actionType, $ctrl.selectedAction.communicationType);
+
+                selectionsChanged(expectedText, expectedDecisionText);
+            };
+
+            $ctrl.onActionTypeChanged = function (newVal, oldVal) {
+                var expectedText = getText($ctrl.selectedAction.date, oldVal, $ctrl.selectedAction.communicationType);
+                var expectedDecisionText = getText($ctrl.selectedAction.date, oldVal, $ctrl.selectedAction.communicationType);
+
+                selectionsChanged(expectedText, expectedDecisionText);
+            };
+
+            $ctrl.onCommunicationTypeChanged = function (newVal, oldVal) {
+                var expectedText = getText($ctrl.selectedAction.date, $ctrl.selectedAction.actionType, oldVal);
+                var expectedDecisionText = getText($ctrl.selectedAction.date, $ctrl.selectedAction.actionType, oldVal);
+
+                selectionsChanged(expectedText, expectedDecisionText);
+            };
+
+            $ctrl.isTextFieldsEnabled = function () {
+                return !!$ctrl.selectedAction.date && !!$ctrl.selectedAction.actionType;
             };
 
             $ctrl.save = function () {
@@ -209,6 +248,33 @@ angular.module('app.harvestpermit.decision.actions', [])
             $ctrl.cancel = function () {
                 $uibModalInstance.dismiss('cancel');
             };
+
+            function selectionsChanged(expectedText, expectedDecisionText) {
+                var currentText = $scope.form.text.$modelValue;
+                var currentDecisionText = $scope.form.decisionText.$modelValue;
+
+                var newText = getText($ctrl.selectedAction.date, $ctrl.selectedAction.actionType, $ctrl.selectedAction.communicationType);
+                if (!currentText || currentText === expectedText) {
+                    $ctrl.selectedAction.text = newText;
+                }
+                if (!currentDecisionText || currentDecisionText === expectedDecisionText) {
+                    $ctrl.selectedAction.decisionText = newText;
+                }
+            }
+
+            function getText(date, actionType, communicationType) {
+                var dateFilter = $filter('date');
+                var text = date ? dateFilter(date, 'd.M.yyyy') : '';
+                if (actionType) {
+                    var transActionType = $translate.instant('decision.action.actionType.' + actionType);
+                    text = text + " " + transActionType;
+                }
+                if (communicationType) {
+                    text = text + (text && actionType ? ', ' : ' ');
+                    text = text + $translate.instant('decision.action.communicationType.' + communicationType);
+                }
+                return text;
+            }
         }
     })
 
@@ -288,5 +354,63 @@ angular.module('app.harvestpermit.decision.actions', [])
                     $ctrl.attachments = result;
                 });
             }
+        }
+    })
+
+    .service('PermitDecisionActionCopyModal', function ($uibModal) {
+        this.open = function (referenceActions, decisionId) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/decision/actions/action-copy.html',
+                size: 'lg',
+                controllerAs: '$ctrl',
+                controller: ModalController,
+                resolve: {
+                    referenceActions: _.constant(referenceActions),
+                    decisionId: _.constant(decisionId)
+                }
+            }).result;
+        };
+
+        function ModalController($uibModalInstance, $filter, Helpers, PermitDecisionAction, referenceActions, decisionId) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.referenceActionList = _.map(referenceActions, function (refAction) {
+                    return {
+                        selected: false,
+                        action: refAction
+                    };
+                });
+            };
+
+            $ctrl.save = function () {
+                var copied = _.chain($ctrl.referenceActionList)
+                    .filter(function (refAction) {
+                        return refAction.selected === true;
+                    })
+                    .map(function (refAction) {
+                        var action = _.pick(refAction.action,
+                            ['actionType', 'communicationType', 'text', 'decisionText']);
+                        action.pointOfTime = Helpers.dateTimeToString(moment());
+                        return action;
+                    })
+                    .value();
+
+                PermitDecisionAction.createActions({decisionId: decisionId}, copied).$promise.then(function () {
+                    $uibModalInstance.close();
+                }, function () {
+                    $uibModalInstance.dismiss('error');
+                });
+            };
+
+            $ctrl.cancel = function () {
+                $uibModalInstance.dismiss('cancel');
+            };
+
+            $ctrl.selectAll = function (value) {
+                _.forEach($ctrl.referenceActionList, function (refAction) {
+                    refAction.selected = value;
+                });
+            };
         }
     });

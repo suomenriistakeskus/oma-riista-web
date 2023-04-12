@@ -496,13 +496,15 @@ public class LargeCarnivoreReportExcelView extends AbstractXlsxView {
 
             final String permitNumber = permitInfo.getPermitNumber();
             if (permitNumber != null) {
-                excelHelper.appendTextCell(permitNumber, tableTextStyle);
+                excelHelper.appendTextCell(permitNumber, tableTextStyle)
+                        .appendTextCell(localiser.getTranslation(permitInfo.getDecisionType()), tableTextStyle);
             } else {
-                excelHelper.appendNumberCell(permitInfo.getApplicationNumber(), tableTextStyle);
+                excelHelper.appendNumberCell(permitInfo.getApplicationNumber(), tableTextStyle)
+                        .appendTextCell(localiser.getTranslation("LargeCarnivoreReportExcel.application"), tableTextStyle);
             }
 
             excelHelper
-                    .appendTextCell(localiser.getTranslation(permitInfo.getDecisionType()), tableTextStyle)
+
                     .appendDateCell(DateUtil.toLocalDateNullSafe(permitInfo.getDecisionTime()), tableDateStyle);
 
             final StringBuilder sb = new StringBuilder();
@@ -519,14 +521,13 @@ public class LargeCarnivoreReportExcelView extends AbstractXlsxView {
             }
             excelHelper
                     .appendTextCell(sb.toString(), tableTextStyle)
-                    .appendNumberCell(permitInfo.getApplied(), tableTextStyle);
+                    .appendNumberCell(permitInfo.getApplied(), tableTextStyle)
+                    .appendNumberCell(permitInfo.getGranted(), tableTextStyle);
 
             if (permitNumber != null) {
-                excelHelper.appendNumberCell(permitInfo.getGranted(), tableTextStyle);
                 excelHelper.appendNumberCell(permitInfo.getHarvests(), tableTextStyle);
             } else {
-                excelHelper.appendTextCell("", tableTextStyle)
-                        .appendTextCell("", tableTextStyle);
+                excelHelper.appendTextCell("", tableTextStyle);
             }
 
             excelHelper
@@ -658,7 +659,7 @@ public class LargeCarnivoreReportExcelView extends AbstractXlsxView {
                 "age",
                 "weight",
                 "reason",
-                "otherReason",
+                "reasonDescription",
                 "source",
                 "otherSource",
                 "municipality",
@@ -702,9 +703,9 @@ public class LargeCarnivoreReportExcelView extends AbstractXlsxView {
                     .appendTextCell(localiser.getTranslation(deceased.getAge()), tableTextStyle)
                     .appendNumberCell(deceased.getWeight(), tableTextStyle)
                     .appendTextCell(localiser.getTranslation(deceased.getCause()), tableTextStyle)
-                    .appendTextCell(deceased.getCauseOther(), tableTextStyle)
+                    .appendTextCell(deceased.getCauseDescription(), tableTextStyle)
                     .appendTextCell(localiser.getTranslation(deceased.getSource()), tableTextStyle)
-                    .appendTextCell(deceased.getSourceOther(), tableTextStyle);
+                    .appendTextCell(deceased.getSourceDescription(), tableTextStyle);
 
             final OrganisationNameDTO municipality = deceased.getMunicipality();
             excelHelper

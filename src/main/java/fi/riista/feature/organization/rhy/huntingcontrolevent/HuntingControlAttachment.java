@@ -2,6 +2,7 @@ package fi.riista.feature.organization.rhy.huntingcontrolevent;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
+import fi.riista.util.jpa.CriteriaUtils;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
@@ -57,6 +58,7 @@ public class HuntingControlAttachment extends LifecycleEntity<Long> {
     }
 
     public void setHuntingControlEvent(final HuntingControlEvent huntingControlEvent) {
+        CriteriaUtils.updateInverseCollection(HuntingControlEvent_.attachments, this, this.huntingControlEvent, huntingControlEvent);
         this.huntingControlEvent = huntingControlEvent;
     }
 

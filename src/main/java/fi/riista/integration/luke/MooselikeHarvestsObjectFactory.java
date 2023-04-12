@@ -18,7 +18,6 @@ import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHunti
 import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.SpeciesEstimatedAppearance;
 import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.SpeciesEstimatedAppearanceWithPiglets;
 import fi.riista.feature.organization.address.Address;
-import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Address;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Amount;
@@ -134,7 +133,6 @@ public class MooselikeHarvestsObjectFactory {
 
     public static LEM_Club createClub(final @Nonnull HuntingClub club,
                                       final @Nonnull HarvestPermit moosePermit,
-                                      final @Nonnull Map<Long, Occupation> clubContacts,
                                       final @Nonnull Map<Long, List<HuntingClubGroup>> groups,
                                       final @Nonnull Map<Long, List<GroupHuntingDay>> groupDays,
                                       final @Nonnull Map<Long, List<Harvest>> dayHarvests,
@@ -149,11 +147,6 @@ public class MooselikeHarvestsObjectFactory {
         dto.setNameFinnish(club.getNameFinnish());
         dto.setRhyOfficialCode(club.getParentOrganisation().getOfficialCode());
         dto.setGeoLocation(createGeoLocation(club.getGeoLocation()));
-        dto.setContactPerson(Optional.of(club.getId())
-                .map(clubContacts::get)
-                .map(Occupation::getPerson)
-                .map(MooselikeHarvestsObjectFactory::createPerson)
-                .orElse(null));
 
         final boolean hasOverride = clubOverrides.containsKey(club.getId());
 

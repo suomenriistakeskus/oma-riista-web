@@ -7,8 +7,11 @@ import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.test.DefaultEntitySupplierProvider;
+import fi.riista.util.MockTimeProvider;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.joda.time.LocalDate;
+import org.junit.After;
+import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
@@ -35,13 +38,9 @@ import static fi.riista.feature.permit.PermitTypeCode.LAW_SECTION_TEN_BASED;
 import static fi.riista.feature.permit.PermitTypeCode.MAMMAL_DAMAGE_BASED;
 import static fi.riista.feature.permit.decision.PermitDecision.DecisionType.HARVEST_PERMIT;
 import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmount.NO_PAYMENT;
-import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmount.PRICE_DEROGATION;
-import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmount.PRICE_DOG_EVENT;
-import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmount.PRICE_FORBIDDEN_METHOD;
-import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmount.PRICE_IMPORTING;
-import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmount.PRICE_LAW_SECTION_TEN;
-import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmount.PRICE_MOOSELIKE;
-import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmount.PRICE_RESEARCH;
+import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmountCommon.PRICE_DEROGATION;
+import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmountCommon.PRICE_FORBIDDEN_METHOD;
+import static fi.riista.feature.permit.decision.PermitDecisionPaymentAmountCommon.PRICE_RESEARCH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assume.assumeTrue;
@@ -49,63 +48,106 @@ import static org.junit.Assume.assumeTrue;
 @RunWith(Theories.class)
 public class PermitDecisionPaymentAmountTest implements DefaultEntitySupplierProvider {
 
+    @DataPoints("dates")
+    public static final LocalDate[] DATES = {
+            new LocalDate(2021, 12,31),
+            new LocalDate(2022, 1, 1)
+    };
+
     private final EntitySupplier model = getEntitySupplier();
 
-    @Test
-    public void testMooselike() {
-        assertPayment(MOOSELIKE, PermitTypeCode.MOOSELIKE, PRICE_MOOSELIKE);
+    @After
+    public void tearDown() {
+        MockTimeProvider.resetMock();
     }
 
-    @Test
-    public void testMooselikeNew() {
+    @Theory
+    public void testMooselike(final LocalDate date) {
+        MockTimeProvider.mockTime(date.toDate().getTime());
+        final BigDecimal expectedPaymentAmount = date.getYear() >= 2022 ?
+                PermitDecisionPaymentAmount2022.PRICE_MOOSELIKE :
+                PermitDecisionPaymentAmount2021.PRICE_MOOSELIKE;
+
+        assertPayment(MOOSELIKE, PermitTypeCode.MOOSELIKE, expectedPaymentAmount);
+    }
+
+    @Theory
+    public void testMooselikeNew(final LocalDate date) {
+        MockTimeProvider.mockTime(date.toDate().getTime());
+
         final List<BigDecimal> options = getDecisionPaymentOptionsFor(MOOSELIKE_NEW, PermitTypeCode.MOOSELIKE_AMENDMENT, HARVEST_PERMIT);
 
         assertThat(options, hasSize(1));
         assertThat(options, Matchers.contains(NO_PAYMENT));
     }
 
-    @Test
-    public void testBird() {
+    @Theory
+    public void testBird(final LocalDate date) {
+        MockTimeProvider.mockTime(date.toDate().getTime());
+
         assertPayment(BIRD, ANNUAL_UNPROTECTED_BIRD, PRICE_DEROGATION);
         assertPayment(BIRD, FOWL_AND_UNPROTECTED_BIRD, PRICE_DEROGATION);
     }
 
-    @Test
-    public void testMammal() {
+    @Theory
+    public void testMammal(final LocalDate date) {
+        MockTimeProvider.mockTime(date.toDate().getTime());
+
         assertPayment(MAMMAL, MAMMAL_DAMAGE_BASED, PRICE_DEROGATION);
     }
 
-    @Test
-    public void testDogPermit() {
-        assertPayment(DOG_DISTURBANCE, DOG_DISTURBANCE_BASED, PRICE_DOG_EVENT);
-        assertPayment(DOG_UNLEASH, DOG_UNLEASH_BASED, PRICE_DOG_EVENT);
+    @Theory
+    public void testDogPermit(final LocalDate date) {
+        MockTimeProvider.mockTime(date.toDate().getTime());
+        final BigDecimal expectedPaymentAmount = date.getYear() >= 2022 ?
+                PermitDecisionPaymentAmount2022.PRICE_DOG_EVENT :
+                PermitDecisionPaymentAmount2021.PRICE_DOG_EVENT;
+
+        assertPayment(DOG_DISTURBANCE, DOG_DISTURBANCE_BASED, expectedPaymentAmount);
+        assertPayment(DOG_UNLEASH, DOG_UNLEASH_BASED, expectedPaymentAmount);
     }
 
-    @Test
-    public void testSectionTen() {
-        assertPayment(LAW_SECTION_TEN, LAW_SECTION_TEN_BASED, PRICE_LAW_SECTION_TEN);
+    @Theory
+    public void testSectionTen(final LocalDate date) {
+        MockTimeProvider.mockTime(date.toDate().getTime());
+        final BigDecimal expectedPaymentAmount = date.getYear() >= 2022 ?
+                PermitDecisionPaymentAmount2022.PRICE_LAW_SECTION_TEN :
+                PermitDecisionPaymentAmount2021.PRICE_LAW_SECTION_TEN;
+
+        assertPayment(LAW_SECTION_TEN, LAW_SECTION_TEN_BASED, expectedPaymentAmount);
     }
 
-    @Test
-    public void testDeportation() {
+    @Theory
+    public void testDeportation(final LocalDate date) {
+        MockTimeProvider.mockTime(date.toDate().getTime());
+
         final List<BigDecimal> options = getDecisionPaymentOptionsFor(DEPORTATION, PermitTypeCode.DEPORTATION,  HARVEST_PERMIT);
 
         assertThat(options, hasSize(1));
         assertThat(options, Matchers.contains(NO_PAYMENT));
     }
 
-    @Test
-    public void testResearch() {
+    @Theory
+    public void testResearch(final LocalDate date) {
+        MockTimeProvider.mockTime(date.toDate().getTime());
+
         assertPayment(RESEARCH, PermitTypeCode.RESEARCH, PRICE_RESEARCH);
     }
 
-    @Test
-    public void testImporting() {
-        assertPayment(IMPORTING, PermitTypeCode.IMPORTING, PRICE_IMPORTING);
+    @Theory
+    public void testImporting(final LocalDate date) {
+        MockTimeProvider.mockTime(date.toDate().getTime());
+        final BigDecimal expectedPaymentAmount = date.getYear() >= 2022 ?
+                PermitDecisionPaymentAmount2022.PRICE_IMPORTING :
+                PermitDecisionPaymentAmount2021.PRICE_IMPORTING;
+
+        assertPayment(IMPORTING, PermitTypeCode.IMPORTING, expectedPaymentAmount);
     }
 
-    @Test
-    public void testForbiddenMethods() {
+    @Theory
+    public void testForbiddenMethods(final LocalDate date) {
+        MockTimeProvider.mockTime(date.toDate().getTime());
+
         assertPayment(BIRD, FORBIDDEN_METHODS, PRICE_FORBIDDEN_METHOD);
         assertPayment(MAMMAL, FORBIDDEN_METHODS, PRICE_FORBIDDEN_METHOD);
     }
@@ -119,8 +161,12 @@ public class PermitDecisionPaymentAmountTest implements DefaultEntitySupplierPro
     }
 
     @Theory
-    public void testAllOtherTypesHaveNoPaymentOptions(HarvestPermitCategory category, PermitDecision.DecisionType decisionType) {
+    public void testAllOtherTypesHaveNoPaymentOptions(final LocalDate date,
+                                                      final HarvestPermitCategory category,
+                                                      final PermitDecision.DecisionType decisionType) {
         assumeTrue(decisionType != HARVEST_PERMIT);
+
+        MockTimeProvider.mockTime(date.toDate().getTime());
 
         final String permitTypeCode = PermitTypeCode.getPermitTypeCode(category, 1);
         final List<BigDecimal> options = getDecisionPaymentOptionsFor(category, permitTypeCode, decisionType);

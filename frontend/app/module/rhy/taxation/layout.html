@@ -1,0 +1,295 @@
+<div class="taxation-container">
+    <div class="row">
+        <div class="col-xs-12">
+            <h3 translate="rhy.taxationPlan.title"></h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12 col-sm-3">
+            <form name="taxationForm" role="form" novalidate autocomplete="off">
+                <div class="form-group">
+                    <label for="mooseAreaSelect" translate="rhy.taxationPlan.selectedMooseArea"></label>
+                    <select name="mooseAreaSelect" id="mooseAreaSelect"
+                            class="form-control"
+                            ng-model="$ctrl.selectedMooseArea"
+                            ng-change="$ctrl.onMooseAreaChange()"
+                            ng-options="area.name for area in $ctrl.mooseAreas">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="yearSelect" translate="rhy.taxationPlan.selectedYear"></label>
+                    <select name="yearSelect" id="yearSelect"
+                            class="form-control"
+                            ng-model="$ctrl.selectedYear"
+                            ng-disabled="$ctrl.selectedMooseArea == null"
+                            ng-change="$ctrl.onHuntingYearChange()"
+                            ng-options="year.name for year in $ctrl.decoratedYears| orderBy:'year'">
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="gameSpecies" translate="rhy.taxationPlan.selectedSpecies"></label>
+
+                    <select name="gameSpecies" id="gameSpecies"
+                            class="form-control"
+                            ng-model="$ctrl.selectedSpecies"
+                            ng-disabled="$ctrl.selectedYear == null"
+                            ng-options="s.name for s in $ctrl.availableSpecies | orderBy:'name' track by s.code"
+                            ng-change="$ctrl.onSpeciesChange()">
+                    </select>
+                </div>
+
+                <div class="btn-group btn-block" uib-dropdown dropdown-append-to-body>
+                    <button type="button"
+                            class="btn btn-default btn-block"
+                            ng-disabled="$ctrl.selectedSpecies == null"
+                            uib-dropdown-toggle>
+                        <span translate="global.button.exportToExcel"></span>
+                        <span class="caret"></span>
+                    </button>
+
+                    <ul class="dropdown-menu" uib-dropdown-menu>
+                        <li ng-show="$ctrl.isAdminOrModerator || $ctrl.isCoordinator">
+                            <a ng-click="$ctrl.exportExcel('all')">
+                                <span class="glyphicon glyphicon-export"></span> &nbsp;
+                                <span translate="rhy.taxationPlan.excel.all"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a ng-click="$ctrl.exportExcel('rhy')">
+                                <span class="glyphicon glyphicon-export"></span> &nbsp;
+                                <span translate="rhy.taxationPlan.excel.rhy"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+
+            </form>
+        </div>
+        <div class="col-xs-12 col-sm-9" ng-class="$ctrl.showNewTaxationView() ? 'show' : 'hidden'">
+            <div class="row">
+                <div class="col-xs-12">
+                    <h4>{{$ctrl.selectedMooseArea.name}} > {{$ctrl.rhy.name}} > {{$ctrl.selectedSpecies.name}}:
+                        {{$ctrl.selectedYear.name}}</h4>
+                </div>
+                <div class="col-xs-12" ng-class="$ctrl.canEdit()? 'show' : 'hidden'">
+                    <button type="submit" class="btn btn-primary"
+                            ng-click="$ctrl.editTaxation()"
+                            translate="rhy.taxationPlan.createNew"></button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-9" ng-class="$ctrl.showFilledTaxationView() ? 'show' : 'hidden'">
+            <div class="row">
+                <div class="col-xs-12" ng-class="$ctrl.isDraft() ? 'unconfirmed' : 'hidden'">
+                    <span class="text-danger fa fa-exclamation-triangle"></span>
+                    <span translate="rhy.taxationPlan.unconfirmed"></span>
+                </div>
+                <div class="col-xs-12">
+                    <h4>{{$ctrl.selectedMooseArea.name}} > {{$ctrl.rhy.name}} > {{$ctrl.selectedSpecies.name}}:
+                        {{$ctrl.selectedYear.name}}</h4>
+                </div>
+            </div>
+            <div class="row" ng-switch="$ctrl.data.hasTaxationPlanning">
+                <div class="col-xs-12">
+                    <table class="table table-condensed table-striped">
+                        <tbody>
+                        <tr ng-switch-when="false">
+                            <td colspan="2">
+                                <span translate="rhy.taxationPlan.noTaxationPlanning"></span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table table-condensed table-striped" ng-switch-when="true">
+                        <tbody>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.planningBasisPopulation"></span>
+                            </td>
+                            <td>
+                                <span ng-bind="$ctrl.data.planningBasisPopulation"></span>
+                                <span translate="rhy.taxationPlan.pieces"></span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <b ng-switch-when="true" translate="rhy.taxationPlan.planningGoalTitle"></b>
+
+                    <table class="table table-condensed table-striped" ng-switch-when="true">
+                        <tbody>
+
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.plannedRemainingPopulation"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.plannedRemainingPopulation}} <span
+                                    translate="rhy.taxationPlan.piecesPer1000HA"></span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.genderDistribution"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.genderDistribution}} <span
+                                    translate="rhy.taxationPlan.femalePerMale"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.youngPercent"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.youngPercent}} %
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <b ng-switch-when="true" translate="rhy.taxationPlan.plannedCatchTitle"></b>
+
+                    <table class="table table-condensed table-striped" ng-switch-when="true">
+                        <tbody>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.plannedUtilizationRateOfThePermits"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.plannedUtilizationRateOfThePermits}} %
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.shareOfBankingPermits"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.shareOfBankingPermits}} %
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.plannedPermit"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.plannedPermitMin}} - {{$ctrl.data.plannedPermitMax}}
+                                <span translate="rhy.taxationPlan.pieces"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.plannedCatch"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.plannedCatchMin}} - {{$ctrl.data.plannedCatchMax}}
+                                <span translate="rhy.taxationPlan.pieces"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.plannedPermitDensity"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.plannedPermitDensityMin}} - {{$ctrl.data.plannedPermitDensityMax}}
+                                <span translate="rhy.taxationPlan.piecesPer1000HA"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.plannedPreyDensity"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.plannedPreyDensityMin}} - {{$ctrl.data.plannedPreyDensityMax}}
+                                <span translate="rhy.taxationPlan.piecesPer1000HA"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.plannedCatchYoungPercent"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.plannedCatchYoungPercent}} %
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.plannedCatchMalePercent"></span>
+                            </td>
+                            <td>
+                                {{$ctrl.data.plannedCatchMalePercent}} %
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <b translate="rhy.taxationPlan.consultationAndApprovalTitle"></b>
+
+                    <table class="table table-condensed table-striped">
+                        <tbody>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.stakeholdersConsulted"></span>
+                            </td>
+                            <td>
+                                <span ng-bind="$ctrl.data.stakeholdersConsulted | date:'d.M.yyyy'"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="left-col">
+                                <span translate="rhy.taxationPlan.approvedAtTheBoardMeeting"></span>
+                            </td>
+                            <td>
+                                <span ng-bind="$ctrl.data.approvedAtTheBoardMeeting | date:'d.M.yyyy'"></span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row" ng-class="$ctrl.data.justification ? '' : 'hidden'">
+                <div class="col-xs-12">
+                    <span class="data-label" translate="rhy.taxationPlan.justification"></span>
+                </div>
+                <div class="col-xs-12">
+                    {{$ctrl.data.justification}}
+                </div>
+            </div>
+
+            <div class="row" ng-class="$ctrl.data.attachments && $ctrl.data.attachments.length > 0 ? '' : 'hidden'">
+                <div class="col-xs-12">
+                    <span class="data-label" translate="rhy.taxationPlan.attachments"></span>
+                </div>
+                <div class="col-xs-12">
+                    <ul class="list-unstyled">
+                        <li ng-repeat="attachment in $ctrl.data.attachments track by attachment.id">
+                            <a ng-click="$ctrl.downloadAttachment(attachment.id)" ng-bind="attachment.filename"></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <span class="data-label" translate="rhy.taxationPlan.saved"></span>: <span
+                        ng-bind="$ctrl.data.modifiedDate | date:'d.M.yyyy'"></span>
+                    {{$ctrl.data.modifiedUser}}
+                </div>
+            </div>
+
+            <div class="row button-row" ng-class="$ctrl.canEdit() ? 'show' : 'hidden'">
+                <div class="col-xs-12">
+                    <button type="submit" class="btn btn-primary"
+                            ng-click="$ctrl.editTaxation()"
+                            translate="global.button.edit"></button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

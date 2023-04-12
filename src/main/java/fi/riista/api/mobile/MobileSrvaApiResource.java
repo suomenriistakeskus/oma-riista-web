@@ -1,14 +1,19 @@
 package fi.riista.api.mobile;
 
-import fi.riista.feature.gamediary.mobile.MobileSrvaCrudFeature;
+import fi.riista.feature.gamediary.mobile.MobileDeletedDiaryEntriesDTO;
+import fi.riista.feature.gamediary.mobile.MobileDiaryEntryPageDTO;
+import fi.riista.feature.gamediary.mobile.srva.MobileSrvaCrudFeature;
+import fi.riista.feature.gamediary.mobile.srva.MobileSrvaEventDTO;
 import fi.riista.feature.gamediary.srva.SrvaEventSpecVersion;
-import fi.riista.feature.gamediary.mobile.MobileSrvaEventDTO;
 import fi.riista.feature.gamediary.srva.SrvaParametersDTO;
 import fi.riista.util.Patterns;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
+import org.joda.time.LocalDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,8 +39,7 @@ public class MobileSrvaApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/parameters", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public SrvaParametersDTO getSrvaParameters(@RequestParam final int srvaEventSpecVersion) {
-        // specVersion not used since currently parameters are same for mobile and for web
-        return mobileSrvaCrudFeature.getSrvaParameters();
+        return mobileSrvaCrudFeature.getSrvaParameters(SrvaEventSpecVersion.fromIntValue(srvaEventSpecVersion));
     }
 
     @RequestMapping(value = "/srvaevent", method = RequestMethod.POST,
@@ -79,5 +83,22 @@ public class MobileSrvaApiResource {
         final SrvaEventSpecVersion specVersion = SrvaEventSpecVersion.fromIntValue(srvaEventSpecVersion);
 
         return mobileSrvaCrudFeature.listSrvaEventsForActiveUser(specVersion);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @RequestMapping(value = "/srvaevents/page", method = RequestMethod.GET)
+    public MobileDiaryEntryPageDTO<MobileSrvaEventDTO> getSrvaEventPage(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") final LocalDateTime modifiedAfter,
+            @RequestParam final int srvaEventSpecVersion) {
+
+        final SrvaEventSpecVersion specVersion = SrvaEventSpecVersion.fromIntValue(srvaEventSpecVersion);
+        return mobileSrvaCrudFeature.fetchPageForActiveUser(modifiedAfter, specVersion);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/srvaevents/deleted", produces = MediaType.APPLICATION_JSON_VALUE)
+    public MobileDeletedDiaryEntriesDTO getDeletedEvents(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss") final LocalDateTime deletedAfter) {
+        return mobileSrvaCrudFeature.getDeletedEvents(deletedAfter);
     }
 }

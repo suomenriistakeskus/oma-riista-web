@@ -39,6 +39,15 @@ angular.module('app.dashboard', [])
             };
         }
     })
+    .component('dashboardPois', {
+        templateUrl: 'dashboard/pois.html',
+        controller: function ($resource) {
+            var $ctrl = this;
+            $ctrl.$onInit = function () {
+                $ctrl.metrics = $resource('/api/v1/dashboard/pois').get();
+            };
+        }
+    })
     .component('dashboardPdf', {
         templateUrl: 'dashboard/pdf.html',
         controller: function ($resource) {
@@ -146,6 +155,10 @@ angular.module('app.dashboard', [])
     })
     .component('dashboardHarvestSummary', {
         templateUrl: 'dashboard/harvest_summary.html',
+        bindings: {
+          endPoint: '<'
+        },
+        controllerAs: '$ctrl',
         controller: function (FormPostService, HuntingYearService, Helpers, GameDiaryParameters) {
             var $ctrl = this;
 
@@ -169,7 +182,7 @@ angular.module('app.dashboard', [])
                 var organisationType = $ctrl.rhyCode ? 'RHY' : $ctrl.areaCode ? 'RKA' : 'RK';
                 var officialCode = $ctrl.rhyCode || $ctrl.areaCode;
 
-                FormPostService.submitFormUsingBlankTarget('api/v1/dashboard/harvestSummary', {
+                FormPostService.submitFormUsingBlankTarget($ctrl.endPoint, {
                     harvestReportOnly: $ctrl.harvestReportOnly,
                     officialHarvestOnly: $ctrl.officialHarvestOnly,
                     beginDate: Helpers.dateToString($ctrl.begin),

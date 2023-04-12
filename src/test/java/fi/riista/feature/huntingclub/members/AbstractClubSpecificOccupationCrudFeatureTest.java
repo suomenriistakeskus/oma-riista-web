@@ -31,10 +31,16 @@ public abstract class AbstractClubSpecificOccupationCrudFeatureTest extends Embe
                                           final ContactInfoShare share,
                                           final boolean canSeeRegistered) {
 
+        // Create club membership
         final Occupation member = createMember(
-                org,
-                org.getOrganisationType() == OrganisationType.CLUB ? OccupationType.SEURAN_JASEN : OccupationType.RYHMAN_JASEN,
+                org.getOrganisationType() == OrganisationType.CLUB ? org : org.getParentOrganisation(),
+                OccupationType.SEURAN_JASEN,
                 share);
+
+        if ( org.getOrganisationType() == OrganisationType.CLUBGROUP) {
+            model().newOccupation(org, member.getPerson(), OccupationType.RYHMAN_JASEN);
+        }
+
         createNewUser(member.getPerson().getByName(), member.getPerson());
 
         final Occupation user = createMember(org, userType, null);
@@ -54,7 +60,7 @@ public abstract class AbstractClubSpecificOccupationCrudFeatureTest extends Embe
                             getExpected(userCanSeeContactInfo, memberPerson),
                             Tuple.of(dtoPerson.getEmail(), dtoPerson.getPhoneNumber())
                     );
-                    assertEquals(canSeeRegistered, Optional.ofNullable(dtoPerson.getRegistered()).map(Boolean::valueOf).orElse(false));
+                    assertEquals(canSeeRegistered, Optional.ofNullable(dtoPerson.getRegistered()).orElse(false));
                     assertAddress(userCanSeeContactInfo, memberPerson.getAddress(), dtoPerson.getAddress());
                 });
     }

@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mooselike.applicant', ['app.metada
                 templateUrl: 'harvestpermit/applications/mooselike/applicant/applicant.html',
                 controller: 'MooselikePermitWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

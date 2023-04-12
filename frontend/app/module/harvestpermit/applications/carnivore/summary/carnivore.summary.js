@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.carnivore.summary', ['app.metadata
                 templateUrl: 'harvestpermit/applications/carnivore/summary/summary.html',
                 controller: 'CarnivorePermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, CarnivorePermitApplication) {
                         return CarnivorePermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -160,7 +161,7 @@ angular.module('app.harvestpermit.application.carnivore.summary', ['app.metadata
                 ? $translate.instant('harvestpermit.wizard.summary.sendConfirmation.bodyLate')
                 : $translate.instant('harvestpermit.wizard.summary.sendConfirmation.body');
 
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(modalTitle, modalBody);
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(modalTitle, modalBody);
         }
 
         function getDeliveryInfoFromContactPerson(person) {

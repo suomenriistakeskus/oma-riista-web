@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.gamemanagement.period', ['app.meta
                 templateUrl: 'harvestpermit/applications/gamemanagement/period/period.html',
                 controller: 'GameManagementPermitWizardPeriodController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesPeriod: function (GameManagementPermitApplication, applicationId) {
                         return GameManagementPermitApplication.getSpeciesPeriod({id: applicationId}).$promise;

@@ -7,6 +7,7 @@ import fi.riista.feature.announcement.crud.AnnouncementDTO;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.mail.queue.MailMessage;
 import fi.riista.feature.mail.queue.MailMessageRepository;
+import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
@@ -21,10 +22,10 @@ import javax.annotation.Resource;
 import java.util.EnumSet;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class AnnouncementCrudFeatureTest extends EmbeddedDatabaseTest {
@@ -45,9 +46,17 @@ public class AnnouncementCrudFeatureTest extends EmbeddedDatabaseTest {
     private ThreadPoolTaskScheduler commonTaskScheduler;
 
     private void awaitAsyncTasks() {
-        try {
-            commonTaskScheduler.submit(() -> 1).get();
-        } catch (Exception ignore) {
+        int timeout = 0;
+        while (commonTaskScheduler.getActiveCount() > 0) {
+            try {
+                timeout++;
+                if (timeout > 100) {
+                    // 1 second timeout
+                    assertFalse("Async tasks not finished in time", true);
+                }
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+            }
         }
     }
 
@@ -201,7 +210,8 @@ public class AnnouncementCrudFeatureTest extends EmbeddedDatabaseTest {
         final HuntingClub club = model().newHuntingClub();
         final SystemUser moderator = createNewModerator();
 
-        model().newHuntingClubMember(club, OccupationType.SEURAN_JASEN);
+        final Occupation member = model().newHuntingClubMember(club, OccupationType.SEURAN_JASEN);
+        createNewUser("member", member.getPerson());
 
         final AnnouncementDTO dto = new AnnouncementDTO();
         dto.setSubject("AnnouncementSubject");
@@ -241,6 +251,7 @@ public class AnnouncementCrudFeatureTest extends EmbeddedDatabaseTest {
         final Person person = model().newPersonWithAddress();
         person.setRhyMembership(rhy);
         person.setEmail("member@rhy.fi");
+        createNewUser("member", person);
 
         final AnnouncementDTO dto = new AnnouncementDTO();
         dto.setSubject("AnnouncementSubject");

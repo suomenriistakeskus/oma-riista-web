@@ -9,8 +9,11 @@ import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
+import fi.riista.util.MockTimeProvider;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
+import org.joda.time.LocalDate;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,8 +39,14 @@ public class HuntingLeaderFinderServiceTest extends EmbeddedDatabaseTest {
     private Riistanhoitoyhdistys rhy;
 
     @Before
-    public void setUpRhy() {
+    public void setup() {
         rhy = model().newRiistanhoitoyhdistys();
+        MockTimeProvider.mockTime(DateUtil.toDateTimeNullSafe(new LocalDate(2022, 8, 2)).getMillis());
+    }
+
+    @After
+    public void tearDown() {
+        MockTimeProvider.resetMock();
     }
 
     @Test

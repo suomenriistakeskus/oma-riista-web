@@ -2,9 +2,13 @@ package fi.riista.feature.gis.zone.query;
 
 import fi.riista.util.GISUtils;
 import fi.riista.util.PolygonConversionUtil;
+import org.apache.commons.lang3.ArrayUtils;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
@@ -39,12 +43,16 @@ public class GetCombinedFeatureCollectionQuery {
         final List<Feature> features = jdbcOperations.query(SQL, params, (rs, i) -> {
             final Geometry geometry = GISUtils.readFromPostgisWkb(rs.getBytes("geom"), srid);
             final Geometry validGeometry = geometry.isValid() ? geometry : geometry.buffer(0);
+            // Some external counterpart expects MultiPolygon.
+            final Geometry multiGeometry = validGeometry instanceof Polygon
+                    ? new MultiPolygon((ArrayUtils.toArray((Polygon)validGeometry)), new GeometryFactory())
+                    : validGeometry;
 
             final Feature feature = new Feature();
 
             feature.setId(Long.toString(rs.getLong("zone_id")));
             feature.setBbox(GISUtils.getGeoJsonBBox(geometry));
-            feature.setGeometry(PolygonConversionUtil.javaToGeoJSON(validGeometry));
+            feature.setGeometry(PolygonConversionUtil.javaToGeoJSON(multiGeometry));
 
             return feature;
         });

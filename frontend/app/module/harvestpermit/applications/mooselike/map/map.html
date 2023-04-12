@@ -1,6 +1,6 @@
 <div class="row">
-    <div class="col-xs-10 col-xs-offset-1">
-        <div class="alert alert-info">
+    <div class="col-xs-12 col-sm-10 col-sm-offset-1">
+        <div class="alert alert-info wizard-info">
             <span class="fa fa-info-circle"></span>
 
             <div class="alert-content">
@@ -14,7 +14,7 @@
             </div>
         </div>
     </div>
-    <div class="col-xs-10 col-xs-offset-1">
+    <div class="col-xs-12 col-sm-10 col-sm-offset-1">
         <mooselike-permit-application-area-details
                 permit-area="$ctrl.permitArea"
                 on-export-mml-excel="$ctrl.exportMmlExcel()"></mooselike-permit-application-area-details>
@@ -22,7 +22,7 @@
 </div>
 
 <div class="row">
-    <div class="col-xs-10 col-xs-offset-1">
+    <div class="col-xs-12 col-sm-10 col-sm-offset-1">
         <uib-tabset type="pills" justified="true" active="$ctrl.activeTabIndex">
             <uib-tab classes="btn-lg" index="0" select="$ctrl.selectTab(0)"
                      heading="{{'harvestpermit.wizard.map.applicationAreaMap' | translate}}">

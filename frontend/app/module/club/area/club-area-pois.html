@@ -1,0 +1,119 @@
+<div class="map-editor-layout">
+    <div class="top-left-column">
+        <form>
+            <div class="buttons">
+                <div class="btn-group btn-group-justified">
+                    <div class="btn-group">
+                        <button type="button"
+                                class="btn btn-primary"
+                                ng-click="$ctrl.save()">
+                            <span class="fa fa-fw fa-lg fa-floppy-o"></span>
+                            &nbsp;
+                            <span translate="global.button.save"></span>
+                        </button>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button"
+                                class="btn btn-default"
+                                ng-click="$ctrl.close()">
+                            <span class="fa fa-fw fa-lg fa-sign-out"></span>
+                            &nbsp;
+                            <span translate="global.button.exit"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <p class="area-name" ng-bind="$ctrl.area | rI18nNameFilter"></p>
+
+        <form ng-show="$ctrl.pois.length > 0">
+            <div class="row">
+                <div class="col-xs-6 form-group">
+                    <label class="control-label form-control-static" for="poiListFilter"
+                           translate="club.area.poi.poiType">
+                    </label>
+                    <select name="poiListFilter" id="poiListFilter" class="form-control"
+                            ng-options="type as ('club.area.poi.type.' +type) | translate for type in $ctrl.typeOptions"
+                            ng-model="$ctrl.filterMode" ng-change="$ctrl.filterChanged()">
+                        <option value="" translate="global.showAll"></option>
+                    </select>
+                </div>
+
+                <div class="col-xs-6 form-group">
+                    <label class="control-label form-control-static" for="poiConnectedFilter"
+                           translate="club.area.poi.connectedFilter.mode">
+                    </label>
+                    <select name="poiConnectedFilter" id="poiConnectedFilter" class="form-control"
+                            ng-options="opt as ('club.area.poi.connectedFilter.' + opt) | translate for opt in $ctrl.connectedFilterOptions"
+                            ng-model="$ctrl.connectedFilterMode" ng-change="$ctrl.filterChanged()">
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="left-column">
+        <table class="table table-condensed" style="margin-bottom: 0px;">
+            <tr>
+                <td class="col-xs-1">
+                    <input type="checkbox" name="connectAllSelection"
+                           class="form-check-input club-area-poi-connect"
+                           id="connectAllSelection"
+                           ng-model="$ctrl.selectAll"
+                           ng-change="$ctrl.selectAllChanged()"/>
+                </td>
+                <td class="col-xs-8">
+                    <label class="control-label" for="connectAllSelection">
+                        <span translate="global.button.selectAll"></span>
+                    </label>
+                </td>
+            </tr>
+        </table>
+
+        <table class="table table-condensed club-poi-list">
+            <tbody>
+            <tr ng-repeat="poi in $ctrl.pois | orderBy:'visibleId' track by poi.id"
+                ng-if="$ctrl.isPoiVisible(poi)"
+                ng-click="$ctrl.selectPoi(poi)"
+                ng-class="{'selected-poi': $ctrl.selectedPoi.id === poi.id}">
+                <td class="col-xs-1">
+                    <input type="checkbox" name="connectedToArea"
+                           class="r-non-labeled-checkbox club-area-poi-connect"
+                           id="connectedToArea"
+                           ng-model="poi.connected"
+                           ng-change="$ctrl.filterChanged()"/>
+                </td>
+                <td class="col-xs-6">
+                    <span ng-bind="::poi.visibleId"></span>
+                    <span ng-bind="::poi.description"></span>
+                </td>
+                <td class="col-xs-4 text-right">
+                    <span translate="club.area.poi.type.{{::poi.type}}"></span>
+                </td>
+                <td ng-switch="::poi.locations.length" class="col-xs-1">
+                    <span ng-switch-when="0" class="fa fa-exclamation text-danger poi-group"
+                          uib-tooltip="{{'club.area.poi.noLocationsTooltip' | translate }}"
+                          tooltip-popup-delay="0" tooltip-placement="top"></span>
+                    <span ng-switch-when="1" class="fa fa-map-marker text-primary poi-group"
+                          ng-click="$ctrl.zoomTo(poi)"></span>
+                    <div ng-switch-default="">
+                        <div class="poi-group-multi-location" ng-click="$ctrl.zoomTo(poi)"></div>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="main-column">
+        <club-poi-map
+                editable="false"
+                selected-poi="$ctrl.selectedPoi"
+                default-bounds="$ctrl.rhyBounds"
+                poi-locations="$ctrl.visibleMarkers"
+                on-marker-clicked="$ctrl.onMarkerClick(markerId)"
+                feature-collection="$ctrl.featureCollection">
+        </club-poi-map>
+    </div>
+</div>

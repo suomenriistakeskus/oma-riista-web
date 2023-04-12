@@ -3,11 +3,11 @@ package fi.riista.feature.organization.rka;
 import fi.riista.config.Constants;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.organization.OrganisationNameDTO;
-import fi.riista.feature.organization.person.PersonWithHunterNumberDTO;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.DateUtil;
 import fi.riista.util.ExcelHelper;
 import fi.riista.util.MediaTypeExtras;
+import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.ClientAnchor;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Drawing;
@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static fi.riista.util.F.mapNullable;
 import static java.util.Objects.requireNonNull;
 import static org.apache.poi.ss.usermodel.BorderStyle.NONE;
 import static org.apache.poi.ss.usermodel.BorderStyle.THIN;
@@ -41,11 +43,12 @@ public class AreaMeetingRepresentativeExcelView extends AbstractXlsxView {
 
     private final EnumLocaliser localiser;
     private final OrganisationNameDTO rka;
-    private final List<AreaMeetingRepresentativeDTO> representativeList;
+    private final List<AreaMeetingRhyRepresentativesDTO> representativeList;
+    private CellStyle wrappedTextStyle;
 
     public AreaMeetingRepresentativeExcelView(@Nonnull final EnumLocaliser localiser,
                                               @Nonnull final OrganisationNameDTO rka,
-                                              @Nonnull final List<AreaMeetingRepresentativeDTO> representativeList) {
+                                              @Nonnull final List<AreaMeetingRhyRepresentativesDTO> representativeList) {
         this.localiser = requireNonNull(localiser);
         this.rka = requireNonNull(rka);
         this.representativeList = requireNonNull(representativeList);
@@ -61,6 +64,8 @@ public class AreaMeetingRepresentativeExcelView extends AbstractXlsxView {
         ContentDispositionUtil.addHeader(response, createFilename());
 
         final ExcelHelper excelHelper = new ExcelHelper(workbook);
+        wrappedTextStyle = workbook.createCellStyle();
+        wrappedTextStyle.setWrapText(true);
 
         appendPreamble(excelHelper);
 
@@ -149,16 +154,32 @@ public class AreaMeetingRepresentativeExcelView extends AbstractXlsxView {
     private void appendTableContent(final ExcelHelper excelHelper) {
         representativeList.stream()
                 .forEach(r -> excelHelper.appendRow()
-                        .appendTextCell(formatPerson(r.getPerson())).withBorders(THIN, THIN, THIN, THIN)
+
+                        .appendTextCell(mapNullable(
+                                r.getRepresentatives(),
+                                this::formatRepresentativeList), wrappedTextStyle).withBorders(THIN, THIN, THIN, THIN)
+
                         .appendTextCell("", HorizontalAlignment.CENTER).withBorders(THIN, THIN, THIN, THIN)
-                        .appendTextCell(formatPerson(r.getSubstitute())).withBorders(THIN, THIN, THIN, THIN)
+
+                        .appendTextCell(mapNullable(
+                                r.getSubstituteRepresentatives(),
+                                this::formatRepresentativeList), wrappedTextStyle).withBorders(THIN, THIN, THIN, THIN)
+
                         .appendTextCell("", HorizontalAlignment.CENTER).withBorders(THIN, THIN, THIN, THIN)
-                        .appendTextCell(localiser.getTranslation(r.getOrganisation().getNameLocalisation())).withBorders(THIN, THIN, THIN, THIN)
+
+                        .appendTextCell(localiser.getTranslation(r.getRhy().getNameLocalisation())).withBorders(THIN, THIN, THIN, THIN)
+
                         .appendNumberCell(1).withBorders(THIN, THIN, THIN, THIN));
     }
 
-    private String formatPerson(final PersonWithHunterNumberDTO person) {
-        return String.format("%s %s", person.getByName(), person.getLastName());
+    private String formatRepresentativeList(List<RepresentativePersonDTO> representatives) {
+        return representatives.stream()
+                .map(this::formatRepresentative)
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String formatRepresentative(final RepresentativePersonDTO representative) {
+        return String.format("%s %s", representative.getByName(), representative.getLastName());
     }
 
     private void appendTableHeader(final ExcelHelper excelHelper) {

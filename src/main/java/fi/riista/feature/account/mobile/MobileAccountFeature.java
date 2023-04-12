@@ -2,6 +2,8 @@ package fi.riista.feature.account.mobile;
 
 import fi.riista.feature.account.AccountShootingTestDTO;
 import fi.riista.feature.account.AccountShootingTestFeature;
+import fi.riista.feature.account.AccountUnregisterService;
+import fi.riista.feature.account.audit.AuditService;
 import fi.riista.feature.account.certificate.HuntingCardQRCodeGenerator;
 import fi.riista.feature.account.certificate.HuntingCardQRCodeKeyHolder;
 import fi.riista.feature.account.user.ActiveUserService;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -51,6 +54,12 @@ public class MobileAccountFeature {
 
     @Resource
     private HuntingCardQRCodeKeyHolder keyHolder;
+
+    @Resource
+    private AccountUnregisterService unregisterService;
+
+    @Resource
+    private AuditService auditService;
 
     @Transactional(readOnly = true)
     public MobileAccountDTO getMobileAccount() {
@@ -86,6 +95,31 @@ public class MobileAccountFeature {
                 shootingTests);
     }
 
+    @Transactional
+    public DateTime unregister() {
+        final Person person = activeUserService.requireActivePerson();
+        // don't update if person has already requested unregistration
+        final DateTime unregisterRequestedTime = Optional
+                .ofNullable(person.getUnregisterRequestedTime())
+                .orElseGet(DateUtil::now);
+
+        person.setUnregisterRequestedTime(unregisterRequestedTime);
+
+        unregisterService.sendUnregisterMail(person);
+
+        auditService.log("unregister", person);
+
+        return unregisterRequestedTime;
+    }
+
+    @Transactional
+    public void cancelUnregister() {
+        final Person person = activeUserService.requireActivePerson();
+        person.setUnregisterRequestedTime(null);
+
+        auditService.log("cancel-unregister", person);
+    }
+
     private SortedSet<Integer> getBeginningCalendarYearsOfHuntingYearsContainingHarvests(final Person person) {
         return getBeginningCalendarYearsOfHuntingYears(harvestRepository.findByActualShooter(person));
     }
@@ -103,4 +137,5 @@ public class MobileAccountFeature {
                 .map(DateUtil::huntingYearContaining)
                 .collect(toCollection(TreeSet::new));
     }
+
 }

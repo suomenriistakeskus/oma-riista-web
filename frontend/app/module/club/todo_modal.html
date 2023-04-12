@@ -35,6 +35,12 @@
                     ng-disabled="$ctrl.todos.groupMissing"
                     ng-click="$ctrl.fixGroupLeaderMissing()"></button>
         </div>
+        <div ng-if="$ctrl.todos.partnerHuntingSummaryMissing" class="r-club-hunting-reminder-item">
+            <div translate="club.todo.partnerSummary.message"></div>
+            <button class="btn btn-primary"
+                    translate="club.todo.partnerSummary.button"
+                    ng-click="$ctrl.fixPartnerSummaryMissing()"></button>
+        </div>
     </div>
 
     <div class="modal-footer">

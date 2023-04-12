@@ -7,6 +7,7 @@
 
     <uib-tab index="1" select="$ctrl.onTabSelected(1)">
         <uib-tab-heading>
+            <span class="fa fa-warning" ng-if="$ctrl.hasMissingParticipants(['HUNTING_CONTROL_STATISTICS', 'HUNTER_EXAM_STATISTICS'])">&nbsp;</span>
             <span translate="rhy.annualStats.category.publicAdministrationTasks"></span>
         </uib-tab-heading>
     </uib-tab>
@@ -19,12 +20,14 @@
 
     <uib-tab index="3" select="$ctrl.onTabSelected(3)">
         <uib-tab-heading>
+            <span class="fa fa-warning" ng-if="$ctrl.hasMissingParticipants(['YOUTH_TRAINING_STATISTICS', 'JHT_TRAINING_STATISTICS', 'OTHER_HUNTER_TRAINING_STATISTICS', 'HUNTER_TRAINING_STATISTICS', 'HUNTER_EXAM_TRAINING_STATISTICS'])">&nbsp;</span>
             <span translate="rhy.annualStats.category.trainings"></span>
         </uib-tab-heading>
     </uib-tab>
 
     <uib-tab index="4" select="$ctrl.onTabSelected(4)">
         <uib-tab-heading>
+            <span class="fa fa-warning" ng-if="$ctrl.hasMissingParticipants(['PUBLIC_EVENT_STATISTICS'])">&nbsp;</span>
             <span translate="rhy.annualStats.category.misc"></span>
         </uib-tab-heading>
     </uib-tab>

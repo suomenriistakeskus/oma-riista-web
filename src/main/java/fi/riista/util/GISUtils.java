@@ -21,6 +21,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Polygonal;
@@ -142,7 +143,7 @@ public final class GISUtils {
 
     public static double[] getGeoJsonBBox(final Geometry geometry) {
         return Optional.ofNullable(geometry)
-                .filter(g -> g instanceof Polygonal && !g.isEmpty())
+                .filter(g -> (g instanceof Polygonal || g instanceof MultiPoint) && !g.isEmpty())
                 .map(Geometry::getEnvelopeInternal)
                 .filter(envelope -> !envelope.isNull())
                 .map(e -> new double[]{e.getMinX(), e.getMinY(), e.getMaxX(), e.getMaxY()})

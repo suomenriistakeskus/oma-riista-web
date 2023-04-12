@@ -11,6 +11,7 @@ import javax.annotation.Resource;
 
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
+import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 
 @Component
@@ -20,7 +21,7 @@ public class HuntingControlEventAuthorization extends AbstractEntityAuthorizatio
     private RhyAuthorizationHelper helper;
 
     public HuntingControlEventAuthorization() {
-        allowCRUD(ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA);
+        allowCRUD(ROLE_ADMIN, ROLE_MODERATOR, TOIMINNANOHJAAJA, METSASTYKSENVALVOJA);
     }
 
     @Override

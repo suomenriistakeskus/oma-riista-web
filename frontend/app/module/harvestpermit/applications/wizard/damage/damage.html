@@ -1,4 +1,4 @@
-<div class="alert alert-info">
+<div class="alert alert-info wizard-info">
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
@@ -50,7 +50,9 @@
                       name="causedDamageDescription-{{::s.gameSpeciesCode}}"
                       id="causedDamageDescription-{{::s.gameSpeciesCode}}"
                       ng-model="s.causedDamageDescription"
-                      required></textarea>
+                      required
+                      spellcheck="false"
+            ></textarea>
         </div>
     </div>
 
@@ -73,7 +75,8 @@
                               name="evictionMeasureDescription-{{::s.gameSpeciesCode}}"
                               id="evictionMeasureDescription-{{::s.gameSpeciesCode}}"
                               ng-model="s.evictionMeasureDescription"
-                              required></textarea>
+                              required
+                              spellcheck="false"></textarea>
                 </div>
             </div>
 
@@ -88,7 +91,8 @@
                               name="evictionMeasureEffect-{{::s.gameSpeciesCode}}"
                               id="evictionMeasureEffect-{{::s.gameSpeciesCode}}"
                               ng-model="s.evictionMeasureEffect"
-                              required></textarea>
+                              required
+                              spellcheck="false"></textarea>
                 </div>
             </div>
         </div>

@@ -10,9 +10,13 @@ import fi.riista.util.DateUtil;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
@@ -52,12 +56,11 @@ public class OtherwiseDeceasedFeature {
 
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasPrivilege('MUUTOIN_KUOLLEET')")
     @Transactional(readOnly = true)
-    public List<OtherwiseDeceasedBriefDTO> listByYear(final int year) {
-        LOG.info("listByYear("+year+")");
-        final DateTime begin = DateUtil.beginOfCalendarYear(year);
-        final DateTime end = DateUtil.beginOfCalendarYear(year).plusYears(1).minusMillis(1);
-        final List<OtherwiseDeceased> items = otherwiseDeceasedRepository.findAllByPointOfTimeBetween(begin, end);
-        return briefDTOTransformer.transform(items);
+    public Slice<OtherwiseDeceasedBriefDTO> searchPage(final @Validated OtherwiseDeceasedFilterDTO filterDTO,
+                                                       final @Validated Pageable pageable) {
+        LOG.info("search()");
+        final Slice<OtherwiseDeceased> slice = otherwiseDeceasedRepository.searchPage(filterDTO, pageable);
+        return new SliceImpl<>(briefDTOTransformer.transform(slice.getContent()), pageable, slice.hasNext());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN') or hasPrivilege('MUUTOIN_KUOLLEET')")
@@ -102,9 +105,9 @@ public class OtherwiseDeceasedFeature {
                 rhy,
                 rhy.getRiistakeskuksenAlue(),
                 dto.getCause(),
-                dto.getCauseOther(),
+                dto.getCauseDescription(),
                 dto.getSource(),
-                dto.getSourceOther(),
+                dto.getSourceDescription(),
                 dto.getDescription(),
                 dto.getAdditionalInfo()
         );
@@ -139,9 +142,9 @@ public class OtherwiseDeceasedFeature {
         entity.setRhy(rhy);
         entity.setRka(rhy.getRiistakeskuksenAlue());
         entity.setCause(dto.getCause());
-        entity.setCauseOther(dto.getCause() == OtherwiseDeceasedCause.OTHER ? dto.getCauseOther() : null);
+        entity.setCauseDescription(dto.getCauseDescription());
         entity.setSource(dto.getSource());
-        entity.setSourceOther(dto.getSource() == OtherwiseDeceasedSource.OTHER ? dto.getSourceOther() : null);
+        entity.setSourceDescription(dto.getSourceDescription());
         entity.setDescription(dto.getDescription());
         entity.setAdditionalInfo(dto.getAdditionalInfo());
     }

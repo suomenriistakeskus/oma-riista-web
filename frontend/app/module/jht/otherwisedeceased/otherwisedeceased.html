@@ -11,8 +11,10 @@
     </div>
 
     <div class="col-md-4 text-right">
-        <button type="button" class="btn btn-primary" ng-click="$ctrl.exportToExcel()" translate="global.button.exportToExcel"></button>
-        <button type="button" class="btn btn-primary" ng-click="$ctrl.add()" translate="jht.otherwiseDeceased.buttons.add"></button>
+        <button type="button" class="btn btn-primary" ng-click="$ctrl.exportToExcel()"
+                translate="global.button.exportToExcel"></button>
+        <button type="button" class="btn btn-primary" ng-click="$ctrl.add()"
+                translate="jht.otherwiseDeceased.buttons.add"></button>
     </div>
 </div>
 
@@ -23,11 +25,8 @@
     <!-- filters -->
 
     <div class="col-xs-3">
-
         <r-otherwise-deceased-filters filter="$ctrl.filter"
-                                      on-filter-change="$ctrl.onFilterChange()"
-                                      on-year-change="$ctrl.onYearChange()"></r-otherwise-deceased-filters>
-
+                                      on-filter-change="$ctrl.onFilterChange()"></r-otherwise-deceased-filters>
     </div>
 
     <!-- results -->
@@ -35,48 +34,39 @@
     <div class="col-xs-9">
         <slice-pager slice="$ctrl.pageInfo" load-page="$ctrl.selectPage(page)"></slice-pager>
         <div>
-            <div ng-if="!$ctrl.hasResults()" class="alert alert-info" translate="search.formatNoMatches"></div>
-            <table ng-if="$ctrl.hasResults()" class="table">
+            <div ng-if="$ctrl.resultList.length === 0" class="alert alert-info"
+                 translate="search.formatNoMatches"></div>
+            <table ng-if="$ctrl.resultList.length > 0" class="table">
                 <thead>
-                <tr>
-                    <th>
-                        <div class="row">
-                            <div class="col-xs-11">
-                                <div class="row">
-                                    <div class="col-xs-2" ng-click="$ctrl.toggleSort('pointOfTime', 'desc')">
-                                        <span translate="jht.otherwiseDeceased.fields.pointOfTime"></span>
-                                        <span class="fa fa-caret-up" ng-if="$ctrl.isSortedBy('pointOfTime', 'asc')"></span>
-                                        <span class="fa fa-caret-down" ng-if="$ctrl.isSortedBy('pointOfTime', 'desc')"></span>
-                                    </div>
-                                    <div class="col-xs-2" ng-click="$ctrl.toggleSort('gameSpeciesCode', 'asc', 'translateSpeciesCode')">
-                                        <span translate="jht.otherwiseDeceased.fields.species"></span>
-                                        <span class="fa fa-caret-up" ng-if="$ctrl.isSortedBy('gameSpeciesCode', 'asc')"></span>
-                                        <span class="fa fa-caret-down" ng-if="$ctrl.isSortedBy('gameSpeciesCode', 'desc')"></span>
-                                    </div>
-                                    <div class="col-xs-3" ng-click="$ctrl.toggleSort('municipality', 'asc', 'rI18nNameFilter')">
-                                        <span translate="jht.otherwiseDeceased.fields.location"></span>
-                                        <span class="fa fa-caret-up" ng-if="$ctrl.isSortedBy('municipality', 'asc')"></span>
-                                        <span class="fa fa-caret-down" ng-if="$ctrl.isSortedBy('municipality', 'desc')"></span>
-                                    </div>
-                                    <div class="col-xs-2" ng-click="$ctrl.toggleSort('source', 'asc', 'translate', 'jht.otherwiseDeceased.sources.')">
-                                        <span translate="jht.otherwiseDeceased.fields.source"></span>
-                                        <span class="fa fa-caret-up" ng-if="$ctrl.isSortedBy('source', 'asc')"></span>
-                                        <span class="fa fa-caret-down" ng-if="$ctrl.isSortedBy('source', 'desc')"></span>
-                                    </div>
-                                    <div class="col-xs-3" ng-click="$ctrl.toggleSort('cause', 'asc', 'translate', 'jht.otherwiseDeceased.causes.')">
-                                        <span translate="jht.otherwiseDeceased.fields.cause"></span>
-                                        <span class="fa fa-caret-up" ng-if="$ctrl.isSortedBy('cause', 'asc')"></span>
-                                        <span class="fa fa-caret-down" ng-if="$ctrl.isSortedBy('cause', 'desc')"></span>
+                    <tr>
+                        <th>
+                            <div class="row">
+                                <div class="col-xs-11">
+                                    <div class="row">
+                                        <div class="col-xs-2">
+                                            <span translate="jht.otherwiseDeceased.fields.pointOfTime"></span>
+                                        </div>
+                                        <div class="col-xs-2">
+                                            <span translate="jht.otherwiseDeceased.fields.species"></span>
+                                        </div>
+                                        <div class="col-xs-3">
+                                            <span translate="jht.otherwiseDeceased.fields.location"></span>
+                                        </div>
+                                        <div class="col-xs-2">
+                                            <span translate="jht.otherwiseDeceased.fields.source"></span>
+                                        </div>
+                                        <div class="col-xs-3">
+                                            <span translate="jht.otherwiseDeceased.fields.cause"></span>
+                                        </div>
                                     </div>
                                 </div>
+                                <div class="col-xs-1"></div>
                             </div>
-                            <div class="col-xs-1"></div>
-                        </div>
-                    </th>
-                </tr>
+                        </th>
+                    </tr>
                 </thead>
                 <tbody>
-                    <tr ng-init="collapsed = true" ng-repeat="item in $ctrl.pagedResults track by item.id">
+                    <tr ng-init="collapsed = true" ng-repeat="item in $ctrl.resultList track by item.id">
                         <td>
                             <div class="row">
                                 <div class="col-xs-11" ng-switch="collapsed">

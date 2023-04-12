@@ -93,7 +93,8 @@ angular.module('app.occupation.controllers', [])
         function ($scope, $uibModalInstance,
                   Helpers, CallOrderConfig, TranslatedBlockUI,
                   Occupations, OccupationFindPerson,
-                  orgId, occupation, occupationTypes, existingPersons, boardTypes, currentBoardRoles, BoardRepresentationRoles) {
+                  orgId, occupation, occupationTypes, existingPersons, boardTypes, currentBoardRoles,
+                  boardRepresentationRoles, organisation) {
 
             $scope.existingPersons = existingPersons;
             $scope.personDisplayName = function (person) {
@@ -106,10 +107,11 @@ angular.module('app.occupation.controllers', [])
             $scope.editAddress = false;
             $scope.canEditAddress = canEditAddress(occupation.person);
             $scope.callOrderConfig = CallOrderConfig;
+            $scope.organisation = organisation;
             $scope.occupation = occupation;
             $scope.occupationTypes = occupationTypes;
             $scope.boardTypes = boardTypes;
-            $scope.boardRepresentationRoles = BoardRepresentationRoles;
+            $scope.boardRepresentationRoles = boardRepresentationRoles;
             $scope.substitute = {};
             if (occupation.substitute) {
                 $scope.substitute.person = occupation.substitute;
@@ -120,6 +122,10 @@ angular.module('app.occupation.controllers', [])
             });
 
             $scope.isBoardRoleDisabled = function (o) {
+                if ($scope.organisation.organisationType !== 'RHY') {
+                    return false;
+                }
+
                 return $scope.currentBoardRoles.indexOf(o) !== -1;
             };
 

@@ -50,10 +50,8 @@ angular.module('app.jht.area.map', [])
 
                 function saveFeaturesGeoJSON(geoJson) {
                     return ModeratorAreas.saveFeatures({id: areaId}, geoJson).$promise.then(function () {
-                            UnsavedChangesConfirmationService.setChanges(false);
-                            NotificationService.showDefaultSuccess();
-
-                            $state.reload();
+                        UnsavedChangesConfirmationService.setChanges(false);
+                        NotificationService.showDefaultSuccess();
                     }, function () {
                         NotificationService.showDefaultFailure();
                     });

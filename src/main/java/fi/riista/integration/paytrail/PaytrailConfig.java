@@ -1,7 +1,10 @@
 package fi.riista.integration.paytrail;
 
+import fi.riista.integration.paytrail.auth.PaytrailAuthService;
 import fi.riista.integration.paytrail.auth.PaytrailCredentials;
-import org.springframework.beans.factory.annotation.Qualifier;
+import fi.riista.integration.paytrail.util.PaytrailMessageSignatureUtil;
+import fi.riista.integration.paytrail.util.PaytrailMessageSignatureUtilImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,15 +26,14 @@ public class PaytrailConfig {
     @Value("${paytrail.mmm.merchantSecret}")
     private String mmmMerchantSecret;
 
-    @Qualifier("rk")
     @Bean
-    public PaytrailCredentials rkCredentials() {
-        return new PaytrailCredentials(rkMerchantId, rkMerchantSecret);
+    public PaytrailAuthService paytrailAuthService() {
+        return new PaytrailAuthService(new PaytrailCredentials(rkMerchantId, rkMerchantSecret),
+                new PaytrailCredentials(mmmMerchantId, mmmMerchantSecret));
     }
 
-    @Qualifier("mmm")
     @Bean
-    public PaytrailCredentials mmmCredentials() {
-        return new PaytrailCredentials(mmmMerchantId, mmmMerchantSecret);
+    public PaytrailMessageSignatureUtil paytrailMessageSignatureUtil(@Autowired PaytrailAuthService authService) {
+        return new PaytrailMessageSignatureUtilImpl(authService);
     }
 }

@@ -11,11 +11,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countAllNonSubsidizableTrainingEvents;
-import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableTrainingEvents;
-import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableTrainingParticipants;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countNonSubsidizableAllTrainingParticipants;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableOtherTrainingEvents;
 import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableStudentAndYouthTrainingEvents;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableTrainingEvents;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsYearDependentCalculations.countSubsidizableTrainingParticipants;
 import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.APPROVED;
 import static fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsState.UNDER_INSPECTION;
 import static java.util.Objects.requireNonNull;
@@ -76,6 +76,7 @@ public class RhyAnnualStatisticsDTOTransformer {
         dto.setAllNonSubsidizableTrainingParticipants(countNonSubsidizableAllTrainingParticipants(entity));
 
         dto.setReadyForInspection(entity.isReadyForInspection());
+        dto.setMissingParticipants(entity.listMissingParticipants());
         dto.setCompleteForApproval(entity.isCompleteForApproval());
 
         if (state == UNDER_INSPECTION || state == APPROVED) {

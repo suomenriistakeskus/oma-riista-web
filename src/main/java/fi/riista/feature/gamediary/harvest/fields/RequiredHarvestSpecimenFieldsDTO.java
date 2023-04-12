@@ -16,8 +16,10 @@ public class RequiredHarvestSpecimenFieldsDTO {
                                                           final @Nonnull HarvestSpecVersion specVersion) {
         requireNonNull(reportingType);
 
+        final boolean withPermit = reportingType.equals(HarvestReportingType.PERMIT);
+
         final RequiredHarvestFields.Specimen fieldRequirements = RequiredHarvestFields
-                .getSpecimenFields(huntingYear, gameSpeciesCode, null, reportingType, false, specVersion);
+                .getSpecimenFields(huntingYear, gameSpeciesCode, null, reportingType, false, specVersion, withPermit);
 
         return create(fieldRequirements);
     }

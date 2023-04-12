@@ -34,7 +34,7 @@
 
             <p>
                 <span ng-bind="::$ctrl.permit.permitType"></span>
-                <span ng-bind="::$ctrl.permit.permitNumber"></span>
+                <span ng-bind="::$ctrl.permit.decisionDocumentNumber"></span>
             </p>
         </div>
         <div class="col-md-3 col-xs-6">
@@ -52,7 +52,7 @@
         <div class="col-md-3 col-xs-6">
             <p class="column-title">&nbsp;</p>
 
-            <button class="btn btn-primary btn-block" ng-click="$ctrl.startPayment()">
+            <button class="btn btn-primary btn-block" ng-click="$ctrl.startPayment()" ng-disabled="$ctrl.paymentStarted">
                 <span class="fa fa-credit-card"></span>
                 &nbsp;
                 <span class="text-uppercase" translate="payment.payButton"></span>
@@ -79,7 +79,7 @@
                         <i class="fa fa-li fa-file-pdf-o"></i>
 
                         <span translate="harvestpermit.management.dashboard.decisionAndAttachments.decision"></span>
-                        <span ng-bind="::$ctrl.permit.permitNumber"></span>
+                        <span ng-bind="::$ctrl.permit.decisionDocumentNumber"></span>
                     </a>
 
                     <span ng-switch-when="false">
@@ -97,6 +97,19 @@
                     </a>
                 </li>
             </ul>
+
+            <div ng-if="::$ctrl.isAnnualRenewalPermit()">
+                <p class="column-title" translate="harvestpermit.management.dashboard.decisionAndAttachments.annualPermit"></p>
+
+                <ul class="fa-ul">
+                    <li>
+                        <a ng-click="$ctrl.downloadAnnualPermitPdf()">
+                            <i class="fa fa-li fa-file-pdf-o"></i>
+                            <span ng-bind="::$ctrl.permit.permitNumber"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <div class="col-lg-3 col-sm-6 col-xs-12">
@@ -162,7 +175,10 @@
         </div>
 
         <div ng-if="$ctrl.hasSpeciesAmounts()" class="col-lg-3 col-sm-6 col-xs-12">
-            <p class="column-title" translate="harvestpermit.management.dashboard.decisionAndAttachments.permittedDate"></p>
+            <p>
+                <span class="column-title" translate="harvestpermit.management.dashboard.decisionAndAttachments.permittedDate"></span>
+                <a ng-if="$ctrl.canEditPeriods" class="fa fa-edit" ng-click="$ctrl.editPeriods()">
+            </p>
 
             <div ng-repeat="spa in $ctrl.permit.speciesAmounts"
                  class="species-date-text">

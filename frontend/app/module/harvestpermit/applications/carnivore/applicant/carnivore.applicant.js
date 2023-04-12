@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.carnivore.applicant', ['app.metada
                 templateUrl: 'harvestpermit/applications/carnivore/applicant/applicant.html',
                 controller: 'CarnivorePermitWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

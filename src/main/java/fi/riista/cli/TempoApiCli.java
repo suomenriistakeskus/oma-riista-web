@@ -5,7 +5,6 @@ import fi.riista.config.DataSourceConfig;
 import fi.riista.config.HttpClientConfig;
 import fi.riista.config.JPAConfig;
 import fi.riista.config.LiquibaseConfig;
-import fi.riista.config.PapertrailConfig;
 import fi.riista.config.SerializationConfig;
 import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.account.user.ActiveUserService;
@@ -37,7 +36,6 @@ public class TempoApiCli {
             DataSourceConfig.class,
             JPAConfig.class,
             LiquibaseConfig.class,
-            PapertrailConfig.class,
             RuntimeEnvironmentUtil.class,
             SerializationConfig.class
     })

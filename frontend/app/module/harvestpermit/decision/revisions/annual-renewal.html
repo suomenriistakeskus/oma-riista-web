@@ -1,0 +1,56 @@
+<form name="form" role="form" class="form form-horizontal r-event-form">
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="decision.annualRenewal.createNext"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div>
+            <span translate="decision.annualRenewal.existingPermits"></span>
+        </div>
+        <table class="table table-condensed">
+            <tbody>
+            <tr ng-repeat="p in $ctrl.existingPermits track by p.id">
+                <td ng-bind="::p.permitNumber"></td>
+                <td>
+                    <button type="button" class="btn btn-default"
+                            ng-click="$ctrl.printPdf(p)">
+                        <span class="fa fa-file"></span>
+                        <span translate="global.button.print"></span>
+                    </button>
+
+                </td>
+                <td>
+                    <button type="button" class="btn btn-default"
+                            ng-click="$ctrl.printHarvestReportForms(p)">
+                        <span class="fa fa-file"></span>
+                        <span translate="decision.revision.downloadBirdHarvestReport"></span>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div ng-if="$ctrl.isRenewable">
+            <hr>
+
+            <p ng-if="::$ctrl.existingPermits.length === 1" class="text-danger">
+                <span class="fa fa-warning"></span>
+                <span translate="decision.annualRenewal.instruction"></span>
+            </p>
+            <p>
+                <span>{{'decision.annualRenewal.confirmation' | translate:{nextYear: $ctrl.permitYear} }}</span>
+            </p>
+
+            <button type="button" class="btn btn-primary"
+                    ng-click="$ctrl.renewPermit()"
+                    translate="global.button.create"></button>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.close()"
+                translate="global.button.close"></button>
+    </div>
+</form>

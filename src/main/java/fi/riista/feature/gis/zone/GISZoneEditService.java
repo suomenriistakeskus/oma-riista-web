@@ -1,5 +1,6 @@
 package fi.riista.feature.gis.zone;
 
+import fi.riista.feature.error.NotFoundException;
 import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.OnlyStateAreaService;
 import fi.riista.feature.gis.geojson.GeoJSONConstants;
@@ -51,6 +52,20 @@ public class GISZoneEditService {
 
     @Transactional(noRollbackFor = RuntimeException.class, propagation = Propagation.MANDATORY)
     public void storeFeatures(final FeatureCollection featureCollection, final GISZone zone) {
+        doStoreFeatures(featureCollection, zone);
+        zoneRepository.calculateCombinedGeometry(zone.getId());
+        zoneRepository.saveAndFlush(zone);
+    }
+
+    @Transactional(noRollbackFor = RuntimeException.class, propagation = Propagation.MANDATORY)
+    public void storeFeaturesAsync(final FeatureCollection featureCollection, final GISZone zone) {
+        doStoreFeatures(featureCollection, zone);
+        zone.setStatusPending();
+        zoneRepository.saveAndFlush(zone);
+    }
+
+    private void doStoreFeatures(final FeatureCollection featureCollection, final GISZone zone) {
+        zone.setGeom(null);
         zone.setExcludedGeom(extractExcludedGeometry(featureCollection));
         zone.setMetsahallitusHirvi(extractMetsahallitusHirviIdSet(featureCollection));
 
@@ -66,7 +81,42 @@ public class GISZoneEditService {
         zoneRepository.saveAndFlush(zone);
         zoneRepository.updatePalstaFeatures(zone.getId(), featureCollection);
         zoneRepository.updateOtherFeatures(zone.getId(), featureCollection, EDITOR_SRID);
-        zoneRepository.calculateCombinedGeometry(zone.getId());
+    }
+
+    @Transactional
+    public void calculateCombinedGeometry(final long zoneId) {
+        zoneRepository.calculateCombinedGeometry(zoneId);
+    }
+
+    // Transaction of these should be opened somewhere else -->
+
+    @Transactional(timeout = 60)
+    public void setZoneStatusToProcessing(final long zoneId) {
+        final GISZone zone = getOneWithLock(zoneId);
+        zone.setStatusProcessing();
+        zoneRepository.saveAndFlush(zone);
+    }
+
+    @Transactional(timeout = 60)
+    public void setZoneStatusToReady(final long zoneId) {
+        final GISZone zone = getOneWithLock(zoneId);
+        zone.setStatusReady();
+        zoneRepository.saveAndFlush(zone);
+    }
+
+    @Transactional(timeout = 60)
+    public void setZoneStatusToProcessFailed(final long zoneId) {
+        final GISZone zone = getOneWithLock(zoneId);
+        zone.setStatusProcessingFailed();
+        zoneRepository.saveAndFlush(zone);
+    }
+
+    // <-- transaction opened somewhere else till here
+
+    // Should be called with as short living transaction as possible
+    private GISZone getOneWithLock(final long zoneId) {
+        return zoneRepository.findOneWithLock(zoneId).orElseThrow(() -> new NotFoundException(String.format(
+                "Zone not found, zoneId: %s", zoneId)));
     }
 
     // Open new transaction in order to be able to mark calculation failed in case of failure

@@ -44,34 +44,14 @@ window.RiistaWidget = (function() {
                 'huntingYear': 'Jaktår',
                 'UNKNOWN': 'Okänd',
                 'MALE': 'Handjur',
-                'FEMALE': 'Hondjur',
-                'PENDING': 'Väntar på bekräftelse',
-                'CONFIRMED_ALPHA': 'Bekräftad, alfaindivid',
-                'CONFIRMED_ALPHA_ADULT': 'Bekräftad, vuxen, alfaindivid',
-                'CONFIRMED_ADULT': 'Bekräftad, vuxen',
-                'CONFIRMED_POTENTIAL_ALPHA_ADULT': 'Bekräftad, vuxen, eventuell alfaindivid',
-                'CONFIRMED_NOT_ADULT': 'Bekräftad, ej vuxen',
-                'CONFIRMED_NOT_ALPHA': 'Bekräftad, inte alfaindivid',
-                'CONFIRMED_NOT_ALPHA_ADULT': 'Bekräftad, vuxen, ej alfaindivid',
-                'CONFIRMED_NOT_ALPHA_1TO2Y': 'Bekräftad, 1 åring',
-                'CONFIRMED_NOT_ALPHA_LT1Y': 'Bekräftad, under 1 åring'
+                'FEMALE': 'Hondjur'
             };
         } else {
             this.i18n = {
                 'huntingYear': 'Metsästysvuosi',
                 'UNKNOWN': 'Tuntematon',
                 'MALE': 'Uros',
-                'FEMALE': 'Naaras',
-                'PENDING': 'Odottaa vahvistusta',
-                'CONFIRMED_ALPHA': 'Vahvistettu, alfayksilö',
-                'CONFIRMED_ALPHA_ADULT': 'Vahvistettu, aikuinen, alfayksilö',
-                'CONFIRMED_ADULT': 'Vahvistettu, aikuinen',
-                'CONFIRMED_POTENTIAL_ALPHA_ADULT': 'Vahvistettu, aikuinen, mahdollinen alfayksilö',
-                'CONFIRMED_NOT_ADULT': 'Vahvistettu, ei aikuinen',
-                'CONFIRMED_NOT_ALPHA': 'Vahvistettu, ei alfayksilö',
-                'CONFIRMED_NOT_ALPHA_ADULT': 'Vahvistettu, aikuinen, ei alfayksilö',
-                'CONFIRMED_NOT_ALPHA_1TO2Y': 'Vahvistettu, 1-vuotias',
-                'CONFIRMED_NOT_ALPHA_LT1Y': 'Vahvistettu, alle 1-vuotias'
+                'FEMALE': 'Naaras'
             };
         }
         this.tableTemplate = Handlebars.templates['wolf-table.tmpl.' + lang + '.html'];

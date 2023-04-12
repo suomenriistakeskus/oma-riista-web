@@ -168,6 +168,14 @@ public final class NumberUtils {
         return nullableIntSum(F.stream(iterable).map(mapper));
     }
 
+    @Nullable
+    public static Double nullableDoubleSubtraction(@Nullable final Double first, @Nullable final Double second) {
+        if (first == null || second == null) {
+            return null;
+        }
+        return first - second;
+    }
+
     public static <T> int nullsafeIntSum(@Nonnull final Iterable<? extends T> iterable,
                                          @Nonnull final Function<? super T, Integer> mapper) {
 

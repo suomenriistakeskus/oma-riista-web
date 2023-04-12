@@ -1,5 +1,6 @@
 package fi.riista.api.organisation;
 
+import fi.riista.config.jackson.CustomJacksonObjectMapper;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.harvestpermit.list.HarvestPermitListFeature;
 import fi.riista.feature.harvestpermit.list.MooselikeHuntingYearDTO;
@@ -14,13 +15,20 @@ import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysCrudFeature;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysDTO;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsCrudFeature;
 import fi.riista.feature.organization.rhy.annualstats.RhyAnnualStatisticsDTO;
+import fi.riista.feature.organization.rhy.taxation.HarvestTaxationExcelDTO;
+import fi.riista.feature.organization.rhy.taxation.HarvestTaxationReportDTO;
+import fi.riista.feature.organization.rhy.taxation.HarvestTaxationReportingFeature;
 import fi.riista.feature.search.RhySearchParamsFeature;
+import fi.riista.util.LocalisedString;
+import fi.riista.util.MediaTypeExtras;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.joda.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,12 +40,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import static fi.riista.util.MediaTypeExtras.APPLICATION_EXCEL_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED_VALUE;
@@ -46,6 +58,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @RestController
 @RequestMapping(value = "/api/v1/riistanhoitoyhdistys", produces = APPLICATION_JSON_VALUE)
 public class RiistanhoitoyhdistysApiResource {
+
+    @Resource
+    private CustomJacksonObjectMapper objectMapper;
 
     @Resource
     private RiistanhoitoyhdistysCrudFeature crudFeature;
@@ -67,6 +82,9 @@ public class RiistanhoitoyhdistysApiResource {
 
     @Resource
     private RhyAnnualStatisticsCrudFeature annualStatisticsCrudFeature;
+
+    @Resource
+    private HarvestTaxationReportingFeature harvestTaxationReportingFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "{id:\\d+}")
@@ -142,7 +160,7 @@ public class RiistanhoitoyhdistysApiResource {
     public List<MooselikePermitListDTO> listPermits(final @PathVariable long id,
                                                     final @RequestParam int year,
                                                     final @RequestParam int species,
-                                                    Locale locale) {
+                                                    final Locale locale) {
         return harvestPermitListFeature.listRhyMooselikePermits(id, year, species, locale);
     }
 
@@ -193,5 +211,63 @@ public class RiistanhoitoyhdistysApiResource {
     public List<Integer> listYearsOfExistence(final @PathVariable long rhyId) {
         return crudFeature.getYearsOfExistence(rhyId);
     }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(value = "/taxation", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public HarvestTaxationReportDTO saveOrUpdateTaxationReport(final @RequestBody @Valid HarvestTaxationReportDTO taxationReportDTO) {
+        return harvestTaxationReportingFeature.saveOrUpdateTaxationReport(taxationReportDTO);
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping(value = "/taxation/withattachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public HarvestTaxationReportDTO save(final @RequestParam(value = "dto") String dtoData,
+                                         final @RequestParam MultipartFile[] files) throws IOException {
+        final HarvestTaxationReportDTO dto = objectMapper.readValue(dtoData, HarvestTaxationReportDTO.class);
+        return harvestTaxationReportingFeature.saveOrUpdateTaxationReport(dto, Arrays.asList(files));
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/taxation", produces = APPLICATION_JSON_VALUE)
+    public HarvestTaxationReportDTO getTaxationReport(final @RequestParam int year,
+                                                      final @RequestParam int speciesCode,
+                                                      final @RequestParam long rhyId,
+                                                      final @RequestParam int htaId
+    ) {
+        return harvestTaxationReportingFeature.getTaxationReportDTOBySpeciesAndHuntingYear( htaId, rhyId, speciesCode, year);
+    }
+
+    @PostMapping(value = "/taxation/excel", produces = MediaTypeExtras.APPLICATION_EXCEL_VALUE)
+    public ModelAndView exportExcel(final @RequestBody @Valid HarvestTaxationExcelDTO dto) {
+        return new ModelAndView(harvestTaxationReportingFeature.export(dto));
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/taxation/moose_areas", produces = APPLICATION_JSON_VALUE)
+    public Map<Integer, LocalisedString> getMooseAreas(final @RequestParam long rhyId) {
+        return harvestTaxationReportingFeature.getMooseAreas(rhyId);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/taxation/years", produces = APPLICATION_JSON_VALUE)
+    public List<Integer> getTaxationReport(final @RequestParam long rhyId) {
+        return harvestTaxationReportingFeature.getTaxationReportYears(rhyId);
+    }
+
+    /**
+     * Attachment API
+     */
+
+    // Result can be cached due its content cannot be changed.
+    @GetMapping(value = "/taxation/attachment/{id:\\d+}")
+    public ResponseEntity<byte[]> getAttachment(@PathVariable final long id) throws IOException {
+        return harvestTaxationReportingFeature.getAttachment(id);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping(value = "/taxation/attachment/{id:\\d+}")
+    public void deleteAttachment(@PathVariable final long id) throws IOException {
+        harvestTaxationReportingFeature.deleteAttachment(id);
+    }
+
 
 }

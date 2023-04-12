@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.disability.basicinfo', ['app.metad
                 templateUrl: 'harvestpermit/applications/disability/basicinfo/basicinfo.html',
                 controller: 'DisabilityPermitWizardBasicInfoController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     basicInfo: function (DisabilityPermitApplication, applicationId) {
                         return DisabilityPermitApplication.getBasicInfo({id: applicationId}).$promise;

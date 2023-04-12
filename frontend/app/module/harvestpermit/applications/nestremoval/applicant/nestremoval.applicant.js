@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.nestremoval.applicant', ['app.meta
                 templateUrl: 'harvestpermit/applications/nestremoval/applicant/applicant.html',
                 controller: 'NestRemovalPermitWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

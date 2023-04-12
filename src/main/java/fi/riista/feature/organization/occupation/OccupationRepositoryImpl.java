@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.querydsl.core.group.GroupBy.groupBy;
 import static fi.riista.feature.organization.OrganisationType.RHY;
 import static fi.riista.util.Collect.leastAfterGroupingBy;
 import static java.util.Collections.emptyMap;
@@ -45,6 +46,28 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
                 .join(occupation.organisation).fetchJoin()
                 .where(occupation.organisation.eq(organisation), occupation.validAndNotDeleted())
                 .fetch();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<Long, Occupation> findActiveByOrganisationAndPersonIds(final Organisation organisation, final List<Long> persons) {
+        requireNonNull(organisation);
+        requireNonNull(persons);
+
+        if (persons.isEmpty()) {
+            return emptyMap();
+        }
+
+        final QOccupation occupation = QOccupation.occupation;
+        final QPerson person = QPerson.person;
+
+        return jpqlQueryFactory.from(occupation)
+                .join(occupation.person, person).fetchJoin()
+                .join(occupation.organisation).fetchJoin()
+                .where(occupation.organisation.eq(organisation), occupation.validAndNotDeleted())
+                .where(person.id.in(persons))
+                .transform(groupBy(person.id).as(occupation));
+
     }
 
     @Override
@@ -75,7 +98,7 @@ public class OccupationRepositoryImpl implements OccupationRepositoryCustom {
         return jpqlQueryFactory.selectFrom(occupation)
                 .join(occupation.person).fetchJoin()
                 .where(occupation.validAndNotDeleted(), occupation.occupationType.eq(occupationType))
-                .transform(GroupBy.groupBy(occupation.organisation.id).as(GroupBy.set(occupation)));
+                .transform(groupBy(occupation.organisation.id).as(GroupBy.set(occupation)));
     }
 
     @Override

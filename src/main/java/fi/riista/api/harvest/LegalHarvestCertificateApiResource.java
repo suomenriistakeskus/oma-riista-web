@@ -6,7 +6,6 @@ import fi.riista.feature.harvest.LegalHarvestCertificatePdfFeature;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.Locales;
 import fi.riista.util.MediaTypeExtras;
-import io.sentry.Sentry;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.slf4j.Logger;
@@ -82,12 +81,12 @@ public class LegalHarvestCertificateApiResource {
                     .withNoHeaderRight()
                     .withHtmlPath(getHtmlPath(harvestId))
                     .withLanguage(harvestCertificateLocale)
+                    .withMargin(0, 0, 0, 0)
                     .build()
                     .export(os);
 
         } catch (Exception ex) {
             LOG.error("Could not generate PDF", ex);
-            Sentry.capture(ex);
         }
     }
 }

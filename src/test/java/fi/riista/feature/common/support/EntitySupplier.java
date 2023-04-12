@@ -1,5 +1,14 @@
 package fi.riista.feature.common.support;
 
+import com.google.common.collect.Sets;
+import fi.riista.feature.common.decision.DecisionActionCommunicationType;
+import fi.riista.feature.common.decision.DecisionActionType;
+import fi.riista.feature.common.decision.authority.DecisionRkaAuthorityDetails;
+import fi.riista.feature.common.decision.nomination.action.NominationDecisionAction;
+import fi.riista.feature.common.decision.nomination.action.NominationDecisionActionAttachment;
+import fi.riista.feature.common.decision.nomination.authority.NominationDecisionAuthority;
+import fi.riista.feature.common.decision.nomination.delivery.NominationDecisionDelivery;
+import fi.riista.feature.common.training.TrainingType;
 import fi.riista.config.Constants;
 import fi.riista.feature.account.area.PersonalArea;
 import fi.riista.feature.account.area.union.PersonalAreaUnion;
@@ -24,11 +33,14 @@ import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.HarvestChangeHistory;
 import fi.riista.feature.gamediary.fixture.HarvestSpecimenType;
+import fi.riista.feature.gamediary.harvest.DeletedHarvest;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimen;
 import fi.riista.feature.gamediary.harvest.specimen.HarvestSpecimenPopulator;
 import fi.riista.feature.gamediary.image.GameDiaryImage;
+import fi.riista.feature.gamediary.observation.DeletedObservation;
+import fi.riista.feature.gamediary.observation.DeletedObservationRepository;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
@@ -40,6 +52,7 @@ import fi.riista.feature.gamediary.observation.metadata.ObservationMetadata;
 import fi.riista.feature.gamediary.observation.specimen.GameMarking;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
 import fi.riista.feature.gamediary.observation.specimen.ObservedGameState;
+import fi.riista.feature.gamediary.srva.DeletedSrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
 import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
@@ -49,6 +62,7 @@ import fi.riista.feature.gamediary.srva.method.SrvaMethod;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
 import fi.riista.feature.gamediary.srva.specimen.SrvaSpecimen;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
+import fi.riista.feature.gis.hta.RHYHirvitalousalue;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
@@ -67,6 +81,7 @@ import fi.riista.feature.harvestpermit.usage.PermitUsageLocation;
 import fi.riista.feature.harvestregistry.HarvestRegistryItem;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
+import fi.riista.feature.huntingclub.deercensus.DeerCensus;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingMethod;
@@ -81,7 +96,15 @@ import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHunti
 import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary;
 import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.SpeciesEstimatedAppearance;
 import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.TrendOfPopulationGrowth;
+import fi.riista.feature.huntingclub.poi.PoiIdAllocation;
+import fi.riista.feature.huntingclub.poi.PoiLocation;
+import fi.riista.feature.huntingclub.poi.PoiLocationGroup;
+import fi.riista.feature.huntingclub.poi.PointOfInterestType;
+import fi.riista.feature.mail.bounce.MailMessageBounce;
+import fi.riista.feature.mail.bounce.MailMessageComplaint;
+import fi.riista.feature.mail.bounce.MailMessageComplaintService;
 import fi.riista.feature.moderatorarea.ModeratorArea;
+import fi.riista.feature.news.News;
 import fi.riista.feature.organization.AlueellinenRiistaneuvosto;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
@@ -109,7 +132,10 @@ import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspect
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlAttachment;
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlCooperationType;
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEvent;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventStatus;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventType;
 import fi.riista.feature.organization.rhy.subsidy.RhySubsidy;
+import fi.riista.feature.organization.rhy.training.OccupationTraining;
 import fi.riista.feature.otherwisedeceased.OtherwiseDeceased;
 import fi.riista.feature.otherwisedeceased.OtherwiseDeceasedAttachment;
 import fi.riista.feature.otherwisedeceased.OtherwiseDeceasedCause;
@@ -120,6 +146,7 @@ import fi.riista.feature.permit.application.DeliveryAddress;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.PermitHolder;
+import fi.riista.feature.permit.application.archive.PermitApplicationArchive;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
 import fi.riista.feature.permit.application.bird.BirdPermitApplication;
 import fi.riista.feature.permit.application.bird.ProtectedAreaType;
@@ -140,6 +167,7 @@ import fi.riista.feature.permit.application.lawsectionten.LawSectionTenPermitApp
 import fi.riista.feature.permit.application.mammal.MammalPermitApplication;
 import fi.riista.feature.permit.application.nestremoval.NestRemovalPermitApplication;
 import fi.riista.feature.permit.application.research.ResearchPermitApplication;
+import fi.riista.feature.permit.application.schedule.HarvestPermitApplicationSchedule;
 import fi.riista.feature.permit.application.weapontransportation.WeaponTransportationPermitApplication;
 import fi.riista.feature.permit.application.weapontransportation.justification.TransportedWeapon;
 import fi.riista.feature.permit.application.weapontransportation.justification.TransportedWeaponType;
@@ -147,6 +175,7 @@ import fi.riista.feature.permit.application.weapontransportation.justification.W
 import fi.riista.feature.permit.application.weapontransportation.justification.WeaponTransportationVehicleType;
 import fi.riista.feature.permit.application.weapontransportation.reason.WeaponTransportationReasonType;
 import fi.riista.feature.permit.area.HarvestPermitArea;
+import fi.riista.feature.permit.area.HarvestPermitAreaEvent;
 import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartner;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionCompleteStatus;
@@ -156,6 +185,8 @@ import fi.riista.feature.permit.decision.delivery.PermitDecisionDelivery;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReason;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionDerogationReasonType;
 import fi.riista.feature.permit.decision.derogation.PermitDecisionProtectedAreaType;
+import fi.riista.feature.permit.decision.informationrequest.InformationRequestLink;
+import fi.riista.feature.permit.decision.informationrequest.InformationRequestLinkType;
 import fi.riista.feature.permit.decision.methods.ForbiddenMethodType;
 import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethod;
 import fi.riista.feature.permit.decision.revision.PermitDecisionRevision;
@@ -176,6 +207,7 @@ import fi.riista.feature.shootingtest.ShootingTestParticipant;
 import fi.riista.feature.shootingtest.ShootingTestType;
 import fi.riista.feature.shootingtest.official.ShootingTestOfficial;
 import fi.riista.feature.storage.backend.db.PersistentFileContent;
+import fi.riista.feature.storage.metadata.FileType;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.feature.storage.metadata.StorageType;
 import fi.riista.integration.common.entity.Integration;
@@ -202,6 +234,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.springframework.data.domain.Persistable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import javax.annotation.Nonnull;
@@ -210,6 +243,7 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -438,6 +472,12 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
 
     public Riistanhoitoyhdistys newRiistanhoitoyhdistys() {
         return newRiistanhoitoyhdistys(newRiistakeskuksenAlue());
+    }
+
+    public RHYHirvitalousalue newRhyHirvitalousalue(
+            final Riistanhoitoyhdistys rhy, final GISHirvitalousalue hta, final Double landArea) {
+
+        return add(new RHYHirvitalousalue(rhy, hta, landArea));
     }
 
     public Occupation newOccupation(Organisation org, Person person) {
@@ -871,6 +911,10 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
 
         return add(area);
     }
+    public HarvestPermitAreaEvent newHarvestPermitAreaEvent(HarvestPermitArea area) {
+        final HarvestPermitAreaEvent event = new HarvestPermitAreaEvent(area, HarvestPermitArea.StatusCode.READY);
+        return add(event);
+    }
 
     public HarvestPermitAreaPartner newHarvestPermitAreaPartner(HarvestPermitArea area, final HuntingClubArea source) {
         return add(new HarvestPermitAreaPartner(area, source, cloneGISZone(source.getZone())));
@@ -968,6 +1012,55 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
                 new PermitDecisionRevisionReceiver(revision, PermitDecisionRevisionReceiver.ReceiverType.CONTACT_PERSON,
                         contactPerson.getEmail(), contactPerson.getFullName(), now());
         return add(permitDecisionRevisionReceiver);
+    }
+
+    public NominationDecisionAction newNominationDecisionAction(final NominationDecision decision) {
+        final NominationDecisionAction action = new NominationDecisionAction();
+        action.setNominationDecision(decision);
+        action.setPointOfTime(DateUtil.toDateTimeNullSafe(DateUtil.today()));
+        action.setActionType(DecisionActionType.SELVITYS);
+        action.setCommunicationType(DecisionActionCommunicationType.TELEPHONE);
+        action.setText("Action text");
+        action.setDecisionText("Decision text");
+        return add(action);
+    }
+
+    public NominationDecisionActionAttachment newNominationDecisionActionAttachment(final NominationDecisionAction action,
+                                                                                    final PersistentFileMetadata metadata) {
+
+        final NominationDecisionActionAttachment attachment = new NominationDecisionActionAttachment(action, metadata);
+        return add(attachment);
+    }
+
+    public NominationDecisionAttachment newNominationDecisionAttachment(final NominationDecision decision,
+                                                                        final PersistentFileMetadata metadata) {
+        final NominationDecisionAttachment permitDecisionAttachment =
+                new NominationDecisionAttachment(decision, metadata);
+        return add(permitDecisionAttachment);
+    }
+
+    public NominationDecisionAuthority newNominationDecisionAuthority(final NominationDecision decision) {
+        final NominationDecisionAuthority authority = new NominationDecisionAuthority();
+        authority.setNominationDecision(decision);
+
+        final DecisionRkaAuthorityDetails details = new DecisionRkaAuthorityDetails();
+        details.setFirstName("First");
+        details.setLastName("Last");
+        details.setTitle("Title");
+        details.setEmail("invalid@invalid.com");
+        details.setPhoneNumber("123456");
+        authority.setAuthorityDetails(details);
+
+        return add(authority);
+    }
+
+    public NominationDecisionDelivery newNominationDecisionDelivery(final NominationDecision decision) {
+        final NominationDecisionDelivery delivery = new NominationDecisionDelivery();
+        delivery.setNominationDecision(decision);
+        delivery.setName("Name");
+        delivery.setEmail("invalid@invalid.com");
+
+        return add(delivery);
     }
 
     public NominationDecisionAttachment newNominationDecisionAttachment(final NominationDecision decision) {
@@ -2229,12 +2322,21 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
         return add(new AnnouncementSubscriber(announcement, organisation, occupationType));
     }
 
-    public JHTTraining newJHTTraining(OccupationType occupationType, Person person) {
+    public JHTTraining newJHTTraining(final OccupationType occupationType, final Person person) {
         final JHTTraining training = new JHTTraining();
         training.setOccupationType(occupationType);
         training.setPerson(person);
         training.setTrainingDate(today());
-        training.setTrainingType(JHTTraining.TrainingType.SAHKOINEN);
+        training.setTrainingType(TrainingType.SAHKOINEN);
+        return add(training);
+    }
+
+    public OccupationTraining newOccupationTraining(final Person person) {
+        final OccupationTraining training = new OccupationTraining();
+        training.setOccupationType(OccupationType.PETOYHDYSHENKILO);
+        training.setPerson(person);
+        training.setTrainingDate(today());
+        training.setTrainingType(TrainingType.SAHKOINEN);
         return add(training);
     }
 
@@ -2587,6 +2689,38 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
 
     }
 
+    public InformationRequestLink newInformationRequestLink(
+            @Nonnull final String linkIdentifier,
+            @Nonnull final PermitDecision permitDecision,
+            @Nonnull final String recipientEmail,
+            @Nonnull final String recipientName,
+            @Nonnull final InformationRequestLinkType type,
+            @Nonnull final DateTime validUntil,
+            final String title,
+            final String description
+    ) {
+        final InformationRequestLink informationRequestLink = InformationRequestLink.create(
+                Objects.requireNonNull(linkIdentifier),
+                Objects.requireNonNull(permitDecision),
+                Objects.requireNonNull(recipientEmail),
+                Objects.requireNonNull(recipientName),
+                Objects.requireNonNull(type),
+                Objects.requireNonNull(validUntil),
+                title,
+                description
+        );
+        return add(informationRequestLink);
+
+
+    }
+
+    public PermitApplicationArchive newPermitApplicationArchive(final HarvestPermitApplication application, final PersistentFileMetadata fileMetadata) {
+        final PermitApplicationArchive archive = new PermitApplicationArchive();
+        archive.setHarvestPermitApplication(application);
+        archive.setFileMetadata(fileMetadata);
+        return add(archive);
+    }
+
     public HarvestPermitApplicationAttachment newHarvestPermitApplicationAttachment(final HarvestPermitApplication application) {
         final PersistentFileMetadata persistentFileMetadata = newPersistentFileMetadata();
         final HarvestPermitApplicationAttachment attachment = new HarvestPermitApplicationAttachment();
@@ -2677,15 +2811,25 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
     }
 
     public HuntingControlEvent newHuntingControlEvent(final Riistanhoitoyhdistys rhy) {
+        final Person gameWarden =  newPerson(rhy);
+        newOccupation(rhy, gameWarden, OccupationType.METSASTYKSENVALVOJA);
+        return newHuntingControlEvent(rhy, gameWarden);
+    }
+
+    public HuntingControlEvent newHuntingControlEvent(final Riistanhoitoyhdistys rhy,
+                                                      final Person gameWarden) {
         final HuntingControlEvent event = new HuntingControlEvent();
 
         event.setRhy(rhy);
-        event.setTitle("Title");
+        event.setEventType(HuntingControlEventType.MOOSELIKE_HUNTING_CONTROL);
+        event.setStatus(HuntingControlEventStatus.PROPOSED);
+        event.setInspectors(Sets.newHashSet(gameWarden));
         event.setInspectorCount(1);
-        event.setCooperationType(HuntingControlCooperationType.POLIISI);
+        event.setCooperationTypes(Sets.newHashSet(HuntingControlCooperationType.POLIISI, HuntingControlCooperationType.MH));
         event.setWolfTerritory(true);
-        event.setInspectors("Inspectors");
+        event.setOtherParticipants("Inspectors");
         event.setGeoLocation(geoLocation());
+        event.setLocationDescription("LocationDescription");
         event.setDate(DateUtil.today());
         event.setBeginTime(new LocalTime(10, 0));
         event.setEndTime(new LocalTime(11, 0));
@@ -2918,7 +3062,7 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
                                                         final OtherwiseDeceasedSource source) {
 
         return newOtherwiseDeceased(pointOfTime, age, gender, cause, source, newGameSpecies(), newRiistanhoitoyhdistys(),
-                                    newRiistakeskuksenAlue(), someBoolean());
+                newRiistakeskuksenAlue(), someBoolean());
     }
 
     public final OtherwiseDeceased newOtherwiseDeceased(final DateTime pointOfTime,
@@ -2928,7 +3072,7 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
                                                         final RiistakeskuksenAlue rka,
                                                         final boolean rejected) {
         return newOtherwiseDeceased(pointOfTime, some(GameAge.class), some(GameGender.class), cause,
-                                    some(OtherwiseDeceasedSource.class), species, rhy, rka, rejected);
+                some(OtherwiseDeceasedSource.class), species, rhy, rka, rejected);
     }
 
     public final OtherwiseDeceased newOtherwiseDeceased(final DateTime pointOfTime,
@@ -2940,6 +3084,21 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
                                                         final Riistanhoitoyhdistys rhy,
                                                         final RiistakeskuksenAlue rka,
                                                         final boolean rejected) {
+        return newOtherwiseDeceased(pointOfTime, age, gender, cause,
+                source, species, rhy, rka, rejected, newMunicipality());
+    }
+
+    public final OtherwiseDeceased newOtherwiseDeceased(final DateTime pointOfTime,
+                                                        final GameAge age,
+                                                        final GameGender gender,
+                                                        final OtherwiseDeceasedCause cause,
+                                                        final OtherwiseDeceasedSource source,
+                                                        final GameSpecies species,
+                                                        final Riistanhoitoyhdistys rhy,
+                                                        final RiistakeskuksenAlue rka,
+                                                        final boolean rejected,
+                                                        final Municipality municipality) {
+
         final OtherwiseDeceased item = new OtherwiseDeceased();
         item.setSpecies(species);
         item.setAge(age);
@@ -2948,13 +3107,13 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
         item.setPointOfTime(pointOfTime);
         item.setNoExactLocation(someBoolean());
         item.setGeoLocation(geoLocation(GeoLocation.Source.MANUAL));
-        item.setMunicipality(newMunicipality());
+        item.setMunicipality(municipality);
         item.setRhy(rhy);
         item.setRka(rka);
         item.setCause(cause);
-        item.setCauseOther("Other cause " + nextLong());
+        item.setCauseDescription("Other cause " + nextLong());
         item.setSource(source);
-        item.setSourceOther("Other source " + nextLong());
+        item.setSourceDescription("Other source " + nextLong());
         item.setDescription("Description " + nextLong());
         item.setAdditionalInfo("Additional info " + nextLong());
         item.setRejected(rejected);
@@ -2964,7 +3123,7 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
     public final OtherwiseDeceasedChange newOtherwiseDeceasedChange(final OtherwiseDeceased item,
                                                                     final SystemUser user) {
         final OtherwiseDeceasedChange change = new OtherwiseDeceasedChange(item, DateUtil.now(), user.getId(), CREATE,
-                                                                           "Reason for change");
+                "Reason for change");
         return add(change);
     }
 
@@ -2973,10 +3132,123 @@ public class EntitySupplier implements RhyAnnualStatisticsTestDataPopulator {
         return add(attachment);
     }
 
+    public HarvestPermitApplicationSchedule newHarvestPermitApplicationSchedule(final HarvestPermitCategory category,
+                                                                                final DateTime beginTime,
+                                                                                final DateTime endTime,
+                                                                                final String instructionsFi,
+                                                                                final String instructionsSv,
+                                                                                final Boolean activeOverride) {
+        final HarvestPermitApplicationSchedule schedule = new HarvestPermitApplicationSchedule();
+        schedule.setCategory(category);
+        schedule.setBeginTime(beginTime);
+        schedule.setEndTime(endTime);
+        schedule.setInstructionsFi(instructionsFi);
+        schedule.setInstructionsSv(instructionsSv);
+        schedule.setActiveOverride(activeOverride);
+        return add(schedule);
+    }
+
+    public final News newNews(final String titleFi, final String textFi, final String linkFi,
+                              final String titleSv, final String textSv, final String linkSv,
+                              final DateTime publishTime) {
+        final News news = new News();
+        news.setTitleFi(titleFi);
+        news.setTextFi(textFi);
+        news.setLinkFi(linkFi);
+        news.setTitleSv(titleSv);
+        news.setTextSv(textSv);
+        news.setLinkSv(linkSv);
+        news.setPublishTime(publishTime);
+        return add(news);
+    }
+
+    public final PoiIdAllocation newPoiIdAllocation(final HuntingClub club) {
+        final PoiIdAllocation clubPoi = new PoiIdAllocation(club);
+        return add(clubPoi);
+    }
+
+    public final PoiLocationGroup newPoiLocationGroup(final PoiIdAllocation clubPoi, final PointOfInterestType type) {
+        final PoiLocationGroup poi = new PoiLocationGroup(clubPoi, type, nextPositiveInt());
+        return add(poi);
+    }
+
+    public final PoiLocation newPoiLocation(final PoiLocationGroup poi) {
+        final PoiLocation poiLocation = new PoiLocation();
+        poiLocation.setPoi(poi);
+        poiLocation.setVisibleId(nextPositiveInt());
+        poiLocation.setDescription("location-description-" + nextPositiveInt());
+        poiLocation.setGeoLocation(geoLocation());
+
+        return add(poiLocation);
+    }
+
+    public final MailMessageBounce newMailMessageBounce(final String email) {
+        return add(newMailMessageBounce(
+                email, MailMessageBounce.BounceType.Permanent, MailMessageBounce.BounceSubType.General));
+    }
+
+    public final MailMessageBounce newMailMessageBounce(final String email,
+                                                        final MailMessageBounce.BounceType type,
+                                                        final MailMessageBounce.BounceSubType subType) {
+        final MailMessageBounce bounce = new MailMessageBounce();
+        bounce.setRecipientEmailAddress(email);
+        bounce.setBounceType(type);
+        bounce.setRecipientAction("failed");
+        bounce.setRecipientDiagnosticCode("code");
+        bounce.setRecipientStatus("status");
+
+        bounce.setBounceTimestamp(now());
+        bounce.setBounceSubType(subType);
+        bounce.setBounceFeedbackId(String.valueOf(nextPositiveInt()));
+
+        return add(bounce);
+    }
+
+    public final MailMessageComplaint newMailMessageComplaint(final String email) {
+        final MailMessageComplaint complaint = new MailMessageComplaint();
+        complaint.setRecipientEmailAddress(email);
+        complaint.setComplaintTimestamp(now());
+
+        return add(complaint);
+    }
+
+    public final DeletedHarvest newDeletedHarvest(final DateTime deletionTime,
+                                                  final long harvestId,
+                                                  final long authordId,
+                                                  final long shooterId) {
+        final DeletedHarvest deletedHarvest = new DeletedHarvest(harvestId, authordId, shooterId);
+        deletedHarvest.setDeletionTime(deletionTime);
+        return add(deletedHarvest);
+    }
+
+    public final DeletedObservation newDeletedObservation(final DateTime deletionTime,
+                                                          final long harvestId,
+                                                          final long authorId,
+                                                          final long observerId) {
+        final DeletedObservation deletedObservation = new DeletedObservation(harvestId, authorId, observerId);
+        deletedObservation.setDeletionTime(deletionTime);
+        return add(deletedObservation);
+    }
+
+    public final DeletedSrvaEvent newDeletedSrvaEvent(final DateTime deletionTime,
+                                                      final long harvestId,
+                                                      final long authordId) {
+        final DeletedSrvaEvent deletedSrvaEvent = new DeletedSrvaEvent(harvestId, authordId);
+        deletedSrvaEvent.setDeletionTime(deletionTime);
+        return add(deletedSrvaEvent);
+    }
     protected <T extends Persistable<?>> T add(@Nonnull final T object) {
         requireNonNull(object);
         transientEntityList.add(object);
         return object;
+    }
+
+    public DeerCensus newDeerCensus() {
+        HuntingClub huntingClub = newHuntingClub();
+        DeerCensus deerCensus = new DeerCensus();
+        deerCensus.setHuntingClub(huntingClub);
+        deerCensus.setObservationDate(LocalDate.now());
+        return add(deerCensus);
     }
 
     protected int serial() {

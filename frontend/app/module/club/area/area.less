@@ -19,6 +19,10 @@
       padding-top: 10px;
     }
 
+    .club-area-primary-button {
+      margin-bottom: 10px;
+    }
+
     .panel-group {
       margin-top: 5px;
 
@@ -70,6 +74,21 @@
           }
         }
       }
+
+      .r-warning-panel.panel-open {
+        .panel-heading {
+          background-color: @r-red;
+          color: white;
+          border-top: 1px solid @table-border-color;
+        }
+      }
+
+      .r-warning-panel {
+        .panel-heading {
+          background-color: @r-red;
+          color: white;
+        }
+      }
     }
   }
 
@@ -93,5 +112,10 @@
         width: 100%;
       }
     }
+  }
+}
+@media (max-width: @screen-xs-max) {
+  .r-club-areas-layout {
+    display: none;
   }
 }

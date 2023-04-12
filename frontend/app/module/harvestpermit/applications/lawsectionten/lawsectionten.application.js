@@ -79,5 +79,9 @@ angular.module('app.harvestpermit.application.lawsectionten', ['app.metadata'])
             // Species periods
             getSpeciesPeriod: getMethod('/period'),
             saveSpeciesPeriod: postMethod('/period'),
+
+            // Population
+            getSpeciesPopulation: getMethod('/population'),
+            updateSpeciesPopulation: postMethod('/population')
         });
     });

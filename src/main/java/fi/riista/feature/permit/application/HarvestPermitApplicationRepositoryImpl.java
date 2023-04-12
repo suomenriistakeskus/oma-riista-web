@@ -2,6 +2,8 @@ package fi.riista.feature.permit.application;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
+import com.querydsl.core.types.Order;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.Expressions;
@@ -24,7 +26,6 @@ import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.QHarvest;
 import fi.riista.feature.gamediary.harvest.specimen.QHarvestSpecimen;
-import fi.riista.feature.gis.GISPoint;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.harvestpermit.QHarvestPermit;
@@ -44,6 +45,7 @@ import fi.riista.feature.permit.decision.revision.QPermitDecisionRevision;
 import fi.riista.feature.permit.decision.species.QPermitDecisionSpeciesAmount;
 import fi.riista.sql.SQKiinteistoNimet;
 import fi.riista.sql.SQPalstaalue;
+import fi.riista.sql.SQVesialue;
 import fi.riista.sql.SQZone;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
@@ -81,7 +83,6 @@ import static fi.riista.feature.common.decision.GrantStatus.RESTRICTED;
 import static fi.riista.feature.common.decision.GrantStatus.UNCHANGED;
 import static fi.riista.feature.permit.application.HarvestPermitApplication.Status.ACTIVE;
 import static fi.riista.feature.permit.application.HarvestPermitApplication.Status.AMENDING;
-import static fi.riista.feature.permit.application.HarvestPermitApplication.Status.DRAFT;
 import static fi.riista.util.F.mapNullable;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -165,9 +166,7 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
     }
 
     private static BooleanExpression buildPredicateForApprovedAndPublishedDecisionsIn(final Set<Long> decisionIds) {
-        return DECISION.id.in(decisionIds)
-                .and(DECISION.status.eq(DecisionStatus.PUBLISHED)
-                        .and(DECISION.grantStatus.in(UNCHANGED, RESTRICTED)));
+        return DECISION.id.in(decisionIds).and(DECISION.grantStatus.in(UNCHANGED, RESTRICTED));
     }
 
     private Set<Long> fetchDecisionIdsToRenew() {
@@ -384,37 +383,67 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
         final PathBuilder<Geometry> g2 = new PathBuilder<>(Geometry.class, "g2");
         final PathBuilder<Geometry> g3 = new PathBuilder<>(Geometry.class, "g3");
         final PathBuilder<Geometry> g4 = new PathBuilder<>(Geometry.class, "g4");
+        final PathBuilder<Geometry> g5 = new PathBuilder<>(Geometry.class, "g5");
+        final PathBuilder<Geometry> g6 = new PathBuilder<>(Geometry.class, "g6");
         final SQPalstaalue PA1 = new SQPalstaalue("pa1");
-        final SQPalstaalue PA2 = new SQPalstaalue("pa2");
         final SQKiinteistoNimet KN = SQKiinteistoNimet.kiinteistoNimet;
+        final SQVesialue VA = SQVesialue.vesialue;
 
         final GeometryExpression<Geometry> g1Geometry = GeometryExpressions.asGeometry(g1.get("geom", Geometry.class));
         final GeometryExpression<Geometry> g2Geometry = GeometryExpressions.asGeometry(g2.get("geom", Geometry.class));
         final GeometryExpression<Geometry> g3Geometry = GeometryExpressions.asGeometry(g3.get("geom", Geometry.class));
+        final GeometryExpression<Geometry> g4Geometry = GeometryExpressions.asGeometry(g4.get("geom", Geometry.class));
+
+        final PathBuilder<Integer> g4Id = g4.get("id", Integer.class);
+        final PathBuilder<Integer> g5Id = g5.get("id", Integer.class);
+        final PathBuilder<Integer> g6Id = g6.get("id", Integer.class);
+        final PathBuilder<Long> g4Tunnus = g4.get("tunnus", Long.class);
+        final PathBuilder<Long> g5Tunnus = g5.get("tunnus", Long.class);
 
         final GeometryExpression<Geometry> zoneIntersection =
                 GeometryExpressions.geometryOperation(SpatialOps.INTERSECTION, g1Geometry, g2Geometry);
 
-        final NumberPath<Double> g4ConflictAreaSize = g4.getNumber("area_size", Double.class);
+        final NumberPath<Double> g5ConflictAreaSize = g5.getNumber("area_size", Double.class);
+        final NumberPath<Double> g6ConflictWaterSize = g6.getNumber("water_area", Double.class);
         return sqlQueryFactory.query()
                 .with(g1, loadSplicedZoneGeometryExpression(firstZoneId, chunkSize))
                 .with(g2, loadSplicedZoneGeometryExpression(secondZoneId, chunkSize))
                 .with(g3, SQLExpressions
                         .select(stDump(zoneIntersection).as("geom"))
                         .from(g1).join(g2).on(g1Geometry.intersects(g2Geometry)))
+
                 .with(g4, SQLExpressions
-                        .select(PA1.id, Expressions.numberOperation(Double.class, SpatialOps.AREA,
-                                PA1.geom.intersection(g3Geometry)).sum().as(
-                                "area_size"))
-                        .from(g3).join(PA1).on(PA1.geom.intersects(g3Geometry))
-                        .where(g3Geometry.geometryType().in("ST_Polygon", "ST_MultiPolygon"))
-                        .groupBy(PA1.id))
-                .select(Projections.tuple(PA2.id, PA2.tunnus, KN.nimi, g4ConflictAreaSize))
-                .from(g4)
-                .join(PA2).on(PA2.id.eq(g4.get("id", Integer.class)))
-                .leftJoin(KN).on(KN.tunnus.eq(PA2.tunnus))
-                .where(g4ConflictAreaSize.gt(MIN_INTERSECTION_SIZE))
-                .orderBy(PA2.tunnus.asc(), PA2.id.asc())
+                        .select(PA1.id, PA1.tunnus, PA1.geom.intersection(g3Geometry).as("geom"))
+                        .from(g3)
+                        .join(PA1).on(PA1.geom.intersects(g3Geometry))
+                        .where(g3Geometry.geometryType().in("ST_Polygon", "ST_MultiPolygon")))
+
+                .with(g5, SQLExpressions
+                        .select(g4Id, g4Tunnus, Expressions.numberOperation(Double.class, SpatialOps.AREA, g4Geometry).sum().as("area_size"))
+                        .from(g4)
+                        .where(g4Geometry.geometryType().in("ST_Polygon", "ST_MultiPolygon"))
+                        .groupBy(g4Id, g4Tunnus))
+
+                .with(g6, SQLExpressions
+                        .select(g4Id, Expressions.numberOperation(Double.class, SpatialOps.AREA, VA.geom.intersection(g4Geometry)).sum().as("water_area"))
+                        .from(g4)
+                        .join(VA).on(VA.geom.intersects(g4Geometry))
+                        .where(g4Geometry.geometryType().in("ST_Polygon", "ST_MultiPolygon"))
+                        .groupBy(g4Id))
+
+                .select(Projections.tuple(
+                        g5Id,
+                        g5Tunnus,
+                        KN.nimi,
+                        g5ConflictAreaSize,
+                        g6ConflictWaterSize.coalesce(0.0).as("water_area")
+                ))
+                .from(g5)
+                .leftJoin(KN).on(KN.tunnus.eq(g5Tunnus))
+                .leftJoin(g6).on(g6Id.eq(g5Id))
+                .where(g5ConflictAreaSize.gt(MIN_INTERSECTION_SIZE))
+                .orderBy(new OrderSpecifier<>(Order.ASC, g5Tunnus),
+                         new OrderSpecifier<>(Order.ASC, g5Id))
                 .fetch()
                 .stream()
                 .map(tuple -> {
@@ -422,11 +451,11 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
                             new HarvestPermitApplicationConflictPalsta();
                     conflictPalsta.setFirstApplication(firstApplication);
                     conflictPalsta.setSecondApplication(secondApplication);
-                    conflictPalsta.setPalstaId(tuple.get(PA2.id));
-                    conflictPalsta.setPalstaTunnus(tuple.get(PA2.tunnus));
+                    conflictPalsta.setPalstaId(tuple.get(g5Id));
+                    conflictPalsta.setPalstaTunnus(tuple.get(g5Tunnus));
                     conflictPalsta.setPalstaNimi(tuple.get(KN.nimi));
-                    conflictPalsta.setConflictAreaSize(tuple.get(g4ConflictAreaSize));
-
+                    conflictPalsta.setConflictAreaSize(tuple.get(g5ConflictAreaSize));
+                    conflictPalsta.setConflictAreaWaterSize(tuple.get(Expressions.numberPath(Double.class, "water_area")));
                     return conflictPalsta;
                 })
                 .collect(Collectors.toList());
@@ -481,6 +510,7 @@ public class HarvestPermitApplicationRepositoryImpl implements HarvestPermitAppl
                         .and(APPLICATION.harvestPermitCategory.eq(category))
                         .and(DECISION.isNull())
                         .and(APPLICATION.status.eq(ACTIVE).or(APPLICATION.status.eq(AMENDING))))
+                .orderBy(APPLICATION.applicationNumber.asc())
                 .fetch();
     }
 

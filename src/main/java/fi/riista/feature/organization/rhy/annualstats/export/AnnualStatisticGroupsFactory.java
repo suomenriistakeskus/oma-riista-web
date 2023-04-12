@@ -9,27 +9,27 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_EXAM_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_TRAINING_2017;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTING_CONTROL;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTING_CONTROL_2017;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.JHT_TRAINING;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE_2018;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.MAIN_SUMMARY_2017;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.METSAHALLITUS;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_HUNTER_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_JHT_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_OTHER_HUNTER_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_TRAINING_SUMMARY;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.NON_SUBSIDIZABLE_YOUTH_TRAINING;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY_2018;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.YOUTH_TRAINING;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTING_CONTROL;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.JHT_TRAINING;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE_2017;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.MAIN_SUMMARY_2017;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.METSAHALLITUS;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_HUNTER_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_HUNTER_TRAINING_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_HUNTING_RELATED;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_HUNTING_RELATED_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_PUBLIC_ADMIN_TASKS;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_SUMMARY;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_SUMMARY_2022;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_SUMMARY_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_TRAINING_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.PUBLIC_EVENTS;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.PUBLIC_EVENTS_2018;
@@ -39,9 +39,12 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SRVA_DEPORTATIONS;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SRVA_INJURIES;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SRVA_TOTALS;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY_2022;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY_2018;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY_2020;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.TRAINING_SUMMARY;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.TRAINING_SUMMARY_2017;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.YOUTH_TRAINING;
 import static java.util.Arrays.asList;
 
 public class AnnualStatisticGroupsFactory {
@@ -51,12 +54,12 @@ public class AnnualStatisticGroupsFactory {
             return asList(
                     BASIC_INFO,
                     MAIN_SUMMARY_2017,
-                    OTHER_SUMMARY,
+                    OTHER_SUMMARY_2017,
 
                     HUNTER_EXAMS,
                     SHOOTING_TESTS,
                     GAME_DAMAGE,
-                    HUNTING_CONTROL,
+                    HUNTING_CONTROL_2017,
                     OTHER_PUBLIC_ADMIN_TASKS,
 
                     SRVA_TOTALS,
@@ -82,12 +85,12 @@ public class AnnualStatisticGroupsFactory {
             return asList(
                     BASIC_INFO,
                     SUBSIDY_SUMMARY_2018,
-                    OTHER_SUMMARY,
+                    OTHER_SUMMARY_2017,
 
                     HUNTER_EXAMS,
                     SHOOTING_TESTS,
                     GAME_DAMAGE,
-                    HUNTING_CONTROL,
+                    HUNTING_CONTROL_2017,
                     OTHER_PUBLIC_ADMIN_TASKS,
 
                     SRVA_TOTALS,
@@ -114,12 +117,12 @@ public class AnnualStatisticGroupsFactory {
             return asList(
                     BASIC_INFO,
                     SUBSIDY_SUMMARY_2018,
-                    OTHER_SUMMARY,
+                    OTHER_SUMMARY_2017,
 
                     HUNTER_EXAMS,
                     SHOOTING_TESTS,
                     GAME_DAMAGE,
-                    HUNTING_CONTROL,
+                    HUNTING_CONTROL_2017,
                     OTHER_PUBLIC_ADMIN_TASKS,
 
                     SRVA_TOTALS,
@@ -142,10 +145,49 @@ public class AnnualStatisticGroupsFactory {
                     PUBLIC_EVENTS);
         }
 
+        if (year < 2022) {
+            return asList(
+                    BASIC_INFO,
+                    SUBSIDY_SUMMARY_2020,
+                    OTHER_SUMMARY_2017,
+
+                    HUNTER_EXAMS,
+                    SHOOTING_TESTS,
+                    GAME_DAMAGE,
+                    HUNTING_CONTROL_2017,
+                    OTHER_PUBLIC_ADMIN_TASKS,
+
+                    SRVA_TOTALS,
+                    SRVA_ACCIDENTS,
+                    SRVA_DEPORTATIONS,
+                    SRVA_INJURIES,
+
+                    TRAINING_SUMMARY,
+                    HUNTER_EXAM_TRAINING,
+                    JHT_TRAINING,
+                    HUNTER_TRAINING,
+                    YOUTH_TRAINING,
+                    OTHER_HUNTER_TRAINING,
+
+                    NON_SUBSIDIZABLE_TRAINING_SUMMARY,
+                    NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING,
+                    NON_SUBSIDIZABLE_JHT_TRAINING,
+                    NON_SUBSIDIZABLE_HUNTER_TRAINING,
+                    NON_SUBSIDIZABLE_YOUTH_TRAINING,
+                    NON_SUBSIDIZABLE_OTHER_HUNTER_TRAINING,
+
+                    OTHER_HUNTING_RELATED,
+                    COMMUNICATION,
+                    SHOOTING_RANGES,
+                    LUKE,
+                    METSAHALLITUS,
+                    PUBLIC_EVENTS);
+        }
+
         return asList(
                 BASIC_INFO,
-                SUBSIDY_SUMMARY,
-                OTHER_SUMMARY,
+                SUBSIDY_SUMMARY_2022,
+                OTHER_SUMMARY_2022,
 
                 HUNTER_EXAMS,
                 SHOOTING_TESTS,

@@ -10,22 +10,34 @@ public class MobileGroupHuntingStatusDTO {
     private final boolean canCreateObservation;
     private final boolean canEditDiaryEntry;
     private final boolean canEditHuntingDay;
+    /** To ease implementation of MJ views in mobile */
+    private final boolean canEditHarvest;
+    private final boolean canEditObservation;
+    private final boolean huntingFinished;
 
-    public static MobileGroupHuntingStatusDTO from(final @Nonnull GroupHuntingStatusDTO dto) {
+    public static MobileGroupHuntingStatusDTO from(final @Nonnull GroupHuntingStatusDTO dto, final boolean huntingFinished) {
         requireNonNull(dto);
-        return new MobileGroupHuntingStatusDTO(dto.isCanCreateHuntingDay(), dto.isCanCreateHarvest(), dto.isCanCreateObservation(), dto.isCanEditDiaryEntry(), dto.isCanEditHuntingDay());
+        if (huntingFinished) {
+            return new MobileGroupHuntingStatusDTO(false, false, false, false, false, true);
+        }
+        return new MobileGroupHuntingStatusDTO(dto.isCanCreateHuntingDay(), dto.isCanCreateHarvest(), dto.isCanCreateObservation(),
+                                               dto.isCanEditDiaryEntry(), dto.isCanEditHuntingDay(), false);
     }
 
     private MobileGroupHuntingStatusDTO(final boolean canCreateHuntingDay,
                                         final boolean canCreateHarvest,
                                         final boolean canCreateObservation,
                                         final boolean canEditDiaryEntry,
-                                        final boolean canEditHuntingDay) {
+                                        final boolean canEditHuntingDay,
+                                        final boolean huntingFinished) {
         this.canCreateHuntingDay = canCreateHuntingDay;
         this.canCreateHarvest = canCreateHarvest;
         this.canCreateObservation = canCreateObservation;
         this.canEditDiaryEntry = canEditDiaryEntry;
         this.canEditHuntingDay = canEditHuntingDay;
+        this.canEditHarvest = canEditDiaryEntry && canCreateHarvest;
+        this.canEditObservation = canEditDiaryEntry && canCreateObservation;
+        this.huntingFinished = huntingFinished;
     }
 
     public boolean isCanCreateHuntingDay() {
@@ -48,4 +60,15 @@ public class MobileGroupHuntingStatusDTO {
         return canEditHuntingDay;
     }
 
+    public boolean isCanEditHarvest() {
+        return canEditHarvest;
+    }
+
+    public boolean isCanEditObservation() {
+        return canEditObservation;
+    }
+
+    public boolean isHuntingFinished() {
+        return huntingFinished;
+    }
 }

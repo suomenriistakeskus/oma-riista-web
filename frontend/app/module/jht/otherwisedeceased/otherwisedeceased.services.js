@@ -15,8 +15,8 @@ angular.module('app.jht.otherwisedeceased.services', [])
                 GameSpeciesCodes.WILD_FOREST_REINDEER
             ]);
 
-        self.getResults = function (year) {
-            return OtherwiseDeceasedApi.getBriefList({year: year}).$promise;
+        self.searchPage = function (filters, page, pageSize) {
+            return OtherwiseDeceasedApi.getBriefSlice(filters, {page: page, size: pageSize}).$promise;
         };
 
         self.getDetails = function (itemId) {
@@ -66,7 +66,6 @@ angular.module('app.jht.otherwisedeceased.services', [])
         }
 
         return $resource(apiPrefix, {itemId: '@itemId', year: '@year'}, {
-            getBriefList: getMethod('/list', true),
             getDetails: getMethod('/:itemId', false),
             save: postMethod('/save'),
             reject: putMethod('/:itemId/reject'),
@@ -74,4 +73,18 @@ angular.module('app.jht.otherwisedeceased.services', [])
             deleteAttachment: deleteMethod('/attachment/:itemId')
         });
 
+    })
+    .service('OtherwiseDeceasedSearch', function ($http) {
+        function _findPage(url, searchParams, pager) {
+            return $http({
+                method: 'POST',
+                url: url,
+                params: pager,
+                data: searchParams
+            });
+        }
+
+        this.findPage = function (searchParams, pager) {
+            return _findPage('api/v1/deceased/list', searchParams, pager);
+        };
     });

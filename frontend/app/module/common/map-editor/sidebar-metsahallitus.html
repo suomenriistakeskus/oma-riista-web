@@ -16,18 +16,56 @@
     </div>
 </form>
 
+<div class="btn-group btn-group-justified r-sidebar-btn">
+    <label class="btn btn-default r-tab-button"
+           ng-model="$ctrl.selectedTab"
+           uib-btn-radio="'all'"
+           ng-click="$ctrl.setOnlyChanged(false)">
+        <span class="text-primary fa fa-fw fa-2x fa-check-circle r-area-updated-tab-icon"></span>
+        &nbsp;
+        <span class="r-area-updated-tab-text" translate="global.map.editor.tab.mml.showAll"></span>
+    </label>
+
+    <label class="btn btn-default r-tab-button"
+           ng-model="$ctrl.selectedTab"
+           uib-btn-radio="'changed'"
+           ng-click="$ctrl.setOnlyChanged(true)">
+        <span class="text-danger fa fa-fw fa-2x fa-exclamation-triangle r-area-updated-tab-icon"></span>
+        &nbsp;
+        <span class="r-area-updated-tab-text" translate="global.map.editor.tab.mml.onlyChanged"></span>
+    </label>
+</div>
+
 <p class="well well-sm" ng-if="$ctrl.metsahallitus.isEmpty()">
     <span translate="global.map.editor.tab.metsahallitus.emptySelection"></span>
 </p>
 
 <ul class="list-group">
     <li class="list-group-item"
+        ng-class="!$ctrl.showOnlyChanged && !$ctrl.metsahallitus.isUpToDate(area) ? 'r-list-item-changed' : ''"
         ng-click="$ctrl.focusMooseArea(area); $event.stopPropagation()"
-        ng-repeat="area in $ctrl.metsahallitus.getSelectedAreaList() | orderBy:['number', 'year'] track by area.id">
+        ng-repeat="area in $ctrl.getAreaList() | orderBy:['number', 'year'] track by area.id">
 
-        <span class="list-group-item-heading">
-            {{ ::area.number  }} {{ ::area.name  }} ({{ ::area.year }})
-        </span>
+        <div style="display: inline-block">
+            <span ng-if="$ctrl.showOnlyChanged && !$ctrl.metsahallitus.isUpToDate(area)"
+                  class="fa fa-2x fa-exclamation-triangle text-danger r-alert-sign"></span>
+            <div class="r-property-info">
+                <span class="list-group-item-heading">
+                    {{ ::area.number  }} {{ ::area.name  }} ({{ ::area.year }})
+                </span>
+
+                <div class="list-group-item-text">
+                    <strong>{{ area.size | prettyAreaSize }}</strong>
+
+                    <button type="button" class="btn btn-default btn-xs"
+                            ng-show="!$ctrl.metsahallitus.isUpToDate(area)"
+                            ng-click="$ctrl.updateMooseArea(area); $event.stopPropagation();">
+                        <span translate="global.map.editor.tab.mml.fix"></span>
+                        <span class="glyphicon glyphicon-wrench text-info"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <div class="pull-right">
             <button type="button" class="btn btn-default"
@@ -38,15 +76,5 @@
             </button>
         </div>
 
-        <div class="list-group-item-text">
-            <strong>{{ area.size | prettyAreaSize }}</strong>
-
-            <button type="button" class="btn btn-default btn-xs"
-                    ng-show="!$ctrl.metsahallitus.isUpToDate(area)"
-                    ng-click="$ctrl.updateMooseArea(area); $event.stopPropagation();">
-                <span translate="global.map.editor.tab.mml.fix"></span>
-                <span class="glyphicon glyphicon-wrench text-info"></span>
-            </button>
-        </div>
     </li>
 </ul>

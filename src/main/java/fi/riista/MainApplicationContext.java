@@ -15,11 +15,9 @@ import fi.riista.config.JaxbConfig;
 import fi.riista.config.LiquibaseConfig;
 import fi.riista.config.LocalizationConfig;
 import fi.riista.config.MailConfig;
-import fi.riista.config.PapertrailConfig;
 import fi.riista.config.QuartzConfig;
 import fi.riista.config.SchedulingConfig;
 import fi.riista.config.SecurityConfig;
-import fi.riista.config.SentryConfig;
 import fi.riista.config.SerializationConfig;
 import fi.riista.config.properties.EncryptedProperties;
 import fi.riista.feature.account.certificate.HuntingCardQRCodeKeyHolder;
@@ -57,9 +55,7 @@ import java.security.Security;
         JaxbConfig.class,
         BatchConfig.class,
         QuartzConfig.class,
-        AwsCloudConfig.class,
-        SentryConfig.class,
-        PapertrailConfig.class
+        AwsCloudConfig.class
 })
 @PropertySource("classpath:git.properties")
 @PropertySource("classpath:configuration/application.properties")

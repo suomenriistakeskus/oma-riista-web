@@ -144,7 +144,7 @@
         })
 
         .constant('AnnualStatisticsLastAvailableYear', {
-            LAST_YEAR: 2021 // TODO: Update when new annual statistics opened
+            LAST_YEAR: 2022 // TODO: Update when new annual statistics opened
         })
 
         .factory('AnnualStatisticsYears', function ($resource) {
@@ -223,7 +223,7 @@
             });
         })
 
-        .service('RhyAnnualStatisticsService', function (NotificationService, RhyAnnualStatistics,
+        .service('RhyAnnualStatisticsService', function (NotificationService, Helpers, RhyAnnualStatistics,
                                                          RhyAnnualStatisticsPermission, RhyAnnualStatisticsState,
                                                          RhyAnnualStatisticsViewState) {
             var self = this;
@@ -249,11 +249,10 @@
                 } else if (permission === RhyAnnualStatisticsPermission.EDIT &&
                     state !== RhyAnnualStatisticsState.UNDER_INSPECTION) {
 
-                    // Editing is blocked from coordinator after 15.1. next year.
-
-                    var coordinatorEditableEndDate = moment().year(year + 1).month(0).date(15);
-
-                    if (coordinatorEditableEndDate.isSameOrAfter(new Date(), 'day')) {
+                    // Editing is blocked from coordinator after mid January the next year of statistics.
+                    // Last day of statistics year
+                    var date = new Date(year, 11, 31);
+                    if (!this.hasDeadlinePassed(date)) {
                         return true;
                     }
                 }
@@ -289,6 +288,20 @@
                     NotificationService.flashMessage('rhy.annualStats.message.approvalCancelled', 'success');
                     return response;
                 });
+            };
+
+            // RHY annual statistics (and affecting events) are editable until 15th of January next year
+            // (or the next monday if weekend)
+            this.hasDeadlinePassed = function (date) {
+                var eventYear = Helpers.toMoment(date).year();
+                switch (moment().month('January').date(15).isoWeekday()) {
+                    case 6: // Saturday
+                        return eventYear < moment().subtract(17, 'days').year();
+                    case 7: // Sunday
+                        return eventYear < moment().subtract(16, 'days').year();
+                    default: // Weekday
+                        return eventYear < moment().subtract(15, 'days').year();
+                }
             };
         })
 
@@ -655,9 +668,9 @@
                     statistics.hunterExamTraining, filterMode, 'rhy/annualstats/trainings/edit-hunter-exam-training.html', updateFn);
 
                 return openDialog({
-                        isModerator: isModerator,
-                        hunterExamTrainingEventsOverridden: _.isFinite(statistics.hunterExamTraining.moderatorOverriddenHunterExamTrainingEvents)
-                    });
+                    isModerator: isModerator,
+                    hunterExamTrainingEventsOverridden: _.isFinite(statistics.hunterExamTraining.moderatorOverriddenHunterExamTrainingEvents)
+                });
             };
 
             var createTrainingFormGroups = function (trainingTypes) {
@@ -836,6 +849,26 @@
                 $location.search({year: $ctrl.calendarYear, activeTab: activeTab});
             };
 
+            $ctrl.activeTabMissingParticipants = function () {
+                switch ($ctrl.activeTab) {
+                    case 1:
+                        return $ctrl.statistics.missingParticipants.HUNTING_CONTROL_STATISTICS.concat(
+                            $ctrl.statistics.missingParticipants.HUNTER_EXAM_STATISTICS
+                        );
+                    case 3:
+                        return $ctrl.statistics.missingParticipants.YOUTH_TRAINING_STATISTICS.concat(
+                            $ctrl.statistics.missingParticipants.JHT_TRAINING_STATISTICS,
+                            $ctrl.statistics.missingParticipants.OTHER_HUNTER_TRAINING_STATISTICS,
+                            $ctrl.statistics.missingParticipants.HUNTER_TRAINING_STATISTICS,
+                            $ctrl.statistics.missingParticipants.HUNTER_EXAM_TRAINING_STATISTICS
+                        );
+                    case 4:
+                        return $ctrl.statistics.missingParticipants.PUBLIC_EVENT_STATISTICS;
+                    default:
+                        return [];
+                }
+            };
+
             var invokeExport = function (url, groupByRka) {
                 var params = {};
 
@@ -963,6 +996,7 @@
             templateUrl: 'rhy/annualstats/tabs.html',
             bindings: {
                 activeTab: '<',
+                statistics: '<',
                 onActiveTabChanged: '&'
             },
             controller: function () {
@@ -971,6 +1005,16 @@
                 $ctrl.onTabSelected = function (activeTab) {
                     $ctrl.onActiveTabChanged({activeTab: activeTab});
                 };
+
+                $ctrl.hasMissingParticipants = function (participantCategories) {
+                    for (var i = 0; i < participantCategories.length; i++) {
+                        var category = participantCategories[i];
+                        if (category in this.statistics.missingParticipants && this.statistics.missingParticipants[category].length > 0) {
+                            return true;
+                        }
+                    }
+                    return false;
+                };
             }
         })
 
@@ -978,7 +1022,9 @@
             templateUrl: 'rhy/annualstats/timestamped-panel-heading.html',
             bindings: {
                 titleKey: '<',
-                lastModified: '<'
+                titleSecondRowKey: '<',
+                lastModified: '<',
+                hasWarningSign: '<'
             }
         })
 
@@ -1071,6 +1117,7 @@
             bindings: {
                 hunterExams: '<',
                 editable: '<',
+                warnings: '<',
                 openEditDialog: '&'
             },
             controller: function () {
@@ -1088,6 +1135,7 @@
                 shootingTests: '<',
                 editable: '<',
                 openEditDialog: '&',
+                warnings: '<',
                 isModerator: '<'
             },
             controller: function () {
@@ -1117,6 +1165,7 @@
                 huntingControl: '<',
                 editable: '<',
                 openEditDialog: '&',
+                warnings: '<',
                 isModerator: '<'
             }
         })
@@ -1254,12 +1303,12 @@
                 isEditable: '<',
                 isModerator: '<'
             },
-            controller: function (LocalStorageService, RhyAnnualStatisticsEditDialog, RhyTrainingFilterMode) {
+            controller: function (RhyAnnualStatisticsEditDialog, RhyTrainingFilterMode) {
                 var $ctrl = this;
 
                 $ctrl.$onInit = function () {
                     $ctrl.filterMode = RhyTrainingFilterMode.ALL;
-                    $ctrl.activeFilter = _.parseInt(LocalStorageService.getKey('annual-stats-training-filter-mode')) || 0;
+                    $ctrl.activeFilter = 1;
                     $ctrl.onTabSelected($ctrl.activeFilter);
 
                     $ctrl.editHunterExamTraining = function () {
@@ -1284,7 +1333,6 @@
                 };
 
                 $ctrl.onTabSelected = function (activeTab) {
-                    LocalStorageService.setKey('annual-stats-training-filter-mode', activeTab);
                     $ctrl.filterMode = getFilterMode(activeTab);
                 };
 
@@ -1345,6 +1393,7 @@
                 hunterExamTraining: '<',
                 editable: '<',
                 openEditDialog: '&',
+                warnings: '<',
                 filterMode: '<'
             },
             controller: function (RhyTrainingFilterMode, RhyStatsTrainingValueExtractor) {
@@ -1394,6 +1443,7 @@
                 jhtTraining: '<',
                 editable: '<',
                 openEditDialog: '&',
+                warnings: '<',
                 filterMode: '<'
             },
             controller: function (RhyStatsTrainingValueExtractor) {
@@ -1424,6 +1474,7 @@
                 hunterTraining: '<',
                 editable: '<',
                 openEditDialog: '&',
+                warnings: '<',
                 filterMode: '<'
             },
             controller: function (RhyStatsTrainingValueExtractor) {
@@ -1459,6 +1510,7 @@
                 youthTraining: '<',
                 editable: '<',
                 openEditDialog: '&',
+                warnings: '<',
                 filterMode: '<'
             },
             controller: function (RhyStatsTrainingValueExtractor) {
@@ -1488,6 +1540,7 @@
                 otherHunterTraining: '<',
                 editable: '<',
                 openEditDialog: '&',
+                warnings: '<',
                 filterMode: '<'
             },
             controller: function (RhyStatsTrainingValueExtractor) {
@@ -1519,6 +1572,7 @@
             bindings: {
                 publicEvents: '<',
                 editable: '<',
+                warnings: '<',
                 openEditDialog: '&'
             },
             controller: function () {

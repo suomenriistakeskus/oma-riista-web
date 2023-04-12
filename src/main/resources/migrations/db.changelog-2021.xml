@@ -33,10 +33,10 @@
 
         <sql><![CDATA[
             ALTER TABLE rhy_annual_statistics ADD CONSTRAINT ck_luke_northern_lapland_willow_grouse_lines
-            CHECK (luke_northern_lapland_willow_grouse_lines >= 0);
+                CHECK (luke_northern_lapland_willow_grouse_lines >= 0);
             ALTER TABLE rhy_annual_statistics ADD CONSTRAINT ck_luke_carnivore_dna_collectors
-            CHECK (luke_carnivore_dna_collectors >= 0);
-        ]]>
+                CHECK (luke_carnivore_dna_collectors >= 0);
+            ]]>
         </sql>
     </changeSet>
 
@@ -63,9 +63,9 @@
 
         <sql><![CDATA[
             ALTER TABLE game_damage_inspection_event ADD CONSTRAINT ck_game_damage_inspection_event_expenses_included
-            CHECK ((expenses_included = FALSE AND hourly_expenses_unit IS NULL AND daily_allowance IS NULL) OR
-            (expenses_included = TRUE AND hourly_expenses_unit IS NOT NULL AND daily_allowance IS NOT NULL));
-        ]]>
+                CHECK ((expenses_included = FALSE AND hourly_expenses_unit IS NULL AND daily_allowance IS NULL) OR
+                       (expenses_included = TRUE AND hourly_expenses_unit IS NOT NULL AND daily_allowance IS NOT NULL));
+            ]]>
         </sql>
     </changeSet>
 
@@ -88,9 +88,9 @@
                author="vincit-mikkori">
         <sql><![CDATA[
             ALTER TABLE game_damage_inspection_event ADD CONSTRAINT ck_game_damage_inspection_event_inspector
-            CHECK ((inspector_name IS NULL AND inspector_id IS NOT NULL) OR
-            (inspector_name IS NOT NULL AND inspector_id IS NULL));
-        ]]>
+                CHECK ((inspector_name IS NULL AND inspector_id IS NOT NULL) OR
+                       (inspector_name IS NOT NULL AND inspector_id IS NULL));
+            ]]>
         </sql>
     </changeSet>
 
@@ -209,7 +209,7 @@
             UPDATE occupation
             SET name_visibility = false, phone_number_visibility = false, email_visibility = false
             WHERE occupation_type = 'ALUEKOKOUKSEN_VARAEDUSTAJA';
-        ]]>
+            ]]>
         </sql>
 
         <addNotNullConstraint tableName="occupation" columnName="name_visibility"/>
@@ -442,24 +442,24 @@
             - id
             - consistency version
             - lifecycle and audit fields
-                - creation time
-                - modification time
-                - deletion time
-                - created by
-                - modified by
-                - deleted by
+            - creation time
+            - modification time
+            - deletion time
+            - created by
+            - modified by
+            - deleted by
             - geolocation
-                - latitude
-                - longitude
-                - (geolocation) source
-                - accuracy
-                - altitude
-                - altitude accuracy
+            - latitude
+            - longitude
+            - (geolocation) source
+            - accuracy
+            - altitude
+            - altitude accuracy
             - species info
-                - species
-                - age
-                - gender
-                - weight
+            - species
+            - age
+            - gender
+            - weight
             - description
             - more information
             - has rejected or not
@@ -585,12 +585,12 @@
             - id
             - consistency version
             - lifecycle and audit fields
-              - creation time
-              - modification time
-              - deletion time
-              - created by
-              - modified by
-              - deleted by
+            - creation time
+            - modification time
+            - deletion time
+            - created by
+            - modified by
+            - deleted by
             - attachment metadata
             - otherwise deceased id
 
@@ -789,7 +789,6 @@
         ]]></createProcedure>
     </changeSet>
 
-
     <changeSet id="2021-09-02-weapon-transportation-drop-obsolete-columns" author="vincit-terole">
         <dropColumn tableName="weapon_transportation_vehicle">
             <column name="register_number" type="VARCHAR(255)"></column>
@@ -808,4 +807,739 @@
             <column name="name" value="LARGE_CARNIVORE_WOLF_PORONHOITO"/>
         </insert>
     </changeSet>
+
+    <changeSet id="2021-10-04-harvest_permit_application_schedule" author="vincit-mikkori">
+        <createTable tableName="harvest_permit_application_schedule">
+            <column autoIncrement="true" name="harvest_permit_application_schedule_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_permit_application_schedule_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="category" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             unique="true"
+                             primaryKey="true"
+                             references="harvest_permit_category(name)"
+                             foreignKeyName="fk_harvest_permit_application_schedule_category"/>
+            </column>
+            <column name="begin_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="end_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="instructions_fi" type="TEXT"/>
+            <column name="instructions_sv" type="TEXT"/>
+            <column name="active_override" type="BOOLEAN"/>
+        </createTable>
+
+        <createIndex tableName="harvest_permit_application_schedule" indexName="ndx_harvest_permit_application_schedule_category">
+            <column name="category"/>
+        </createIndex>
+
+        <sql><![CDATA[
+            ALTER TABLE harvest_permit_application_schedule ADD CONSTRAINT ck_harvest_permit_application_schedule
+                CHECK ((active_override IS NOT NULL AND begin_time IS NULL AND end_time IS NULL) OR
+                       (active_override IS NULL AND begin_time IS NOT NULL AND end_time IS NOT NULL AND begin_time <= end_time));
+            ]]>
+        </sql>
+    </changeSet>
+
+    <changeSet id="2021-10-05-populate-harvest-permit-application-schedule" author="vincit-mikkori">
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="MOOSELIKE"/>
+            <column name="begin_time" value="2021-04-01 00:00:00"/>
+            <column name="end_time" value="2021-04-30 16:15:59"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="BIRD"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="MAMMAL"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="LARGE_CARNIVORE_BEAR"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <sql><![CDATA[
+            INSERT INTO harvest_permit_application_schedule (category, begin_time, end_time, instructions_fi, instructions_sv)
+            VALUES ('LARGE_CARNIVORE_LYNX', '2021-09-14 00:00:00', '2021-10-10 23:59:59', E'Hakuaika:\n19.4. - 4.10.', E'Licensansökning:\n19.4. - 4.10.');
+            ]]>
+        </sql>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="LARGE_CARNIVORE_LYNX_PORONHOITO"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="LARGE_CARNIVORE_WOLF"/>
+            <column name="active_override" value="FALSE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="NEST_REMOVAL"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="LAW_SECTION_TEN"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="WEAPON_TRANSPORTATION"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="DOG_UNLEASH"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="DOG_DISTURBANCE"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="DISABILITY"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="DEPORTATION"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="RESEARCH"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="IMPORTING"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="GAME_MANAGEMENT"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2021-08-18-news-table" author="vincit-mikkori">
+        <createTable tableName="news">
+            <column autoIncrement="true" name="news_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="news_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="title_fi" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="text_fi" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="link_fi" type="TEXT"/>
+
+            <column name="title_sv" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="text_sv" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="link_sv" type="TEXT"/>
+
+            <column name="publish_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2021-08-04-create-table-poi-id-allocation" author="vincit-terole">
+        <createTable tableName="poi_id_allocation">
+            <column autoIncrement="true" name="poi_id_allocation_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="poi_id_allocation_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="club_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="organisation(organisation_id)"
+                             foreignKeyName="fk_hunting_club_poi_club"/>
+            </column>
+            <column name="id_counter" type="INT" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="poi_id_allocation" indexName="ndx_poi_id_allocation_club">
+            <column name="club_id">
+                <constraints unique="true"></constraints>
+            </column>
+        </createIndex>
+
+    </changeSet>
+
+    <changeSet id="2021-08-06-create-table-point-of-interest" author="vincit-terole">
+        <createTable tableName="point_of_interest_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="point_of_interest_type_pkey"/>
+            </column>
+        </createTable>
+
+        <insert tableName="point_of_interest_type">
+            <column name="name">S</column>
+        </insert>
+        <insert tableName="point_of_interest_type">
+            <column name="name">M</column>
+        </insert>
+        <insert tableName="point_of_interest_type">
+            <column name="name">F</column>
+        </insert>
+        <insert tableName="point_of_interest_type">
+            <column name="name">O</column>
+        </insert>
+
+        <createTable tableName="poi_location_group">
+            <column autoIncrement="true" name="poi_location_group_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="poi_location_group_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="poi_id_allocation_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="poi_id_allocation(poi_id_allocation_id)"
+                             foreignKeyName="fk_poi_location_group_poi_id_allocation_id"/>
+            </column>
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="point_of_interest_type(name)"
+                             foreignKeyName="fk_point_of_interest_type"/>
+            </column>
+            <column name="visible_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+        </createTable>
+
+        <comment>Visible id must be unique inside club context</comment>
+        <createIndex tableName="poi_location_group" indexName="ndx_poi_location_group_visible_id" unique="true">
+            <column name="poi_id_allocation_id"></column>
+            <column name="visible_id"></column>
+        </createIndex>
+
+        <createIndex tableName="poi_location_group" indexName="ndx_poi_location_group_poi_id_allocation">
+            <column name="poi_id_allocation_id"></column>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2021-08-11-poi-location" author="vincit-terole">
+        <createTable tableName="poi_location">
+            <column autoIncrement="true" name="poi_location_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="poi_location_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="poi_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="poi_location_group(poi_location_group_id)"
+                             foreignKeyName="fk_poi_location_poi"/>
+            </column>
+            <column name="visible_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+
+            <column name="latitude" type="INT"/>
+            <column name="longitude" type="INT"/>
+            <column name="accuracy" type="DOUBLE"/>
+            <column name="altitude" type="DOUBLE"/>
+            <column name="altitude_accuracy" type="DOUBLE"/>
+            <column name="geolocation_source" type="VARCHAR(255)"/>
+        </createTable>
+
+        <createIndex tableName="poi_location" indexName="ndx_poi_location_poi_visible_id" unique="true">
+            <column name="poi_id"></column>
+            <column name="visible_id"></column>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2021-09-10-club-area-poi-table" author="vincit-terole">
+        <createTable tableName="hunting_club_area_poi">
+            <column name="hunting_club_area_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="poi_location_group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="hunting_club_area_poi" columnNames="hunting_club_area_id, poi_location_group_id"/>
+
+        <addForeignKeyConstraint baseTableName="hunting_club_area_poi" baseColumnNames="hunting_club_area_id"
+                                 constraintName="fk_hunting_club_area_poi"
+                                 referencedTableName="hunting_club_area"
+                                 referencedColumnNames="hunting_club_area_id"/>
+    </changeSet>
+
+    <changeSet id="2021-11-02-create-tables-information_request_link-and-information_request_log"
+               author="vincit-miikkala">
+        <comment>
+            Create table information_request_link:
+            - id
+            - link identifier
+            - decision id
+            - recipient email
+            - recipient name
+            - valid to (timestamp)
+
+            Create table information_request_log:
+
+            lupa (permit)
+            lupatyyppi (permit type code)
+            lupalaji (game species id)
+            päivämäärä (timestamp)
+        </comment>
+
+        <createTable tableName="information_request_link_type">
+            <column name="type" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+        <insert tableName="information_request_link_type">
+            <column name="type" value="APPLICATION"/>
+        </insert>
+        <insert tableName="information_request_link_type">
+            <column name="type" value="DECISION"/>
+        </insert>
+        <insert tableName="information_request_link_type">
+            <column name="type" value="APPLICATION_AND_DECISION"/>
+        </insert>
+
+        <createTable tableName="information_request_link">
+            <column autoIncrement="true" name="information_request_link_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="information_request_link_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="information_request_link_type" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="information_request_link_type(type)"
+                             foreignKeyName="fk_information_request_link_type"/>
+            </column>
+
+            <column name="link_identifier" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints nullable="false" references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_information_request_link_decision"/>
+            </column>
+
+            <column name="recipient_email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="recipient_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="valid_until" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="title" type="VARCHAR(255)"/>
+
+            <column name="description" type="TEXT"/>
+
+        </createTable>
+
+        <createTable tableName="information_request_log">
+            <column autoIncrement="true" name="information_request_log_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="information_request_log_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="information_request_link_id" type="BIGINT"/>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="permit_decision_id" type="BIGINT">
+                <constraints nullable="false" references="permit_decision(permit_decision_id)"
+                             foreignKeyName="fk_information_request_log_decision"/>
+            </column>
+
+            <column name="permit_type_code" type="VARCHAR(3)"/>
+
+        </createTable>
+
+    </changeSet>
+
+    <changeSet id="2021-10-05-occupation-training" author="vincit-terole">
+        <createTable tableName="occupation_training">
+            <column autoIncrement="true" name="occupation_training_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="occupation_training_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="external_id" type="VARCHAR(255)">
+                <constraints unique="true" uniqueConstraintName="uk_occupation_training_external_id"/>
+            </column>
+
+            <column name="occupation_type" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="occupation_type(name)"
+                             foreignKeyName="fk_occupation_training_occupation_type"/>
+            </column>
+
+            <column name="training_type" type="CHAR(1)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="training_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="person_id" type="BIGINT">
+                <constraints nullable="false"
+                             references="person(person_id)"
+                             foreignKeyName="fk_occupation_training_person_id"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="occupation_training" indexName="ndx_occupation_training_person">
+            <column name="person_id"/>
+        </createIndex>
+
+        <sql><![CDATA[
+            ALTER TABLE occupation_training
+                ADD CONSTRAINT ck_occupation_training_type
+                    CHECK (training_type IN ('L', 'S'));
+            ]]></sql>
+    </changeSet>
+
+     <changeSet id="2021-09-01-create-hunting_control_event_type" author="vincit-nikooj">
+        <comment>
+            Table containing values possible in hunting_control_event.event_type field.
+        </comment>
+
+        <createTable tableName="hunting_control_event_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="hunting_control_event_type_pkey"/>
+            </column>
+        </createTable>
+
+        <insert tableName="hunting_control_event_type">
+            <column name="name">MOOSELIKE_HUNTING_CONTROL</column>
+        </insert>
+        <insert tableName="hunting_control_event_type">
+            <column name="name">LARGE_CARNIVORE_HUNTING_CONTROL</column>
+        </insert>
+        <insert tableName="hunting_control_event_type">
+            <column name="name">GROUSE_HUNTING_CONTROL</column>
+        </insert>
+        <insert tableName="hunting_control_event_type">
+            <column name="name">WATERFOWL_HUNTING_CONTROL</column>
+        </insert>
+        <insert tableName="hunting_control_event_type">
+            <column name="name">DOG_DISCIPLINE_CONTROL</column>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2021-09-01-alter-hunting_control_event" author="vincit-nikooj">
+        <comment>
+            Add new fields:
+            - event_type
+            - other_participants
+            - location_description
+
+            Not mandatory anymore:
+            - title (actually replaced by event_type but for backward compatibility)
+            - inspectors (contains other participants for now on)
+            - description
+        </comment>
+
+        <addColumn tableName="hunting_control_event">
+            <column name="event_type" type="VARCHAR(255)">
+                <constraints references="hunting_control_event_type(name)"
+                             foreignKeyName="fk_hunting_control_event_type"/>
+            </column>
+            <column name="other_participants" type="TEXT"></column>
+            <column name="location_description" type="TEXT"></column>
+        </addColumn>
+
+        <dropNotNullConstraint tableName="hunting_control_event" columnName="title"/>
+        <dropNotNullConstraint tableName="hunting_control_event" columnName="inspectors"/>
+        <dropNotNullConstraint tableName="hunting_control_event" columnName="description"/>
+
+    </changeSet>
+
+    <changeSet id="2021-09-01-create-hunting_control_event_inspector" author="vincit-nikooj">
+        <comment>
+            Many-to-many mapping table for inspectors (persons) and hunting control events.
+        </comment>
+
+        <createTable tableName="hunting_control_event_inspector">
+            <column name="hunting_control_event_id" type="BIGINT">
+                <constraints nullable="false" references="hunting_control_event(hunting_control_event_id)"
+                             foreignKeyName="fk_hunting_control_event_inspector_hunting_control_event_id"/>
+            </column>
+            <column name="person_id" type="BIGINT">
+                <constraints nullable="false" references="person(person_id)"
+                             foreignKeyName="fk_hunting_control_event_inspector_person_id"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="hunting_control_event_inspector"
+                       columnNames="hunting_control_event_id, person_id"/>
+    </changeSet>
+
+    <changeSet id="2021-09-02-create-hunting_control_event_status" author="vincit-nikooj">
+        <comment>
+            Table containing values possible in hunting_control_event.status field.
+        </comment>
+
+        <createTable tableName="hunting_control_event_status">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="hunting_control_event_status_pkey"/>
+            </column>
+        </createTable>
+
+        <insert tableName="hunting_control_event_status">
+            <column name="name">PROPOSED</column>
+        </insert>
+        <insert tableName="hunting_control_event_status">
+            <column name="name">REJECTED</column>
+        </insert>
+        <insert tableName="hunting_control_event_status">
+            <column name="name">ACCEPTED</column>
+        </insert>
+        <insert tableName="hunting_control_event_status">
+            <column name="name">ACCEPTED_SUBSIDIZED</column>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2021-09-02-add-column-status-to-hunting_control_event" author="vincit-nikooj">
+        <comment>
+            Add new field:
+            - status
+        </comment>
+
+        <addColumn tableName="hunting_control_event">
+            <column name="status" type="VARCHAR(255)">
+                <constraints references="hunting_control_event_status(name)"
+                             foreignKeyName="fk_hunting_control_event_status"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2021-09-02-enable-many-cooperation_types-in-hunting_control_event" author="vincit-nikooj">
+        <comment>
+            Create one-to-many mapping table for hunting_control_event and hunting_control_event_cooperation_type.
+
+            hunting_control_event.cooperation_type is no more mandatory. Will be removed after migration.
+        </comment>
+
+        <createTable tableName="hunting_control_cooperation">
+            <column name="hunting_control_event_id" type="BIGINT">
+                <constraints nullable="false" references="hunting_control_event(hunting_control_event_id)"
+                             foreignKeyName="fk_hunting_control_cooperation_hunting_control_event_id"/>
+            </column>
+            <column name="type" type="VARCHAR(255)">
+                <constraints nullable="false" references="hunting_control_cooperation_type(name)"
+                             foreignKeyName="fk_hunting_control_cooperation_type"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="hunting_control_cooperation"
+                       columnNames="hunting_control_event_id, type"/>
+
+        <dropNotNullConstraint tableName="hunting_control_event" columnName="cooperation_type"/>
+    </changeSet>
+
+    <changeSet id="2021-09-02-copy-hunting_control_event-inspectors-to-other_participants" author="vincit-nikooj" dbms="postgresql">
+        <comment>
+            Copy data from inspectors to other_participants that will replace it. Inspectors column will be
+            dropped later. The column is not just renamed, because the rollback would be more difficult.
+        </comment>
+        <createProcedure><![CDATA[
+            UPDATE hunting_control_event
+            SET other_participants = inspectors;
+        ]]></createProcedure>
+    </changeSet>
+
+    <changeSet id="2021-09-03-copy-hunting_control_event-cooperation_type-data" author="vincit-nikooj" dbms="postgresql">
+        <comment>
+            Copy existing values from hunting_control_event.cooperation_type to hunting_control_cooperation table.
+        </comment>
+        <createProcedure><![CDATA[
+            INSERT INTO hunting_control_cooperation
+            SELECT hunting_control_event_id, cooperation_type
+            FROM hunting_control_event
+            WHERE cooperation_type IS NOT null;
+        ]]></createProcedure>
+    </changeSet>
+
+    <changeSet id="2021-10-15-add-hunting_control_event_type-other" author="vincit-nikooj">
+        <insert tableName="hunting_control_event_type">
+            <column name="name">OTHER</column>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2021-10-25-create-table-hunting_control_event_change_type" author="vincit-nikooj">
+        <createTable tableName="hunting_control_event_change_type">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="hunting_control_event_change_type_pkey"/>
+            </column>
+        </createTable>
+
+        <insert tableName="hunting_control_event_change_type">
+            <column name="name">CREATE</column>
+        </insert>
+        <insert tableName="hunting_control_event_change_type">
+            <column name="name">MODIFY</column>
+        </insert>
+        <insert tableName="hunting_control_event_change_type">
+            <column name="name">DELETE</column>
+        </insert>
+        <insert tableName="hunting_control_event_change_type">
+            <column name="name">RESTORE</column>
+        </insert>
+        <insert tableName="hunting_control_event_change_type">
+            <column name="name">DELETE_ATTACHMENT</column>
+        </insert>
+        <insert tableName="hunting_control_event_change_type">
+            <column name="name">CHANGE_STATUS</column>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2021-10-25-create-table-hunting_control_event_change" author="vincit-nikooj">
+        <comment>
+            Create table hunting_control_event_change:
+            - id
+            - consistency version
+            - hunting control event id
+            - point of time
+            - user id
+            - change type
+            - reason for change
+
+            Index also by hunting control event id.
+        </comment>
+
+        <createTable tableName="hunting_control_event_change">
+            <column autoIncrement="true" name="hunting_control_event_change_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="hunting_control_event_change_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="hunting_control_event_id" type="BIGINT">
+                <constraints nullable="false" references="hunting_control_event(hunting_control_event_id)"
+                             foreignKeyName="fk_hunting_control_event_hunting_control_event_id"/>
+            </column>
+
+            <column name="point_of_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_id" type="BIGINT"/>
+
+            <column name="change_type" type="VARCHAR(255)">
+                <constraints nullable="false" references="hunting_control_event_change_type(name)"
+                             foreignKeyName="fk_hunting_control_event_change_hunting_control_event_change_type"/>
+            </column>
+
+            <column name="reason_for_change" type="TEXT"/>
+        </createTable>
+
+        <createIndex tableName="hunting_control_event_change"
+                     indexName="ndx_hunting_control_event_change_hunting_control_event_id">
+            <column name="hunting_control_event_id"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

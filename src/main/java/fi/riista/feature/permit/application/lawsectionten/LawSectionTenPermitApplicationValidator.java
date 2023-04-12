@@ -1,12 +1,14 @@
 package fi.riista.feature.permit.application.lawsectionten;
 
 import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.PermitHolder;
 import fi.riista.feature.permit.application.attachment.HarvestPermitApplicationAttachment;
 import fi.riista.feature.permit.application.lawsectionten.period.LawSectionTenPermitApplicationSpeciesPeriodValidator;
 import fi.riista.feature.permit.application.validation.ValidationUtil;
+import fi.riista.util.NumberUtils;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.LocalDate;
 
@@ -57,7 +59,21 @@ public class LawSectionTenPermitApplicationValidator {
         assertLawSectionTenPermitSpecies(speciesCodes);
         assertPermitHolderInformationValid(application);
         assertPeriodInformationValid(speciesAmounts);
-        assertPopulationInformationValid(speciesAmounts);
+
+        switch (application.getHarvestPermitCategory()) {
+            case LAW_SECTION_TEN:
+                assertPopulationInformationValidForSectionTen(speciesAmounts);
+                break;
+            case EUROPEAN_BEAVER:
+                assertPopulationInformationValidForBeaver(lawSectionTenPermitApplication);
+                break;
+            case PARTRIDGE:
+                assertPopulationInformationValidForPartridge(lawSectionTenPermitApplication);
+                break;
+            default:
+                failValidation("Invalid permit category");
+        }
+
         assertAreaInformationValid(lawSectionTenPermitApplication);
 
         if (StringUtils.isBlank(lawSectionTenPermitApplication.getAreaDescription())) {
@@ -112,10 +128,35 @@ public class LawSectionTenPermitApplicationValidator {
         }
     }
 
-    static void assertPopulationInformationValid(final List<HarvestPermitApplicationSpeciesAmount> speciesAmounts) {
+    static void assertPopulationInformationValidForSectionTen(final List<HarvestPermitApplicationSpeciesAmount> speciesAmounts) {
         for (HarvestPermitApplicationSpeciesAmount spa : speciesAmounts) {
             assertHasText(spa.getPopulationAmount(), "population amount", spa);
             assertHasText(spa.getPopulationDescription(), "population description", spa);
+        }
+    }
+
+    static void assertPopulationInformationValidForBeaver(final LawSectionTenPermitApplication sectionTenApplication) {
+        assertMandatoryStringField(sectionTenApplication.getJustification(), "justification");
+        assertMandatoryStringField(sectionTenApplication.getDamagesCaused(), "damages caused");
+        assertMandatoryStringField(sectionTenApplication.getPopulationDescription(), "population description");
+    }
+
+    static void assertPopulationInformationValidForPartridge(final LawSectionTenPermitApplication sectionTenApplication) {
+        assertMandatoryStringField(sectionTenApplication.getJustification(), "justification");
+        assertMandatoryStringField(sectionTenApplication.getPopulationDescription(), "population description");
+        assertMandatoryStringField(sectionTenApplication.getTransferredAnimalOrigin(), "animal origin");
+
+        if (sectionTenApplication.getTransferredAnimalAmount() == null) {
+            failValidation("Transferred animal count missing");
+        }
+        if (sectionTenApplication.getTransferredAnimalAmount() < 0) {
+            failValidation("Transferred animal count negative");
+        }
+    }
+
+    static void assertMandatoryStringField(final String value, final String name) {
+        if (StringUtils.isEmpty(value)) {
+            failValidation("Missing mandatory field " + name);
         }
     }
 

@@ -36,9 +36,11 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.PETOYHDYSHENKILO;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_JASEN;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
@@ -91,12 +93,10 @@ public class UserAuthorizationHelper {
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public void assertClubContactOrModerator(final HuntingClub club) {
         activeUserService.findActiveUserInfo()
-                .filter(userInfo -> {
-                    return userInfo.isAdminOrModerator()
-                            || getPerson(userInfo)
-                                    .map(person -> isClubContact(club, person))
-                                    .orElse(false);
-                })
+                .filter(userInfo -> userInfo.isAdminOrModerator()
+                        || getPerson(userInfo)
+                                .map(person -> isClubContact(club, person))
+                                .orElse(false))
                 .orElseThrow(() -> new AccessDeniedException(String.format(
                         "User id:%s is not contact for clubId:%s",
                         activeUserService.getActiveUserIdOrNull(), club.getId())));
@@ -133,6 +133,40 @@ public class UserAuthorizationHelper {
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
     public boolean isSrvaContactPerson(final Organisation rhy, final Person person) {
         return rhy != null && person != null && hasRoleInOrganisation(rhy, person, SRVA_YHTEYSHENKILO);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isGameWarden(final Organisation rhy) {
+        return isGameWarden(rhy, activeUserService.getActiveUserInfoOrNull());
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isGameWarden(final Organisation rhy, final UserInfo userInfo) {
+        return rhy != null && getPerson(userInfo)
+                .map(person -> isGameWarden(rhy, person))
+                .orElse(false);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isGameWarden(final Organisation rhy, final Person person) {
+        return rhy != null && person != null && hasRoleInOrganisation(rhy, person, METSASTYKSENVALVOJA);
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isGameWardenOnAnyRhy(final Person person) {
+        return occupationRepository.countActiveByTypeAndPerson(person, EnumSet.of(METSASTYKSENVALVOJA)) > 0;
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isGameWardenValidOn(final Organisation rhy, final LocalDate localDate) {
+        final UserInfo userInfo = activeUserService.getActiveUserInfoOrNull();
+        return getPerson(userInfo)
+                .map(person -> 0 < occupationRepository.countActiveByTypeAndPersonAndOrganizationValidOn(
+                        rhy,
+                        person,
+                        EnumSet.of(METSASTYKSENVALVOJA),
+                        localDate)
+                ).orElse(false);
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
@@ -313,6 +347,17 @@ public class UserAuthorizationHelper {
                 huntingGroupRepository.findAll(compoundGroupCriteria),
                 person,
                 EnumSet.of(RYHMAN_METSASTYKSENJOHTAJA));
+    }
+
+    @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)
+    public boolean isLeaderOfSomeClubHuntingGroup(final HuntingClub club, final Person person) {
+        for (final Occupation o : person.getClubSpecificOccupations()) {
+            if (o.getOccupationType().equals(RYHMAN_METSASTYKSENJOHTAJA)
+                    && Objects.requireNonNull(o.getOrganisation().getParentOrganisation().getId()).equals(club.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Transactional(readOnly = true, propagation = Propagation.MANDATORY, noRollbackFor = RuntimeException.class)

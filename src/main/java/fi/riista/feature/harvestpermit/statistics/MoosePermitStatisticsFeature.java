@@ -58,7 +58,8 @@ public class MoosePermitStatisticsFeature {
     private HarvestPermitSpeciesAmountRepository harvestPermitSpeciesAmountRepository;
 
     @Transactional(readOnly = true)
-    public List<MoosePermitStatisticsDTO> getRhyStatistics(final long permitId, final int speciesCode, Locale locale) {
+    public List<MoosePermitStatisticsDTO> getRhyStatistics(final long permitId, final int speciesCode, final Locale locale,
+                                                           final boolean isClubView) {
         final HarvestPermit permit = requireEntityService.requireHarvestPermit(permitId, EntityPermission.READ);
         final MoosePermitStatisticsI18n i18n = createI18n(locale, speciesCode);
         final String rhyOfficialCode = permit.getRhy().getOfficialCode();
@@ -68,12 +69,12 @@ public class MoosePermitStatisticsFeature {
                 .findUnambiguousHuntingYear()
                 .orElseThrow(IllegalStateException::new);
 
-        return calculateByPermit(i18n, speciesCode, huntingYear, MoosePermitStatisticsOrganisationType.RHY, rhyOfficialCode)
+        return calculateByPermit(i18n, speciesCode, huntingYear, MoosePermitStatisticsOrganisationType.RHY, rhyOfficialCode, isClubView)
                 .build(MoosePermitStatisticsGroupBy.RHY_PERMIT, true);
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR,ROLE_COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_COORDINATOR')")
     public List<MoosePermitStatisticsDTO> calculate(final @Nonnull Locale locale,
                                                     final @Nonnull MoosePermitStatisticsReportType reportType,
                                                     final @Nonnull MoosePermitStatisticsGroupBy groupBy,
@@ -91,7 +92,7 @@ public class MoosePermitStatisticsFeature {
 
         switch (reportType) {
             case BY_PERMIT:
-                return calculateByPermit(i18n, speciesCode, huntingYear, orgType, orgCode).build(groupBy, includeGrandTotal);
+                return calculateByPermit(i18n, speciesCode, huntingYear, orgType, orgCode, false).build(groupBy, includeGrandTotal);
             case BY_LOCATION:
                 return calculateByLocation(i18n, speciesCode, huntingYear, orgType, orgCode).build(groupBy, includeGrandTotal);
             default:
@@ -103,7 +104,8 @@ public class MoosePermitStatisticsFeature {
                                                            final int speciesCode,
                                                            final int huntingYear,
                                                            final MoosePermitStatisticsOrganisationType orgType,
-                                                           final String orgCode) {
+                                                           final String orgCode,
+                                                           final boolean isClubView) {
         final Map<Long, MoosePermitStatisticsPermitInfo> permits =
                 findPermitsForOrganisation(orgType, orgCode, speciesCode, huntingYear);
         final Set<Long> permitIds = permits.keySet();
@@ -120,8 +122,9 @@ public class MoosePermitStatisticsFeature {
         for (final Long permitId : permitIds) {
             final MoosePermitStatisticsPermitInfo permitInfo = permits.get(permitId);
             final MoosePermitStatisticsAmountDTO permitAmount = permitAmountMapping.get(permitId);
-            final MoosePermitStatisticsAreaAndPopulation areaAndPopulation = MoosePermitStatisticsAreaAndPopulation
-                    .create(permitInfo.getPermitAreaSize(), summaryMapping.listByHarvestPermit(permitId));
+            final MoosePermitStatisticsAreaAndPopulation areaAndPopulation = !isClubView ?
+                    MoosePermitStatisticsAreaAndPopulation.create(permitInfo.getPermitAreaSize(), summaryMapping.listByHarvestPermit(permitId)) :
+                    MoosePermitStatisticsAreaAndPopulation.createForClub(permitInfo.getPermitAreaSize(), summaryMapping.listByHarvestPermit(permitId));
 
             builder.addPermit(permitInfo, permitAmount, areaAndPopulation);
             builder.addHarvestCount(new PermitAndLocationId(permitInfo), harvestCountMapping.sumCountsByPermit(permitId));

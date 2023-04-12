@@ -66,6 +66,8 @@ public class PermitDecisionSpeciesAmountService {
             case NEST_REMOVAL:
                 return createGenerator(decision).createForNestRemoval();
             case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 return createGenerator(decision).createForLawSectionTen();
             default:
                 throw new IllegalArgumentException("Unsupported application category:" + application.getHarvestPermitCategory());

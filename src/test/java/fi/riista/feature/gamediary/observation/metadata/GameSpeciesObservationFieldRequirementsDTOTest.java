@@ -248,7 +248,7 @@ public class GameSpeciesObservationFieldRequirementsDTOTest implements ValueGene
                                                        final ObservationCategory category,
                                                        final int metadataVersion) {
 
-        // Mocking needed becase JPA static metamodel is not available.
+        // Mocking needed because JPA static metamodel is not available.
         final ObservationBaseFields baseFields = spy(new ObservationBaseFields());
 
         doReturn(species).when(baseFields).getSpecies();
@@ -280,7 +280,7 @@ public class GameSpeciesObservationFieldRequirementsDTOTest implements ValueGene
                                                                                final ObservationType type,
                                                                                final int metadataVersion) {
 
-        // Mocking needed becase JPA static metamodel is not available.
+        // Mocking needed because JPA static metamodel is not available.
         final ObservationContextSensitiveFields ctxFields = spy(new ObservationContextSensitiveFields());
 
         doReturn(species).when(ctxFields).getSpecies();

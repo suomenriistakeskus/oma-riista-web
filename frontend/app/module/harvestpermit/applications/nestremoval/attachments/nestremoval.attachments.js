@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.nestremoval.attachments', ['app.me
                 templateUrl: 'harvestpermit/applications/nestremoval/attachments/attachments.html',
                 controller: 'DerogationPermitWizardAttachmentsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     attachmentList: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.listAttachments({

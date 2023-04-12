@@ -57,14 +57,15 @@ public class GISGeometryApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/property/id", method = RequestMethod.GET, produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
-    public FeatureCollection propertyById(@RequestParam Long id) {
-        return propertyGeometryLookupFeature.findById(id);
+    public FeatureCollection propertyById(@RequestParam Long id, @RequestParam(required = false) boolean withWaterArea) {
+        return propertyGeometryLookupFeature.findById(id, withWaterArea);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @RequestMapping(value = "/property/point", method = RequestMethod.GET, produces = MediaTypeExtras.APPLICATION_GEOJSON_VALUE)
-    public FeatureCollection propertyByPoint(@RequestParam double lat, @RequestParam double lng) {
-        return propertyGeometryLookupFeature.findByPoint(lat, lng);
+    public FeatureCollection propertyByPoint(@RequestParam double lat, @RequestParam double lng,
+                                             @RequestParam(required = false) boolean withWaterArea) {
+        return propertyGeometryLookupFeature.findByPoint(lat, lng, withWaterArea);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)

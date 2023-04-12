@@ -80,7 +80,7 @@ public class MammalHarvestReportPdfTest {
 
         final List<PermitDecisionSpeciesAmount> speciesAmountList = Arrays.asList(spa1, spa2);
 
-        final PermitHarvestReportModel model = PermitHarvestReportModel.create(permitDecision, speciesAmountList);
+        final PermitHarvestReportModel model = PermitHarvestReportModel.createFromDecision(permitDecision, speciesAmountList);
         final Map<Integer, LocalisedString> speciesNameIndex = Collections
                 .singletonMap(41423, new LocalisedString("VILLISIKA", "VILDSVIN"));
         final PermitHarvestReportI18n i18n = new PermitHarvestReportI18n(speciesNameIndex, permitDecision.getLocale());

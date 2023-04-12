@@ -64,6 +64,7 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTER_TRAINING_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTING_CONTROL;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.HUNTING_CONTROL_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.JHT_TRAINING;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.LUKE_2017;
@@ -81,7 +82,8 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_HUNTING_RELATED;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_HUNTING_RELATED_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_PUBLIC_ADMIN_TASKS;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_SUMMARY;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_SUMMARY_2022;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_SUMMARY_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.OTHER_TRAINING_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.PUBLIC_EVENTS_2018;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SHOOTING_RANGES;
@@ -90,8 +92,9 @@ import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatis
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SRVA_DEPORTATIONS;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SRVA_INJURIES;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SRVA_TOTALS;
-import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY_2022;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY_2018;
+import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.SUBSIDY_SUMMARY_2020;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.TRAINING_SUMMARY;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.TRAINING_SUMMARY_2017;
 import static fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup.YOUTH_TRAINING;
@@ -146,11 +149,11 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
         final List<AnnualStatisticGroup> expectedGroups = asList(
                 BASIC_INFO,
                 MAIN_SUMMARY_2017,
-                OTHER_SUMMARY,
+                OTHER_SUMMARY_2017,
                 HUNTER_EXAMS,
                 SHOOTING_TESTS,
                 GAME_DAMAGE,
-                HUNTING_CONTROL,
+                HUNTING_CONTROL_2017,
                 OTHER_PUBLIC_ADMIN_TASKS,
                 SRVA_TOTALS,
                 SRVA_ACCIDENTS,
@@ -176,11 +179,11 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
         final List<AnnualStatisticGroup> expectedGroups = asList(
                 BASIC_INFO,
                 SUBSIDY_SUMMARY_2018,
-                OTHER_SUMMARY,
+                OTHER_SUMMARY_2017,
                 HUNTER_EXAMS,
                 SHOOTING_TESTS,
                 GAME_DAMAGE,
-                HUNTING_CONTROL,
+                HUNTING_CONTROL_2017,
                 OTHER_PUBLIC_ADMIN_TASKS,
                 SRVA_TOTALS,
                 SRVA_ACCIDENTS,
@@ -207,11 +210,11 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
         final List<AnnualStatisticGroup> expectedGroups = asList(
                 BASIC_INFO,
                 SUBSIDY_SUMMARY_2018,
-                OTHER_SUMMARY,
+                OTHER_SUMMARY_2017,
                 HUNTER_EXAMS,
                 SHOOTING_TESTS,
                 GAME_DAMAGE,
-                HUNTING_CONTROL,
+                HUNTING_CONTROL_2017,
                 OTHER_PUBLIC_ADMIN_TASKS,
                 SRVA_TOTALS,
                 SRVA_ACCIDENTS,
@@ -237,8 +240,45 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
     public void testExtractedGroupsForYearAfter2019() {
         final List<AnnualStatisticGroup> expectedGroups = asList(
                 BASIC_INFO,
-                SUBSIDY_SUMMARY,
-                OTHER_SUMMARY,
+                SUBSIDY_SUMMARY_2020,
+                OTHER_SUMMARY_2017,
+                HUNTER_EXAMS,
+                SHOOTING_TESTS,
+                GAME_DAMAGE,
+                HUNTING_CONTROL_2017,
+                OTHER_PUBLIC_ADMIN_TASKS,
+                SRVA_TOTALS,
+                SRVA_ACCIDENTS,
+                SRVA_DEPORTATIONS,
+                SRVA_INJURIES,
+                TRAINING_SUMMARY,
+                HUNTER_EXAM_TRAINING,
+                JHT_TRAINING,
+                HUNTER_TRAINING,
+                YOUTH_TRAINING,
+                OTHER_HUNTER_TRAINING,
+                NON_SUBSIDIZABLE_TRAINING_SUMMARY,
+                NON_SUBSIDIZABLE_HUNTER_EXAM_TRAINING,
+                NON_SUBSIDIZABLE_JHT_TRAINING,
+                NON_SUBSIDIZABLE_HUNTER_TRAINING,
+                NON_SUBSIDIZABLE_YOUTH_TRAINING,
+                NON_SUBSIDIZABLE_OTHER_HUNTER_TRAINING,
+                OTHER_HUNTING_RELATED,
+                COMMUNICATION,
+                SHOOTING_RANGES,
+                LUKE,
+                METSAHALLITUS,
+                AnnualStatisticGroup.PUBLIC_EVENTS);
+
+        assertEquals(expectedGroups, extractGroups(2020));
+    }
+
+    @Test
+    public void testExtractedGroupsForYearAfter2021() {
+        final List<AnnualStatisticGroup> expectedGroups = asList(
+                BASIC_INFO,
+                SUBSIDY_SUMMARY_2022,
+                OTHER_SUMMARY_2022,
                 HUNTER_EXAMS,
                 SHOOTING_TESTS,
                 GAME_DAMAGE,
@@ -267,7 +307,7 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 METSAHALLITUS,
                 AnnualStatisticGroup.PUBLIC_EVENTS);
 
-        assertEquals(expectedGroups, extractGroups(2020));
+        assertEquals(expectedGroups, extractGroups(2022));
     }
 
     @Test
@@ -314,6 +354,17 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
         assertEquals(207, extractedItems.size());
     }
 
+    @Test
+    public void testExtractedItemsForYearAfter2021() {
+        final Riistanhoitoyhdistys rhy = getEntitySupplier().newRiistanhoitoyhdistys();
+        final RhyAnnualStatistics stats = getEntitySupplier().newRhyAnnualStatistics(rhy, 2022);
+
+        final List<Tuple2<LocalisedString, Either<Number, String>>> extractedItems = extractItems(stats);
+
+        assertResult(getExpectedItems(stats), extractedItems);
+        assertEquals(209, extractedItems.size());
+    }
+
     private List<Tuple2<LocalisedString, Either<Number, String>>> getExpectedItems(final RhyAnnualStatistics stats) {
         final int year = stats.getYear();
 
@@ -324,7 +375,7 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 .add(listExpectedHunterExamItems(stats.getOrCreateHunterExams()))
                 .add(listExpectedShootingTestItems(stats.getOrCreateShootingTests()))
                 .add(listExpectedGameDamageItems(stats.getOrCreateGameDamage()))
-                .add(listExpectedHuntingControlItems(stats.getOrCreateHuntingControl()))
+                .add(listExpectedHuntingControlItems(stats))
                 .add(listExpectedOtherPublicAdminItems(stats.getOrCreateOtherPublicAdmin()))
                 .add(listExpectedSrvaTotalItems(stats.getOrCreateSrva()))
                 .add(listExpectedSrvaAccidentItems(stats.getOrCreateSrva().getAccident()))
@@ -443,12 +494,27 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                     number(SMALL_GAME_LICENSES_SOLD_BY_METSAHALLITUS, mh.getSmallGameLicensesSoldByMetsahallitus()));
         }
 
+        if (year < 2022) {
+            return asList(
+                    number(RHY_MEMBERS, basicInfo.getRhyMembers()),
+                    number(SUBSIDIZABLE_HUNTER_EXAM_TRAINING_EVENTS, hunterExamTraining.getHunterExamTrainingEvents()),
+                    number(SUBSIDIZABLE_OTHER_TRAINING_EVENTS, 1410),
+                    number(SUBSIDIZABLE_STUDENT_AND_YOUTH_TRAINING_EVENTS, 81 + 83 + 85),
+                    number(HUNTING_CONTROL_EVENTS, huntingControl.getHuntingControlEvents()),
+                    number(SUM_OF_LUKE_CALCULATIONS, 113 + 114 + 115 + 116 + 117 + 119),
+                    number(TOTAL_LUKE_CARNIVORE_PERSONS, stats.getOrCreateLuke().sumOfCarnivorePersons()),
+                    number(MOOSELIKE_TAXATION_PLANNING_EVENTS, ohr.getMooselikeTaxationPlanningEvents()),
+                    number(WOLF_TERRITORY_WORKGROUPS, ohr.getWolfTerritoryWorkgroups()),
+                    number(SRVA_ALL_MOOSELIKE_EVENTS, 195),
+                    number(SMALL_GAME_LICENSES_SOLD_BY_METSAHALLITUS, mh.getSmallGameLicensesSoldByMetsahallitus()));
+        }
+
         return asList(
                 number(RHY_MEMBERS, basicInfo.getRhyMembers()),
                 number(SUBSIDIZABLE_HUNTER_EXAM_TRAINING_EVENTS, hunterExamTraining.getHunterExamTrainingEvents()),
                 number(SUBSIDIZABLE_OTHER_TRAINING_EVENTS, 1410),
                 number(SUBSIDIZABLE_STUDENT_AND_YOUTH_TRAINING_EVENTS, 81 + 83 + 85),
-                number(HUNTING_CONTROL_EVENTS, huntingControl.getHuntingControlEvents()),
+                number(HUNTING_CONTROL_EVENTS_SUBSIDIZABLE, huntingControl.getHuntingControlEvents()),
                 number(SUM_OF_LUKE_CALCULATIONS, 113 + 114 + 115 + 116 + 117 + 119),
                 number(TOTAL_LUKE_CARNIVORE_PERSONS, stats.getOrCreateLuke().sumOfCarnivorePersons()),
                 number(MOOSELIKE_TAXATION_PLANNING_EVENTS, ohr.getMooselikeTaxationPlanningEvents()),
@@ -468,10 +534,22 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
 
         final OtherPublicAdminStatistics opa = stats.getOrCreateOtherPublicAdmin();
 
+        final int year = stats.getYear();
+
+        if (year < 2022) {
+            return asList(
+                    number(HUNTER_EXAM_EVENTS, stats.getOrCreateHunterExams().getHunterExamEvents()),
+                    number(ALL_SHOOTING_TEST_EVENTS, nullableIntSum(firearmEvents, bowEvents)),
+                    number(HUNTING_CONTROL_EVENTS, stats.getOrCreateHuntingControl().getHuntingControlEvents()),
+                    number(GAME_DAMAGE_LOCATIONS_TOTAL, nullableIntSum(mooselikeDamageLocations, carnivoreDamageLocations)),
+                    number(GRANTED_RECREATIONAL_SHOOTING_CERTIFICATES, opa.getGrantedRecreationalShootingCertificates()),
+                    number(MUTUAL_ACK_SHOOTING_CERTIFICATES, opa.getMutualAckShootingCertificates()));
+        }
+
         return asList(
                 number(HUNTER_EXAM_EVENTS, stats.getOrCreateHunterExams().getHunterExamEvents()),
                 number(ALL_SHOOTING_TEST_EVENTS, nullableIntSum(firearmEvents, bowEvents)),
-                number(HUNTING_CONTROL_EVENTS, stats.getOrCreateHuntingControl().getHuntingControlEvents()),
+                number(HUNTING_CONTROL_EVENTS_TOTAL, stats.getOrCreateHuntingControl().getTotalHuntingControlEvents()),
                 number(GAME_DAMAGE_LOCATIONS_TOTAL, nullableIntSum(mooselikeDamageLocations, carnivoreDamageLocations)),
                 number(GRANTED_RECREATIONAL_SHOOTING_CERTIFICATES, opa.getGrantedRecreationalShootingCertificates()),
                 number(MUTUAL_ACK_SHOOTING_CERTIFICATES, opa.getMutualAckShootingCertificates()));
@@ -517,12 +595,25 @@ public class AnnualStatisticGroupsFactoryTest extends SpringRuleConfigurer imple
                 number(GAME_DAMAGE_INSPECTORS, stats.getGameDamageInspectors()));
     }
 
-    private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedHuntingControlItems(final HuntingControlStatistics stats) {
+    private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedHuntingControlItems(final RhyAnnualStatistics stats) {
+        final HuntingControlStatistics huntingControlStatistics = stats.getOrCreateHuntingControl();
+        final int year = stats.getYear();
+
+        if (year < 2022) {
+            return asList(
+                    number(HUNTING_CONTROL_EVENTS, huntingControlStatistics.getHuntingControlEvents()),
+                    number(HUNTING_CONTROL_CUSTOMERS, huntingControlStatistics.getHuntingControlCustomers()),
+                    number(HUNTING_CONTROL_PROOF_ORDERS, huntingControlStatistics.getProofOrders()),
+                    number(HUNTING_CONTROLLERS, huntingControlStatistics.getHuntingControllers()));
+        }
+
         return asList(
-                number(HUNTING_CONTROL_EVENTS, stats.getHuntingControlEvents()),
-                number(HUNTING_CONTROL_CUSTOMERS, stats.getHuntingControlCustomers()),
-                number(HUNTING_CONTROL_PROOF_ORDERS, stats.getProofOrders()),
-                number(HUNTING_CONTROLLERS, stats.getHuntingControllers()));
+                number(HUNTING_CONTROL_EVENTS_TOTAL, huntingControlStatistics.getTotalHuntingControlEvents()),
+                number(HUNTING_CONTROL_EVENTS_SUBSIDIZABLE, huntingControlStatistics.getHuntingControlEvents()),
+                number(HUNTING_CONTROL_EVENTS_NONSUBSIDIZABLE, huntingControlStatistics.getNonSubsidizableHuntingControlEvents()),
+                number(HUNTING_CONTROL_CUSTOMERS, huntingControlStatistics.getHuntingControlCustomers()),
+                number(HUNTING_CONTROL_PROOF_ORDERS, huntingControlStatistics.getProofOrders()),
+                number(HUNTING_CONTROLLERS, huntingControlStatistics.getHuntingControllers()));
     }
 
     private List<Tuple2<LocalisedString, Either<Number, String>>> listExpectedOtherPublicAdminItems(final OtherPublicAdminStatistics stats) {

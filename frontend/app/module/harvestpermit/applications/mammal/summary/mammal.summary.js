@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mammal.summary', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/mammal/summary/summary.html',
                 controller: 'MammalPermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, MammalPermitApplication) {
                         return MammalPermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -139,7 +140,7 @@ angular.module('app.harvestpermit.application.mammal.summary', ['app.metadata'])
         }
 
         function confirmSend() {
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
                 'harvestpermit.wizard.summary.sendConfirmation.title',
                 'harvestpermit.wizard.summary.sendConfirmation.body');
         }

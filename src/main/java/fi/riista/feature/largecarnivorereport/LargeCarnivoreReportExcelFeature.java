@@ -12,7 +12,6 @@ import fi.riista.feature.gamediary.srva.SrvaEventRepository;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
 import fi.riista.feature.harvestpermit.season.HarvestArea;
 import fi.riista.feature.organization.Organisation;
@@ -31,6 +30,8 @@ import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmoun
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmountRepository;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionRepository;
+import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
+import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmountRepository;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import fi.riista.util.LocalisedString;
@@ -111,6 +112,9 @@ public class LargeCarnivoreReportExcelFeature {
 
     @Resource
     private PermitDecisionRepository permitDecisionRepository;
+
+    @Resource
+    private PermitDecisionSpeciesAmountRepository permitDecisionSpeciesAmountRepository;
 
     @Transactional(readOnly = true)
     public LargeCarnivoreExcelExportDTO export(final int huntingYear) {
@@ -252,17 +256,14 @@ public class LargeCarnivoreReportExcelFeature {
                                                                 final int speciesCode,
                                                                 final int huntingYear) {
         final GameSpecies species = gameSpeciesService.requireByOfficialCode(speciesCode);
-        final List<HarvestPermit> permits = permitRepository.findByHuntingYearAndSpeciesAndCategory(huntingYear, species, category);
+        final List<PermitDecision> decisions = permitDecisionRepository.findByHuntingYearAndSpeciesAndCategory(huntingYear, species, category);
+        final List<PermitDecisionSpeciesAmount> decisionSpeciesAmounts = permitDecisionSpeciesAmountRepository.findByPermitDecisionIn(decisions);
+        final Map<PermitDecision, PermitDecisionSpeciesAmount> decisionToSpeciesAmount =
+                F.index(decisionSpeciesAmounts, PermitDecisionSpeciesAmount::getPermitDecision);
 
-        final Map<Long, Set<HarvestPermitSpeciesAmount>> permitSpasByPermitId =
-                permitSpeciesAmountRepository.findAllByPermitId(permits);
+        final List<HarvestPermit> permits = permitRepository.findByPermitDecisionIn(decisions);
+        final Map<PermitDecision, HarvestPermit> decisionToPermit = F.index(permits, HarvestPermit::getPermitDecision);
 
-        final Function<HarvestPermit, PermitDecision> permitToDecision =
-                singleQueryFunction(permits, HarvestPermit::getPermitDecision, permitDecisionRepository, true);
-
-        final List<PermitDecision> decisions = permits.stream()
-                .map(permitToDecision)
-                .collect(toList());
         final Function<PermitDecision, HarvestPermitApplication> decisionToApplication =
                 singleQueryFunction(decisions, PermitDecision::getApplication, applicationRepository, true);
 
@@ -294,14 +295,13 @@ public class LargeCarnivoreReportExcelFeature {
         final Function<Riistanhoitoyhdistys, Organisation> rhyToRka =
                 singleQueryFunction(rhys, Riistanhoitoyhdistys::getParentOrganisation, organisationRepository, true);
 
-        final List<LargeCarnivorePermitInfoDTO> permitInfo = permits.stream()
-                .map(permit -> {
-                    final PermitDecision decision = permitToDecision.apply(permit);
+        final List<LargeCarnivorePermitInfoDTO> permitInfo = decisions.stream()
+                .map(decision -> {
+                    final HarvestPermit permit = decisionToPermit.get(decision);
                     final HarvestPermitApplication application = decisionToApplication.apply(decision);
                     final HarvestPermitApplicationSpeciesAmount applicationSpa = applicationSpasByApp.get(application);
-                    final HarvestPermitSpeciesAmount permitSpa =
-                            permitSpasByPermitId.get(permit.getId()).stream().findFirst().orElse(null);
-                    final Integer harvests = harvestAmountsByPermitIds.get(permit.getId());
+                    final PermitDecisionSpeciesAmount decisionSpa = decisionToSpeciesAmount.get(decision);
+                    final Integer harvests = F.mapNullable(permit, p -> harvestAmountsByPermitIds.get(p.getId()));
                     final Riistanhoitoyhdistys rhy = applicationToRhy.apply(application);
                     final LocalisedString rhyName = LocalisedString.of(rhy.getNameFinnish(), rhy.getNameSwedish());
                     final Organisation rka = rhyToRka.apply(rhy);
@@ -313,7 +313,7 @@ public class LargeCarnivoreReportExcelFeature {
                             applicationSpa,
                             decision,
                             permit,
-                            permitSpa,
+                            decisionSpa,
                             harvests,
                             rhyName,
                             rkaName,
@@ -390,6 +390,5 @@ public class LargeCarnivoreReportExcelFeature {
 
         return list.stream()
                 .collect(groupingBy(dto -> dto.getOtherwiseDeceased().getGameSpeciesCode(), toList()));
-        //return otherwiseDeceasedDTOS.stream().collect(groupingBy(OtherwiseDeceasedDTO::getGameSpeciesCode, Collectors.toList()));
     }
 }

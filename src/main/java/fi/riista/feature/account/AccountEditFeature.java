@@ -1,5 +1,6 @@
 package fi.riista.feature.account;
 
+import com.github.jknack.handlebars.Handlebars;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.audit.AccountActivityMessage;
 import fi.riista.feature.account.audit.AccountAuditService;
@@ -8,16 +9,25 @@ import fi.riista.feature.account.password.ChangePasswordDTO;
 import fi.riista.feature.account.password.ChangePasswordService;
 import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.huntingclub.group.HuntingClubGroupLeaderEmail;
+import fi.riista.feature.mail.MailService;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonAuthorization;
 import fi.riista.security.EntityPermission;
+import fi.riista.util.DateUtil;
 import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+
+import java.util.Optional;
+
+import static org.joda.time.LocalDateTime.now;
 
 @Component
 @PreAuthorize("hasRole('ROLE_USER')")
@@ -40,6 +50,9 @@ public class AccountEditFeature {
 
     @Resource
     private AuditService auditService;
+
+    @Resource
+    private AccountUnregisterService unregisterService;
 
     @Transactional
     public void updateAddress(final AccountAddressDTO dto) {
@@ -108,6 +121,8 @@ public class AccountEditFeature {
         if (StringUtils.isNotBlank(dto.getPhoneNumber())) {
             person.setPhoneNumber(dto.getPhoneNumber());
         }
+
+        person.setDenyAnnouncementEmail(dto.isDenyAnnouncementEmail());
     }
 
     @Transactional
@@ -154,5 +169,28 @@ public class AccountEditFeature {
         } else {
             auditService.log("Shooting test supervisor feature deactivated", person);
         }
+    }
+
+    @Transactional
+    public void unregister(final Long personId) {
+        final Person person = requireEntityService.requirePerson(personId, EntityPermission.UPDATE);
+
+        // don't update if person has already requested unregistration
+        final DateTime unregisterRequestedTime = Optional
+                .ofNullable(person.getUnregisterRequestedTime())
+                .orElseGet(DateUtil::now);
+        person.setUnregisterRequestedTime(unregisterRequestedTime);
+
+        unregisterService.sendUnregisterMail(person);
+
+        auditService.log("unregister", person);
+    }
+
+    @Transactional
+    public void cancelUnregister(final Long personId) {
+        final Person person = requireEntityService.requirePerson(personId, EntityPermission.UPDATE);
+        person.setUnregisterRequestedTime(null);
+
+        auditService.log("cancel-unregister", person);
     }
 }

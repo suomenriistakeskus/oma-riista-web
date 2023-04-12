@@ -1,13 +1,27 @@
 <div class="buttons">
-    <club-area-function-dropdown class="pull-right" area="$ctrl.area"></club-area-function-dropdown>
+    <div class="row club-area-primary-button">
+        <div class="col-xs-12">
+            <button type="button" class="btn btn-primary btn-block"
+                    ng-show="$ctrl.canEditAreaGeometry()"
+                    ng-click="$ctrl.editAreaGeometry()">
+                <span class="glyphicon" ng-class="$ctrl.area.hasPendingZoneChanges ? 'glyphicon-alert' : 'glyphicon-edit'"></span>
+                <span translate="club.area.button.editGeometry"></span>
+            </button>
+        </div>
+    </div>
 
-    <div>
-        <button type="button" class="btn btn-primary"
-                ng-show="$ctrl.canEditAreaGeometry()"
-                ng-click="$ctrl.editAreaGeometry()">
-            <span class="glyphicon glyphicon-edit"></span>
-            <span translate="club.area.button.editGeometry"></span>
-        </button>
+    <div class="row">
+        <div class="col-xs-6">
+            <button type="button" class="btn btn-default btn-block"
+                    ng-show="$ctrl.canConnectPois()"
+                    ng-click="$ctrl.selectPois()">
+                <span class="glyphicon glyphicon-edit"></span>
+                <span translate="club.area.button.connectPois"></span>
+            </button>
+        </div>
+        <div class="col-xs-6">
+            <club-area-function-dropdown area="$ctrl.area"></club-area-function-dropdown>
+        </div>
     </div>
 </div>
 

@@ -2,11 +2,12 @@ package fi.riista.feature.gamediary.harvest.specimen;
 
 import com.google.common.base.Throwables;
 import fi.riista.feature.gamediary.AbstractSpecimenServiceTest;
+import fi.riista.feature.gamediary.GameAge;
+import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
-import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.util.DateUtil;
 import fi.riista.util.NumberGenerator;
 import io.vavr.Lazy;
@@ -32,7 +33,6 @@ import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_MOOSE;
 import static fi.riista.test.Asserts.assertThat;
 import static fi.riista.test.TestUtils.expectMultipleSpecimenNotAllowedException;
 import static fi.riista.test.TestUtils.wrapExceptionExpectation;
-import static fi.riista.util.DateUtil.today;
 import static fi.riista.util.jpa.JpaSpecs.equal;
 import static java.util.Collections.singletonList;
 import static java.util.Objects.requireNonNull;
@@ -183,20 +183,42 @@ public class HarvestSpecimenServiceTest
 
     @Test
     public void testAddSpecimens_whenSpeciesForbidsMultipleSpecimens() {
-        testAllVersions(expectMultipleSpecimenNotAllowedException(ctx -> {
-
-            ctx.invokeAdd(2, ctx.createDTOs(2));
-
-        })).accept(this::newPersistentMooseHarvest);
+        testAllVersions(expectMultipleSpecimenNotAllowedException(ctx -> ctx.invokeAdd(2, ctx.createDTOs(2)))).accept(this::newPersistentMooseHarvest);
     }
 
     @Test
     public void testSetSpecimens_whenSpeciesForbidsMultipleSpecimens() {
-        testAllVersions(expectMultipleSpecimenNotAllowedException(ctx -> {
+        testAllVersions(expectMultipleSpecimenNotAllowedException(ctx -> ctx.invokeSet(2, ctx.createDTOs(2)))).accept(this::newPersistentMooseHarvest);
+    }
 
-            ctx.invokeSet(2, ctx.createDTOs(2));
+    @Test
+    public void testValidateResultSpecimens_versionBefore9_doesNotRequireAgeOrGender() {
+        testAllVersionsBefore(HarvestSpecVersion._9, ctx -> getService().validateResultSpecimens(
+                ctx.getParent(),
+                newHarvestSpecimenWithoutAgeAndGender(ctx.getParent()),
+                ctx.getVersion()
+        )).accept(this::newPersistentMooseHarvest);
+    }
 
-        })).accept(this::newPersistentMooseHarvest);
+    @Test
+    public void testValidateResultSpecimens_versionAfter8_requiresAgeAndGender() {
+        testAllVersionsStartingFrom(HarvestSpecVersion._9,
+                wrapExceptionExpectation(HarvestSpecimenValidationException.class, ctx ->
+                        getService().validateResultSpecimens(
+                                ctx.getParent(),
+                                newHarvestSpecimenWithoutAgeAndGender(ctx.getParent()),
+                                ctx.getVersion()
+                        ))).accept(this::newPersistentMooseHarvest);
+    }
+
+    private List<HarvestSpecimen> newHarvestSpecimenWithoutAgeAndGender(final Harvest harvest) {
+        final HarvestSpecimen specimen = new HarvestSpecimen(harvest,
+                GameAge.UNKNOWN,
+                GameGender.UNKNOWN,
+                null);
+        specimen.setWeightEstimated(100.0);
+        specimen.setWeightMeasured(101.0);
+        return singletonList(specimen);
     }
 
     private class HarvestSpecimenOpsForTest extends HarvestSpecimenPopulator

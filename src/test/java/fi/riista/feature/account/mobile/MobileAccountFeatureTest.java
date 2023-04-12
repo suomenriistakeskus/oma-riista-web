@@ -20,6 +20,7 @@ import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 
@@ -35,6 +36,7 @@ import static java.util.Objects.requireNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class MobileAccountFeatureTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
@@ -153,6 +155,56 @@ public class MobileAccountFeatureTest extends EmbeddedDatabaseTest implements Hu
         onSavedAndAuthenticated(createUser(fixture.groupMember), () -> {
             final MobileAccountDTO dto = feature.getMobileAccount();
             assertTrue(dto.isDeerPilotUser());
+        });
+    }
+
+    @Test
+    public void testUnregisterSetsUnregisterRequestedTime() {
+        onSavedAndAuthenticated(createUserWithPerson(), () -> {
+            assertNull(feature.getMobileAccount().getUnregisterRequestedTime());
+
+            final DateTime unregistrationTime = feature.unregister();
+            final LocalDateTime accountUnregistrationTime = feature.getMobileAccount().getUnregisterRequestedTime();
+
+            assertNotNull(unregistrationTime);
+            assertNotNull(accountUnregistrationTime);
+            assertEquals(DateUtil.toLocalDateTimeNullSafe(unregistrationTime), accountUnregistrationTime);
+        });
+    }
+
+    @Test
+    public void testUnregisterDoesntUpdateExistingTimestamp() {
+        withPerson(person -> {
+            final DateTime oldUnregistrationTime = DateTime.now().minusDays(2);
+            person.setUnregisterRequestedTime(oldUnregistrationTime);
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                assertEquals(DateUtil.toLocalDateTimeNullSafe(oldUnregistrationTime),
+                        feature.getMobileAccount().getUnregisterRequestedTime());
+
+                final DateTime unregistrationTime = feature.unregister();
+
+                assertEquals(oldUnregistrationTime, unregistrationTime);
+                assertEquals(DateUtil.toLocalDateTimeNullSafe(oldUnregistrationTime),
+                        feature.getMobileAccount().getUnregisterRequestedTime());
+            });
+        });
+    }
+
+    @Test
+    public void testCancelUnregisterClearsUnregisterRequestedTime() {
+        withPerson(person -> {
+            final DateTime now = DateUtil.now();
+            person.setUnregisterRequestedTime(now);
+
+            onSavedAndAuthenticated(createUser(person), () -> {
+                assertEquals(DateUtil.toLocalDateTimeNullSafe(now),
+                        feature.getMobileAccount().getUnregisterRequestedTime());
+
+                feature.cancelUnregister();
+
+                assertNull(feature.getMobileAccount().getUnregisterRequestedTime());
+            });
         });
     }
 

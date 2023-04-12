@@ -10,7 +10,6 @@ import fi.riista.feature.organization.OrganisationRepository;
 import fi.riista.feature.organization.OrganisationType;
 import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.address.AddressDTO;
-import fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRule.VisibilitySetting;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.organization.person.PersonIsDeceasedException;
@@ -30,9 +29,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static fi.riista.feature.organization.occupation.OccupationAuthorization.OccupationPermission.UPDATE_CONTACT_INFO_VISIBILITY;
-import static fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRule.VisibilitySetting.ALWAYS;
-import static fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityRule.VisibilitySetting.NEVER;
 import static java.util.Collections.singleton;
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
@@ -92,6 +88,7 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
 
         assertCoordinatorCanNotEditCoordinator(entity.getOccupationType(), dto.getOccupationType());
         assertCoordinatorCannotModifyJHTOccupation(entity.getOccupationType(), dto.getOccupationType());
+        assertCoordinatorCanNotEditCarnivoreContactPerson(entity.getOccupationType(), dto.getOccupationType());
 
         final Organisation organisation = getOrganisation(dto);
 
@@ -214,6 +211,14 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
         }
     }
 
+    private void assertCoordinatorCanNotEditCarnivoreContactPerson(final OccupationType... types) {
+        if (!activeUserService.isModeratorOrAdmin()
+                && Arrays.asList(types).contains(OccupationType.PETOYHDYSHENKILO)) {
+
+            throw new AccessDeniedException("OccupationType.PETOYHDYSHENKILO can be edited only by moderator or admin");
+        }
+    }
+
     private void assertCoordinatorCannotModifyJHTOccupation(final OccupationType... occupationType) {
         if (activeUserService.isModeratorOrAdmin()) {
             return;
@@ -307,44 +312,12 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
                 .collect(toList());
     }
 
-    @Transactional
-    public void updateContactInfoVisibility(final List<OccupationContactInfoVisibilityDTO> dtoList) {
-        dtoList.forEach(dto -> {
-            final Occupation occupation = requireEntityService.requireOccupation(dto.getId(), UPDATE_CONTACT_INFO_VISIBILITY);
-            final Organisation organisation = occupation.getOrganisation();
-
-            assertContactInfoVisibilitySettings(organisation.getOrganisationType(), occupation.getOccupationType(), dto);
-
-            occupation.setNameVisibility(dto.isNameVisibility());
-            occupation.setPhoneNumberVisibility(dto.isPhoneNumberVisibility());
-            occupation.setEmailVisibility(dto.isEmailVisibility());
-        });
-    }
-
     private Organisation getOrganisation(final OccupationDTO dto) {
         return getOrganisation(dto.getOrganisationId());
     }
 
     private Organisation getOrganisation(final Long organisationId) {
         return organisationRepository.getOne(organisationId);
-    }
-
-    private static void assertContactInfoVisibilitySettings(final OrganisationType organisationType,
-                                                            final OccupationType occupationType,
-                                                            final OccupationContactInfoVisibilityDTO dto) {
-        final OccupationContactInfoVisibilityRule rule =
-                OccupationContactInfoVisibilityRuleMapping.get(organisationType, occupationType);
-
-        assertContactInfoVisibilitySetting(dto.isNameVisibility(), rule.getNameVisibility());
-        assertContactInfoVisibilitySetting(dto.isPhoneNumberVisibility(), rule.getPhoneNumberVisibility());
-        assertContactInfoVisibilitySetting(dto.isEmailVisibility(), rule.getEmailVisibility());
-    }
-
-    private static void assertContactInfoVisibilitySetting(final boolean visibility,
-                                                           final VisibilitySetting setting) {
-        if (visibility && setting == NEVER || !visibility && setting == ALWAYS) {
-            throw new IllegalArgumentException("Incorrect contact info visibility");
-        }
     }
 
     @Transactional(readOnly = true)
@@ -354,5 +327,11 @@ public class OccupationCrudFeature extends AbstractCrudFeature<Long, Occupation,
                 occupationRepository.findActiveByPersonAndOrganisationTypes(person, singleton(OrganisationType.CLUB));
 
         return mobileOccupationDTOFactory.create(occupations);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OccupationBoardRepresentationRole> getApplicableBoardRepresentationRoles(final Long organisationId) {
+        final Organisation organisation = requireEntityService.requireOrganisation(organisationId, EntityPermission.READ);
+        return new ArrayList<>(OccupationBoardRepresentationRole.getApplicableRoles(organisation.getOrganisationType()));
     }
 }

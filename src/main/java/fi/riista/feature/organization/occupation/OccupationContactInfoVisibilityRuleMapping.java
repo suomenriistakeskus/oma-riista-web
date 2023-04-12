@@ -42,17 +42,17 @@ public class OccupationContactInfoVisibilityRuleMapping {
     static {
         final ImmutableMap<OccupationType, OccupationContactInfoVisibilityRule> rhyRules = ImmutableMap.<OccupationType, OccupationContactInfoVisibilityRule>builder()
                 .put(TOIMINNANOHJAAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, ALWAYS))
-                .put(SRVA_YHTEYSHENKILO, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, NEVER))
-                .put(PETOYHDYSHENKILO, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
-                .put(METSASTYKSENVALVOJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
+                .put(SRVA_YHTEYSHENKILO, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, NEVER))
+                .put(PETOYHDYSHENKILO, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
+                .put(METSASTYKSENVALVOJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
                 .put(METSASTAJATUTKINNON_VASTAANOTTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, NEVER, NEVER))
                 .put(AMPUMAKOKEEN_VASTAANOTTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, NEVER, NEVER))
                 .put(RHYN_EDUSTAJA_RIISTAVAHINKOJEN_MAASTOKATSELMUKSESSA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, NEVER, NEVER))
                 .put(METSASTAJATUTKINTOON_VALMENTAVAN_KOULUTUKSEN_KOULUTTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, NEVER, NEVER))
-                .put(PUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
-                .put(VARAPUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
-                .put(HALLITUKSEN_JASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
-                .put(HALLITUKSEN_VARAJASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
+                .put(PUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
+                .put(VARAPUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
+                .put(HALLITUKSEN_JASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
+                .put(HALLITUKSEN_VARAJASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
                 .put(JALJESTYSKOIRAN_OHJAAJA_HIRVI, OccupationContactInfoVisibilityRule.createRule(OPTIONAL, OPTIONAL, OPTIONAL))
                 .put(JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET, OccupationContactInfoVisibilityRule.createRule(OPTIONAL, OPTIONAL, OPTIONAL))
                 .put(JALJESTYSKOIRAN_OHJAAJA_SUURPEDOT, OccupationContactInfoVisibilityRule.createRule(OPTIONAL, OPTIONAL, OPTIONAL))
@@ -61,21 +61,21 @@ public class OccupationContactInfoVisibilityRuleMapping {
                 .build();
 
         final ImmutableMap<OccupationType, OccupationContactInfoVisibilityRule> rkRules = ImmutableMap.<OccupationType, OccupationContactInfoVisibilityRule>builder()
-                .put(PUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
-                .put(VARAPUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
-                .put(HALLITUKSEN_JASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
-                .put(HALLITUKSEN_VARAJASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
+                .put(PUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
+                .put(VARAPUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
+                .put(HALLITUKSEN_JASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
+                .put(HALLITUKSEN_VARAJASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
                 .build();
 
         final ImmutableMap<OccupationType, OccupationContactInfoVisibilityRule> arnRules = ImmutableMap.<OccupationType, OccupationContactInfoVisibilityRule>builder()
-                .put(PUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
+                .put(PUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
                 .put(VARAPUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
                 .put(JASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
                 .put(VARAJASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
                 .build();
 
         final ImmutableMap<OccupationType, OccupationContactInfoVisibilityRule> vrnRules = ImmutableMap.<OccupationType, OccupationContactInfoVisibilityRule>builder()
-                .put(PUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, ALWAYS, OPTIONAL))
+                .put(PUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
                 .put(VARAPUHEENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
                 .put(JASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
                 .put(VARAJASEN, OccupationContactInfoVisibilityRule.createRule(ALWAYS, OPTIONAL, OPTIONAL))
@@ -87,7 +87,7 @@ public class OccupationContactInfoVisibilityRuleMapping {
                 .build();
 
         final ImmutableMap<OccupationType, OccupationContactInfoVisibilityRule> clubGroupRules = ImmutableMap.<OccupationType, OccupationContactInfoVisibilityRule>builder()
-                .put(RYHMAN_METSASTYKSENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(NEVER, NEVER, NEVER))
+                .put(RYHMAN_METSASTYKSENJOHTAJA, OccupationContactInfoVisibilityRule.createRule(OPTIONAL, OPTIONAL, OPTIONAL))
                 .put(RYHMAN_JASEN, OccupationContactInfoVisibilityRule.createRule(NEVER, NEVER, NEVER))
                 .build();
 

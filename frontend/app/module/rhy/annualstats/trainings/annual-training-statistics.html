@@ -27,34 +27,39 @@
         </show-training-statistics-overview>
 
         <show-hunter-exam-training-statistics hunter-exam-training="::$ctrl.statistics.hunterExamTraining"
-                                              editable="::$ctrl.isEditable"
+                                              editable="::$ctrl.isModerator"
                                               open-edit-dialog="$ctrl.editHunterExamTraining()"
+                                              warnings="::$ctrl.statistics.missingParticipants.HUNTER_EXAM_TRAINING_STATISTICS"
                                               filter-mode="$ctrl.filterMode">
         </show-hunter-exam-training-statistics>
 
         <show-hunter-training-statistics hunter-training="::$ctrl.statistics.hunterTraining"
-                                         editable="::$ctrl.isEditable"
+                                         editable="::$ctrl.isModerator"
                                          open-edit-dialog="$ctrl.editHunterTraining(trainingTypes)"
+                                         warnings="::$ctrl.statistics.missingParticipants.HUNTER_TRAINING_STATISTICS"
                                          filter-mode="$ctrl.filterMode">
         </show-hunter-training-statistics>
 
         <show-youth-training-statistics youth-training="::$ctrl.statistics.youthTraining"
-                                        editable="::$ctrl.isEditable"
+                                        editable="::$ctrl.isModerator"
                                         open-edit-dialog="$ctrl.editYouthTraining(trainingTypes)"
+                                        warnings="::$ctrl.statistics.missingParticipants.YOUTH_TRAINING_STATISTICS"
                                         filter-mode="$ctrl.filterMode">
         </show-youth-training-statistics>
     </div>
 
     <div class="col-sm-6">
         <show-jht-training-statistics jht-training="::$ctrl.statistics.jhtTraining"
-                                      editable="::$ctrl.isEditable"
+                                      editable="::$ctrl.isModerator"
                                       open-edit-dialog="$ctrl.editJhtTraining(trainingTypes)"
+                                      warnings="::$ctrl.statistics.missingParticipants.JHT_TRAINING_STATISTICS"
                                       filter-mode="$ctrl.filterMode">
         </show-jht-training-statistics>
 
         <show-other-hunter-training-statistics other-hunter-training="::$ctrl.statistics.otherHunterTraining"
-                                               editable="::$ctrl.isEditable"
+                                               editable="::$ctrl.isModerator"
                                                open-edit-dialog="$ctrl.editOtherHunterTraining(trainingTypes)"
+                                               warnings="::$ctrl.statistics.missingParticipants.OTHER_HUNTER_TRAINING_STATISTICS"
                                                filter-mode="$ctrl.filterMode">
         </show-other-hunter-training-statistics>
     </div>

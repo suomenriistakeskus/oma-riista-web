@@ -3,6 +3,8 @@ package fi.riista.integration.common.export;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
+import fi.riista.feature.gamediary.srva.SrvaEventResultDetailsEnum;
+import fi.riista.feature.gamediary.srva.SrvaEventTypeDetailsEnum;
 import fi.riista.feature.gamediary.srva.SrvaEventTypeEnum;
 import fi.riista.feature.gamediary.srva.SrvaResultEnum;
 import fi.riista.feature.gamediary.srva.method.SrvaMethodEnum;
@@ -10,7 +12,9 @@ import fi.riista.integration.common.export.srva.CEV_GameAge;
 import fi.riista.integration.common.export.srva.CEV_GameGender;
 import fi.riista.integration.common.export.srva.CEV_SRVAEventName;
 import fi.riista.integration.common.export.srva.CEV_SRVAEventResult;
+import fi.riista.integration.common.export.srva.CEV_SRVAEventResultDetailsEnum;
 import fi.riista.integration.common.export.srva.CEV_SRVAEventType;
+import fi.riista.integration.common.export.srva.CEV_SRVAEventTypeDetailsEnum;
 import fi.riista.integration.common.export.srva.CEV_SRVAMethod;
 import fi.riista.util.EnumUtils;
 import org.junit.Test;
@@ -59,5 +63,14 @@ public class CommonSrvaEventExportFeatureEnumConversionTest {
         assertEnumValuesMatch(GameAge.class, CEV_GameAge.class);
     }
 
+    @Test
+    public void testSrvaEventTypeDetailsEnum() {
+        assertEnumValuesMatch(SrvaEventTypeDetailsEnum.class, CEV_SRVAEventTypeDetailsEnum.class);
+    }
+
+    @Test
+    public void testSrvaEventResultDetailsEnum() {
+        assertEnumValuesMatch(SrvaEventResultDetailsEnum.class, CEV_SRVAEventResultDetailsEnum.class);
+    }
 }
 

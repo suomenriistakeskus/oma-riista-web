@@ -240,7 +240,7 @@ angular.module('app.jht.nominationdecision', [])
         }
     })
     .constant('NominationDecisionStatuses',
-        ['ALL', 'DRAFT', 'LOCKED', 'PUBLISHED'])
+        ['ALL', 'DECISION_OPEN', 'DRAFT', 'LOCKED', 'PUBLISHED'])
 
     .constant('NominationDecisionTypes',
         ['NOMINATION', 'NOMINATION_CANCELLATION'])

@@ -39,7 +39,7 @@ public class LawSectionTenPermitApplicationSpeciesAmountFeatureTest extends Embe
     public void setup() {
         applicant = model().newPerson();
         rhy = model().newRiistanhoitoyhdistys();
-        application = model().newHarvestPermitApplication(rhy, null, HarvestPermitCategory.LAW_SECTION_TEN);
+        application = model().newHarvestPermitApplication(rhy, null, HarvestPermitCategory.EUROPEAN_BEAVER);
         model().newLawSectionTenPermitApplication(application);
         application.setStatus(HarvestPermitApplication.Status.DRAFT);
         application.setPermitHolder(PermitHolder.createHolderForPerson(applicant));

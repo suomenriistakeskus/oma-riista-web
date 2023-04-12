@@ -408,8 +408,7 @@ angular.module('app.harvestpermit.decision.area.fragment', [])
 
         proto.isFragment = function (fragment) {
             var hash = fragment.hash;
-
-            if (fragment.bothSize.total < this.fragmentSizeLimit) {
+            if (fragment.bothSize.land < this.fragmentSizeLimit) {
 
                 if (hash && LocalStorageService.getKey(cacheKey(this.applicationId, hash)) === '0') {
                     return false;

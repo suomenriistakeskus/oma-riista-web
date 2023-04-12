@@ -5,7 +5,14 @@
 
 <div class="modal-body">
     <div class="row">
-        <div class="col-xs-12 text-right">
+        <div class="col-xs-6">
+            <button class="btn btn-default"
+                    ng-click="$ctrl.copyFromReference()"
+                    ng-disabled="!$ctrl.referenceActions || $ctrl.referenceActions.length === 0">
+                <span translate="decision.action.fromReference"></span>
+            </button>
+        </div>
+        <div class="col-xs-6 text-right">
             <button class="btn btn-primary" ng-click="$ctrl.add()">
                 <span class="glyphicon glyphicon-plus"></span>
                 <span translate="decision.action.add"></span>

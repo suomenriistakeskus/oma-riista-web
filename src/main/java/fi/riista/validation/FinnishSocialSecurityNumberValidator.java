@@ -77,8 +77,18 @@ public class FinnishSocialSecurityNumberValidator
             case '+':
                 return 1800;
             case '-':
+            case 'Y':
+            case 'X':
+            case 'W':
+            case 'V':
+            case 'U':
                 return 1900;
             case 'A':
+            case 'B':
+            case 'C':
+            case 'D':
+            case 'E':
+            case 'F':
                 return 2000;
             default:
                 throw new IllegalArgumentException("Illegal century character.");

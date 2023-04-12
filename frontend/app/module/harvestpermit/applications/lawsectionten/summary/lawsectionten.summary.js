@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.lawsectionten.summary', ['app.meta
                 templateUrl: 'harvestpermit/applications/lawsectionten/summary/summary.html',
                 controller: 'LawSectionTenPermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, LawSectionTenPermitApplication) {
                         return LawSectionTenPermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -139,7 +140,7 @@ angular.module('app.harvestpermit.application.lawsectionten.summary', ['app.meta
         }
 
         function confirmSend() {
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
                 'harvestpermit.wizard.summary.sendConfirmation.title',
                 'harvestpermit.wizard.summary.sendConfirmation.body');
         }

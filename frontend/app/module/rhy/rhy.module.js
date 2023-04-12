@@ -11,5 +11,6 @@ angular.module('app.rhy', [
     'app.rhy.annualreport',
     'app.rhy.huntingcontrolevent',
     'app.rhy.reports',
+    'app.rhy.taxation',
     'app.rhy.harvestregistry'
 ]);

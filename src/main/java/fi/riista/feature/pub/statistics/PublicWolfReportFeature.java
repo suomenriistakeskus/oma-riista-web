@@ -24,13 +24,13 @@ import java.util.List;
 @Component
 public class PublicWolfReportFeature {
 
-    public static final int MIN_YEAR = 2014;
-    public static final int MAX_YEAR = 2015;
+    public static final int MIN_YEAR = 2021;
+    public static final int MAX_YEAR = 2022;
 
     private final static String SQL = "SELECT" +
             " ST_AsGeoJSON(h.geom) AS geom, " +
             " to_char(h.point_of_time, 'DD.MM.YYYY') as day, " +
-            " hs.gender, hs.age, h.luke_status, o.official_code as rhy_code," +
+            " hs.gender, hs.age, o.official_code as rhy_code," +
             " o.name_finnish as rhy_fi, o.name_swedish as rhy_sv" +
             " FROM harvest as h" +
             " JOIN organisation as o on (o.organisation_id = h.rhy_id)" +
@@ -46,42 +46,41 @@ public class PublicWolfReportFeature {
     private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Autowired
-    public void setDataSource(DataSource dataSource) {
+    public void setDataSource(final DataSource dataSource) {
         this.jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
     }
 
     @Transactional(readOnly = true)
-    public FeatureCollection report(int year) {
+    public FeatureCollection report(final int year) {
         if (year < MIN_YEAR || year > MAX_YEAR) {
             throw new IllegalArgumentException("Year must be between" + MIN_YEAR + " and " + MAX_YEAR);
         }
 
-        List<Feature> features = jdbcTemplate.query(SQL, getSqlParameterSource(year, "209"), new RowMapper<Feature>() {
+        final List<Feature> features = jdbcTemplate.query(SQL, getSqlParameterSource(year, "209"), new RowMapper<Feature>() {
             private final ObjectMapper objectMapper = new ObjectMapper();
 
             @Override
-            public Feature mapRow(ResultSet rs, int rowNum) throws SQLException {
-                Feature feature = new Feature();
+            public Feature mapRow(final ResultSet rs, final int rowNum) throws SQLException {
+                final Feature feature = new Feature();
                 feature.getProperties().put("day", rs.getString("day"));
                 feature.getProperties().put("gender", rs.getString("gender"));
                 feature.getProperties().put("age", rs.getString("age"));
-                feature.getProperties().put("luke_status", rs.getString("luke_status"));
                 feature.getProperties().put("rhy_code", rs.getString("rhy_code"));
                 feature.getProperties().put("rhy_fi", rs.getString("rhy_fi"));
                 feature.getProperties().put("rhy_sv", rs.getString("rhy_sv"));
                 try {
                     feature.setGeometry(objectMapper.readValue(rs.getString("geom"), GeoJsonObject.class));
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     throw new RuntimeException(e);
                 }
                 return feature;
             }
         });
 
-        FeatureCollection featureCollection = new FeatureCollection();
+        final FeatureCollection featureCollection = new FeatureCollection();
         featureCollection.setFeatures(features);
 
-        Crs crs = new Crs();
+        final Crs crs = new Crs();
         crs.getProperties().put("name", "urn:ogc:def:crs:EPSG::3067");
 
         featureCollection.setCrs(crs);
@@ -89,7 +88,7 @@ public class PublicWolfReportFeature {
         return featureCollection;
     }
 
-    private static MapSqlParameterSource getSqlParameterSource(int year, String permitTypeCode) {
+    private static MapSqlParameterSource getSqlParameterSource(final int year, final String permitTypeCode) {
         final Interval interval = DateUtil.huntingYearInterval(year);
         final MapSqlParameterSource queryParams = new MapSqlParameterSource();
         queryParams.addValue("permitTypeCode", permitTypeCode);

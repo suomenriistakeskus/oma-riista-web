@@ -1,6 +1,7 @@
 <div class="panel panel-default">
     <timestamped-panel-heading title-key="'rhy.annualStats.administration.huntingControl.title'"
-                               last-modified="$ctrl.huntingControl.lastModified">
+                               last-modified="$ctrl.huntingControl.lastModified"
+                               has-warning-sign="$ctrl.warnings.length > 0">
     </timestamped-panel-heading>
 
     <div class="panel-body">
@@ -12,7 +13,21 @@
                             <span ng-switch-when="true" translate="rhy.annualStats.administration.huntingControl.events"></span>
                             <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.huntingControl.events"></div>
                         </td>
+                        <td num-pieces="::{{$ctrl.huntingControl.huntingControlEvents + $ctrl.huntingControl.nonSubsidizableHuntingControlEvents}}"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-8" ng-switch="$ctrl.huntingControl.huntingControlEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.huntingControl.subsidized"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.huntingControl.subsidized"></div>
+                        </td>
                         <td num-pieces="::$ctrl.huntingControl.huntingControlEvents"></td>
+                    </tr>
+                    <tr class="indented-row">
+                        <td class="col-xs-8" ng-switch="$ctrl.huntingControl.huntingControlEventsOverridden">
+                            <span ng-switch-when="true" translate="rhy.annualStats.administration.huntingControl.nonSubsidized"></span>
+                            <div ng-switch-when="false" computed-marker-title="rhy.annualStats.administration.huntingControl.nonSubsidized"></div>
+                        </td>
+                        <td num-pieces="::$ctrl.huntingControl.nonSubsidizableHuntingControlEvents"></td>
                     </tr>
                     <tr>
                         <td class="col-xs-8" ng-switch="$ctrl.huntingControl.huntingControlCustomersOverridden">

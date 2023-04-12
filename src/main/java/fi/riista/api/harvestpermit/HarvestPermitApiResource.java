@@ -2,12 +2,16 @@ package fi.riista.api.harvestpermit;
 
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
+import fi.riista.feature.harvestpermit.AnnualRenewalPeriodUpdateDTO;
+import fi.riista.feature.harvestpermit.AnnualRenewalPeriodUpdateFeature;
 import fi.riista.feature.harvestpermit.HarvestPermitAcceptHarvestDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitAcceptHarvestFeature;
 import fi.riista.feature.harvestpermit.HarvestPermitContactPersonDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitContactPersonFeature;
 import fi.riista.feature.harvestpermit.HarvestPermitDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitDetailsFeature;
+import fi.riista.feature.harvestpermit.HarvestPermitWithHuntingClubGroupsDTO;
+import fi.riista.feature.harvestpermit.HarvestPermitWithHuntingClubGroupsFeature;
 import fi.riista.feature.harvestpermit.attachment.HarvestPermitAttachmentFeature;
 import fi.riista.feature.harvestpermit.download.HarvestPermitDownloadDecisionDTO;
 import fi.riista.feature.harvestpermit.download.HarvestPermitDownloadDecisionFeature;
@@ -53,12 +57,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 
@@ -98,6 +104,12 @@ public class HarvestPermitApiResource {
     private MetsahallitusPermitListFeature metsahallitusPermitListFeature;
 
     @Resource
+    private HarvestPermitWithHuntingClubGroupsFeature harvestPermitWithHuntingClubGroupsFeature;
+
+    @Resource
+    private AnnualRenewalPeriodUpdateFeature annualRenewalPeriodUpdateFeature;
+
+    @Resource
     private JhtArchiveFeature jhtArchiveFeature;
 
     @Resource
@@ -116,32 +128,38 @@ public class HarvestPermitApiResource {
     }
 
     @PostMapping("/checkPermitNumber")
-    public HarvestPermitExistsDTO checkPermitNumber(@RequestParam String permitNumber) {
+    public HarvestPermitExistsDTO checkPermitNumber(@RequestParam final String permitNumber) {
         return harvestPermitSearchFeature.checkHarvestPermitExists(permitNumber);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping("/mypermits")
-    public List<ListHarvestPermitDTO> listMyPermits(@RequestParam(required = false) Long personId) {
+    public List<ListHarvestPermitDTO> listMyPermits(@RequestParam(required = false) final Long personId) {
         return harvestPermitListFeature.listPermitsForPerson(personId);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/acceptHarvest")
-    public void acceptHarvest(@RequestBody @Valid HarvestPermitAcceptHarvestDTO dto) {
+    public void acceptHarvest(@RequestBody @Valid final HarvestPermitAcceptHarvestDTO dto) {
         harvestPermitAcceptHarvestFeature.changeAcceptedToPermit(dto);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/metsahallitus", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<MetsahallitusPermitListDTO> listMetsahallitusPermits(@RequestParam(required = false) Long personId) {
+    public List<MetsahallitusPermitListDTO> listMetsahallitusPermits(@RequestParam(required = false) final Long personId) {
         return metsahallitusPermitListFeature.listAll(personId);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping("/{id:\\d+}")
-    public HarvestPermitDTO getHarvestPermit(@PathVariable Long id) {
+    public HarvestPermitDTO getHarvestPermit(@PathVariable final Long id) {
         return harvestPermitDetailsFeature.getPermit(id);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/with-hunting-club-groups", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<HarvestPermitWithHuntingClubGroupsDTO> listPermitsWithHuntingClubGroups() {
+        return harvestPermitWithHuntingClubGroupsFeature.listPermitsWithHuntingClubGroups();
     }
 
     @PostMapping("/pdf/{permitNumber}")
@@ -163,19 +181,19 @@ public class HarvestPermitApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping("/{id:\\d+}/usage")
-    public List<HarvestPermitUsageDTO> getSpeciesAmountUsage(@PathVariable long id) {
+    public List<HarvestPermitUsageDTO> getSpeciesAmountUsage(@PathVariable final long id) {
         return harvestPermitDetailsFeature.getSpeciesAmountUsage(id);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping("/{id:\\d+}/harvests")
-    public List<HarvestDTO> getHarvestForPermit(@PathVariable long id) {
+    public List<HarvestDTO> getHarvestForPermit(@PathVariable final long id) {
         return harvestPermitDetailsFeature.getHarvestForPermit(id);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @PostMapping("/{id:\\d+}/export-reports")
-    public ModelAndView exportPermitHarvestReports(@PathVariable Long id) {
+    public ModelAndView exportPermitHarvestReports(@PathVariable final Long id) {
         final EnumLocaliser localiser = new EnumLocaliser(messageSource, LocaleContextHolder.getLocale());
         final List<HarvestReportExcelDTO> data = harvestReportSearchFeature.listByPermitForExcel(id);
 
@@ -184,9 +202,9 @@ public class HarvestPermitApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @PostMapping("/export-jhtarchive")
-    public ModelAndView exportJhtArchive(@RequestParam(required = false) @Pattern(regexp = "\\d{3}") String permitTypeCode,
-                                         @RequestParam(required = false) Integer speciesCode,
-                                         @RequestParam int calendarYear) {
+    public ModelAndView exportJhtArchive(@RequestParam(required = false) @Pattern(regexp = "\\d{3}") final String permitTypeCode,
+                                         @RequestParam(required = false) final Integer speciesCode,
+                                         @RequestParam final int calendarYear) {
         final EnumLocaliser localiser = new EnumLocaliser(messageSource, LocaleContextHolder.getLocale());
         final List<JhtArchiveExcelDTO> data = jhtArchiveFeature.permitDataForExcel(permitTypeCode, speciesCode, calendarYear);
         final List<JhtArchiveExcelDTO> immaterialData = jhtArchiveFeature.immaterialPermitDataForExcel(permitTypeCode, calendarYear);
@@ -196,34 +214,34 @@ public class HarvestPermitApiResource {
     }
 
     @GetMapping("/{id:\\d+}/contactpersons")
-    public List<HarvestPermitContactPersonDTO> getContactPersons(@PathVariable Long id) {
+    public List<HarvestPermitContactPersonDTO> getContactPersons(@PathVariable final Long id) {
         return harvestPermitContactPersonFeature.getContactPersons(id);
     }
 
     @PutMapping(value = "/{id:\\d+}/contactpersons", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void updateContactPersons(
-            @PathVariable Long id, @RequestBody @Valid List<HarvestPermitContactPersonDTO> contactPersons) {
+            @PathVariable final Long id, @RequestBody @Valid final List<HarvestPermitContactPersonDTO> contactPersons) {
         harvestPermitContactPersonFeature.updateContactPersons(id, contactPersons);
     }
 
     @PostMapping(value = "/admin/import/permit", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public HarvestPermitImportResultDTO importPermits(@RequestParam("file") MultipartFile file) throws IOException {
-        InputStreamReader reader = new InputStreamReader(file.getInputStream(), "ISO-8859-1");
-        String requestInfo = DateTime.now().toString() + ":" + file.getOriginalFilename();
+    public HarvestPermitImportResultDTO importPermits(@RequestParam("file") final MultipartFile file) throws IOException {
+        final InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.ISO_8859_1);
+        final String requestInfo = DateTime.now() + ":" + file.getOriginalFilename();
         try {
             return harvestPermitImportFeature.doImport(reader, requestInfo, null);
-        } catch (HarvestPermitImportException e) {
+        } catch (final HarvestPermitImportException e) {
             return new HarvestPermitImportResultDTO(e.getAllErrors());
         }
     }
 
     @PostMapping("/admin/search")
-    public List<HarvestPermitSearchResultDTO> search(@RequestBody @Valid HarvestPermitSearchDTO dto) {
+    public List<HarvestPermitSearchResultDTO> search(@RequestBody @Valid final HarvestPermitSearchDTO dto) {
         return harvestPermitSearchFeature.search(dto);
     }
 
     @PostMapping("/rhy/search")
-    public List<HarvestPermitSearchResultDTO> searchRhy(@RequestBody @Valid HarvestPermitSearchDTO dto) {
+    public List<HarvestPermitSearchResultDTO> searchRhy(@RequestBody @Valid final HarvestPermitSearchDTO dto) {
         return harvestPermitSearchFeature.searchForCoordinator(dto);
     }
 
@@ -244,6 +262,11 @@ public class HarvestPermitApiResource {
     public ResponseEntity<byte[]> getAttachment(final @PathVariable long id,
                                                 final @PathVariable long attachmentId) throws IOException {
         return harvestPermitAttachmentFeature.getAttachment(id, attachmentId);
+    }
+
+    @PostMapping("/moderate/period")
+    public void updatePeriod(@RequestBody @Valid @Nonnull final AnnualRenewalPeriodUpdateDTO dto) {
+        annualRenewalPeriodUpdateFeature.updatePeriods(dto);
     }
 
 }

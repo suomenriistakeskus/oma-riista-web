@@ -53,10 +53,11 @@
 <table class="table table-bordered table-striped">
     <thead>
     <tr>
-        <th class="col-xs-2" translate="harvestpermit.application.conflictList.applicationNumber"></th>
-        <th class="col-xs-3" translate="harvestpermit.application.conflictList.rhy"></th>
-        <th class="col-xs-4" translate="harvestpermit.application.conflictList.permitHolder"></th>
+        <th class="col-xs-1" translate="harvestpermit.application.conflictList.applicationNumber"></th>
+        <th class="col-xs-2" translate="harvestpermit.application.conflictList.rhy"></th>
+        <th class="col-xs-3" translate="harvestpermit.application.conflictList.permitHolder"></th>
         <th class="col-xs-3" translate="harvestpermit.application.conflictList.areaSize"></th>
+        <th class="col-xs-3" translate="harvestpermit.application.conflictList.privateAreaSize"></th>
     </tr>
     </thead>
     <tbody>
@@ -81,7 +82,24 @@
             <span ng-bind="p.contactPerson.lastName"></span>
             <span ng-bind="p.contactPerson.byName"></span>
         </td>
-        <td ng-bind="::p.conflictSum | prettyAreaSize"></td>
+        <td>
+            <strong ng-bind="::p.conflictSum | prettyAreaSize" uib-tooltip="{{'harvestpermit.application.conflictList.totalAreaSize' | translate}}"></strong>
+            <span ng-if="::p.conflictWaterSum != null">
+                <span class="r-land-area" uib-tooltip="{{'harvestpermit.application.conflictList.landAreaSize' | translate}}"
+                      ng-bind="::p.conflictLandSum | prettyAreaSize"></span>
+                <span class="r-water-area" uib-tooltip="{{'harvestpermit.application.conflictList.waterAreaSize' | translate}}"
+                      ng-bind="::p.conflictWaterSum | prettyAreaSize"></span>
+            </span>
+        </td>
+        <td>
+            <strong ng-bind="::p.conflictPrivateAreaSum | prettyAreaSize" uib-tooltip="{{'harvestpermit.application.conflictList.privateTotalAreaSize' | translate}}"></strong>
+            <span ng-if="::p.conflictPrivateAreaWaterSum != null">
+                <span class="r-land-area" uib-tooltip="{{'harvestpermit.application.conflictList.privateLandAreaSize' | translate}}"
+                      ng-bind="::p.conflictPrivateAreaLandSum | prettyAreaSize"></span>
+                <span class="r-water-area" uib-tooltip="{{'harvestpermit.application.conflictList.privateWaterAreaSize' | translate}}"
+                      ng-bind="::p.conflictPrivateAreaWaterSum | prettyAreaSize"></span>
+            </span>
+        </td>
     </tr>
     </tbody>
 </table>

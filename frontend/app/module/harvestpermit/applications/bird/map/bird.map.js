@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.bird.map', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/bird/map/map.html',
                 controller: 'BirdPermitWizardMapController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     protectedAreaInfo: function (BirdPermitApplication, applicationId) {
                         return BirdPermitApplication.getCurrentProtectedArea({id: applicationId}).$promise;
@@ -29,6 +30,7 @@ angular.module('app.harvestpermit.application.bird.map', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/wizard/area/mapdetails.html',
                 controller: 'DerogationPermitWizardMapDetailsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     areaInfo: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.getArea({id: applicationId}).$promise;

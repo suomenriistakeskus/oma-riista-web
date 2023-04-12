@@ -10,12 +10,13 @@ import fi.riista.feature.organization.address.AddressSource;
 import fi.riista.util.Patterns;
 import fi.riista.validation.DoNotValidate;
 import fi.riista.validation.FinnishHunterNumber;
-import javax.validation.constraints.Email;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.Collections;
@@ -66,6 +67,8 @@ public class AccountDTO extends BaseEntityDTO<Long> {
     @Size(min = 2, max = 255)
     @Pattern(regexp = Patterns.BY_NAME)
     private String byName;
+
+    private LocalDateTime unregisterRequestedTime;
 
     private TimeZone timeZone;
 
@@ -133,6 +136,8 @@ public class AccountDTO extends BaseEntityDTO<Long> {
     private boolean enableSrva;
     private boolean enableShootingTests;
 
+    private boolean denyAnnouncementEmail;
+
     @Override
     public Long getId() {
         return id;
@@ -199,6 +204,14 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     public void setByName(final String byName) {
         this.byName = byName;
+    }
+
+    public LocalDateTime getUnregisterRequestedTime() {
+        return unregisterRequestedTime;
+    }
+
+    public void setUnregisterRequestedTime(LocalDateTime unregisterRequestedTime) {
+        this.unregisterRequestedTime = unregisterRequestedTime;
     }
 
     public TimeZone getTimeZone() {
@@ -487,5 +500,13 @@ public class AccountDTO extends BaseEntityDTO<Long> {
 
     public void setPrivileges(final Set<SystemUserPrivilege> privileges) {
         this.privileges = privileges;
+    }
+
+    public boolean isDenyAnnouncementEmail() {
+        return denyAnnouncementEmail;
+    }
+
+    public void setDenyAnnouncementEmail(final boolean denyAnnouncementEmail) {
+        this.denyAnnouncementEmail = denyAnnouncementEmail;
     }
 }

@@ -4,7 +4,6 @@ import fi.riista.feature.account.certificate.HunterPdfExportFeature;
 import fi.riista.feature.common.PdfExportFactory;
 import fi.riista.util.ContentDispositionUtil;
 import fi.riista.util.MediaTypeExtras;
-import io.sentry.Sentry;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.slf4j.Logger;
@@ -76,14 +75,12 @@ public class HunterCertificateApiResource {
                 pdfExportFactory.create(httpServletRequest)
                         .withHtmlPath(uri)
                         .withLanguage(lang)
-                        .withMargin(0,0,0,0)
+                        .withMargin(0, 0, 0, 0)
                         .build()
                         .export(os);
             }
         } catch (Exception ex) {
             LOG.error("Could not generate PDF", ex);
-
-            Sentry.capture(ex);
         }
     }
 

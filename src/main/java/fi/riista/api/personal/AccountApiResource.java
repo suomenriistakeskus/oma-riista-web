@@ -16,12 +16,18 @@ import fi.riista.feature.account.todo.AccountTodoCountDTO;
 import fi.riista.feature.account.todo.AccountTodoFeature;
 import fi.riista.feature.announcement.show.ListAnnouncementDTO;
 import fi.riista.feature.announcement.show.ListAnnouncementFeature;
+import fi.riista.feature.huntingclub.members.group.ContactInfoShareAndVisibilityUpdateDTO;
 import fi.riista.feature.huntingclub.members.club.ContactInfoShareUpdateDTO;
 import fi.riista.feature.huntingclub.members.club.HuntingClubMemberCrudFeature;
+import fi.riista.feature.huntingclub.members.group.GroupMemberCrudFeature;
 import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitationDTO;
 import fi.riista.feature.huntingclub.members.invitation.HuntingClubMemberInvitationFeature;
 import fi.riista.feature.organization.occupation.OccupationContactInfoVisibilityDTO;
 import fi.riista.feature.organization.occupation.OccupationCrudFeature;
+import fi.riista.feature.organization.occupation.OccupationService;
+import fi.riista.feature.organization.rhy.training.OccupationTrainingDTO;
+import fi.riista.feature.organization.rhy.training.OccupationTrainingFeature;
+import fi.riista.feature.permit.application.bird.amount.BirdPermitApplicationSpeciesAmountDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.data.domain.Pageable;
@@ -46,7 +52,11 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
+
+import static java.util.Optional.ofNullable;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @RestController
 @RequestMapping(value = AccountApiResource.ACCOUNT_RESOURCE_URL)
@@ -82,7 +92,13 @@ public class AccountApiResource {
     private AccountShootingTestFeature accountShootingTestFeature;
 
     @Resource
-    private OccupationCrudFeature occupationCrudFeature;
+    private GroupMemberCrudFeature groupMemberCrudFeature;
+
+    @Resource
+    private OccupationTrainingFeature occupationTrainingFeature;
+
+    @Resource
+    private OccupationService occupationService;
 
     @CacheControl(policy = {CachePolicy.NO_CACHE, CachePolicy.NO_STORE, CachePolicy.MUST_REVALIDATE})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -191,6 +207,18 @@ public class AccountApiResource {
         return accountTodoFeature.countShootingTestTodos(rhyId);
     }
 
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/taxationtodocount", produces = MediaType.APPLICATION_JSON_VALUE)
+    public AccountTodoCountDTO taxationTodoCount(@RequestParam final long rhyId) {
+        return accountTodoFeature.countTaxationTodos(rhyId);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/huntingcontroleventtodocount", produces = MediaType.APPLICATION_JSON_VALUE)
+    public AccountTodoCountDTO huntingControlEventTodoCount(@RequestParam final long rhyId) {
+        return accountTodoFeature.countHuntingControlEventTodos(rhyId);
+    }
+
     @RequestMapping(value = "/{personId:\\d+}/payment/{huntingYear:\\d+}")
     public ResponseEntity<byte[]> paymentPdf(@PathVariable final long personId, @PathVariable final int huntingYear) {
         return hunterPaymentPdfFeature.create(personId, huntingYear);
@@ -202,9 +230,43 @@ public class AccountApiResource {
         return huntingClubInvitationFeature.listMyInvitations(personId);
     }
 
+    static class ContactInfoShareList {
+
+        @NotEmpty
+        @Valid
+        public List<ContactInfoShareUpdateDTO> list;
+
+        public List<ContactInfoShareUpdateDTO> getList() {
+            return list;
+        }
+
+        public void setList(final List<ContactInfoShareUpdateDTO> list) {
+            this.list = list;
+        }
+    }
+
     @PutMapping(value = "contactshare")
-    public void updateContactInfoSharing(@RequestBody @Valid final List<ContactInfoShareUpdateDTO> updates) {
-        huntingClubMemberCrudFeature.updateContactInfoSharing(updates);
+    public void updateContactInfoSharing(@RequestBody @Valid final ContactInfoShareList updates) {
+        huntingClubMemberCrudFeature.updateContactInfoSharing(updates.getList());
+    }
+
+    static class ContactInfoShareAndVisibilityList {
+
+        @NotEmpty
+        @Valid
+        public List<ContactInfoShareAndVisibilityUpdateDTO> list;
+
+        public List<ContactInfoShareAndVisibilityUpdateDTO> getList() {
+            return list;
+        }
+
+        public void setList(final List<ContactInfoShareAndVisibilityUpdateDTO> list) {
+            this.list = list;
+        }
+    }
+    @PutMapping(value = "contactshare-and-visibility")
+    public void updateContactInfoSharingAndVisibility(@RequestBody @Valid final ContactInfoShareAndVisibilityList updates) {
+        groupMemberCrudFeature.updateContactInfoSharingAndVisibility(updates.getList());
     }
 
     @GetMapping(value = "announcements")
@@ -221,7 +283,24 @@ public class AccountApiResource {
 
     @PutMapping(value = "/occupation-contact-info-visibility")
     public void updateOccupationContactInfoVisibility(@RequestBody @Validated final List<OccupationContactInfoVisibilityDTO> dtoList) {
-        occupationCrudFeature.updateContactInfoVisibility(dtoList);
+        occupationService.updateContactInfoVisibility(dtoList);
     }
 
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/occupation-trainings", produces = APPLICATION_JSON_VALUE)
+    public List<OccupationTrainingDTO> listOccupationTrainings(@RequestParam(required = false) final Long personId) {
+        return ofNullable(personId)
+                .map(occupationTrainingFeature::listForPerson)
+                .orElseGet(occupationTrainingFeature::listMine);
+    }
+
+    @PostMapping(value = "unregister")
+    public void unregister(@ModelAttribute("personId") final Long personId) {
+        accountEditFeature.unregister(personId);
+    }
+
+    @PostMapping(value = "cancel-unregister")
+    public void cancelUnregister(@ModelAttribute("personId") final Long personId) {
+        accountEditFeature.cancelUnregister(personId);
+    }
 }

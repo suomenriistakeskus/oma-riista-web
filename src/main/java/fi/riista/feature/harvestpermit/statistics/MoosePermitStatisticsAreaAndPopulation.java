@@ -15,15 +15,20 @@ public class MoosePermitStatisticsAreaAndPopulation {
     @Nonnull
     public static MoosePermitStatisticsAreaAndPopulation create(final int permitAreaSize,
                                                                 final @Nonnull Collection<ClubHuntingSummaryBasicInfoDTO> huntingSummaryList) {
-        final int effectiveAreaSize = Math.min(permitAreaSize, nullsafeIntSum(huntingSummaryList, summary -> {
-            final int totalOrPermitAreaSize = F.coalesceAsInt(summary.getTotalHuntingArea(), permitAreaSize);
-            return F.coalesceAsInt(summary.getEffectiveHuntingArea(), totalOrPermitAreaSize);
-        }));
         final int remainingPopulationInEffectiveArea = nullsafeIntSum(huntingSummaryList, ClubHuntingSummaryBasicInfoDTO::getRemainingPopulationInEffectiveArea);
         final int remainingPopulationInTotalArea = nullsafeIntSum(huntingSummaryList, ClubHuntingSummaryBasicInfoDTO::getRemainingPopulationInTotalArea);
 
-        return new MoosePermitStatisticsAreaAndPopulation(permitAreaSize, effectiveAreaSize,
-                remainingPopulationInTotalArea, remainingPopulationInEffectiveArea);
+        return create(permitAreaSize, huntingSummaryList, remainingPopulationInEffectiveArea, remainingPopulationInTotalArea);
+    }
+
+    @Nonnull
+    public static MoosePermitStatisticsAreaAndPopulation createForClub(final int permitAreaSize,
+                                                                       final @Nonnull Collection<ClubHuntingSummaryBasicInfoDTO> huntingSummaryList) {
+        // Remaining population is not shown for club members
+        final int remainingPopulationInEffectiveArea = 0;
+        final int remainingPopulationInTotalArea = 0;
+
+        return create(permitAreaSize, huntingSummaryList, remainingPopulationInEffectiveArea, remainingPopulationInTotalArea);
     }
 
     @Nonnull
@@ -33,6 +38,19 @@ public class MoosePermitStatisticsAreaAndPopulation {
                 sum(counts, MoosePermitStatisticsAreaAndPopulation::getEffectiveAreaSize),
                 sum(counts, MoosePermitStatisticsAreaAndPopulation::getRemainingPopulationInTotalArea),
                 sum(counts, MoosePermitStatisticsAreaAndPopulation::getRemainingPopulationInEffectiveArea));
+    }
+
+    private static MoosePermitStatisticsAreaAndPopulation create(final int permitAreaSize,
+                                                                 final @Nonnull Collection<ClubHuntingSummaryBasicInfoDTO> huntingSummaryList,
+                                                                 final int remainingPopulationInEffectiveArea,
+                                                                 final int remainingPopulationInTotalArea) {
+        final int effectiveAreaSize = Math.min(permitAreaSize, nullsafeIntSum(huntingSummaryList, summary -> {
+            final int totalOrPermitAreaSize = F.coalesceAsInt(summary.getTotalHuntingArea(), permitAreaSize);
+            return F.coalesceAsInt(summary.getEffectiveHuntingArea(), totalOrPermitAreaSize);
+        }));
+
+        return new MoosePermitStatisticsAreaAndPopulation(permitAreaSize, effectiveAreaSize,
+                remainingPopulationInTotalArea, remainingPopulationInEffectiveArea);
     }
 
     private MoosePermitStatisticsAreaAndPopulation(final int totalAreaSize,

@@ -8,6 +8,7 @@ import fi.riista.feature.dashboard.DashboardHarvestReportExcelView;
 import fi.riista.feature.dashboard.DashboardHarvestsObservationsDTO;
 import fi.riista.feature.dashboard.DashboardMooseHuntingDTO;
 import fi.riista.feature.dashboard.DashboardMooselikeEndOfHuntingExcelFeature;
+import fi.riista.feature.dashboard.DashboardPOIsDTO;
 import fi.riista.feature.dashboard.DashboardPdfDTO;
 import fi.riista.feature.dashboard.DashboardRhyEditDTO;
 import fi.riista.feature.dashboard.DashboardRhyEditExcelView;
@@ -85,6 +86,12 @@ public class DashboardController {
     @GetMapping("clubs")
     public DashboardClubsDTO getClubsMetrics() {
         return dashboardFeature.getMetricsClubs();
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping("pois")
+    public DashboardPOIsDTO getPOIMetrics() {
+        return dashboardFeature.getMetricsPOIs();
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)

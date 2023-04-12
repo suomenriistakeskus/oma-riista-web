@@ -424,9 +424,10 @@
     </changeSet>
 
     <changeSet id="2018-01-23-decision-handler-user" author="vincit-kyostihe">
+        <validCheckSum>8:5771ac787a041f7c8ec167926b912043</validCheckSum>
         <addColumn tableName="permit_decision">
             <column name="handler_id" type="BIGINT">
-                <constraints references="system_user(user_id)"
+                <constraints referencedTableName="system_user" referencedColumnNames="user_id"
                              foreignKeyName="fk_permit_decision_handler_id"/>
             </column>
         </addColumn>
@@ -1646,6 +1647,7 @@
     </changeSet>
 
     <changeSet id="2018-08-16-add-origin-file-info-into-account_transfer_batch" author="vincit-jarkkoka">
+        <validCheckSum>8:e86ae872e1d14056afbec89f694bb75c</validCheckSum>
         <renameColumn tableName="account_transfer_batch" oldColumnName="date" newColumnName="statement_date"/>
 
         <addColumn tableName="account_transfer_batch">
@@ -1655,7 +1657,7 @@
         </addColumn>
         <addColumn tableName="account_transfer_batch">
             <column name="filename_date" type="DATE">
-                <constraints unique="true"/>
+                <constraints unique="true" uniqueConstraintName="account_transfer_batch_filename_date_key"/>
             </column>
         </addColumn>
     </changeSet>

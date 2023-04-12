@@ -16,21 +16,23 @@ angular.module('app.jht.otherwisedeceased-edit', [])
                                  MapState, MapUtil, OtherwiseDeceasedAges, OtherwiseDeceasedGenders,
                                  OtherwiseDeceasedCauses, OtherwiseDeceasedSources, OtherwiseDeceasedService, item) {
             var $ctrl = this;
-            $ctrl.item = item;
+            $ctrl.item = item || {};
             $ctrl.speciesOptions = OtherwiseDeceasedService.getSpeciesCodes();
             $ctrl.ageOptions = OtherwiseDeceasedAges;
             $ctrl.genderOptions = OtherwiseDeceasedGenders;
             $ctrl.causeOptions = OtherwiseDeceasedCauses;
             $ctrl.sourceOptions = OtherwiseDeceasedSources;
-            $ctrl.species = !!item.gameSpeciesCode ? item.gameSpeciesCode.toString() : '';
-            $ctrl.validRhy = !!item.rhy;
-            $ctrl.validMunicipality = !!item.municipality;
+            $ctrl.species = !!$ctrl.item.gameSpeciesCode ? $ctrl.item.gameSpeciesCode.toString() : '';
+            $ctrl.validRhy = !!$ctrl.item.rhy;
+            $ctrl.validMunicipality = !!$ctrl.item.municipality;
+            $ctrl.downloadAttachment = OtherwiseDeceasedService.downloadAttachment;
+            $ctrl.deleteAttachment = OtherwiseDeceasedService.deleteAttachment;
 
             var dateFilter = $filter('date');
             $ctrl.date = dateFilter($ctrl.item.pointOfTime, 'yyyy-MM-dd');
             $ctrl.time = dateFilter($ctrl.item.pointOfTime, 'HH:mm');
 
-            var location = item.geoLocation;
+            var location = $ctrl.item.geoLocation;
 
             if (!isValidLocation(location)) {
                 location = MapUtil.getDefaultGeoLocation();

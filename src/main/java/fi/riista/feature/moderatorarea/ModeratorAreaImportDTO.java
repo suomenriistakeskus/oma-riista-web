@@ -13,7 +13,8 @@ public class ModeratorAreaImportDTO {
     public enum ModeratorAreaImportType {
         PERSONAL,
         CLUB,
-        PERSONAL_AREA_UNION
+        PERSONAL_AREA_UNION,
+        MODERATOR_AREA
     }
 
     public static ModeratorAreaImportDTO createFromPersonalArea(final PersonalArea area) {
@@ -26,6 +27,9 @@ public class ModeratorAreaImportDTO {
 
     public static ModeratorAreaImportDTO createFromPersonalAreaUnion(final PersonalAreaUnion area, final String externalId) {
         return new ModeratorAreaImportDTO(area.getName(), area.getName(), externalId, area.getId(), ModeratorAreaImportType.PERSONAL_AREA_UNION);
+    }
+    public static ModeratorAreaImportDTO createFromModeratorArea(final ModeratorArea area) {
+        return new ModeratorAreaImportDTO(area.getName(), area.getName(), area.getExternalId(), area.getId(), ModeratorAreaImportType.MODERATOR_AREA);
     }
 
     @NotBlank

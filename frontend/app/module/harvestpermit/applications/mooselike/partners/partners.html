@@ -1,6 +1,6 @@
 <div class="row">
-    <div class="col-xs-10 col-xs-offset-1">
-        <div class="alert alert-info">
+    <div class="col-xs-12 col-sm-10 col-sm-offset-1">
+        <div class="alert alert-info wizard-info">
             <span class="fa fa-info-circle"></span>
 
             <div class="alert-content">
@@ -12,7 +12,7 @@
 </div>
 
 <div class="row" ng-if="!$ctrl.partners || $ctrl.partners.length === 0">
-    <div class="col-xs-offset-1 col-xs-10">
+    <div class="col-xs-12 col-sm-offset-1 col-sm-10">
         <div class="alert alert-danger">
             <p translate="harvestpermit.wizard.partners.table.empty"></p>
         </div>
@@ -20,7 +20,7 @@
 </div>
 
 <div class="row" style="margin-bottom:20px;">
-    <div class="col-xs-2 col-xs-offset-1">
+    <div class="col-xs-12 col-sm-3 col-sm-offset-1">
         <button type="button" class="btn btn-primary btn-block"
                 ng-click="$ctrl.showAddPartner()">
             <span class="glyphicon glyphicon-plus"></span>&nbsp;
@@ -30,7 +30,7 @@
 </div>
 
 <div class="row">
-    <div class="col-xs-10 col-xs-offset-1">
+    <div class="col-xs-12 col-sm-10 col-sm-offset-1">
         <harvest-permit-area-partner-area-list
                 ng-if="$ctrl.partners && $ctrl.partners.length > 0"
                 partners="$ctrl.partners"

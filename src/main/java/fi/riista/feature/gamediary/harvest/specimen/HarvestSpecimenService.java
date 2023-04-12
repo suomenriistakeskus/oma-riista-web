@@ -84,12 +84,13 @@ public class HarvestSpecimenService
 
     @Override
     protected void validateResultSpecimens(@Nonnull final Harvest harvest,
-                                           @Nonnull final List<HarvestSpecimen> resultSpecimens) {
+                                           @Nonnull final List<HarvestSpecimen> resultSpecimens,
+                                           @Nonnull final HarvestSpecVersion version) {
         validateSpecimens(
                 harvest,
                 // At least one specimen is needed for validation in order to verify that required fields are present.
                 !resultSpecimens.isEmpty() ? resultSpecimens : singletonList(new HarvestSpecimen()),
-                HarvestSpecVersion.CURRENTLY_SUPPORTED,
+                HarvestSpecVersion.getResultValidationVersion(version),
                 /* skipNewAntlerFields */true);
     }
 
@@ -109,9 +110,11 @@ public class HarvestSpecimenService
         final boolean associatedWithHuntingDay = huntingDayOfGroup != null;
         final boolean legallyMandatoryFieldsOnly = associatedWithHuntingDay && huntingDayOfGroup.isCreatedBySystem();
 
+        final boolean withPermit = harvest.getHarvestPermit() != null;
+
         final RequiredHarvestFields.Specimen fieldRequirements = RequiredHarvestFields.getSpecimenFields(
                 huntingYear, speciesCode, harvest.getHuntingMethod(), harvest.resolveReportingType(),
-                legallyMandatoryFieldsOnly, version);
+                legallyMandatoryFieldsOnly, version, withPermit);
 
         // It turned out that skipping new antlers fields causes problems only when harvest is associated
         // with a hunting day.
@@ -120,7 +123,7 @@ public class HarvestSpecimenService
         for (final HarvestSpecimenBusinessFields specimen : specimens) {
             executeValidation(
                     new HarvestSpecimenValidator(
-                            fieldRequirements, specimen, speciesCode, associatedWithHuntingDay),
+                            fieldRequirements, specimen, speciesCode, associatedWithHuntingDay, version, withPermit),
                     skipNewAntlerFieldsWhenAssociatedWithHuntingDay);
         }
     }

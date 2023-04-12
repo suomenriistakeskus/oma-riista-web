@@ -4,12 +4,12 @@
 Properties to configure production on build time. File is needed when building using prod profile. File is not provided, create it to project root.
 
 File should contain following properties:
-- new_relic_license_key
-  - if New Relic is used
 - aws.config.s3location
   - contains s3 url to properties file which overrides properties in production env
 - cgpsmapper_uri
   - location of the cGPSMapper software bundle
+- dd_conf.api.key
+  - Datadog API key, if used
 
 
 #### WAR

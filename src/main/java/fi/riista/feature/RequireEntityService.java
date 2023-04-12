@@ -11,6 +11,7 @@ import fi.riista.feature.gamediary.harvest.Harvest;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.season.HarvestQuota;
 import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.area.HuntingClubArea;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
@@ -18,6 +19,8 @@ import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.moosedatacard.MooseDataCardImport;
 import fi.riista.feature.huntingclub.permit.endofhunting.basicsummary.BasicClubHuntingSummary;
 import fi.riista.feature.huntingclub.permit.endofhunting.moosesummary.MooseHuntingSummary;
+import fi.riista.feature.huntingclub.poi.PoiIdAllocation;
+import fi.riista.feature.huntingclub.poi.PoiLocationGroup;
 import fi.riista.feature.moderatorarea.ModeratorArea;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
@@ -135,6 +138,14 @@ public class RequireEntityService {
         return require(id, GroupHuntingDay.class, permission);
     }
 
+    public PoiIdAllocation requirePoiIdAllocation(final Long id, final Enum<?> permission) {
+        return require(id, PoiIdAllocation.class, permission);
+    }
+
+    public PoiLocationGroup requirePoiLocationGroup(final Long id, final Enum<?> permission) {
+        return require(id, PoiLocationGroup.class, permission);
+    }
+
     public HuntingClubArea requireHuntingClubArea(final Long id, final Enum<?> permission) {
         return require(id, HuntingClubArea.class, permission);
     }
@@ -197,6 +208,10 @@ public class RequireEntityService {
 
     public Occupation requireOccupation(final Long id, final Enum<?> permission) {
         return require(id, Occupation.class, permission);
+    }
+
+    public HarvestQuota requireHarvestQuota(final Long id, final Enum<?> permission) {
+        return require(id, HarvestQuota.class, permission);
     }
 
     private <T extends BaseEntity<ID>, ID extends java.io.Serializable> T require(final ID id,

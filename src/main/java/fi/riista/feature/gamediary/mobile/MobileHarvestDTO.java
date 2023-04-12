@@ -115,7 +115,8 @@ public class MobileHarvestDTO extends HarvestDTOBase {
             return super.populateWith(harvest)
                     .withMobileClientRefId(harvest.getMobileClientRefId())
                     .withHarvestReportDone(harvest.isHarvestReportDone())
-                    .withAmount(harvest.getAmount());
+                    .withAmount(harvest.getAmount())
+                    .withHuntingClub(harvest.getHuntingClub());
         }
     }
 

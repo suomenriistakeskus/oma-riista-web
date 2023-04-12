@@ -1,5 +1,6 @@
 package fi.riista.feature.gamediary.mobile;
 
+import fi.riista.feature.gamediary.mobile.srva.MobileSrvaEventDTO;
 import fi.riista.feature.gamediary.srva.SrvaEventDTOBaseTest;
 import org.junit.Test;
 

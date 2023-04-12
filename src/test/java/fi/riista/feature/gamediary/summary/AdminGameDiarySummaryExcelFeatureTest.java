@@ -85,7 +85,7 @@ public class AdminGameDiarySummaryExcelFeatureTest extends EmbeddedDatabaseTest 
 
         runAsModeratorInTransaction(() -> {
             final BooleanBuilder harvestPredicate =
-                    excelFeature.createHarvestPredicate(null, mooseSpecies,
+                    AdminGameSummaryPredicates.createHarvestPredicate(null, mooseSpecies,
                             OrganisationType.RK, null, false, true);
 
             final List<HarvestDTO> harvestDTOS = excelFeature.loadHarvest(harvestPredicate);
@@ -101,7 +101,7 @@ public class AdminGameDiarySummaryExcelFeatureTest extends EmbeddedDatabaseTest 
 
         runAsModeratorInTransaction(() -> {
             final BooleanBuilder harvestPredicate =
-                    excelFeature.createHarvestPredicate(null, mooseSpecies,
+                    AdminGameSummaryPredicates.createHarvestPredicate(null, mooseSpecies,
                             OrganisationType.RK, null, false, false);
 
             final List<HarvestDTO> harvestDTOS = excelFeature.loadHarvest(harvestPredicate);
@@ -116,7 +116,7 @@ public class AdminGameDiarySummaryExcelFeatureTest extends EmbeddedDatabaseTest 
 
         runAsModeratorInTransaction(() -> {
             final BooleanBuilder harvestPredicate =
-                    excelFeature.createHarvestPredicate(null, bearSpecies,
+                    AdminGameSummaryPredicates.createHarvestPredicate(null, bearSpecies,
                             OrganisationType.RK, null, false, true);
 
             final List<HarvestDTO> harvestDTOS = excelFeature.loadHarvest(harvestPredicate);
@@ -132,7 +132,7 @@ public class AdminGameDiarySummaryExcelFeatureTest extends EmbeddedDatabaseTest 
 
         runAsModeratorInTransaction(() -> {
             final BooleanBuilder harvestPredicate =
-                    excelFeature.createHarvestPredicate(null, null,
+                    AdminGameSummaryPredicates.createHarvestPredicate(null, null,
                             OrganisationType.RK, null, true, false);
 
             final List<HarvestDTO> harvestDTOS = excelFeature.loadHarvest(harvestPredicate);

@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.nestremoval.period', ['app.metadat
                 templateUrl: 'harvestpermit/applications/nestremoval/period/period.html',
                 controller: 'NestRemovalPermitWizardPeriodController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesPeriodList: function (NestRemovalPermitApplication, applicationId) {
                         return NestRemovalPermitApplication.listSpeciesPeriods({id: applicationId}).$promise;

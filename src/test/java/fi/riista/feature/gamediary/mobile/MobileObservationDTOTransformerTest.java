@@ -5,6 +5,7 @@ import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.fixture.ObservationFixtureMixin;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
+import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
@@ -17,18 +18,23 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static fi.riista.feature.gamediary.DeerHuntingType.STAND_HUNTING;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAN_GOOSE;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_BEAR;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_CANADIAN_BEAVER;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_EUROPEAN_BEAVER;
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_GREYLAG_GOOSE;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER;
 import static fi.riista.feature.gamediary.observation.ObservationCategory.DEER_HUNTING;
 import static fi.riista.feature.gamediary.observation.ObservationCategory.NORMAL;
+import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.LOWEST_VERSION_SUPPORTING_BIRD_LITTER_AND_COUPLE;
 import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.LOWEST_VERSION_SUPPORTING_CATEGORY;
 import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.LOWEST_VERSION_SUPPORTING_XTRA_BEAVER_TYPES;
 import static fi.riista.feature.gamediary.observation.ObservationSpecVersion.MOST_RECENT;
 import static fi.riista.feature.gamediary.observation.ObservationType.NAKO;
+import static fi.riista.feature.gamediary.observation.ObservationType.PARI;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
+import static fi.riista.feature.gamediary.observation.ObservationType.POIKUE;
 import static fi.riista.test.Asserts.assertEmpty;
 import static fi.riista.test.TestUtils.createList;
 import static org.junit.Assert.assertEquals;
@@ -122,6 +128,74 @@ public class MobileObservationDTOTransformerTest extends EmbeddedDatabaseTest im
                             });
                         });
                     });
+        });
+    }
+
+    @Theory
+    public void testTranslationOfPariObservationType(final ObservationSpecVersion version) {
+        assumeTrue(version.lessThan(LOWEST_VERSION_SUPPORTING_BIRD_LITTER_AND_COUPLE));
+
+        withPerson(author -> {
+
+            Stream.of(OFFICIAL_CODE_BEAN_GOOSE, OFFICIAL_CODE_GREYLAG_GOOSE).forEach(speciesCode -> {
+
+                final GameSpecies species = model().newGameSpecies(speciesCode);
+
+                createObservationMetaF(species, MOST_RECENT, PARI).forMobile().consumeBy(currentMeta -> {
+
+                    createObservationMetaF(species, version, NAKO).forMobile().consumeBy(oldMeta -> {
+
+                        final List<Observation> observations =
+                                createList(5, () -> model().newMobileObservation(author, currentMeta));
+
+                        onSavedAndAuthenticated(createUser(author), () -> {
+
+                            final List<MobileObservationDTO> dtos = transformer.apply(observations, version);
+
+                            for (int i = 0; i < observations.size(); i++) {
+                                final MobileObservationDTO dto = dtos.get(i);
+                                assertNotNull(dto);
+
+                                assertEquals(NAKO, dto.getObservationType());
+                            }
+                        });
+                    });
+                });
+            });
+        });
+    }
+
+        @Theory
+    public void testTranslationOfPoikueObservationType(final ObservationSpecVersion version) {
+        assumeTrue(version.lessThan(LOWEST_VERSION_SUPPORTING_BIRD_LITTER_AND_COUPLE));
+
+        withPerson(author -> {
+
+            Stream.of(OFFICIAL_CODE_BEAN_GOOSE, OFFICIAL_CODE_GREYLAG_GOOSE).forEach(speciesCode -> {
+
+                final GameSpecies species = model().newGameSpecies(speciesCode);
+
+                createObservationMetaF(species, MOST_RECENT, POIKUE).forMobile().consumeBy(currentMeta -> {
+
+                    createObservationMetaF(species, version, NAKO).forMobile().consumeBy(oldMeta -> {
+
+                        final List<Observation> observations =
+                                createList(5, () -> model().newMobileObservation(author, currentMeta));
+
+                        onSavedAndAuthenticated(createUser(author), () -> {
+
+                            final List<MobileObservationDTO> dtos = transformer.apply(observations, version);
+
+                            for (int i = 0; i < observations.size(); i++) {
+                                final MobileObservationDTO dto = dtos.get(i);
+                                assertNotNull(dto);
+
+                                assertEquals(NAKO, dto.getObservationType());
+                            }
+                        });
+                    });
+                });
+            });
         });
     }
 

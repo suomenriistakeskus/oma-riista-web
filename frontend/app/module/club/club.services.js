@@ -11,7 +11,7 @@ angular.module('app.club.services', [])
                 method: 'PUT',
                 params: {'id': '@id', 'active': '@active'}
             },
-            'harvestSummary': {url: 'api/v1/club/:id/harvestsummary', method: 'GET'}
+            'harvestSummary': {url: 'api/v1/club/harvestsummary', method: 'POST'}
         });
     })
     .service('ChangeClubNameModal', function ($q, $uibModal, Clubs) {
@@ -126,6 +126,7 @@ angular.module('app.club.services', [])
                     $ctrl.fixGroupMissing = _.partial(go, 'club.groups');
                     $ctrl.fixGroupPermitMissing = _.partial(go, 'club.groups');
                     $ctrl.fixGroupLeaderMissing = _.partial(go, 'club.groups');
+                    $ctrl.fixPartnerSummaryMissing = _.partial(go, 'club.moosepermit');
                 }
             });
         }

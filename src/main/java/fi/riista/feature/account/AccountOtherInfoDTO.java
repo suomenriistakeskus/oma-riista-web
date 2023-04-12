@@ -26,6 +26,8 @@ public class AccountOtherInfoDTO {
     @PhoneNumber
     private String phoneNumber;
 
+    private boolean denyAnnouncementEmail;
+
     public String getEmail() {
         return email;
     }
@@ -48,5 +50,13 @@ public class AccountOtherInfoDTO {
 
     public void setPhoneNumber(final String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public boolean isDenyAnnouncementEmail() {
+        return denyAnnouncementEmail;
+    }
+
+    public void setDenyAnnouncementEmail(final boolean denyAnnouncementEmail) {
+        this.denyAnnouncementEmail = denyAnnouncementEmail;
     }
 }

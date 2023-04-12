@@ -188,9 +188,7 @@ public class GameDiaryMetadataFeature {
                 .flatMap(municipalityRepository::findById)
                 .orElse(null);
 
-        final HarvestSpecVersion overrideSpecVersion = specVersion;
-
-        return RequiredHarvestFieldsResponseDTO.builder(request, overrideSpecVersion)
+        return RequiredHarvestFieldsResponseDTO.builder(request, specVersion)
                 .withReportingType(harvest.resolveReportingType())
                 .withSeason(harvest.getHarvestSeason())
                 .withQuota(harvest.getHarvestQuota())
@@ -216,9 +214,11 @@ public class GameDiaryMetadataFeature {
         final RequiredHarvestFields.Report reportFields = RequiredHarvestFields.getFormFields(
                 huntingYear, gameSpeciesCode, HarvestReportingType.HUNTING_DAY, onlyLegallyMandatory);
 
+        final boolean withPermit = group.getHarvestPermit() != null;
+
         final RequiredHarvestFields.Specimen specimenFields = RequiredHarvestFields.getSpecimenFields(
                 huntingYear, gameSpeciesCode, null, HarvestReportingType.HUNTING_DAY, onlyLegallyMandatory,
-                specVersion);
+                specVersion, withPermit);
 
         final RequiredHarvestReportFieldsDTO reportFieldsDTO = RequiredHarvestReportFieldsDTO.create(reportFields);
         final RequiredHarvestSpecimenFieldsDTO specimenFieldsDTO =

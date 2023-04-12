@@ -7,8 +7,6 @@ import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.calendar.Venue;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.util.LocalisedString;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 
 import javax.annotation.Nonnull;
 import javax.persistence.Access;
@@ -35,6 +33,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.HashSet;
 import java.util.Objects;
@@ -110,10 +110,10 @@ public class Organisation extends LifecycleEntity<Long> {
     @Column(nullable = false)
     private boolean active = true;
 
-    Organisation() {
+    protected Organisation() {
     }
 
-    protected Organisation(OrganisationType organisationType) {
+    protected Organisation(final OrganisationType organisationType) {
         this.organisationType = organisationType;
     }
 
@@ -122,15 +122,15 @@ public class Organisation extends LifecycleEntity<Long> {
         return LocalisedString.of(nameFinnish, nameSwedish);
     }
 
-    public void addVenue(Venue venue) {
+    public void addVenue(final Venue venue) {
         venues.add(venue);
     }
 
-    public void removeVenue(Venue venue) {
+    public void removeVenue(final Venue venue) {
         venues.remove(venue);
     }
 
-    public Optional<Organisation> getClosestAncestorOfType(OrganisationType type) {
+    public Optional<Organisation> getClosestAncestorOfType(final OrganisationType type) {
         Objects.requireNonNull(type, "type must not be null");
 
         Organisation parent = parentOrganisation;
@@ -190,7 +190,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return address;
     }
 
-    public void setAddress(Address address) {
+    public void setAddress(final Address address) {
         this.address = address;
     }
 
@@ -198,7 +198,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(final String email) {
         this.email = email;
     }
 
@@ -206,7 +206,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
+    public void setPhoneNumber(final String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
@@ -214,7 +214,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return nameFinnish;
     }
 
-    public void setNameFinnish(String nameFinnish) {
+    public void setNameFinnish(final String nameFinnish) {
         this.nameFinnish = nameFinnish;
     }
 
@@ -222,7 +222,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return nameSwedish;
     }
 
-    public void setNameSwedish(String nameSwedish) {
+    public void setNameSwedish(final String nameSwedish) {
         this.nameSwedish = nameSwedish;
     }
 
@@ -230,7 +230,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return venues;
     }
 
-    public void setVenues(Set<Venue> venues) {
+    public void setVenues(final Set<Venue> venues) {
         this.venues = venues;
     }
 
@@ -238,7 +238,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return officialCode;
     }
 
-    public void setOfficialCode(String officialCode) {
+    public void setOfficialCode(final String officialCode) {
         this.officialCode = officialCode;
     }
 
@@ -246,7 +246,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return lhOrganisationId;
     }
 
-    public void setLhOrganisationId(String lhOrganisationId) {
+    public void setLhOrganisationId(final String lhOrganisationId) {
         this.lhOrganisationId = lhOrganisationId;
     }
 
@@ -254,7 +254,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return geoLocation;
     }
 
-    public void setGeoLocation(GeoLocation geoLocation) {
+    public void setGeoLocation(final GeoLocation geoLocation) {
         this.geoLocation = geoLocation;
     }
 
@@ -262,7 +262,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return parentOrganisation;
     }
 
-    public void setParentOrganisation(Organisation parentOrganisation) {
+    public void setParentOrganisation(final Organisation parentOrganisation) {
         this.parentOrganisation = parentOrganisation;
     }
 
@@ -270,7 +270,7 @@ public class Organisation extends LifecycleEntity<Long> {
         return subOrganisations;
     }
 
-    public void setSubOrganisations(Set<Organisation> subOrganisations) {
+    public void setSubOrganisations(final Set<Organisation> subOrganisations) {
         this.subOrganisations = subOrganisations;
     }
 
@@ -278,7 +278,8 @@ public class Organisation extends LifecycleEntity<Long> {
         return active;
     }
 
-    public void setActive(boolean active) {
+    public void setActive(final boolean active) {
         this.active = active;
     }
+
 }

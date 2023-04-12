@@ -15,9 +15,10 @@
 </head>
 <body>
 
-<div class="container">
+
+<div class="header-container">
     <div class="header-logo">
-        <img width="280" alt="image" src="riista-logo.jpg"/>
+        <img width="280" alt="image" src="riistakeskus-logo.png"/>
     </div>
 
 
@@ -33,7 +34,10 @@
         <joda:format value="${model.currentDate}" pattern="d.M.YYYY"/>
     </div>
 
+    <hr class="header-separator">
+</div>
 
+<div class="container">
     <br/>
     <br/>
 
@@ -150,14 +154,16 @@
         <strong>${model.approver}</strong>
         <br/>
         <br/>
-        Todistus on allekirjoitettu koneellisesti riistahallintolain (158/2011) 8 §:n 5 momentin nojalla.<br/>
+        Todistus on allekirjoitettu koneellisesti.<br/>
     </p>
 
     <br/>
 
-    <div class="footer" style="margin-top: 330pt">
-        <%@include file="footer-fi.jsp" %>
-    </div>
 </div>
+
+<div class="footer" style="margin-top: 330pt">
+    <%@include file="footer-fi.jsp" %>
+</div>
+
 </body>
 </html>

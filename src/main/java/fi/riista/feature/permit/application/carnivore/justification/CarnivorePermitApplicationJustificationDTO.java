@@ -2,8 +2,9 @@ package fi.riista.feature.permit.application.carnivore.justification;
 
 import fi.riista.feature.permit.application.HarvestPermitApplicationSpeciesAmount;
 import fi.riista.feature.permit.application.carnivore.CarnivorePermitApplication;
-import javax.validation.constraints.NotBlank;
 import org.hibernate.validator.constraints.SafeHtml;
+
+import javax.validation.constraints.NotBlank;
 
 import static java.util.Objects.requireNonNull;
 
@@ -12,14 +13,6 @@ public class CarnivorePermitApplicationJustificationDTO {
     @NotBlank
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String populationAmount;
-
-    @NotBlank
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String populationDescription;
-
-    @NotBlank
-    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
-    private String additionalJustificationInfo;
 
     @NotBlank
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
@@ -35,8 +28,6 @@ public class CarnivorePermitApplicationJustificationDTO {
         requireNonNull(speciesAmount, "speciesAmount is null");
 
         this.populationAmount = speciesAmount.getPopulationAmount();
-        this.populationDescription = speciesAmount.getPopulationDescription();
-        this.additionalJustificationInfo = carnivoreApplication.getAdditionalJustificationInfo();
         this.alternativeMeasures = carnivoreApplication.getAlternativeMeasures();
     }
 
@@ -46,22 +37,6 @@ public class CarnivorePermitApplicationJustificationDTO {
 
     public void setPopulationAmount(final String populationAmount) {
         this.populationAmount = populationAmount;
-    }
-
-    public String getPopulationDescription() {
-        return populationDescription;
-    }
-
-    public void setPopulationDescription(final String populationDescription) {
-        this.populationDescription = populationDescription;
-    }
-
-    public String getAdditionalJustificationInfo() {
-        return additionalJustificationInfo;
-    }
-
-    public void setAdditionalJustificationInfo(final String additionalJustificationInfo) {
-        this.additionalJustificationInfo = additionalJustificationInfo;
     }
 
     public String getAlternativeMeasures() {

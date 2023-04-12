@@ -1,5 +1,5 @@
 <form name="carnivoreJustificationForm" r-force-show-errors-check-validity>
-    <div class="alert alert-info">
+    <div class="alert alert-info wizard-info">
         <span class="fa fa-info-circle"></span>
 
         <div class="alert-content">
@@ -19,35 +19,8 @@
                   name="populationAmount"
                   id="populationAmount"
                   ng-model="$ctrl.data.populationAmount"
-                  required></textarea>
-    </div>
-
-    <hr class="invisible">
-
-    <div class="form-group" show-errors>
-        <label class="control-label"
-               for="populationDescription"
-               translate="harvestpermit.wizard.carnivore.justification.populationDescription"></label>
-
-        <textarea class="form-control" rows="4"
-                  name="populationDescription"
-                  id="populationDescription"
-                  ng-model="$ctrl.data.populationDescription"
-                  required></textarea>
-    </div>
-
-    <hr class="invisible">
-
-    <div class="form-group" show-errors>
-        <label class="control-label"
-               for="additionalInfo"
-               translate="harvestpermit.wizard.carnivore.justification.additionalInfo"></label>
-
-        <textarea class="form-control" rows="4"
-                  name="additionalInfo"
-                  id="additionalInfo"
-                  ng-model="$ctrl.data.additionalJustificationInfo"
-                  required></textarea>
+                  required
+                  spellcheck="false"></textarea>
     </div>
 
     <hr class="invisible">
@@ -62,7 +35,8 @@
                   name="alternativeMeasures"
                   id="alternativeMeasures"
                   ng-model="$ctrl.data.alternativeMeasures"
-                  required></textarea>
+                  required
+                  spellcheck="false"></textarea>
     </div>
 </form>
 

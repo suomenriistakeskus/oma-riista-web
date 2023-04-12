@@ -20,6 +20,7 @@ import fi.riista.feature.permit.area.partner.HarvestPermitAreaPartnerService;
 import fi.riista.integration.mapexport.MapPdfModel;
 import fi.riista.integration.mapexport.MapPdfParameters;
 import fi.riista.security.EntityPermission;
+import org.joda.time.format.DateTimeFormat;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -227,13 +228,24 @@ public class PersonalAreaUnionFeature {
     }
 
     @Transactional(readOnly = true)
-    public PdfData exportPdf(final long id, final Locale locale, final MapPdfParameters dto) {
+    public PdfData exportMapPdf(final long id, final Locale locale, final MapPdfParameters dto) {
         final PersonalAreaUnion personalAreaUnion = requireEntityService.requireAccountAreaUnion(id,
                 EntityPermission.READ);
 
         final MapPdfModel model = personalAreaUnionPrintService.getModel(personalAreaUnion, dto.getOverlay(), locale);
-        final byte[] pdf = personalAreaUnionPrintService.createPdf(personalAreaUnion, locale, model, dto);
+        final byte[] pdf = personalAreaUnionPrintService.renderMap(personalAreaUnion.getHarvestPermitArea(), model, dto);
         return new PdfData(pdf, model.getExportFileName());
+    }
+
+    @Transactional(readOnly = true)
+    public PdfData exportPartnersPdf(final long id, final Locale locale) {
+        final PersonalAreaUnion personalAreaUnion = requireEntityService.requireAccountAreaUnion(id,
+                EntityPermission.READ);
+
+        final byte[] pdf = personalAreaUnionPrintService.renderPartners(personalAreaUnion.getHarvestPermitArea(), locale);
+
+        final String fileTimestamp = DateTimeFormat.forPattern("yyyy-MM-dd").print(personalAreaUnion.getModificationTime());
+        return new PdfData(pdf, fileTimestamp + "-" + personalAreaUnion.getName() + ".pdf");
     }
 
     private PersonalAreaUnionDTO doCreateAreaUnion(final PersonalAreaUnionCreateRequestDTO dto, final Person person) {

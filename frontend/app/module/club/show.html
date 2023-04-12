@@ -13,15 +13,15 @@
                 <table class="table table-condensed">
                     <tbody>
                     <tr>
-                        <th class="col-xs-3" translate="club.main.general.customerId"></th>
+                        <th class="col-sm-3" translate="club.main.general.customerId"></th>
                         <td ng-bind="::$ctrl.club.customerId"></td>
                     </tr>
                     <tr>
-                        <th class="col-xs-3" translate="club.main.general.nameFI"></th>
+                        <th class="col-sm-3" translate="club.main.general.nameFI"></th>
                         <td ng-bind="::$ctrl.club.nameFI"></td>
                     </tr>
                     <tr>
-                        <th class="col-xs-3" translate="club.main.general.nameSV"></th>
+                        <th class="col-sm-3" translate="club.main.general.nameSV"></th>
                         <td ng-bind="::$ctrl.club.nameSV"></td>
                     </tr>
 
@@ -46,7 +46,7 @@
                         <td><strong translate="club.subtype.person.title"></strong></td>
                     </tr>
                     <tr ng-if="::($ctrl.club.subtype === 'PERSON' && $ctrl.club.clubPerson)">
-                        <th class="col-xs-3" translate="club.subtype.person.link"></th>
+                        <th class="col-sm-3" translate="club.subtype.person.link"></th>
                         <td>
                             <span ng-bind="::$ctrl.club.clubPerson.lastName"></span>
                             <span ng-bind="::$ctrl.club.clubPerson.byName"></span>
@@ -65,7 +65,7 @@
                         <td><strong translate="club.subtype.business.title"></strong></td>
                     </tr>
                     <tr ng-if="::($ctrl.club.subtype === 'BUSINESS' && $ctrl.club.businessId)">
-                        <th class="col-xs-3" translate="club.subtype.business.link"></th>
+                        <th class="col-sm-3" translate="club.subtype.business.link"></th>
                         <td ng-bind="::$ctrl.club.businessId"></td>
                     </tr>
                     <tr ng-if="::($ctrl.club.subtype === 'BUSINESS' && !$ctrl.club.businessId)">
@@ -81,11 +81,11 @@
                         <td><strong translate="club.subtype.ry.title"></strong></td>
                     </tr>
                     <tr ng-if="::($ctrl.club.subtype === 'RY' && $ctrl.club.businessId)">
-                        <th class="col-xs-3" translate="club.subtype.business.link"></th>
+                        <th class="col-sm-3" translate="club.subtype.business.link"></th>
                         <td ng-bind="::$ctrl.club.businessId"></td>
                     </tr>
                     <tr ng-if="::($ctrl.club.subtype === 'RY' && $ctrl.club.associationRegistryNumber)">
-                        <th class="col-xs-3" translate="club.subtype.ry.link"></th>
+                        <th class="col-sm-3" translate="club.subtype.ry.link"></th>
                         <td ng-bind="::$ctrl.club.associationRegistryNumber"></td>
                     </tr>
                     <tr ng-if="::($ctrl.club.subtype === 'RY' && !$ctrl.club.businessId)">
@@ -142,7 +142,7 @@
                 <table class="table table-striped">
                     <tbody>
                     <tr ng-repeat="member in $ctrl.club.yhdyshenkilot">
-                        <td class="col-xs-6">
+                        <td class="col-sm-6">
                             <div class="r-contact-name">
                                 <div>
                                     <span ng-bind="member.person.lastName + ' ' + member.person.byName"></span>
@@ -168,7 +168,7 @@
                             </div>
                         </td>
 
-                        <td class="col-xs-6 text-right">
+                        <td class="col-sm-6 text-right">
                             <div class="label label-info"
                                  ng-show="member.callOrder === 0">
                                 <span translate="club.main.contactPersons.primary"></span>

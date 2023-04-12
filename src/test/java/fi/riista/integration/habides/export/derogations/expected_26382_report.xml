@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <derogations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" country="FI" userIdentity="FIMMM" labelLanguage="en" xml:lang="en" xsi:noNamespaceSchemaLocation="http://dd.eionet.europa.eu/schemas/habides-2.0/derogations.xsd">
-    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-1-2019-1-000-00035-5-26382" user_derogation_ref="2019-1-000-00035-5" userIdentity="FIMMM" status="complete">
+    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-001-2019-1-000-00035-5-26382" user_derogation_ref="2019-1-000-00035-5" userIdentity="FIMMM" status="complete">
         <species>Avis error</species>
         <speciesGroup></speciesGroup>
         <coversAllSpecies></coversAllSpecies>
@@ -44,12 +44,12 @@
             <licensedJustification></licensedJustification>
         </licensed>
         <actuallyTaken>
-            <individuals></individuals>
+            <individuals>0</individuals>
             <eggs></eggs>
             <nests></nests>
             <breeding></breeding>
             <otherType></otherType>
-            <noFigureProvided>true</noFigureProvided>
+            <noFigureProvided>false</noFigureProvided>
             <licensedJustification></licensedJustification>
         </actuallyTaken>
         <allMeasuresTaken>true</allMeasuresTaken>

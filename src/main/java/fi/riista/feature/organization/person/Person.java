@@ -22,6 +22,7 @@ import io.vavr.Tuple2;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.Hibernate;
 import org.hibernate.UnresolvableObjectException;
+import org.hibernate.annotations.Type;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -49,8 +50,11 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -68,6 +72,7 @@ public class Person extends LifecycleEntity<Long> {
 
     private Long id;
 
+
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "CHAR(1)")
     private DeletionCode deletionCode;
@@ -78,6 +83,13 @@ public class Person extends LifecycleEntity<Long> {
 
     @Column
     private LocalDate dateOfBirth;
+
+    /**
+     * The timestamp when user requested account unregistration.
+     */
+    @Column
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    private DateTime unregisterRequestedTime;
 
     @NotBlank
     @Size(max = 255)
@@ -249,6 +261,9 @@ public class Person extends LifecycleEntity<Long> {
     @Column
     private Boolean enableShootingTests;
 
+    @Column(nullable = false)
+    private boolean denyAnnouncementEmail;
+
     @AssertTrue
     public boolean isSsnOrDateOfBirthSet() {
         return ssn != null || dateOfBirth != null;
@@ -301,7 +316,7 @@ public class Person extends LifecycleEntity<Long> {
     }
 
     public boolean isRegistered() {
-        for (SystemUser systemUser : systemUsers) {
+        for (final SystemUser systemUser : systemUsers) {
             if (isRoleUser(systemUser)) {
                 return true;
             }
@@ -310,7 +325,7 @@ public class Person extends LifecycleEntity<Long> {
     }
 
     public boolean isActive() {
-        for (SystemUser systemUser : systemUsers) {
+        for (final SystemUser systemUser : systemUsers) {
             if (isRoleUser(systemUser) && systemUser.isActive()) {
                 return true;
             }
@@ -323,7 +338,7 @@ public class Person extends LifecycleEntity<Long> {
     }
 
     public void deactivate() {
-        for (SystemUser systemUser : systemUsers) {
+        for (final SystemUser systemUser : systemUsers) {
             systemUser.setActive(false);
         }
     }
@@ -387,7 +402,7 @@ public class Person extends LifecycleEntity<Long> {
         return next.isPresent() ? next : this.getHuntingPaymentDateForHuntingYear(currentHuntingYear);
     }
 
-    private Optional<LocalDate> getHuntingPaymentDateForHuntingYear(final int huntingYear) {
+    public Optional<LocalDate> getHuntingPaymentDateForHuntingYear(final int huntingYear) {
         return pickByHuntingYear(huntingYear, Arrays.asList(
                 Tuple.of(this.huntingPaymentOneYear, this.huntingPaymentOneDay),
                 Tuple.of(this.huntingPaymentTwoYear, this.huntingPaymentTwoDay)));
@@ -459,9 +474,14 @@ public class Person extends LifecycleEntity<Long> {
     }
 
     public Iterable<Occupation> getNotClubSpecificOccupations() {
+        final Map<Object, Boolean> seenOccupations = new HashMap<>();
         return occupations.stream()
+                .sorted(Comparator.comparing(Occupation::getBeginDate, Comparator.nullsLast(Comparator.reverseOrder())))
                 .filter(o -> !o.getOccupationType().isClubOrGroupOccupation())
                 .filter(o -> o.isValidNow() && !o.isDeleted())
+                .filter(o -> seenOccupations.putIfAbsent(
+                            Objects.hash(o.getOrganisation().getId(), o.getOccupationType()),
+                            Boolean.TRUE) == null)
                 .collect(Collectors.toList());
     }
 
@@ -480,7 +500,7 @@ public class Person extends LifecycleEntity<Long> {
                 try {
                     // Referenced row might not exist
                     return this.homeMunicipality.getNameLocalisation();
-                } catch (UnresolvableObjectException | EntityNotFoundException o) {
+                } catch (final UnresolvableObjectException | EntityNotFoundException o) {
                     this.homeMunicipality = null;
                 }
             } else {
@@ -543,6 +563,14 @@ public class Person extends LifecycleEntity<Long> {
 
     public void setDateOfBirth(final LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public DateTime getUnregisterRequestedTime() {
+        return unregisterRequestedTime;
+    }
+
+    public void setUnregisterRequestedTime(DateTime unregisterRequestedTime) {
+        this.unregisterRequestedTime = unregisterRequestedTime;
     }
 
     public String getFirstName() {
@@ -819,6 +847,14 @@ public class Person extends LifecycleEntity<Long> {
 
     public void setEnableShootingTests(final Boolean enableShootingTests) {
         this.enableShootingTests = enableShootingTests;
+    }
+
+    public boolean isDenyAnnouncementEmail() {
+        return denyAnnouncementEmail;
+    }
+
+    public void setDenyAnnouncementEmail(final boolean denyAnnouncementEmail) {
+        this.denyAnnouncementEmail = denyAnnouncementEmail;
     }
 
     // Following collection getters exposed in package-private scope only for property introspection.

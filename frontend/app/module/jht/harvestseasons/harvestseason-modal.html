@@ -1,0 +1,247 @@
+<form name="form" role="form" class="form" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="jht.harvestSeason.modal.harvestSeasonAndQuota"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div ng-switch="$ctrl.isNew">
+            <div ng-switch-when="true" class="row">
+                <div class="col-xs-4">
+                    <label for="gameSpecies">
+                        <span translate="global.species"></span>
+                        <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                    </label>
+                    <select name="gameSpecies" id="gameSpecies"
+                            class="form-control"
+                            ng-model="$ctrl.selectedSpecies"
+                            ng-options="(s | rI18nNameFilter:'translated') group by (s.gameCategory | translate) for s in $ctrl.availableSpecies | orderBy:'name.translated' track by s.code"
+                            ng-required="$ctrl.isNew">
+                        <option value="">{{'club.hunting.selectSpecies' | translate}}</option>
+                    </select>
+                </div>
+            </div>
+            <h3 ng-switch-when="false" ng-bind="$ctrl.season.species.name.fi | capitalize"></h3>
+        </div>
+        <h4 translate="jht.harvestSeason.modal.harvestSeason"></h4>
+        <div class="row">
+            <div class="col-xs-3">
+                <label for="beginDate"
+                       class="control-label">
+                    <span translate="global.beginDate"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+                <div>
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input id="beginDate" type="text" name="beginDate"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-options="$ctrl.beginDateOptions"
+                               ng-model="$ctrl.season.beginDate"
+                               ng-change="$ctrl.dateChanged()"
+                               required />
+
+                        <span class="input-group-addon" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="help-block has-error"
+                     ng-show="form.beginDate.$touched && form.beginDate.$invalid"
+                     ng-messages="form.beginDate.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <label for="endDate"
+                       class="control-label">
+                    <span translate="global.endDate"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+                <div>
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input id="endDate" type="text" name="endDate"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-options="$ctrl.endDateOptions"
+                               ng-model="$ctrl.season.endDate"
+                               ng-change="$ctrl.dateChanged()"
+                               r-validate-greater="$ctrl.season.beginDate"
+                               required />
+
+                        <span class="input-group-addon" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                    <div class="help-block has-error"
+                         ng-show="form.endDate.$touched && form.endDate.$invalid"
+                         ng-messages="form.endDate.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                        <div ng-message="greater">
+                            <span translate="jht.harvestSeason.modal.endDateInstruction"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <label for="reportingDate"
+                       class="control-label">
+                    <span translate="jht.harvestSeason.modal.reportingDate"></span>
+                    <span class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+                <div>
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input id="reportingDate" type="text" name="reportingDate"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-options="$ctrl.endOfReportingDateOptions"
+                               ng-model="$ctrl.season.endOfReportingDate"
+                               ng-change="$ctrl.dateChanged()"
+                               r-validate-greater-or-equal="$ctrl.season.endDate"
+                               required />
+
+                        <span class="input-group-addon" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                    <div class="help-block has-error"
+                         ng-show="form.reportingDate.$touched && form.reportingDate.$invalid"
+                         ng-messages="form.reportingDate.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                        <div ng-message="greaterOrEqual">
+                            <span translate="jht.harvestSeason.modal.endOfReportingDateInstruction"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-3">
+                <label for="beginDate2"
+                       class="control-label">
+                    <span translate="global.beginDate"></span>
+                    <span ng-if="$ctrl.isSecondPeriodRequired()" class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+                <div>
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input id="beginDate2" type="text" name="beginDate2"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-options="$ctrl.beginDate2Options"
+                               ng-model="$ctrl.season.beginDate2"
+                               ng-change="$ctrl.dateChanged()"
+                               ng-disabled="$ctrl.isSecondPeriodDisabled()"
+                               ng-required="$ctrl.isSecondPeriodRequired()"
+                               r-validate-greater="$ctrl.season.endDate" />
+
+                        <span class="input-group-addon" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                    <div class="help-block has-error"
+                         ng-show="form.beginDate2.$touched && form.beginDate2.$invalid"
+                         ng-messages="form.beginDate2.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                        <div ng-message="greater">
+                            <span translate="jht.harvestSeason.modal.beginDate2Instruction"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <label for="endDate2"
+                       class="control-label">
+                    <span translate="global.endDate"></span>
+                    <span ng-if="$ctrl.isSecondPeriodRequired()" class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+                <div>
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input id="endDate2" type="text" name="endDate2"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-options="$ctrl.endDate2Options"
+                               ng-model="$ctrl.season.endDate2"
+                               ng-change="$ctrl.dateChanged()"
+                               ng-disabled="$ctrl.isSecondPeriodDisabled()"
+                               ng-required="$ctrl.isSecondPeriodRequired()"
+                               r-validate-greater="$ctrl.season.beginDate2" />
+
+                        <span class="input-group-addon" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                    <div class="help-block has-error"
+                         ng-show="form.endDate2.$touched && form.endDate2.$invalid"
+                         ng-messages="form.endDate2.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                        <div ng-message="greater">
+                            <span translate="jht.harvestSeason.modal.endDateInstruction"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-3">
+                <label for="reportingDate2"
+                       class="control-label">
+                    <span translate="jht.harvestSeason.modal.reportingDate"></span>
+                    <span ng-if="$ctrl.isSecondPeriodRequired()" class="glyphicon glyphicon-asterisk text-danger"></span>
+                </label>
+                <div>
+                    <div class="input-group" ng-controller="DatePickerController">
+                        <input id="reportingDate2" type="text" name="reportingDate2"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               datepicker-options="$ctrl.endOfReportingDate2Options"
+                               ng-model="$ctrl.season.endOfReportingDate2"
+                               ng-change="$ctrl.dateChanged()"
+                               ng-disabled="$ctrl.isSecondPeriodDisabled()"
+                               ng-required="$ctrl.isSecondPeriodRequired()"
+                               r-validate-greater-or-equal="$ctrl.season.endDate2" />
+
+                        <span class="input-group-addon" ng-click="toggleDatePopup($event)">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="help-block has-error"
+                     ng-show="form.reportingDate2.$touched && form.reportingDate2.$invalid"
+                     ng-messages="form.reportingDate2.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                    <div ng-message="greaterOrEqual">
+                        <span translate="jht.harvestSeason.modal.endOfReportingDateInstruction"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div ng-if="$ctrl.hasQuotas()">
+            <h4 translate="jht.harvestSeason.modal.quotasByArea"></h4>
+            <div class="row r-harvest-season-quota-container" ng-repeat="quota in $ctrl.season.quotas track by $index">
+                <div class="col-xs-3 r-harvest-season-quota-area-name" ng-bind="quota.harvestArea.nameFI"></div>
+                <div class="form-group col-xs-3">
+                    <label for="quota"
+                           class="col-xs-12 no-padding"
+                           translate="jht.harvestSeason.modal.quota"></label>
+                    <div class="col-xs-12 no-padding">
+                        <input type="number" class="form-control"
+                               name="quota" id="quota"
+                               min="0" step="1"
+                               ng-model="quota.quota"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

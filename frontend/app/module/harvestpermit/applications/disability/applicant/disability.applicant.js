@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.disability.applicant', ['app.metad
                 templateUrl: 'harvestpermit/applications/disability/applicant/applicant.html',
                 controller: 'DisabilityPermitWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

@@ -1,0 +1,29 @@
+<club-poi-location-details poi-id="::$ctrl.poi.visibleId"
+                           poi-locations="::$ctrl.poi.locations"></club-poi-location-details>
+
+<div class="poi-list-item-detail-row">
+    <button type="button" class="btn btn-danger"
+            ng-show="$ctrl.editable"
+            ng-click="$ctrl.deletePoi()">
+        <span translate="global.button.delete"></span>
+    </button>
+    <button type="button" class="btn btn-primary"
+            ng-show="$ctrl.editable"
+            ng-click="$ctrl.editPoi()">
+        <span translate="global.button.edit"></span>
+    </button>
+    <div class="form-group poi-last-edited-info">
+        <strong class="text-title control-label" for="poiLastEdited">
+            <span translate="club.area.lastModified"></span>:
+        </strong>
+        <div id="poiLastEdited" name="poiLastEdited">
+            <div ng-show="::$ctrl.poi.lastModifierRiistakeskus">
+                <span translate="global.organisationType.RK"></span>
+            </div>
+            <div ng-show="::$ctrl.poi.lastModifierName">
+                <span ng-bind="$ctrl.poi.lastModifierName"></span>
+            </div>
+            <span ng-bind="::$ctrl.poi.lastModifiedDate | date:'d.M.yyyy HH:mm'"></span>
+        </div>
+    </div>
+</div>

@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.importing.species', ['app.metadata
                 templateUrl: 'harvestpermit/applications/importing/species/species.html',
                 controller: 'ImportingPermitWizardSpeciesController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesAmountList: function (ImportingPermitApplication, applicationId) {
                         return ImportingPermitApplication.getSpeciesAmounts({id: applicationId}).$promise;

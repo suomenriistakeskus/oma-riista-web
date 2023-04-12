@@ -3,17 +3,21 @@ package fi.riista.api.club;
 import com.google.common.collect.ImmutableMap;
 import fi.riista.feature.huntingclub.members.club.HuntingClubMemberCrudFeature;
 import fi.riista.feature.huntingclub.members.club.HuntingClubMemberTypeDTO;
+import fi.riista.feature.huntingclub.members.excel.HuntingClubMembersExportFeature;
 import fi.riista.feature.organization.occupation.OccupationDTO;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
@@ -25,6 +29,9 @@ public class ClubMemberApiResource {
 
     @Resource
     private HuntingClubMemberCrudFeature crudFeature;
+
+    @Resource
+    private HuntingClubMembersExportFeature huntingClubMembersExportFeature;
 
     @RequestMapping(
             method = RequestMethod.PUT,
@@ -68,5 +75,10 @@ public class ClubMemberApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     public List<OccupationDTO> listMembers(@PathVariable long clubId) {
         return crudFeature.listMembers(clubId);
+    }
+
+    @PostMapping("/{clubId:\\d+}/export-members")
+    public ModelAndView exportMembers(@PathVariable final long clubId) {
+        return new ModelAndView(huntingClubMembersExportFeature.export(clubId));
     }
 }

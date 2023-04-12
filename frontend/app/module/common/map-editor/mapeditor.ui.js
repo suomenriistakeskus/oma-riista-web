@@ -56,7 +56,7 @@ angular.module('app.mapeditor.ui', [])
         bindings: {
             api: '<'
         },
-        controller: function () {
+        controller: function ($q, offCanvasStack) {
             var $ctrl = this;
 
             $ctrl.currentTool = 'move';
@@ -78,7 +78,36 @@ angular.module('app.mapeditor.ui', [])
             $ctrl.buttonStyle = function (name) {
                 return $ctrl.toolStyle(name, 'btn-primary', 'btn-default');
             };
+            $ctrl.openHelp = function() {
+                return offCanvasStack.open({
+                    controller: 'MapEditorHelpController',
+                    templateUrl: 'common/map-editor/right-sidebar-help.html',
+                    largeDialog: false,
+                    resolve: {}
+                }).result.then(function () {
+                    return $q.resolve();
+                }, function (err) {
+                    return $q.reject(err);
+                }).finally(function () {
+                });
+            };
         }
+    })
+
+    .controller('MapEditorHelpController', function ($scope) {
+        $scope.category = null;
+
+        $scope.close = function () {
+            $scope.$close({});
+        };
+
+        $scope.openCategory = function(categoryName) {
+            $scope.category = categoryName;
+        };
+
+        $scope.isCategory = function(categoryName) {
+            return $scope.category === categoryName;
+        };
     })
 
     .filter('prettyAreaSize', function ($filter) {
@@ -97,6 +126,33 @@ angular.module('app.mapeditor.ui', [])
         return function (feature, fractionSize) {
             var areaSize = propertyGetter(feature);
             return _.isNumber(areaSize) ? prettyAreaSize(areaSize, fractionSize) : null;
+        };
+    })
+
+    .filter('featureLandSize', function ($filter) {
+        var prettyAreaSize = $filter('prettyAreaSize');
+        var areaSizeGetter = _.property('properties.size');
+        var waterAreaSizeGetter = _.property('properties.waterAreaSize');
+
+        return function (feature, fractionSize) {
+            var areaSize = areaSizeGetter(feature);
+            var waterSize = waterAreaSizeGetter(feature);
+
+            return (_.isNumber(areaSize) && _.isNumber(waterSize) && waterSize >= 0)
+                ? prettyAreaSize(areaSize - waterSize, fractionSize)
+                : null;
+        };
+    })
+
+    .filter('featureWaterSize', function ($filter) {
+        var prettyAreaSize = $filter('prettyAreaSize');
+        var propertyGetter = _.property('properties.waterAreaSize');
+
+        return function (feature, fractionSize) {
+            var waterSize = propertyGetter(feature);
+            return (_.isNumber(waterSize) && waterSize >= 0)
+                ? prettyAreaSize(waterSize, fractionSize)
+                : null;
         };
     })
 

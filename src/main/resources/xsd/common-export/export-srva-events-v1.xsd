@@ -89,6 +89,10 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="deportationOrderNumber" type="xs:string" minOccurs="0"/>
+            <xs:element name="eventTypeDetail" type="SRVAEventTypeDetailsEnum" minOccurs="0"/>
+            <xs:element name="otherEventTypeDetailDescription" type="xs:string" minOccurs="0"/>
+            <xs:element name="eventResultDetail" type="SRVAEventResultDetailsEnum" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -139,6 +143,27 @@
         </xs:restriction>
     </xs:simpleType>
 
+    <xs:simpleType name="SRVAEventTypeDetailsEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="CARED_HOUSE_AREA"/>
+            <xs:enumeration value="FARM_ANIMAL_BUILDING"/>
+            <xs:enumeration value="URBAN_AREA"/>
+            <xs:enumeration value="CARCASS_AT_FOREST"/>
+            <xs:enumeration value="CARCASS_NEAR_HOUSES_AREA"/>
+            <xs:enumeration value="GARBAGE_CAN"/>
+            <xs:enumeration value="BEEHIVE"/>
+            <xs:enumeration value="OTHER"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SRVAEventResultDetailsEnum">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ANIMAL_CONTACTED_AND_DEPORTED"/>
+            <xs:enumeration value="ANIMAL_CONTACTED"/>
+            <xs:enumeration value="UNCERTAIN_RESULT"/>
+        </xs:restriction>
+    </xs:simpleType>
+
     <xs:simpleType name="SRVAMethod">
         <xs:restriction base="xs:token">
             <xs:enumeration value="DOG"/>
@@ -146,6 +171,8 @@
             <xs:enumeration value="SOUND_EQUIPMENT"/>
             <xs:enumeration value="TRACED_WITH_DOG"/>
             <xs:enumeration value="TRACED_WITHOUT_DOG"/>
+            <xs:enumeration value="VEHICLE"/>
+            <xs:enumeration value="CHASING_WITH_PEOPLE"/>
             <xs:enumeration value="OTHER"/>
         </xs:restriction>
     </xs:simpleType>

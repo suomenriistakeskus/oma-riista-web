@@ -2,24 +2,33 @@
 
 .r-moosepemit-reports-layout {
   .make-row(0);
+
+  display: flex;
+  justify-content: flex-start;
+  align-content: flex-start;
+  @media (max-width: @screen-xs-max) {
+    flex-direction: column;
+  }
   
   .left-column {
-    position: fixed;
     width: @r-moosepermit-reports-left-sidebar-width;
-    top: @main-nav-height;
-    bottom: 0;
+    min-width: @r-moosepermit-reports-left-sidebar-width;
     overflow: auto;
     overflow-x: hidden;
-    min-height: 1px;
+
     background: @panel-bg;
     padding: 0 10px;
+
+    @media (max-width: @screen-xs-max) {
+      width: 100%;
+    }
 
     .org-presentation-selection {
       margin-top: 30px;
 
       ul {
         list-style: none;
-        padding-left: 0px;
+        padding-left: 0;
       }
 
 
@@ -61,19 +70,16 @@
   }
 
   .main-column {
-    position: fixed;
-    top: @main-nav-height;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    margin-left: @r-moosepermit-reports-left-sidebar-width;
+    flex-grow: 1;
+    position: relative;
+
+    margin: 0;
     background: @panel-bg;
     overflow: auto;
 
     .container-fluid {
       padding: 10px;
       height: 100%;
-
     }
 
     .luke-instruction {

@@ -1,0 +1,61 @@
+<div class="alert alert-info wizard-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.europeanBeaver.population.title"></p>
+        <p translate="harvestpermit.wizard.europeanBeaver.population.info"></p>
+    </div>
+</div>
+
+<form name="speciesPopulationForm" r-force-show-errors-check-validity>
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="justification"
+               translate="harvestpermit.wizard.europeanBeaver.population.justification"></label>
+
+        <textarea class="form-control" rows="4"
+                  name="populationDescription"
+                  id="justification"
+                  ng-model="$ctrl.speciesPopulation.justification"
+                  required
+                  spellcheck="false"></textarea>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="populationDescription"
+               translate="harvestpermit.wizard.europeanBeaver.population.damagesCaused"></label>
+
+        <textarea class="form-control" rows="4"
+                  name="damagesCaused"
+                  id="damagesCaused"
+                  ng-model="$ctrl.speciesPopulation.damagesCaused"
+                  required
+                  spellcheck="false"></textarea>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="populationDescription"
+               translate="harvestpermit.wizard.europeanBeaver.population.populationDescription"></label>
+
+        <textarea class="form-control" rows="4"
+                  name="populationDescription"
+                  id="populationDescription"
+                  ng-model="$ctrl.speciesPopulation.populationDescription"
+                  required
+                  spellcheck="false"></textarea>
+    </div>
+
+    <hr class="invisible">
+    <hr class="invisible">
+</form>
+
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(speciesPopulationForm)"
+        previous="$ctrl.previous(speciesPopulationForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(speciesPopulationForm)">
+</permit-application-wizard-navigation>

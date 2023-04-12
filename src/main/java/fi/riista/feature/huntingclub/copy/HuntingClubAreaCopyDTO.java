@@ -13,6 +13,9 @@ public class HuntingClubAreaCopyDTO {
     @NotNull
     private Boolean copyGroups;
 
+    @NotNull
+    private Boolean copyPOIs;
+
     public boolean isCopyGroups() {
         return copyGroups != null && copyGroups;
     }
@@ -20,10 +23,11 @@ public class HuntingClubAreaCopyDTO {
     public HuntingClubAreaCopyDTO() {
     }
 
-    public HuntingClubAreaCopyDTO(long id, int huntingYear, boolean copyGroups) {
+    public HuntingClubAreaCopyDTO(final long id, final int huntingYear, final boolean copyGroups, final boolean copyPOIs) {
         this.id = id;
         this.huntingYear = huntingYear;
         this.copyGroups = copyGroups;
+        this.copyPOIs = copyPOIs;
     }
 
     public Long getId() {
@@ -48,5 +52,13 @@ public class HuntingClubAreaCopyDTO {
 
     public void setCopyGroups(Boolean copyGroups) {
         this.copyGroups = copyGroups;
+    }
+
+    public Boolean isCopyPOIs() {
+        return copyPOIs != null && copyPOIs;
+    }
+
+    public void setCopyPOIs(final Boolean copyPOIs) {
+        this.copyPOIs = copyPOIs;
     }
 }

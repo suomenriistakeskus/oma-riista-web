@@ -19,6 +19,19 @@
                     <th class="col-xs-6" translate="global.person.phoneNumber"></th>
                     <td ng-bind="::$ctrl.profile.phoneNumber"></td>
                 </tr>
+                <tr>
+                    <th class="col-xs-6" translate="global.person.denyAnnouncementEmail"></th>
+                    <td ng-switch="::$ctrl.profile.denyAnnouncementEmail">
+                        <div ng-switch-when="true">
+                            <span translate="global.no"></span>
+                            <span class="fa fa-remove"></span>
+                        </div>
+                        <div ng-switch-when="false">
+                            <span translate="global.yes"></span>
+                            <span class="fa fa-check"></span>
+                        </div>
+                    </td>
+                </tr>
                 </tbody>
             </table>
         </div>

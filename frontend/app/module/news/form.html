@@ -1,0 +1,178 @@
+<form name="form" role="form" class="form form-horizontal" ng-submit="$ctrl.save()">
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 ng-if="!$ctrl.news.id" class="modal-title" translate="news.form.add"></h3>
+        <h3 ng-if="$ctrl.news.id" class="modal-title" translate="news.form.edit"></h3>
+    </div>
+
+    <div class="modal-body r-news-form">
+
+        <h4>Suomeksi</h4>
+        <div class="form-group r-news-form-group" show-errors>
+            <label for="titleFi" class="col-xs-12">Otsikko</label>
+
+            <div class="col-xs-12">
+                <input type="text" class="form-control"
+                       name="titleFi" id="titleFi"
+                       ng-model="$ctrl.news.titleFi"
+                       required/>
+
+                <p class="help-block has-error"
+                   ng-show="form.titleFi.$invalid"
+                   ng-messages="form.titleFi.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+            </div>
+        </div>
+
+        <div class="form-group r-news-form-group" show-errors>
+            <label for="textFi" class="col-xs-12">Teksti</label>
+
+            <div class="col-xs-12">
+                <textarea class="form-control"
+                          name="textFi" id="textFi"
+                          rows="10"
+                          ng-model="$ctrl.news.textFi"
+                          required
+                          spellcheck="false"></textarea>
+
+                <p class="help-block has-error"
+                   ng-show="form.textFi.$invalid"
+                   ng-messages="form.textFi.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+            </div>
+        </div>
+
+        <div class="form-group r-news-form-group" show-errors>
+            <label for="linkFi" class="col-xs-12">Lue lisää</label>
+
+            <div class="col-xs-12">
+                <input type="text" class="form-control"
+                       name="linkFi" id="linkFi"
+                       ng-model="$ctrl.news.linkFi"
+                       ng-model-options="{ updateOn: 'blur' }"/>
+            </div>
+
+            <div ng-if="!$ctrl.isLinkValid($ctrl.news.linkFi)" class="col-xs-12 text-danger">
+                Linkissä vikaa
+            </div>
+        </div>
+
+        <hr>
+
+        <h4>På svenska</h4>
+        <div class="form-group r-news-form-group" show-errors>
+            <label for="titleSv" class="col-xs-12">Rubrik</label>
+
+            <div class="col-xs-12">
+                <input type="text" class="form-control"
+                       name="titleSv" id="titleSv"
+                       ng-model="$ctrl.news.titleSv"
+                       required/>
+
+                <p class="help-block has-error"
+                   ng-show="form.titleSv.$invalid"
+                   ng-messages="form.titleSv.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group r-news-form-group" show-errors>
+            <label for="textSv" class="col-xs-12">Text</label>
+
+            <div class="col-xs-12">
+                <textarea class="form-control"
+                          name="textSv" id="textSv"
+                          rows="10"
+                          ng-model="$ctrl.news.textSv"
+                          required
+                          spellcheck="false"></textarea>
+
+                <p class="help-block has-error"
+                   ng-show="form.textSv.$invalid"
+                   ng-messages="form.textSv.$error">
+                    <span ng-messages-include="common/errorMessages.html"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="form-group r-news-form-group" show-errors>
+            <label for="linkSv" class="col-xs-12">Läs mer</label>
+
+            <div class="col-xs-12">
+                <input type="text" class="form-control"
+                       name="linkSv" id="linkSv"
+                       ng-model="$ctrl.news.linkSv"
+                       ng-model-options="{ updateOn: 'blur' }"/>
+
+                <div ng-if="!$ctrl.isLinkValid($ctrl.news.linkSv)" class="col-xs-12 text-danger">
+                    Linkissä vikaa
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="form-group r-news-form-group" show-errors>
+            <div class="row r-news-form-publish-time">
+                <label for="publishDate" class="col-xs-4">
+                    <span translate="news.form.publishDate"></span>
+                </label>
+
+                <label for="publishTime" class="col-xs-4">
+                    <span translate="news.form.publishTime"></span>
+                </label>
+            </div>
+
+            <div class="row r-news-form-publish-time">
+                <div class="col-xs-4">
+                    <div class="input-group"
+                         ng-controller="DatePickerController">
+
+                        <input type="text" name="publishDate" id="publishDate"
+                               class="form-control"
+                               uib-datepicker-popup is-open="isDatePickerOpen"
+                               ng-model="$ctrl.news.publishDate"
+                               required>
+
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default" tabindex="-1"
+                                    ng-click="toggleDatePopup($event)">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </button>
+                        </span>
+                    </div>
+
+                    <p class="help-block has-error"
+                       ng-show="form.publishDate.$invalid"
+                       ng-messages="form.publishDate.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+
+                <div class="col-xs-4">
+                    <input type="text" name="publishTime" id="publishTime"
+                           class="form-control"
+                           finnish-time
+                           ng-model="$ctrl.news.publishTime"
+                           required>
+
+                    <p class="help-block has-error"
+                       ng-show="form.publishTime.$invalid"
+                       ng-messages="form.publishTime.$error">
+                        <span ng-messages-include="common/errorMessages.html"></span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()" translate="global.button.cancel"></button>
+        <button type="submit"
+                class="btn btn-primary"
+                ng-disabled="form.$invalid || !$ctrl.isLinkValid($ctrl.news.linkFi) || !$ctrl.isLinkValid($ctrl.news.linkSv)"
+                translate="news.form.publish"></button>
+    </div>
+</form>

@@ -23,8 +23,11 @@ public class SrvaEventListExcelView extends AbstractXlsxView {
             "date",
             "clockTime",
             "SrvaEventExportExcel.event",
+            "SrvaEventExportExcel.deportationOrderNumber",
             "SrvaEventExportExcel.type",
             "SrvaEventExportExcel.otherType",
+            "SrvaEventExportExcel.typeDetail",
+            "SrvaEventExportExcel.otherTypeDetail",
             "SrvaEventExportExcel.description",
             "species",
             "SrvaEventExportExcel.otherSpecies",
@@ -32,6 +35,7 @@ public class SrvaEventListExcelView extends AbstractXlsxView {
             "gender",
             "age",
             "SrvaEventExportExcel.result",
+            "SrvaEventExportExcel.resultDetail",
             "SrvaEventExportExcel.methods",
             "SrvaEventExportExcel.otherMethod",
             "SrvaEventExportExcel.personCount",
@@ -76,8 +80,11 @@ public class SrvaEventListExcelView extends AbstractXlsxView {
                     .appendDateCell(DateUtil.toDateNullSafe(dto.getDate()))
                     .appendTimeCell(DateUtil.toDateTodayNullSafe(dto.getTime()))
                     .appendTextCell(dto.getEventName())
+                    .appendTextCell(dto.getDeportationOrderNumber())
                     .appendTextCell(dto.getEventType())
                     .appendTextCell(dto.getOtherTypeDescription())
+                    .appendTextCell(dto.getEventTypeDetail())
+                    .appendTextCell(dto.getOtherTypeDetailDescription())
                     .appendTextCell(dto.getDescription())
                     .appendTextCell(dto.getAnimalSpecies())
                     .appendTextCell(dto.getOtherSpeciesDescription())
@@ -85,6 +92,7 @@ public class SrvaEventListExcelView extends AbstractXlsxView {
                     .appendTextCell(dto.getSpecimenGenders())
                     .appendTextCell(dto.getSpecimenAges())
                     .appendTextCell(dto.getEventResult())
+                    .appendTextCell(dto.getEventResultDetail())
                     .appendTextCell(dto.getEventMethods())
                     .appendTextCell(dto.getOtherMethodDescription())
                     .appendNumberCell(dto.getPersonCount())

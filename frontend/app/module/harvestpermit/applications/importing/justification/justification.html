@@ -1,5 +1,5 @@
 <form name="importingJustificationForm" r-force-show-errors-check-validity>
-    <div class="alert alert-info">
+    <div class="alert alert-info wizard-info">
         <span class="fa fa-info-circle"></span>
 
         <div class="alert-content">
@@ -10,7 +10,7 @@
     </div>
 
     <div class="form-group row" show-errors>
-        <div class="col-xs-4">
+        <div class="col-sm-4">
             <label class="control-label"
                    for="countryOfOrigin"
                    translate="harvestpermit.wizard.importing.justification.countryOfOrigin">
@@ -34,7 +34,8 @@
                   name="details"
                   id="details"
                   ng-model="$ctrl.data.details"
-                  required></textarea>
+                  required
+                  spellcheck="false"></textarea>
     </div>
 
     <hr class="invisible">
@@ -48,7 +49,8 @@
                   name="purpose"
                   id="purpose"
                   ng-model="$ctrl.data.purpose"
-                  required></textarea>
+                  required
+                  spellcheck="false"></textarea>
     </div>
 
     <hr class="invisible">
@@ -62,7 +64,8 @@
                   name="release"
                   id="release"
                   ng-model="$ctrl.data.release"
-                  required></textarea>
+                  required
+                  spellcheck="false"></textarea>
     </div>
 
     <hr class="invisible">

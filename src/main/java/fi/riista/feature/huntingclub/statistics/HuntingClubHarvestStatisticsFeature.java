@@ -1,5 +1,6 @@
 package fi.riista.feature.huntingclub.statistics;
 
+import fi.riista.api.club.ClubHarvestSummaryRequestDTO;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesDTO;
@@ -11,6 +12,7 @@ import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import org.joda.time.Interval;
+import org.joda.time.LocalDate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +20,9 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @Component
 public class HuntingClubHarvestStatisticsFeature {
@@ -33,28 +37,37 @@ public class HuntingClubHarvestStatisticsFeature {
     private GameSpeciesRepository gameSpeciesRepository;
 
     @Transactional(readOnly = true)
-    public HuntingClubHarvestStatisticsDTO getSummary(final long huntingClubId, final int calendarYear) {
+    public HuntingClubHarvestStatisticsDTO getSummary(final ClubHarvestSummaryRequestDTO dto) {
+        final long huntingClubId = dto.getClubId();
+        final LocalDate begin = dto.getBegin();
+        final LocalDate end = dto.getEnd();
+
         // Lookup table for GameSpecies
         final Map<Long, GameSpecies> speciesById = F.indexById(gameSpeciesRepository.findAll());
 
         final HuntingClub huntingClub = requireEntityService.requireHuntingClub(huntingClubId, EntityPermission.READ);
 
-        // Query by calendar year need to be splitted to 2 queries, because 1 calendar year spans over 2 hunting years.
+        final Map<Long, Integer> harvestMap = DateUtil.huntingYearsBetween(begin, end)
+                .mapToObj(huntingYear ->
+                        calculate(huntingYear, huntingClub, buildInterval(huntingYear, begin, end)))
+                .flatMap(m -> m.entrySet().stream())
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue, (i1, i2) -> i1 + i2));
 
-        final Interval interval1 = new Interval(
-                DateUtil.beginOfCalendarYear(calendarYear),
-                DateUtil.toDateTimeNullSafe(DateUtil.huntingYearBeginDate(calendarYear)));
-
-        final Interval interval2 = new Interval(
-                DateUtil.toDateTimeNullSafe(DateUtil.huntingYearBeginDate(calendarYear)),
-                DateUtil.beginOfCalendarYear(calendarYear + 1));
-
-        final Map<Long, Integer> amounts1 = calculate(calendarYear - 1, huntingClub, interval1);
-        final Map<Long, Integer> amounts2 = calculate(calendarYear, huntingClub, interval2);
-
-        return new HuntingClubHarvestStatisticsDTO(sum(amounts1, amounts2).entrySet().stream()
+        return new HuntingClubHarvestStatisticsDTO(harvestMap.entrySet().stream()
                 .map(entry -> new SummaryRow(GameSpeciesDTO.create(speciesById.get(entry.getKey())), entry.getValue()))
                 .collect(toList()));
+    }
+
+    private Interval buildInterval(final int huntingYear, final LocalDate begin, final LocalDate end) {
+        final LocalDate huntingYearBeginDate = DateUtil.huntingYearBeginDate(huntingYear);
+        final LocalDate huntingYearEndDate = DateUtil.huntingYearEndDate(huntingYear);
+
+        final LocalDate intervalBeginDate = huntingYearBeginDate.isAfter(begin) ? huntingYearBeginDate : begin;
+        final LocalDate intervalEndDate = huntingYearEndDate.isBefore(end) ? huntingYearEndDate : end;
+        return new Interval(
+                DateUtil.toDateTimeNullSafe(intervalBeginDate),
+                DateUtil.toDateTimeNullSafe(intervalEndDate));
+
     }
 
     public static Map<Long, Integer> sum(final Map<Long, Integer> a, final Map<Long, Integer> b) {

@@ -2,20 +2,20 @@
 // -------------------------
 body {
   margin: 0;
-  background-color: #F7F7F7;
+  background-color: white;
 }
 
 body > .wrapper {
   position: relative;
   overflow: hidden;
+  min-height: calc(100% - 484px);
 }
 
-body > .wrapper > .site-background {
+body.site-background {
   position: absolute;
   top: 0;
   width: 100%;
   height: 100%;
-  max-height: 900px;
   z-index: -1;
   background-image: url('../images/riista-bg.jpg');
   background-repeat: no-repeat;
@@ -90,7 +90,7 @@ body > .wrapper > .main-content > .container-fluid {
   position: relative;
   .dropdown-menu {
     left: auto !important;
-    right: 0px;
+    right: 0;
     // off-canvas-container buttons are on bottom of screen and would hide popup
     z-index: 1002; // +1 to off-canvas buttons z-index
   }
@@ -138,5 +138,20 @@ body > .wrapper > .main-content > .container-fluid {
     .form-control-wrapper {
       .make-xs-column(@form-control-wrapper-grid-columns);
     }
+  }
+}
+
+@media (max-width: @screen-xs-max) {
+  body > .wrapper {
+    min-height: 500px;
+    > .main-content > .container {
+    margin: 0;
+    border-radius: 0;
+    border: 0;
+    background: rgba(255,255,255,.9);
+  }}
+  body.site-background {
+    background-position: 75% 13%;
+    background-size: auto;
   }
 }

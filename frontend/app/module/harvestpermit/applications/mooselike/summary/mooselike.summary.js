@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mooselike.summary', ['app.metadata
                 templateUrl: 'harvestpermit/applications/mooselike/summary/summary.html',
                 controller: 'MooselikePermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, MooselikePermitApplication) {
                         return MooselikePermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -145,7 +146,7 @@ angular.module('app.harvestpermit.application.mooselike.summary', ['app.metadata
                 ? $translate.instant('harvestpermit.wizard.summary.sendConfirmation.bodyLate')
                 : $translate.instant('harvestpermit.wizard.summary.sendConfirmation.body');
 
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(modalTitle, modalBody);
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(modalTitle, modalBody);
         }
 
         function send() {

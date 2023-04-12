@@ -1,5 +1,5 @@
-<div class="btn-group" uib-dropdown dropdown-append-to-body>
-    <button type="button" class="btn btn-default" uib-dropdown-toggle>
+<div class="btn-group btn-block" uib-dropdown dropdown-append-to-body>
+    <button type="button" class="btn btn-default btn-block" uib-dropdown-toggle>
         <span translate="club.area.button.functionMenu"></span>
         &nbsp;
         <span class="caret"></span>
@@ -72,6 +72,19 @@
             <a ng-click="$ctrl.exportGarmin()">
                 <span class="glyphicon glyphicon-globe"></span> &nbsp;
                 <span translate="club.area.button.toGarmin"></span>
+            </a>
+        </li>
+        <li class="divider"></li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
+            <a ng-click="$ctrl.exportPoisToExcel()">
+                <span class="glyphicon glyphicon-export"></span> &nbsp;
+                <span translate="club.area.poi.exportConnectedPoisToExcel"></span>
+            </a>
+        </li>
+        <li ng-show="$ctrl.isAreaWithGeometry()">
+            <a ng-click="$ctrl.exportPoisToGpx()">
+                <span class="glyphicon glyphicon-export"></span> &nbsp;
+                <span translate="club.area.poi.exportConnectedPoisToGpx"></span>
             </a>
         </li>
     </ul>

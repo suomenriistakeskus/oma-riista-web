@@ -54,7 +54,7 @@ angular.module('app.harvestpermit.management.panels', [])
             };
 
             $ctrl.showHuntingGroupLeaders = function () {
-                MoosePermitLeadersService.showLeaders({
+                MoosePermitLeadersService.showLeadersForContactPerson({
                     id: $ctrl.permit.id,
                     huntingYear: $ctrl.huntingYear,
                     gameSpeciesCode: $ctrl.selectedGameSpeciesCode

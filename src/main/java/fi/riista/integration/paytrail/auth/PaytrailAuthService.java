@@ -4,18 +4,18 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.time.Duration;
+import java.util.stream.Stream;
 
-@Component
 public class PaytrailAuthService {
 
-    @Qualifier("rk")
-    @Resource
-    private PaytrailCredentials rkCredentials;
+    private final PaytrailCredentials rkCredentials;
 
-    @Qualifier("mmm")
-    @Resource
-    private PaytrailCredentials mmmCredentials;
+    private final PaytrailCredentials mmmCredentials;
+
+    public PaytrailAuthService(final PaytrailCredentials rkCredentials, final PaytrailCredentials mmmCredentials) {
+        this.rkCredentials = rkCredentials;
+        this.mmmCredentials = mmmCredentials;
+    }
 
     public PaytrailCredentials resolveCredentials(final PaytrailAccount account) {
         switch (account) {
@@ -28,9 +28,12 @@ public class PaytrailAuthService {
         }
     }
 
-    public PaytrailAuthCodeVerifier createAuthCodeVerifier(final PaytrailAccount account) {
-        final PaytrailCredentials credentials = resolveCredentials(account);
-        return new PaytrailAuthCodeVerifier(credentials, PaytrailAuthCodeDigest.SHA256, Duration.ofHours(2));
+    public String resolveSecret(final String merchantId) {
+        return Stream.of(rkCredentials, mmmCredentials)
+                .filter(creds -> creds.getMerchantId().equals(merchantId))
+                .map(PaytrailCredentials::getMerchantSecret)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Unknown merchant id " + merchantId));
     }
 
 }

@@ -2,9 +2,13 @@ package fi.riista.feature.gis.zone;
 
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
+import fi.riista.util.DateUtil;
 import fi.riista.util.PolygonConversionUtil;
 import org.geojson.Feature;
 import org.hibernate.annotations.Type;
+import org.joda.time.DateTime;
+import org.joda.time.Hours;
+import org.joda.time.ReadablePeriod;
 import org.locationtech.jts.geom.Geometry;
 
 import javax.persistence.Access;
@@ -24,6 +28,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -34,6 +39,8 @@ import java.util.Set;
 @Access(value = AccessType.FIELD)
 public class GISZone extends LifecycleEntity<Long> {
 
+    public static final ReadablePeriod CALCULATION_RETRY_PERIOD = Hours.ONE;
+
     public static final String ID_COLUMN_NAME = "zone_id";
 
     public enum SourceType {
@@ -41,7 +48,30 @@ public class GISZone extends LifecycleEntity<Long> {
         EXTERNAL
     }
 
+    public enum StatusCode {
+        // Calculate combined geometry processing is pending
+        PENDING,
+
+        // Calculate combined geometry processing has began
+        PROCESSING,
+
+        // Calculate combined geometry processing failed
+        PROCESSING_FAILED,
+
+        // Calculate combined geometry processing is ready
+        READY
+    }
+
     private Long id;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private StatusCode status = StatusCode.PENDING;
+
+    @NotNull
+    @Column(nullable = false)
+    private DateTime statusTime = DateUtil.now();
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -92,6 +122,49 @@ public class GISZone extends LifecycleEntity<Long> {
 
     public GISZone(final SourceType sourceType) {
         setSourceType(sourceType);
+    }
+
+    public void setStatusPending() {
+        assertStatus(EnumSet.of(StatusCode.PENDING, StatusCode.PROCESSING_FAILED, StatusCode.READY));
+        updateStatus(StatusCode.PENDING);
+    }
+
+    public void setStatusProcessing() {
+        assertStatus(EnumSet.of(StatusCode.PENDING, StatusCode.PROCESSING_FAILED));
+        updateStatus(StatusCode.PROCESSING);
+    }
+
+    public void setStatusProcessingFailed() {
+        assertStatus(EnumSet.of(StatusCode.PENDING, StatusCode.PROCESSING));
+        updateStatus(StatusCode.PROCESSING_FAILED);
+    }
+
+    public void setStatusReady() {
+        assertStatus(EnumSet.of(StatusCode.PROCESSING));
+        updateStatus(StatusCode.READY);
+    }
+
+    private void assertStatus(final EnumSet<StatusCode> allowed) {
+        if (!allowed.contains(this.status)) {
+            throw new IllegalZoneStateTransitionException(
+                    String.format("status should be %s was %s", allowed, this.status));
+        }
+    }
+
+    /**
+     * Update status and status time stamp.
+     *
+     * @param code New status code
+     */
+    private void updateStatus(final StatusCode code) {
+        if (this.status != code) {
+            this.status = code;
+            this.statusTime = DateUtil.now();
+        }
+    }
+
+    public StatusCode getStatus() {
+        return status;
     }
 
     @Id
@@ -187,7 +260,7 @@ public class GISZone extends LifecycleEntity<Long> {
         return metsahallitusHirvi;
     }
 
-    public void setMetsahallitusHirvi(Set<Integer> metsahallitusHirvi) {
+    public void setMetsahallitusHirvi(final Set<Integer> metsahallitusHirvi) {
         this.metsahallitusHirvi = metsahallitusHirvi;
     }
 

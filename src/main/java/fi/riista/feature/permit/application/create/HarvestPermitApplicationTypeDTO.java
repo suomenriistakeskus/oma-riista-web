@@ -4,9 +4,11 @@ import fi.riista.feature.harvestpermit.HarvestPermitCategory;
 import fi.riista.feature.permit.PermitTypeCode;
 import fi.riista.feature.permit.decision.PermitDecisionPaymentAmount;
 import fi.riista.util.DateUtil;
+import fi.riista.util.LocalisedString;
 import org.joda.time.LocalDateTime;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Optional;
 
 import static fi.riista.feature.permit.decision.PermitDecision.DecisionType.HARVEST_PERMIT;
@@ -19,6 +21,7 @@ public class HarvestPermitApplicationTypeDTO {
     private final boolean active;
     private final BigDecimal price;
     private final HarvestPermitCategory category;
+    private final Map<String, String> instructions;
 
     public HarvestPermitApplicationTypeDTO(final Builder builder) {
         this.category = requireNonNull(builder.category);
@@ -31,6 +34,7 @@ public class HarvestPermitApplicationTypeDTO {
         this.price = PermitDecisionPaymentAmount.getDefaultPaymentAmount(HARVEST_PERMIT, permitTypeCode);
         this.end = builder.end;
         this.begin = builder.begin;
+        this.instructions = builder.instructions.asMap();
     }
 
     public int getHuntingYear() {
@@ -57,6 +61,10 @@ public class HarvestPermitApplicationTypeDTO {
         return category;
     }
 
+    public Map<String, String> getInstructions() {
+        return instructions;
+    }
+
     public static final class Builder {
         private final HarvestPermitCategory category;
         private Integer huntingYear;
@@ -64,6 +72,7 @@ public class HarvestPermitApplicationTypeDTO {
         private LocalDateTime begin;
         private LocalDateTime end;
         private LocalDateTime now;
+        private LocalisedString instructions;
 
         private Builder(final HarvestPermitCategory category) {
             this.category = requireNonNull(category);
@@ -93,8 +102,13 @@ public class HarvestPermitApplicationTypeDTO {
             return this;
         }
 
-        public Builder withActiveOverride(final boolean active) {
+        public Builder withActiveOverride(final Boolean active) {
             this.activeOverride = active;
+            return this;
+        }
+
+        public Builder withInstructions(final LocalisedString instructions) {
+            this.instructions = instructions;
             return this;
         }
 

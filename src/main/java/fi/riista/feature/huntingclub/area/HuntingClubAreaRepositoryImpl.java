@@ -5,10 +5,14 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQueryFactory;
 import fi.riista.feature.gis.zone.QGISZone;
 import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.area.query.HuntingClubAreaPoiQuery;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,6 +23,15 @@ public class HuntingClubAreaRepositoryImpl implements HuntingClubAreaRepositoryC
 
     @Resource
     private JPQLQueryFactory queryFactory;
+
+    private JdbcTemplate jdbcTemplate;
+    private HuntingClubAreaPoiQuery huntingClubAreaPoiQuery;
+
+    @Autowired
+    public void setDataSource(final DataSource dataSource) {
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+        this.huntingClubAreaPoiQuery = new HuntingClubAreaPoiQuery(jdbcTemplate);
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -49,5 +62,30 @@ public class HuntingClubAreaRepositoryImpl implements HuntingClubAreaRepositoryC
                 .leftJoin(AREA.zone, ZONE)
                 .where(predicates.toArray(new Predicate[predicates.size()]))
                 .fetch();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Long> listPois(final long areaId) {
+        return huntingClubAreaPoiQuery.listPois(areaId);
+    }
+
+    @Override
+    @Transactional
+    public void addPois(final long areaId, final List<Long> pois) {
+        huntingClubAreaPoiQuery.insertPois(areaId, pois);
+    }
+
+    @Override
+    @Transactional
+    public void updatePois(final long areaId, final List<Long> pois) {
+        huntingClubAreaPoiQuery.removeZoneFeatures(areaId);
+        huntingClubAreaPoiQuery.insertPois(areaId, pois);
+    }
+
+    @Override
+    @Transactional
+    public void removeConnectionsToPoi(final long poiGroupId) {
+        huntingClubAreaPoiQuery.removeConnectionsToPoi(poiGroupId);
     }
 }

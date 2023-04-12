@@ -62,6 +62,10 @@ ul#r-pw-strength {
   margin-left: 8px;
 }
 
+.r-account-todo-dropdown {
+  margin-right: 8px;
+}
+
 .r-account-todo-yellow {
   .r-badge-yellow;
   margin-left: 8px;
@@ -79,11 +83,11 @@ ul#r-pw-strength {
 
 .account-areas-container {
   .alert {
-    background-color: #F7F7F7;
+    background-color: @r-info-box-bg-white;
     border-color: @table-border-color;
     margin: 10px 0 20px;
     padding: 15px 15px 10px;
-    color: #555;
+    color: @r-info-box-text-grey;
     overflow: auto;
 
     a {
@@ -114,6 +118,46 @@ ul#r-pw-strength {
     .fa-remove {
       color: @brand-danger;
     }
+  }
+}
+.r-account-profile-feature-activation {
+  button {
+    white-space: pre-wrap;
+  }
+}
+
+.r-account-profile-info-box {
+  .alert {
+    background-color: @r-info-box-bg-white;
+    border-color: @table-border-color;
+    margin: 0 0 20px;
+    padding: 15px 15px 10px;
+    color: @r-info-box-text-grey;
+    overflow: auto;
+
+    .alert-content {
+      margin-left: 50px;
+
+      p {
+        margin-bottom: 20px;
+      }
+
+      div {
+        margin-bottom: 7px;
+      }
+    }
+
+    .alert-title {
+      font-weight: bold;
+      margin: 15px 0px 35px 50px;
+    }
+
+    .fa-info-circle {
+      color: @brand-info;
+      font-size: 48px;
+      float: left;
+    }
+
   }
 }
 
@@ -174,4 +218,9 @@ ul#r-pw-strength {
 
 .r-account-area-print-link {
   padding-right: 15px;
+}
+
+.autofill-fields {
+  position: absolute;
+  visibility: hidden;
 }

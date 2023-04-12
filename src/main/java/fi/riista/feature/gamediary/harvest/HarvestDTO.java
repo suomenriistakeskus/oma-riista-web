@@ -8,6 +8,7 @@ import fi.riista.feature.gamediary.HasAuthorAndActor;
 import fi.riista.feature.gamediary.HasHuntingDayId;
 import fi.riista.feature.harvestpermit.season.HarvestArea;
 import fi.riista.feature.harvestpermit.season.HarvestAreaDTO;
+import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.HuntingClubDTO;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationNameDTO;
@@ -343,6 +344,7 @@ public class HarvestDTO extends HarvestDTOBase implements HasAuthorAndActor, Has
         public SELF populateWith(@Nonnull final Harvest harvest) {
             return super.populateWith(harvest)
                     .withAmount(harvest.getAmount())
+                    .withHuntingClub(harvest.getHuntingClub())
                     .chain(self -> {
                         dto.setPermittedMethod(harvest.getPermittedMethod());
                         dto.setLukeStatus(harvest.getLukeStatus());

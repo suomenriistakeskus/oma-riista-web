@@ -14,10 +14,8 @@ public class PaytrailCallbackParameters {
     private final String amount;
     private final String currency;
     private final String paymentMethod;
-    private final Long unixTimestamp;
     private final String status;
     private final String settlementReferenceNumber;
-    private final String returnAuthCode;
 
     public PaytrailCallbackParameters(final PaytrailPaymentEventType type,
                                       final String remoteAddress,
@@ -26,10 +24,8 @@ public class PaytrailCallbackParameters {
                                       final String amount,
                                       final String currency,
                                       final String paymentMethod,
-                                      final Long unixTimestamp,
                                       final String status,
-                                      final String settlementReferenceNumber,
-                                      final String returnAuthCode) {
+                                      final String settlementReferenceNumber) {
         this.type = Objects.requireNonNull(type);
         this.remoteAddress = remoteAddress;
         this.orderNumber = orderNumber;
@@ -37,23 +33,15 @@ public class PaytrailCallbackParameters {
         this.amount = amount;
         this.currency = currency;
         this.paymentMethod = paymentMethod;
-        this.unixTimestamp = unixTimestamp;
         this.status = status;
         this.settlementReferenceNumber = settlementReferenceNumber;
-        this.returnAuthCode = returnAuthCode;
-    }
-
-    public List<String> getFieldsForReturnAuthCodeValidation() {
-        return Arrays.asList(
-                orderNumber, paymentId, amount, currency, paymentMethod,
-                Long.toString(unixTimestamp), status, settlementReferenceNumber);
     }
 
     public String formatToString() {
         return String.format("Received Paytrail %s response: ORDER_NUMBER=%s, PAYMENT_ID=%s, AMOUNT=%s, CURRENCY=%s, " +
-                        "PAYMENT_METHOD=%s, TIMESTAMP=%d, STATUS=%s, SETTLEMENT_REFERENCE_NUMBER=%s, RETURN_AUTHCODE=%s",
+                        "PAYMENT_METHOD=%s, STATUS=%s, SETTLEMENT_REFERENCE_NUMBER=%s",
                 type.name(), orderNumber, paymentId, amount, currency, paymentMethod,
-                unixTimestamp, status, settlementReferenceNumber, returnAuthCode);
+                status, settlementReferenceNumber);
     }
 
     public PaytrailPaymentEventType getType() {
@@ -84,9 +72,6 @@ public class PaytrailCallbackParameters {
         return paymentMethod;
     }
 
-    public Long getUnixTimestamp() {
-        return unixTimestamp;
-    }
 
     public String getStatus() {
         return status;
@@ -96,7 +81,4 @@ public class PaytrailCallbackParameters {
         return settlementReferenceNumber;
     }
 
-    public String getReturnAuthCode() {
-        return returnAuthCode;
-    }
 }

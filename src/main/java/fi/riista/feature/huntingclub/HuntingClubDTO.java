@@ -13,17 +13,17 @@ import fi.riista.feature.organization.person.PersonWithNameDTO;
 import fi.riista.util.DtoUtil;
 import fi.riista.validation.DoNotValidate;
 import fi.riista.validation.FinnishBusinessId;
-import javax.validation.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import java.util.List;
 
 public class HuntingClubDTO extends BaseEntityDTO<Long> {
 
-    public static HuntingClubDTO create(HuntingClub club, boolean canEdit, List<OccupationDTO> yhdyshenkilot, HirvitalousalueDTO mooseAreaDto) {
-        HuntingClubDTO dto = new HuntingClubDTO();
+    public static HuntingClubDTO create(final HuntingClub club, final boolean canEdit, final List<OccupationDTO> yhdyshenkilot, final HirvitalousalueDTO mooseAreaDto) {
+        final HuntingClubDTO dto = new HuntingClubDTO();
         DtoUtil.copyBaseFields(club, dto);
         dto.setOfficialCode(club.getOfficialCode());
         dto.setNameFI(club.getNameFinnish());
@@ -35,7 +35,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         dto.setCanEdit(canEdit);
         dto.setYhdyshenkilot(yhdyshenkilot);
 
-        Organisation parentOrganisation = club.getParentOrganisation();
+        final Organisation parentOrganisation = club.getParentOrganisation();
         if (parentOrganisation != null && parentOrganisation.getOrganisationType() == OrganisationType.RHY) {
             dto.setRhy(OrganisationDTO.create(parentOrganisation));
         }
@@ -54,10 +54,29 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         return dto;
     }
 
+    public static HuntingClubDTO create(final Organisation clubOrganisation) {
+        final HuntingClubDTO dto = new HuntingClubDTO();
+        DtoUtil.copyBaseFields(clubOrganisation, dto);
+        dto.setOfficialCode(clubOrganisation.getOfficialCode());
+        dto.setNameFI(clubOrganisation.getNameFinnish());
+        dto.setNameSV(clubOrganisation.getNameSwedish());
+        dto.setCustomerId(clubOrganisation.getOfficialCode());
+        dto.setEmail(clubOrganisation.getEmail());
+        dto.setGeoLocation(clubOrganisation.getGeoLocation());
+
+        final Organisation parentOrganisation = clubOrganisation.getParentOrganisation();
+        if (parentOrganisation != null && parentOrganisation.getOrganisationType() == OrganisationType.RHY) {
+            dto.setRhy(OrganisationDTO.create(parentOrganisation));
+        }
+
+        dto.setActive(clubOrganisation.isActive());
+        return dto;
+    }
+
     private Long id;
     private Integer rev;
 
-    private OrganisationType organisationType = OrganisationType.CLUB;
+    private final OrganisationType organisationType = OrganisationType.CLUB;
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String officialCode;
@@ -113,7 +132,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setId(Long id) {
+    public void setId(final Long id) {
         this.id = id;
     }
 
@@ -123,7 +142,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
     }
 
     @Override
-    public void setRev(Integer rev) {
+    public void setRev(final Integer rev) {
         this.rev = rev;
     }
 
@@ -139,7 +158,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         return nameFI;
     }
 
-    public void setNameFI(String nameFI) {
+    public void setNameFI(final String nameFI) {
         this.nameFI = nameFI;
     }
 
@@ -147,7 +166,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         return nameSV;
     }
 
-    public void setNameSV(String nameSV) {
+    public void setNameSV(final String nameSV) {
         this.nameSV = nameSV;
     }
 
@@ -155,7 +174,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         return rhy;
     }
 
-    public void setRhy(OrganisationDTO rhy) {
+    public void setRhy(final OrganisationDTO rhy) {
         this.rhy = rhy;
     }
 
@@ -163,7 +182,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         return customerId;
     }
 
-    public void setCustomerId(String customerId) {
+    public void setCustomerId(final String customerId) {
         this.customerId = customerId;
     }
 
@@ -179,7 +198,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         return canEdit;
     }
 
-    public void setCanEdit(boolean canEdit) {
+    public void setCanEdit(final boolean canEdit) {
         this.canEdit = canEdit;
     }
 
@@ -187,7 +206,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(final String email) {
         this.email = email;
     }
 
@@ -195,7 +214,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         return yhdyshenkilot;
     }
 
-    public void setYhdyshenkilot(List<OccupationDTO> yhdyshenkilot) {
+    public void setYhdyshenkilot(final List<OccupationDTO> yhdyshenkilot) {
         this.yhdyshenkilot = yhdyshenkilot;
     }
 
@@ -205,7 +224,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
     }
 
     @JsonIgnore
-    public void setMooseArea(HirvitalousalueDTO mooseArea) {
+    public void setMooseArea(final HirvitalousalueDTO mooseArea) {
         this.mooseArea = mooseArea;
     }
 
@@ -213,7 +232,7 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
         return active;
     }
 
-    public void setActive(boolean active) {
+    public void setActive(final boolean active) {
         this.active = active;
     }
 
@@ -247,5 +266,9 @@ public class HuntingClubDTO extends BaseEntityDTO<Long> {
 
     public void setAssociationRegistryNumber(final String associationRegistryNumber) {
         this.associationRegistryNumber = associationRegistryNumber;
+    }
+
+    public OrganisationType getOrganisationType() {
+        return organisationType;
     }
 }

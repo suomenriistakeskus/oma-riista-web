@@ -2,6 +2,7 @@ package fi.riista.feature.huntingclub.permit.endofhunting.moosesummary;
 
 import fi.riista.feature.common.repository.BaseRepository;
 import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.huntingclub.HuntingClub;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -18,4 +19,5 @@ public interface MooseHuntingSummaryRepository
 
     List<MooseHuntingSummary> findByHarvestPermit(HarvestPermit harvestPermit);
 
+    List<MooseHuntingSummary> findAllByClub(HuntingClub club);
 }

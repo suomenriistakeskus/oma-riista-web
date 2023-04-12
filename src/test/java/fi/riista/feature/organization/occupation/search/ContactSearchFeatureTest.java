@@ -8,6 +8,7 @@ import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
+import java.util.Objects;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
@@ -24,11 +25,13 @@ public class ContactSearchFeatureTest extends EmbeddedDatabaseTest {
     private ContactSearchFeature contactSearchFeature;
 
     @Test
-    public void testSearchOccupations() {
+    public void test() {
         LocalDate today = DateUtil.today();
         RiistakeskuksenAlue rka1 = model().newRiistakeskuksenAlue();
         Riistanhoitoyhdistys rhy1_1 = model().newRiistanhoitoyhdistys(rka1);
         Riistanhoitoyhdistys rhy1_2 = model().newRiistanhoitoyhdistys(rka1);
+        Riistanhoitoyhdistys rhy1_notActive = model().newRiistanhoitoyhdistys(rka1);
+        rhy1_notActive.setActive(false);
 
         RiistakeskuksenAlue rka2 = model().newRiistakeskuksenAlue();
         Riistanhoitoyhdistys rhy2_1 = model().newRiistanhoitoyhdistys(rka2);
@@ -36,6 +39,7 @@ public class ContactSearchFeatureTest extends EmbeddedDatabaseTest {
 
         Person person1 = model().newPerson();
         Occupation occ1_1 = createOccupation(rhy1_1, person1, null, null, OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA);
+        createOccupation(rhy1_notActive, person1, today, null, OccupationType.JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET);
         Occupation occ1_2 = createOccupation(rhy1_2, person1, today, null, OccupationType.JALJESTYSKOIRAN_OHJAAJA_PIENET_HIRVIELAIMET);
         Occupation occ1_3 = createOccupation(rhy1_1, person1, null, today, OccupationType.METSASTYKSENVALVOJA);
         createOccupation(rhy1_2, person1, null, today.minusDays(1), OccupationType.AMPUMAKOKEEN_VASTAANOTTAJA);
@@ -51,26 +55,33 @@ public class ContactSearchFeatureTest extends EmbeddedDatabaseTest {
         createOccupation(rhy2_1, person2, today.plusDays(1), today.plusDays(2), OccupationType.METSASTYKSENVALVOJA);
 
         onSavedAndAuthenticated(createNewAdmin(), () -> {
-            assertResult(search(byRhy(OrganisationType.RHY, null)), occ1_1, occ1_2, occ1_3, occ2_1, occ2_2, occ2_3);
-            assertResult(search(byRhy(OrganisationType.RHY, rhy2_2.getOfficialCode())), occ2_2);
-            assertResult(search(byOccupation(OrganisationType.RHY, OccupationType.METSASTYKSENVALVOJA)), occ1_3, occ2_3);
-            assertResult(search(byOccupation(OrganisationType.RKA, OccupationType.HALLITUKSEN_JASEN)));
+            assertOccResult(searchOccupations(occSearchByRhy(null)), occ1_1, occ1_2, occ1_3, occ2_1, occ2_2, occ2_3);
+            assertOccResult(searchOccupations(occSearchByRhy(rhy2_2.getOfficialCode())), occ2_2);
+            assertOccResult(searchOccupations(occSearchByOccupation(OrganisationType.RHY, OccupationType.METSASTYKSENVALVOJA)), occ1_3, occ2_3);
+            assertOccResult(searchOccupations(occSearchByOccupation(OrganisationType.RKA, OccupationType.HALLITUKSEN_JASEN)));
+            assertOccResult(searchOccupations(occSearchByOccupation(OrganisationType.RKA, OccupationType.HALLITUKSEN_JASEN)));
+            assertRhyResult(searchRhy(rhySearchByRhy(null)), rhy1_1, rhy1_2, rhy2_1, rhy2_2);
+            assertRhyResult(searchRhy(rhySearchByRhy(rhy2_2.getOfficialCode())), rhy2_2);
         });
     }
 
-    private List<OccupationContactSearchResultDTO> search(OccupationContactSearchDTO... search) {
+    private List<OccupationContactSearchResultDTO> searchOccupations(OccupationContactSearchDTO... search) {
         return contactSearchFeature.searchOccupations(Arrays.asList(search), null);
     }
 
-    private static void assertResult(List<OccupationContactSearchResultDTO> results, Occupation... occupations) {
-        assertEquals(occupations.length, results.size());
-        for (Occupation occupation : occupations) {
-            OccupationContactSearchResultDTO result = findSearchResult(occupation, results);
+    private List<RhyContactSearchResultDTO> searchRhy(RhyContactSearchDTO... search) {
+        return contactSearchFeature.searchRhy(Arrays.asList(search), null);
+    }
+
+    private static void assertOccResult(List<OccupationContactSearchResultDTO> results, Occupation... expectedOccupations) {
+        assertEquals(expectedOccupations.length, results.size());
+        for (Occupation occupation : expectedOccupations) {
+            OccupationContactSearchResultDTO result = findOccSearchResult(occupation, results);
             assertNotNull(result);
         }
     }
 
-    private static OccupationContactSearchResultDTO findSearchResult(Occupation occupation, List<OccupationContactSearchResultDTO> results) {
+    private static OccupationContactSearchResultDTO findOccSearchResult(Occupation occupation, List<OccupationContactSearchResultDTO> results) {
         for (OccupationContactSearchResultDTO result : results) {
             if (result.getOccupationType() == occupation.getOccupationType()
                     && result.getLastName().equals(occupation.getPerson().getLastName())
@@ -81,24 +92,44 @@ public class ContactSearchFeatureTest extends EmbeddedDatabaseTest {
         return null;
     }
 
-    private static OccupationContactSearchDTO byRhy(OrganisationType organisationType, String rhyCode) {
+    private void assertRhyResult(final List<RhyContactSearchResultDTO> results, Riistanhoitoyhdistys... expectedRhys) {
+        assertEquals(expectedRhys.length, results.size());
+        for (Riistanhoitoyhdistys rhy : expectedRhys) {
+            RhyContactSearchResultDTO result = findRhySearchResult(rhy, results);
+            assertNotNull(result);
+        }
+    }
+
+    private static RhyContactSearchResultDTO findRhySearchResult(Riistanhoitoyhdistys rhy, List<RhyContactSearchResultDTO> results) {
+        for (RhyContactSearchResultDTO result : results) {
+            if (Objects.equals(result.getOfficialCode(), rhy.getOfficialCode())) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    private static OccupationContactSearchDTO occSearchByRhy(String rhyCode) {
         OccupationContactSearchDTO dto = new OccupationContactSearchDTO();
-        dto.setOrganisationType(organisationType);
+        dto.setOrganisationType(OrganisationType.RHY);
         dto.setRhyCode(rhyCode);
         return dto;
     }
 
-    private static OccupationContactSearchDTO byOccupation(OrganisationType organisationType, OccupationType type) {
+    private static OccupationContactSearchDTO occSearchByOccupation(OrganisationType organisationType, OccupationType type) {
         OccupationContactSearchDTO dto = new OccupationContactSearchDTO();
         dto.setOrganisationType(organisationType);
         dto.setOccupationType(type);
         return dto;
     }
 
-    private Occupation createOccupation(Riistanhoitoyhdistys rhy1_1, Person person1, LocalDate beginDate, LocalDate endDate, OccupationType type) {
-        Occupation occ = model().newOccupation(rhy1_1, person1, type);
-        occ.setBeginDate(beginDate);
-        occ.setEndDate(endDate);
-        return occ;
+    private RhyContactSearchDTO rhySearchByRhy(final String rhyCode) {
+        final RhyContactSearchDTO dto = new RhyContactSearchDTO();
+        dto.setRhyCode(rhyCode);
+        return dto;
+    }
+
+    private Occupation createOccupation(Riistanhoitoyhdistys rhy, Person person, LocalDate beginDate, LocalDate endDate, OccupationType type) {
+        return model().newOccupation(rhy, person, type, beginDate, endDate);
     }
 }

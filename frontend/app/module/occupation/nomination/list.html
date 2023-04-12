@@ -13,7 +13,7 @@
                 <a ng-click="$ctrl.selectNominationStatus('KOULUTUS')">1. <span
                         translate="occupation.nominationStatus.KOULUTUS"></span></a>
             </li>
-            <li ng-class="{'active': $ctrl.searchParams.nominationStatus == 'EHDOLLA'}" ng-show="!$ctrl.isModerator">
+            <li ng-class="{'active': $ctrl.searchParams.nominationStatus == 'EHDOLLA'}">
                 <a ng-click="$ctrl.selectNominationStatus('EHDOLLA')">2. <span
                         translate="occupation.nominationStatus.EHDOLLA"></span>
                     <span class="badge" ng-bind="$ctrl.counts['EHDOLLA']"></span>
@@ -145,6 +145,9 @@
                           ng-show="row.accepted"></span>
                     <span class="text-danger glyphicon glyphicon-warning-sign"
                           ng-show="row.person.underage || row.person.huntingBanActive"></span>
+                    <span class="text-danger glyphicon glyphicon-warning-sign"
+                          title="{{ 'occupation.nomination.list.expired' | translate }}"
+                          ng-show="row.expired"></span>
                 </label>
 
                 <span class="badge" ng-show="row.trainingType === 'LAHI'"
@@ -166,6 +169,10 @@
 
                 <div class="alert alert-warning" ng-if="row.person.huntingBanActive">
                     <p translate="occupation.nomination.list.alertHuntingBan"></p>
+                </div>
+
+                <div class="alert alert-warning" ng-if="row.expired">
+                    <p translate="occupation.nomination.list.expired"></p>
                 </div>
 
                 <div class="row">

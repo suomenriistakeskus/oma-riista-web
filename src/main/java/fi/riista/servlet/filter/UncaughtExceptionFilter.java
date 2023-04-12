@@ -1,6 +1,5 @@
 package fi.riista.servlet.filter;
 
-import io.sentry.Sentry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -31,11 +30,8 @@ public class UncaughtExceptionFilter extends OncePerRequestFilter {
         } catch (NestedServletException nse) {
             // Should be handled automatically by HandlerExceptionResolver
             LOG.error("Caught nested servlet exception", nse.getCause());
-            Sentry.capture(nse.getCause());
-
         } catch (Throwable th) {
             LOG.error("Uncaught exception", th);
-            Sentry.capture(th);
         }
 
         if (response.isCommitted()) {

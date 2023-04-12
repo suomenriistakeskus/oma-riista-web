@@ -21,6 +21,7 @@ import fi.riista.feature.permit.decision.action.PermitDecisionAction;
 import fi.riista.feature.permit.decision.attachment.PermitDecisionAttachment;
 import fi.riista.feature.permit.decision.authority.PermitDecisionAuthority;
 import fi.riista.feature.permit.decision.delivery.PermitDecisionDelivery;
+import fi.riista.util.F;
 import fi.riista.util.LocalisedEnum;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -269,6 +270,11 @@ public class PermitDecision extends LifecycleEntity<Long> implements DecisionBas
     @Column(name = "legal_section_51", nullable = false)
     private boolean legalSection51;
 
+
+    // RHY:n automaattinen lisääminen jakeluun, oletuksena käytössä.
+    @Column(nullable = false)
+    private boolean automaticDeliveryDeduction;
+
     // Osa-alueet
 
     @Valid
@@ -323,6 +329,7 @@ public class PermitDecision extends LifecycleEntity<Long> implements DecisionBas
         this.contactPerson = requireNonNull(contactPerson);
         this.permitHolder = requireNonNull(permitHolder);
         this.locale = requireNonNull(locale);
+        this.automaticDeliveryDeduction = true;
     }
 
     // For Hibernate
@@ -687,5 +694,13 @@ public class PermitDecision extends LifecycleEntity<Long> implements DecisionBas
 
     public void setDecisionMaker(final PermitDecisionAuthority decisionMaker) {
         this.decisionMaker = decisionMaker;
+    }
+
+    public boolean isAutomaticDeliveryDeduction() {
+        return automaticDeliveryDeduction;
+    }
+
+    public void setAutomaticDeliveryDeduction(final boolean automaticDeliveryDeduction) {
+        this.automaticDeliveryDeduction = automaticDeliveryDeduction;
     }
 }

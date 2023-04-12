@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.disability.justification', ['app.m
                 templateUrl: 'harvestpermit/applications/disability/justification/justification.html',
                 controller: 'DisabilityPermitWizardJustificationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     justification: function (DisabilityPermitApplication, applicationId) {
                         return DisabilityPermitApplication.getJustification({id: applicationId}).$promise;

@@ -1,6 +1,7 @@
 package fi.riista.feature.gamediary.mobile;
 
 import com.google.common.collect.ImmutableMap;
+import fi.riista.feature.account.user.SystemUser;
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.Required;
 import fi.riista.feature.gamediary.DeerHuntingType;
@@ -18,10 +19,14 @@ import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.person.Person;
+import fi.riista.test.Asserts;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
 import io.vavr.Tuple;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
@@ -64,6 +69,7 @@ import static fi.riista.feature.gamediary.observation.metadata.DynamicObservatio
 import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.VOLUNTARY_CARNIVORE_AUTHORITY;
 import static fi.riista.feature.gamediary.observation.metadata.DynamicObservationFieldPresence.YES;
 import static fi.riista.feature.organization.occupation.OccupationType.PETOYHDYSHENKILO;
+import static fi.riista.util.DateUtil.now;
 import static fi.riista.util.DateUtil.today;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -1144,5 +1150,158 @@ public class MobileObservationFeature_GameDiaryTest extends MobileObservationFea
                         });
                     });
         });
+    }
+
+    @Test
+    public void testGetDeletedObservationIds() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedObservation(now, 1L, personId, personId);
+
+        onSavedAndAuthenticated(user, () -> {
+            final LocalDateTime deletionTime = ldt(now.minusSeconds(1));
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedObservationIds(deletionTime);
+            Asserts.assertThat(ids.getEntryIds(), hasSize(1));
+            Asserts.assertThat(ids.getEntryIds().get(0), equalTo(1L));
+            Asserts.assertThat(ids.getLatestEntry(), equalTo(ldt(now)));
+        });
+    }
+
+    @Test
+    public void testGetDeletedObservationIds_nullDate() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedObservation(now, 1L, personId, personId);
+
+        onSavedAndAuthenticated(user, () -> {
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedObservationIds(null);
+            Asserts.assertThat(ids.getEntryIds(), hasSize(1));
+            Asserts.assertThat(ids.getEntryIds().get(0), equalTo(1L));
+            Asserts.assertThat(ids.getLatestEntry(), equalTo(ldt(now)));
+        });
+    }
+
+    @Test
+    public void testGetDeletedObservationIds_author() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedObservation(now, 1L, personId, personId +1);
+
+        onSavedAndAuthenticated(user, () -> {
+            final DateTime deletionTime = now.minusSeconds(1);
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedObservationIds(ldt(deletionTime));
+            Asserts.assertThat(ids.getEntryIds(), hasSize(1));
+            Asserts.assertThat(ids.getEntryIds().get(0), equalTo(1L));
+            Asserts.assertThat(ids.getLatestEntry(), equalTo(ldt(now)));
+        });
+    }
+
+    @Test
+    public void testGetDeletedObservationIds_observer() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedObservation(now, 1L, personId +1, personId);
+
+        onSavedAndAuthenticated(user, () -> {
+            final DateTime deletionTime = now.minusSeconds(1);
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedObservationIds(ldt(deletionTime));
+            Asserts.assertThat(ids.getEntryIds(), hasSize(1));
+            Asserts.assertThat(ids.getEntryIds().get(0), equalTo(1L));
+            Asserts.assertThat(ids.getLatestEntry(), equalTo(ldt(now)));
+        });
+    }
+
+    @Test
+    public void testGetDeletedObservationIds_otherUser() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedObservation(now, 1L, personId, personId);
+
+        onSavedAndAuthenticated(createUserWithPerson("otherUser"), () -> {
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedObservationIds(null);
+            Asserts.assertThat(ids.getEntryIds(), is(empty()));
+        });
+    }
+
+    @Test
+    public void testGetDeletedObservationIds_onlyNewerDeletionTimesReturned() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedObservation(now, 1L, personId, personId);
+
+        onSavedAndAuthenticated(user, () -> {
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedObservationIds(ldt(now));
+            Asserts.assertThat(ids.getEntryIds(), hasSize(0));
+            Asserts.assertThat(ids.getLatestEntry(), is(nullValue()));
+        });
+    }
+
+    @Test
+    public void testGetDeletedObservationIds_onlyOwnObservationDeletionTimesReturned() {
+        final SystemUser user = createUserWithPerson();
+        persistInNewTransaction();
+
+        final DateTime now = now();
+        final Long personId = user.getPerson().getId();
+        model().newDeletedObservation(now, 1L, personId +1, personId +1);
+
+        onSavedAndAuthenticated(user, () -> {
+            final MobileDeletedDiaryEntriesDTO ids = feature.getDeletedObservationIds(ldt(now.minusSeconds(1)));
+            Asserts.assertThat(ids.getEntryIds(), hasSize(0));
+            Asserts.assertThat(ids.getLatestEntry(), is(nullValue()));
+        });
+    }
+
+    @Test
+    public void testGetObservationsWhereOnlyAuthor() {
+        withPerson(author -> {
+            withPerson(observer-> {
+                final Observation observation = model().newObservation(model().newGameSpecies(), author, observer);
+
+                onSavedAndAuthenticated(createUser(author), () -> {
+                    final MobileDeletedDiaryEntriesDTO dto = feature.getObservationsWhereOnlyAuthor();
+
+                    assertThat(dto.getEntryIds(), hasSize(1));
+                    assertThat(dto.getEntryIds().get(0), equalTo(observation.getId()));
+                    assertThat(dto.getLatestEntry(), is(nullValue()));
+                });
+            });
+        });
+    }
+
+    @Test
+    public void testGetObservationsWhereOnlyAuthor_authorAndObserver() {
+        withPerson(authorAndObserver -> {
+                model().newObservation(model().newGameSpecies(), authorAndObserver, authorAndObserver);
+
+                onSavedAndAuthenticated(createUser(authorAndObserver), () -> {
+                    final MobileDeletedDiaryEntriesDTO dto = feature.getObservationsWhereOnlyAuthor();
+
+                    assertThat(dto.getEntryIds(), is(empty()));
+                    assertThat(dto.getLatestEntry(), is(nullValue()));
+                });
+        });
+    }
+
+    private LocalDateTime ldt(final DateTime dateTime) {
+        return DateUtil.toLocalDateTimeNullSafe(dateTime);
     }
 }

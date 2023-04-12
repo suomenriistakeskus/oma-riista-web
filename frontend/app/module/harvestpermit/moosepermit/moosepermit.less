@@ -3,21 +3,28 @@
 .r-moose-permits-layout {
   overflow: hidden;
 
+  display: flex;
+  justify-content: flex-start;
+  align-content: flex-start;
+  @media (max-width: @screen-xs-max) {
+    flex-direction: column;
+  }
+
   .left-column,
   .main-column {
-    position: fixed;
     overflow: auto;
     overflow-x: hidden;
-    min-height: 1px;
     background: #fff;
   }
 
   .left-column {
-    position: fixed;
     width: @r-moose-permits-left-sidebar-width;
-    top: @main-nav-height;
-    bottom: 0;
+
     padding: 10px 10px 0;
+
+    @media (max-width: @screen-xs-max) {
+      width: 100%;
+    }
 
     > h3 {
       padding-left: 10px;
@@ -50,6 +57,43 @@
       }
     }
 
+    .downloadButton {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      @media (max-width: @screen-xs-max) {
+        > i {
+          display: none;
+        }
+      }
+    }
+
+    .selector-group {
+      display: flex;
+      justify-content: space-between;
+      align-content: center;
+      flex-wrap: wrap;
+
+      .table-map-selector {
+        width: 65%;
+      }
+
+      @media (max-width: @screen-xs-max) {
+        .table-map-selector {
+          width: 100%;
+        }
+
+        .actions-btn {
+          width: 100%;
+
+          button {
+            margin-top: 6px;
+            width: 100%;
+          }
+        }
+      }
+    }
+
     .list-group > .list-group-item {
       .buttons {
         position: absolute;
@@ -72,25 +116,48 @@
         margin-right: 150px;
       }
     }
+
     .year-species-menu {
       padding-bottom: 10px;
+
       div.left {
         padding-right: 5px;
       }
+
       div.right {
         padding-left: 5px;
       }
     }
+
     .permit-download {
       display: inline-block;
+    }
+    .btn>span {
+      white-space: pre-wrap;
     }
   }
 
   .main-column {
-    top: @main-nav-height;
-    left: @r-moose-permits-left-sidebar-width;
-    bottom: 0;
-    right: 0;
+    flex-grow: 1;
+
+    @media (max-width: @screen-xs-max) {
+      min-height: 456px;
+      position: relative;
+      .map-overlay-button-container {
+        position: absolute;
+        top:unset;
+        left: unset;
+      }
+    }
+    .permit-map {
+      position: relative;
+      @media (max-width: @screen-xs-max) {
+        height: 456px;
+        .r-cursor-pointer {
+          height: 100% !important;
+        }
+      }
+    }
 
     .container-fluid {
       padding: 10px;
@@ -98,7 +165,7 @@
     }
 
     .permit-species-logo {
-      float:left;
+      float: left;
       padding: 0 20px;
     }
 
@@ -119,6 +186,7 @@
   td:first-child {
     width: 250px;
   }
+
   th, td:not(:first-child) {
     .text-center;
     padding: 2px !important;
@@ -155,6 +223,7 @@
     &:hover {
       background-color: #e0f0eb;
     }
+
     td {
       padding: 1px !important;
 
@@ -198,6 +267,7 @@
       -webkit-appearance: none;
       margin: 0;
     }
+
     input[type="number"] {
       -moz-appearance: textfield;
       .text-center;
@@ -217,6 +287,7 @@
   .lowheader > th {
     .loop-moose-permit-border-left(@moose-permit-infotable-hunting-border-indexes);
   }
+
   tr > td {
     .loop-moose-permit-border-left(@moose-permit-infotable-hunting-border-indexes);
   }
@@ -230,6 +301,7 @@
   .lowheader > th {
     .loop-moose-permit-border-left(@moose-permit-infotable-indexes-border-indexes);
   }
+
   tr > td {
     .loop-moose-permit-border-left(@moose-permit-infotable-indexes-border-indexes);
   }
@@ -243,6 +315,7 @@
   .lowheader > th {
     .loop-moose-permit-border-left(@moose-permit-infotable-payments-border-indexes);
   }
+
   tr > td {
     .loop-moose-permit-border-left(@moose-permit-infotable-payments-border-indexes);
   }
@@ -272,6 +345,7 @@
       .table;
       .table-condensed;
       .table-striped;
+
       th, td {
         .text-center;
       }

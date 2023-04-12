@@ -9,6 +9,8 @@ import fi.riista.feature.gis.mobile.MobileMapFeature;
 import fi.riista.feature.gis.mobile.MobileMapZoneCache;
 import fi.riista.feature.gis.vector.VectorTileService;
 import fi.riista.feature.gis.vector.VectorTileUtil;
+import fi.riista.feature.huntingclub.poi.mobile.MobilePoiListFeature;
+import fi.riista.feature.huntingclub.poi.mobile.MobilePoiLocationGroupDTO;
 import fi.riista.util.MediaTypeExtras;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
@@ -40,6 +42,9 @@ public class MobileMapApiResource {
 
     @Resource
     private MetsahallitusMaterialYear metsahallitusMaterialYear;
+
+    @Resource
+    private MobilePoiListFeature poiListFeature;
 
     @GetMapping("/club")
     public List<MobileAreaDTO> listClubMaps(@RequestParam(required = false) Integer huntingYear) {
@@ -75,6 +80,11 @@ public class MobileMapApiResource {
         }
 
         return ResponseEntity.ok(dto);
+    }
+
+    @GetMapping(value = "/code/{externalId}/pois")
+    public List<MobilePoiLocationGroupDTO> listPois(@PathVariable String externalId) {
+        return poiListFeature.list(externalId);
     }
 
     @GetMapping("/vector/{externalId}/{z:\\d+}/{x:\\d+}/{y:\\d+}")

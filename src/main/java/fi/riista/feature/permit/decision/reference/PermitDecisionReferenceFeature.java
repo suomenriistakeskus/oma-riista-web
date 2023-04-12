@@ -9,6 +9,8 @@ import fi.riista.feature.common.decision.DecisionStatus;
 import fi.riista.feature.permit.decision.PermitDecision;
 import fi.riista.feature.permit.decision.PermitDecisionRepository;
 import fi.riista.feature.permit.decision.QPermitDecision;
+import fi.riista.feature.permit.decision.action.PermitDecisionActionDTO;
+import fi.riista.feature.permit.decision.action.PermitDecisionActionDTOTransformer;
 import fi.riista.security.EntityPermission;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +41,9 @@ public class PermitDecisionReferenceFeature {
 
     @Resource
     private ActiveUserService activeUserService;
+
+    @Resource
+    private PermitDecisionActionDTOTransformer permitDecisionActionDTOTransformer;
 
     @Transactional(readOnly = true)
     public Slice<PermitDecisionReferenceDTO> searchReferences(final HarvestPermitApplicationSearchDTO dto) {
@@ -64,7 +70,13 @@ public class PermitDecisionReferenceFeature {
     public PermitDecisionReferenceDTO getReference(final long id) {
         final PermitDecision decision = requireEntityService.requirePermitDecision(id, EntityPermission.READ);
 
-        return Optional.ofNullable(decision.getReference()).map(PermitDecisionReferenceDTO::create).orElse(null);
+        return Optional.ofNullable(decision.getReference()).map(ref -> {
+            final List<PermitDecisionActionDTO> actions = permitDecisionActionDTOTransformer.apply(ref.getActions())
+                    .stream()
+                    .sorted(Comparator.comparing(PermitDecisionActionDTO::getPointOfTime).reversed())
+                    .collect(toList());
+            return PermitDecisionReferenceDTO.create(ref, actions);
+        }).orElse(null);
     }
 
     @Transactional

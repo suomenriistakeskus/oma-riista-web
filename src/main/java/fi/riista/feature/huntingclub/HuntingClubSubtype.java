@@ -1,6 +1,8 @@
 package fi.riista.feature.huntingclub;
 
-public enum HuntingClubSubtype {
+import fi.riista.util.LocalisedEnum;
+
+public enum HuntingClubSubtype implements LocalisedEnum {
     PERSON,
     BUSINESS,
     RY

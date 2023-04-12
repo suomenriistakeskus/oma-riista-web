@@ -3,9 +3,14 @@ package fi.riista.feature.gis.rhy;
 import fi.riista.config.properties.DataSourceProperties;
 import fi.riista.feature.gis.GISBounds;
 import fi.riista.feature.gis.GISPoint;
+import fi.riista.util.GISUtils;
 import fi.riista.util.GISUtils.SRID;
+import org.locationtech.jts.geom.Geometry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,12 +68,48 @@ public class GISRiistanhoitoyhdistysRepository {
         return jdbcTemplate.query(sql, params, (rs, rowNum) -> rs.getString("geojson"));
     }
 
+
+    @Transactional(readOnly = true)
+    public Geometry queryInvertedRhyGeom(final String officialCode, final SRID srid) {
+        final String FINNISH_BOUNDS = "LINESTRING(50199.4814 6582464.0358, 761274.6247 7799839.8902)";
+
+        // Inversion is done locally inside bounds of Finland using ST_Difference
+        final String SQL = "WITH finland AS (" +
+                "  SELECT ST_Buffer(ST_Envelope(ST_GeomFromText(:finnishBounds, 3067)), 0) AS geom" +
+                "), d AS (" +
+                "  SELECT ST_Difference(finland.geom, ST_Transform(ST_Buffer(rhy.geom, 0), :srid)) AS geom" +
+                "  FROM finland CROSS JOIN rhy" +
+                "  WHERE id = :officialCode" +
+                ") SELECT ST_AsBinary(d.geom) AS geom FROM d;";
+
+        final NamedParameterJdbcOperations jdbcOperations = new NamedParameterJdbcTemplate(this.jdbcTemplate);
+
+        final MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("finnishBounds", FINNISH_BOUNDS)
+                .addValue("srid", srid.getValue())
+                .addValue("officialCode", officialCode);
+
+        return jdbcOperations.queryForObject(SQL, params, (rs, i) -> {
+            final Geometry geometry = GISUtils.readFromPostgisWkb(rs.getBytes("geom"), srid);
+            return geometry.isValid() ? geometry : geometry.buffer(0);
+        });
+    }
+
     @Transactional(readOnly = true)
     public List<GISBounds> queryRhyBounds(final String officialCode) {
+        return queryRhyBoundsInternal(officialCode, SRID.WGS84);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GISBounds> queryRhyBounds(final String officialCode, final SRID srid) {
+        return queryRhyBoundsInternal(officialCode, srid);
+    }
+
+    private List<GISBounds> queryRhyBoundsInternal(final String officialCode, final SRID srid) {
         final String sql = "WITH extent AS (SELECT ST_Extent(ST_Transform(geom, ?)) AS e FROM rhy WHERE id=?)\n" +
                 "SELECT ST_XMin(e) AS xmin, ST_YMin(e) AS ymin, ST_XMax(e) AS xmax, ST_YMax(e) AS ymax FROM extent;";
 
-        return jdbcTemplate.query(sql, new Object[]{SRID.WGS84.value, officialCode}, (rs, rowNum) -> {
+        return jdbcTemplate.query(sql, new Object[]{srid.value, officialCode}, (rs, rowNum) -> {
             final GISBounds b = new GISBounds();
             b.setMinLng(rs.getDouble("xmin"));
             b.setMinLat(rs.getDouble("ymin"));
@@ -77,5 +118,4 @@ public class GISRiistanhoitoyhdistysRepository {
             return b;
         });
     }
-
 }

@@ -263,7 +263,7 @@ public class SharedPermitMapFeature {
                 .map(tuple -> {
                     final HuntingClub resultClub = Objects.requireNonNull(tuple.get(0, HuntingClub.class));
                     final Harvest resultHarvest = Objects.requireNonNull(tuple.get(1, Harvest.class));
-                    resultHarvest.setHuntingClub(resultClub);
+                    resultHarvest.setHuntingClubForStatistics(resultClub);
 
                     return resultHarvest;
                 })

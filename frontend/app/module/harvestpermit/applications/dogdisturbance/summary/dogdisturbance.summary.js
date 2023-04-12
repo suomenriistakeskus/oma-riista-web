@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.dogdisturbance.summary', ['app.met
                 templateUrl: 'harvestpermit/applications/dogdisturbance/summary/summary.html',
                 controller: 'DogDisturbanceSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, DogDisturbanceApplication) {
                         return DogDisturbanceApplication.getFullDetails({id: applicationId}).$promise;
@@ -139,7 +140,7 @@ angular.module('app.harvestpermit.application.dogdisturbance.summary', ['app.met
         }
 
         function confirmSend() {
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
                 'harvestpermit.wizard.summary.sendConfirmation.title',
                 'harvestpermit.wizard.summary.sendConfirmation.body');
         }

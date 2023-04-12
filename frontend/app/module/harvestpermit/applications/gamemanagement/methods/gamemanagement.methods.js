@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.gamemanagement.methods', ['app.met
                 templateUrl: 'harvestpermit/applications/gamemanagement/methods/methods.html',
                 controller: 'DerogationPermitWizardMethodsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     forbiddenMethods: function (GameManagementPermitApplication, applicationId) {
                         return GameManagementPermitApplication.getCurrentDeviationJustification({id: applicationId}).$promise;

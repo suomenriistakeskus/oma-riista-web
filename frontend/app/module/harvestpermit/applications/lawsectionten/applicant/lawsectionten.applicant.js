@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.lawsectionten.applicant', ['app.me
                 templateUrl: 'harvestpermit/applications/lawsectionten/applicant/applicant.html',
                 controller: 'LawSectionTenPermitWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

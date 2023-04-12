@@ -43,14 +43,12 @@ public class CarnivorePermitApplicationJustificationFeature {
         final CarnivorePermitApplication carnivoreApplication =
                 carnivorePermitApplicationService.findForUpdate(applicationId);
 
-        carnivoreApplication.setAdditionalJustificationInfo(dto.getAdditionalJustificationInfo());
         carnivoreApplication.setAlternativeMeasures(dto.getAlternativeMeasures());
 
         final HarvestPermitApplicationSpeciesAmount existingSpeciesAmount =
                 requireSpeciesAmount(carnivoreApplication.getHarvestPermitApplication());
 
         existingSpeciesAmount.setPopulationAmount(dto.getPopulationAmount());
-        existingSpeciesAmount.setPopulationDescription(dto.getPopulationDescription());
     }
 
     private HarvestPermitApplicationSpeciesAmount requireSpeciesAmount(final HarvestPermitApplication application) {

@@ -14,6 +14,8 @@
     <include file="db.changelog-2019.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-2020.xml" relativeToChangelogFile="true"/>
     <include file="db.changelog-2021.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-2022.xml" relativeToChangelogFile="true"/>
+    <include file="db.changelog-2023.xml" relativeToChangelogFile="true"/>
 
     <include file="db.h2.xml" relativeToChangelogFile="true" />
     <include file="db.audit.xml" relativeToChangelogFile="true" />

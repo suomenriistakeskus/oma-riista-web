@@ -10,6 +10,8 @@ import fi.riista.feature.otherwisedeceased.OtherwiseDeceasedFilterDTO;
 import fi.riista.util.MediaTypeExtras;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -50,9 +52,10 @@ public class OtherwiseDeceasedApiResource {
     private OtherwiseDeceasedExcelFeature excelFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
-    @GetMapping(value = "/list")
-    public List<OtherwiseDeceasedBriefDTO> listByYear(@RequestParam("year") final int year) {
-        return otherwiseDeceasedFeature.listByYear(year);
+    @PostMapping(value = "/list")
+    public Slice<OtherwiseDeceasedBriefDTO> search(final @Validated @RequestBody OtherwiseDeceasedFilterDTO dto,
+                                                   final Pageable pageable) {
+        return otherwiseDeceasedFeature.searchPage(dto, pageable);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -63,7 +66,7 @@ public class OtherwiseDeceasedApiResource {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(value = "/savewithattachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public OtherwiseDeceasedDTO save(final @RequestParam(value = "dto") String dtoData,
+    public OtherwiseDeceasedDTO save(final @Validated @RequestParam(value = "dto") String dtoData,
                                      final @RequestParam MultipartFile[] files) throws IOException {
         final OtherwiseDeceasedDTO dto = objectMapper.readValue(dtoData, OtherwiseDeceasedDTO.class);
         return otherwiseDeceasedFeature.save(dto, Arrays.asList(files));

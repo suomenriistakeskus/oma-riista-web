@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.weapontransportation.summary', ['a
                 templateUrl: 'harvestpermit/applications/weapontransportation/summary/summary.html',
                 controller: 'WeaponTransportationPermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, WeaponTransportationPermitApplication) {
                         return WeaponTransportationPermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -141,7 +142,7 @@ angular.module('app.harvestpermit.application.weapontransportation.summary', ['a
         }
 
         function confirmSend() {
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
                 'harvestpermit.wizard.summary.sendConfirmation.title',
                 'harvestpermit.wizard.summary.sendConfirmation.body');
         }

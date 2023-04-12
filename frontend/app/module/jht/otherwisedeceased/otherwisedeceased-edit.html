@@ -118,6 +118,9 @@
                     <input type="text" required class="form-control"
                            name="date" id="dateInput"
                            uib-datepicker-popup is-open="isDatePickerOpen"
+                           date-between-min-max
+                           ng-model-options="{ updateOn: 'blur' }"
+                           max-date="today()"
                            ng-model="$ctrl.date">
 
                     <span class="input-group-btn">
@@ -142,6 +145,7 @@
 
                 <input type="text" required class="form-control"
                        name="time" id="time"
+                       finnish-date-time-in-past="$ctrl.date"
                        ng-model="$ctrl.time">
 
                 <div class="help-block has-error"
@@ -168,15 +172,15 @@
                     </option>
                 </select>
 
-                <div class="help-block" ng-show="$ctrl.item.cause === 'OTHER'">
-                    <input type="text"
-                           name="causeOther" id="causeOther"
+                <div class="help-block">
+                    <input type="text" ng-required="$ctrl.item.cause === 'OTHER'"
+                           name="causeDescription" id="causeDescription"
                            class="form-control"
-                           ng-model="$ctrl.item.causeOther">
+                           ng-model="$ctrl.item.causeDescription">
                 </div>
 
                 <div class="help-block has-error"
-                     ng-messages="otherwiseDeceasedForm.cause.$error">
+                     ng-messages="otherwiseDeceasedForm.causeDescription.$error">
                     <span ng-messages-include="common/errorMessages.html"></span>
                 </div>
             </div>
@@ -199,15 +203,15 @@
                     </option>
                 </select>
 
-                <div class="help-block" ng-show="$ctrl.item.source === 'OTHER'">
-                    <input type="text"
-                           name="sourceOther" id="sourceOther"
+                <div class="help-block">
+                    <input type="text" ng-required="$ctrl.item.source === 'OTHER'"
+                           name="sourceDescription" id="sourceDescription"
                            class="form-control has-feedback"
-                           ng-model="$ctrl.item.sourceOther">
+                           ng-model="$ctrl.item.sourceDescription">
                 </div>
 
                 <div class="help-block has-error"
-                     ng-messages="otherwiseDeceasedForm.source.$error">
+                     ng-messages="otherwiseDeceasedForm.sourceDescription.$error">
                     <span ng-messages-include="common/errorMessages.html"></span>
                 </div>
             </div>
@@ -279,7 +283,8 @@
 
                 <textarea class="form-control" rows="6"
                           name="description" id="description"
-                          ng-model="$ctrl.item.description">
+                          ng-model="$ctrl.item.description"
+                          spellcheck="false">
                 </textarea>
             </div>
 
@@ -290,7 +295,8 @@
 
                 <textarea class="form-control" rows="6"
                           name="additionalInfo" id="additionalInfo"
-                          ng-model="$ctrl.item.additionalInfo">
+                          ng-model="$ctrl.item.additionalInfo"
+                          spellcheck="false">
                 </textarea>
             </div>
         </div>
@@ -300,11 +306,12 @@
         <div class="row">
             <div class="col-xs-12 form-group">
                 <label for="attachments" translate="jht.otherwiseDeceased.fields.attachments"></label>
-                <r-modal-attachments id="attachments" editable="true"
+                <r-common-dropzone id="attachments"
                                      url="/api/v1/deceased/savewithattachments"
                                      attachments="$ctrl.item.attachments"
-                                     dropzone="$ctrl.dropzone">
-                </r-modal-attachments>
+                                     on-download-attachment="$ctrl.downloadAttachment"
+                                     on-delete-attachment="$ctrl.deleteAttachment">
+                </r-common-dropzone>
             </div>
         </div>
 
@@ -315,7 +322,8 @@
                 <label class="mandatory-field" for="reasonForChange" translate="jht.otherwiseDeceased.fields.reasonForChange"></label>
                 <textarea required class="form-control" rows="2"
                           name="reasonForChange" id="reasonForChange"
-                          ng-model="$ctrl.item.reasonForChange">
+                          ng-model="$ctrl.item.reasonForChange"
+                          spellcheck="false">
                 </textarea>
                 <div class="help-block has-error"
                      ng-messages="otherwiseDeceasedForm.reasonForChange.$error">

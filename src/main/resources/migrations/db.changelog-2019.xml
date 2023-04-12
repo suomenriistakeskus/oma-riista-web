@@ -1784,6 +1784,7 @@
     </changeSet>
 
     <changeSet id="2019-09-23-add-moderator-area" author="vincit-kyostihe">
+        <validCheckSum>8:65ad800a6b841cae738991c98b1d56a6</validCheckSum>
         <createTable tableName="moderator_area">
             <column autoIncrement="true" name="moderator_area_id" type="BIGSERIAL">
                 <constraints primaryKey="true" primaryKeyName="moderator_area_pkey"/>
@@ -1805,7 +1806,7 @@
             <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
             <column name="moderator_id" type="BIGINT">
                 <constraints nullable="false"
-                             references="system_user(user_id)"
+                             referencedTableName="system_user" referencedColumnNames="user_id"
                              foreignKeyName="fk_moderator_area_moderator_id"/>
             </column>
             <column name="rka_id" type="BIGINT">

@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static fi.riista.util.DateUtil.streamCurrentAndNextHuntingYear;
 import static fi.riista.util.DateUtil.today;
 
 @Service
@@ -65,7 +64,7 @@ public class CalendarEventCrudFeature extends AbstractCrudFeature<Long, Calendar
             checkArgument(isDTOTypeActive || entityType == DTOType,
                     "Event type is not active anymore");
 
-            canUpdateAllFields = !isLockedAsPastCalendarEvent(entity);
+            canUpdateAllFields = !isLockedAsAssociatedWithOpenedShootingTest(entity);
             if (canUpdateAllFields) {
                 additionalCalendarEventService.updateAdditionalCalendarEvents(dto.getAdditionalCalendarEvents(), entity);
                 entity.forceRevisionUpdate();
@@ -87,6 +86,8 @@ public class CalendarEventCrudFeature extends AbstractCrudFeature<Long, Calendar
         entity.setName(dto.getName());
         entity.setDescription(dto.getDescription());
         entity.setParticipants(dto.getParticipants());
+        entity.setPassedAttempts(dto.getPassedAttempts());
+        entity.setFailedAttempts(dto.getFailedAttempts());
     }
 
     @Override
@@ -98,7 +99,7 @@ public class CalendarEventCrudFeature extends AbstractCrudFeature<Long, Calendar
 
     @Override
     protected void delete(final CalendarEvent event) {
-        if (isLockedAsPastCalendarEvent(event) || isLockedAsPastStatistics(event)) {
+        if (isLockedAsAssociatedWithOpenedShootingTest(event) || isLockedAsPastStatistics(event)) {
             throw new CannotDeletePastCalendarEventException();
         }
 
@@ -110,12 +111,7 @@ public class CalendarEventCrudFeature extends AbstractCrudFeature<Long, Calendar
         return dtoTransformer.apply(event);
     }
 
-    private boolean isLockedAsPastCalendarEvent(final CalendarEvent event) {
-        return event.isLockedAsPastCalendarEvent() && !activeUserService.isModeratorOrAdmin()
-                || isAssociatedWithOpenedShootingTestEvent(event);
-    }
-
-    private boolean isAssociatedWithOpenedShootingTestEvent(final CalendarEvent event) {
+    private boolean isLockedAsAssociatedWithOpenedShootingTest(final CalendarEvent event) {
         return event.getCalendarEventType().isShootingTest()
                 && shootingTestEventRepository.findByCalendarEvent(event).isPresent();
     }

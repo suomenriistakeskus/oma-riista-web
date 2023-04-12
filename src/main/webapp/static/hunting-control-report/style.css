@@ -1,0 +1,57 @@
+.container {
+    clear: left;
+/*    padding: 30px 10px; */
+    font-family: "Times New Roman";
+    font-size: 12px;
+}
+
+table {
+    width: 100%;
+}
+
+table, th, td {
+    border-bottom: 1px solid #d3d3d3;
+    border-collapse: collapse;
+}
+
+tbody > tr {
+    page-break-inside: avoid !important;
+}
+
+td {
+    padding: 10px 0;
+}
+
+.img-container {
+}
+
+.event {
+    width: 100%;
+}
+
+.copyright {
+    position: relative;
+    bottom: 25px;
+    left: 350px;
+}
+
+.header {
+    margin-bottom: 20px;
+}
+
+.status {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.accepted {
+    color: #1A5F19;
+}
+
+.proposed {
+    color: #DAAF28;
+}
+
+.rejected {
+    color: #C92424;
+}

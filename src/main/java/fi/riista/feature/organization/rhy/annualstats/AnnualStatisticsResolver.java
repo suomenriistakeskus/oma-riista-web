@@ -22,6 +22,7 @@ import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageInspect
 import fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType;
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEvent;
 import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventRepository;
+import fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventStatus;
 import fi.riista.feature.permit.application.QHarvestPermitApplication;
 import fi.riista.feature.shootingtest.QShootingTestAttempt;
 import fi.riista.feature.shootingtest.QShootingTestEvent;
@@ -29,6 +30,7 @@ import fi.riista.feature.shootingtest.QShootingTestParticipant;
 import fi.riista.feature.shootingtest.ShootingTestType;
 import fi.riista.sql.SQRhy;
 import fi.riista.util.DateUtil;
+import fi.riista.util.F;
 import io.vavr.Lazy;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
@@ -40,6 +42,7 @@ import org.joda.time.LocalDate;
 import javax.annotation.Nonnull;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,8 +63,11 @@ import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WOLF;
 import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_WOLVERINE;
 import static fi.riista.feature.gamediary.srva.SrvaEventNameEnum.ACCIDENT;
 import static fi.riista.feature.gamediary.srva.SrvaEventStateEnum.APPROVED;
+import static fi.riista.feature.organization.calendar.CalendarEventType.METSASTAJATUTKINTO;
 import static fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType.LARGE_CARNIVORE;
 import static fi.riista.feature.organization.rhy.gamedamageinspection.GameDamageType.MOOSELIKE;
+import static fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventStatus.ACCEPTED;
+import static fi.riista.feature.organization.rhy.huntingcontrolevent.HuntingControlEventStatus.ACCEPTED_SUBSIDIZED;
 import static fi.riista.feature.permit.application.HarvestPermitApplication.Status.ACTIVE;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.QUALIFIED;
 import static fi.riista.feature.shootingtest.ShootingTestAttemptResult.REBATED;
@@ -105,7 +111,8 @@ public class AnnualStatisticsResolver {
     private final Supplier<Map<CalendarEventType, Integer>> eventParticipantCountSupplier;
     private final Supplier<Map<CalendarEventType, Integer>> nonSubsidisedEventParticipantCountSupplier;
     private final Supplier<Map<GameDamageType, Long>> gameDamageCountSupplier;
-    private final Supplier<Tuple3<Integer, Integer, Integer>> huntingControlCountSupplier;
+    private final Supplier<Tuple3<Map<HuntingControlEventStatus, Integer>, Integer, Integer>> huntingControlCountSupplier;
+    private final Supplier<Tuple2<Integer, Integer>> hunterExamAttemptSupplier;
 
     public AnnualStatisticsResolver(@Nonnull final Riistanhoitoyhdistys rhy,
                                     final int calendarYear,
@@ -188,6 +195,9 @@ public class AnnualStatisticsResolver {
         this.huntingControlCountSupplier = Lazy.of(() -> {
             return countHuntingControlEvents(rhy, calendarYear, huntingControlEventRepository);
         });
+
+        this.hunterExamAttemptSupplier = Lazy.of(() ->
+                eventRepository.countAttemptResults(rhy, firstDayOfYear, lastDayOfYear, METSASTAJATUTKINTO));
     }
 
     public int getCalendarYear() {
@@ -314,7 +324,11 @@ public class AnnualStatisticsResolver {
     }
 
     public int getHuntingControlEventCount() {
-        return huntingControlCountSupplier.get()._1;
+        return huntingControlCountSupplier.get()._1.get(ACCEPTED_SUBSIDIZED);
+    }
+
+    public int getNonSubsidizableHuntingControlEventCount() {
+        return huntingControlCountSupplier.get()._1.get(ACCEPTED);
     }
 
     public int getHuntingControlCustomersCount() {
@@ -323,6 +337,14 @@ public class AnnualStatisticsResolver {
 
     public int getHuntingControlProofOrdersCount() {
         return huntingControlCountSupplier.get()._3;
+    }
+
+    public int getPassedHunterExams() {
+        return Optional.ofNullable(hunterExamAttemptSupplier.get()._1).orElse(0);
+    }
+
+    public int getFailedHunterExams() {
+        return Optional.ofNullable(hunterExamAttemptSupplier.get()._2).orElse(0);
     }
 
     private static Iban getIbanFromPreviousYear(final Riistanhoitoyhdistys rhy,
@@ -503,16 +525,29 @@ public class AnnualStatisticsResolver {
 
     }
 
-    private static Tuple3<Integer, Integer, Integer> countHuntingControlEvents(final Riistanhoitoyhdistys rhy,
-                                                                               final int calendarYear,
-                                                                               final HuntingControlEventRepository eventRepository) {
+    private static Tuple3<Map<HuntingControlEventStatus, Integer>, Integer, Integer> countHuntingControlEvents(final Riistanhoitoyhdistys rhy,
+                                                                                                               final int calendarYear,
+                                                                                                               final HuntingControlEventRepository eventRepository) {
         final LocalDate startDate = new LocalDate(calendarYear, 1, 1);
         final LocalDate endDate = new LocalDate(calendarYear, 12, 31);
 
-        final List<HuntingControlEvent> events =
-                eventRepository.findByRhyIdAndDateBetweenOrderByDateDesc(rhy.getId(), startDate, endDate);
-        return Tuple.of(events.size(),
-                nullsafeIntSum(events, HuntingControlEvent::getCustomers),
-                nullsafeIntSum(events, HuntingControlEvent::getProofOrders));
+        final List<HuntingControlEvent> subsidizedEvents = F.concat(
+                eventRepository.findByRhyIdAndDateBetweenAndStatusOrderByDateDesc(rhy.getId(), startDate, endDate, ACCEPTED_SUBSIDIZED),
+                eventRepository.findByRhyIdAndDateBetweenAndStatusOrderByDateDesc(rhy.getId(), startDate, endDate, null));
+
+        final List<HuntingControlEvent> nonSubsidizableEvents =
+                eventRepository.findByRhyIdAndDateBetweenAndStatusOrderByDateDesc(rhy.getId(), startDate, endDate, ACCEPTED);
+
+        final Map<HuntingControlEventStatus, Integer> eventCount = new HashMap<>();
+        eventCount.put(ACCEPTED_SUBSIDIZED, subsidizedEvents.size());
+        eventCount.put(ACCEPTED, nonSubsidizableEvents.size());
+
+        final Integer customerCount = nullsafeIntSum(subsidizedEvents, HuntingControlEvent::getCustomers) +
+                nullsafeIntSum(nonSubsidizableEvents, HuntingControlEvent::getCustomers);
+
+        final Integer proofOrderCount = nullsafeIntSum(subsidizedEvents, HuntingControlEvent::getProofOrders) +
+                nullsafeIntSum(nonSubsidizableEvents, HuntingControlEvent::getProofOrders);
+
+        return Tuple.of(eventCount, customerCount, proofOrderCount);
     }
 }

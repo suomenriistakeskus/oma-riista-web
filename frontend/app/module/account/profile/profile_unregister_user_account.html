@@ -1,0 +1,54 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title" translate="account.profile.title.unregisterUserAccount"></h3>
+    </div>
+
+    <!-- own profile -->
+
+    <div class="panel-body" ng-if="($ctrl.isUserOwnProfile && $ctrl.unregistrationRequested)">
+        <div class="alert alert-danger"
+             translate="account.profile.unregisterUserAccount.requested.status"></div>
+
+        <p >{{ "account.profile.unregisterUserAccount.requested.message1" | translate: {
+            date: $ctrl.requestFormattedDate, time: $ctrl.requestFormattedTime
+        } }}</p>
+        <br>
+        <p translate='account.profile.unregisterUserAccount.requested.message2'></p>
+        <br>
+
+        <div class="text-right">
+            <a class="btn btn-primary"
+               ng-click="$ctrl.continueUsingService()"
+               translate="account.profile.button.continueUsingService"></a>
+        </div>
+    </div>
+
+    <div class="panel-body" ng-if="($ctrl.isUserOwnProfile && !$ctrl.unregistrationRequested)">
+        <p translate='account.profile.unregisterUserAccount.notRequested.message'></p>
+        <br>
+
+        <div class="text-right">
+            <a class="btn btn-danger"
+               ng-click="$ctrl.unregister()"
+               translate="account.profile.button.unregister"></a>
+        </div>
+    </div>
+
+
+    <!-- someone else's profile -->
+
+    <div class="panel-body" ng-if="(!$ctrl.isUserOwnProfile && $ctrl.unregistrationRequested)">
+        <div class="alert alert-danger"
+             translate="account.profile.unregisterUserAccount.requested.status"></div>
+
+        <p >{{ "account.profile.unregisterUserAccount.requested.messageEmail" | translate: {
+            date: $ctrl.requestFormattedDate, time: $ctrl.requestFormattedTime
+        } }}</p>
+    </div>
+
+    <div class="panel-body" ng-if="(!$ctrl.isUserOwnProfile && !$ctrl.unregistrationRequested)">
+        <div class="well well-sm">
+            <p translate="account.profile.unregisterUserAccount.notRequested.status"></p>
+        </div>
+    </div>
+</div>

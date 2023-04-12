@@ -1,6 +1,7 @@
 package fi.riista.feature.organization.calendar;
 
 import fi.riista.feature.organization.Organisation;
+import io.vavr.Tuple2;
 import org.joda.time.LocalDate;
 
 import java.util.List;
@@ -36,4 +37,6 @@ public interface CalendarEventRepositoryCustom {
     }
 
     List<CalendarEventSearchResultDTO> getCalendarEvents(CalendarEventSearchParamsDTO params);
+
+    Tuple2<Integer, Integer> countAttemptResults(Organisation organisation, LocalDate beginDate, LocalDate endDate, CalendarEventType type);
 }

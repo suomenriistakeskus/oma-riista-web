@@ -1,0 +1,42 @@
+<div class="row">
+    <div class="col-md-2 col-xs-6">
+        <r-hunting-controller-event-status event="$ctrl.event"></r-hunting-controller-event-status>
+    </div>
+    <div class="col-md-1 col-xs-6">
+        <div>{{$ctrl.event.date |date:'d.M.yyyy'}}</div>
+        <div>{{$ctrl.event.beginTime}}&nbsp;-&nbsp;{{$ctrl.event.endTime}}</div>
+    </div>
+
+    <div class="clearfix visible-xs-block visible-sm-block separated"></div>
+
+    <div class="col-md-2 col-xs-6 split-long-lines" ng-switch="!!$ctrl.event.eventType">
+        <span ng-switch-when="true" translate="rhy.huntingControlEvent.eventType.{{$ctrl.event.eventType}}"></span>
+        <span ng-switch-when="false" ng-bind="$ctrl.event.title | truncateCharacters:30"></span>
+    </div>
+    <div class="col-md-2 col-xs-6" ng-switch="!!$ctrl.event.inspectors && $ctrl.event.inspectors.length > 0">
+        <div ng-switch-when="true" ng-repeat="inspector in $ctrl.event.inspectors | orderBy: '+lastName' track by inspector.id">
+            <div>
+                <span ng-bind="inspector.firstName"></span>
+                <span ng-bind="inspector.lastName"></span>
+            </div>
+        </div>
+        <div ng-switch-when="false" ng-bind="$ctrl.event.otherParticipants | truncateCharacters:100">
+        </div>
+    </div>
+
+    <div class="clearfix visible-xs-block visible-sm-block separated"></div>
+
+    <div class="col-md-1 col-xs-6">
+        <div ng-repeat="coop in $ctrl.event.cooperationTypes | orderBy:'+' track by coop">
+            {{ 'rhy.huntingControlEvent.cooperationType.' + coop | translate }}
+        </div>
+    </div>
+    <div class="col-md-2 col-xs-6">
+        <span translate="global.geoLocation.coordinatesTextTwoLines" translate-values="$ctrl.event.geoLocation"></span>
+    </div>
+
+    <div class="clearfix visible-xs-block visible-sm-block separated"></div>
+
+    <div class="col-md-1 col-xs-6" ng-bind="$ctrl.event.customers"></div>
+    <div class="col-md-1 col-xs-6" ng-bind="$ctrl.event.proofOrders"></div>
+</div>

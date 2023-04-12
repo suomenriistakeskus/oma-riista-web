@@ -23,6 +23,8 @@ import java.sql.Types;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import static fi.riista.feature.gamediary.GameSpecies.OFFICIAL_CODE_DOMESTICATED_CAT;
+
 @Component
 public class MetsahallitusHarvestSummaryFeature {
 
@@ -30,7 +32,7 @@ public class MetsahallitusHarvestSummaryFeature {
     private final static int[] GAME_SPECIES_CODES_PIENRIISTA = new int[]{
             26366, 27152, 27381, 27649, 27911, 37178, 37166, 37122, 27750, 27759, 200535, 33117, 27048, 26921, 26922,
             26931, 26926, 26928, 26298, 26291, 26373, 26360, 26382, 26388, 26394, 26407, 26415,
-            26419, 26427, 26435, 26440, 26442, 26287, 50106, 50386, 50336, 47476, 47479, 47774, 53004, 48089, 48251,
+            26419, 26427, 26435, 26440, 26442, 26287, 50106, 50386, 50336, 47476, 47479, 47774, OFFICIAL_CODE_DOMESTICATED_CAT, 48089, 48251,
             48250, 48537, 46542, 47507, 200556, 47329, 47230, 47240, 47223, 47243, 50114,
             46587, 46564, 47180, 47926
     };

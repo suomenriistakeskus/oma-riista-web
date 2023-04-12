@@ -70,6 +70,11 @@
         <span ng-bind="::$ctrl.entry.actorInfo.lastName"></span>
     </div>
 
+    <div ng-if="::$ctrl.entry.selectedHuntingClub.id">
+        <h5 translate="gamediary.form.huntingClub"></h5>
+        <span ng-bind="::$ctrl.entry.selectedHuntingClub | rI18nNameFilter"></span>
+    </div>
+
     <div ng-if="::$ctrl.computedFields.season">
         <h5 translate="gamediary.form.season"></h5>
         <span ng-bind="::$ctrl.computedFields.season.name | rI18nNameFilter"></span>

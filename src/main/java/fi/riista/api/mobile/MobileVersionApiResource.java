@@ -19,7 +19,7 @@ public class MobileVersionApiResource {
     public MobileVersionApiResource() {
         this.VERSION_RESPONSE = ImmutableMap
                 .<String, Object> builder()
-                .put("android", "2.4.0")
+                .put("android", "2.5.7")
                 .put("ios", "2.4.1.1")
                 .put("wp", "1.8.0.0")
                 .build();

@@ -7,12 +7,25 @@ angular.module('app.diary.specimen', [])
         this.MAX_SPECIMEN_AMOUNT = 9999;
         this.MAX_VISIBLE_AMOUNT = 25;
 
+        this.MAX_SRVA_SPECIMEN_AMOUNT = 999;
+
         this.getMaxSpecimenCountForHarvest = function (gameDiaryParameters, gameSpeciesCode) {
             return gameDiaryParameters.isMultipleSpecimensAllowedForHarvestSpecies(gameSpeciesCode) ? self.MAX_SPECIMEN_AMOUNT : 1;
         };
 
         this.getMaxSpecimenCountForObservation = function () {
             return self.MAX_SPECIMEN_AMOUNT;
+        };
+
+        this.getMinSpecimenCountForObservation = function (observationType) {
+            if (observationType === 'POIKUE') {
+                return 2;
+            }
+            return 1;
+        };
+
+        this.getMaxSpecimenCountForSrva = function () {
+            return self.MAX_SRVA_SPECIMEN_AMOUNT;
         };
 
         this.initAmountAndSpecimens = function (entry) {
@@ -134,7 +147,7 @@ angular.module('app.diary.specimen', [])
         };
 
         var isFieldVisible = function (fieldName) {
-            return availableFields[fieldName] === false;
+            return availableFields[fieldName] !== undefined;
         };
 
         $scope.isAddSpecimenButtonHidden = function () {
@@ -148,6 +161,14 @@ angular.module('app.diary.specimen', [])
             }
         };
 
+        $scope.canEdit = function() {
+             // Observation type PARI is a special case: specimens are fixed and never editable
+             if ($scope.entry.isObservation() && $scope.entry.observationType === 'PARI') {
+                 return false;
+             }
+            return $scope.entry.canEdit;
+        };
+
         $scope.genderVisible = isFieldVisible('gender');
         $scope.ageVisible = isFieldVisible('age');
         $scope.stateVisible = isFieldVisible('state');
@@ -156,7 +177,7 @@ angular.module('app.diary.specimen', [])
         $scope.lengthOfPawVisible = isFieldVisible('lengthOfPaw');
 
         $scope.genderRequired = isFieldRequired('gender');
-        $scope.ageRequired = isFieldRequired('gender');
+        $scope.ageRequired = isFieldRequired('age');
         $scope.stateRequired = isFieldRequired('state');
         $scope.markingRequired = isFieldRequired('marking');
         $scope.widthOfPawRequired = isFieldRequired('widthOfPaw');

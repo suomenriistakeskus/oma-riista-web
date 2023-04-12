@@ -51,15 +51,15 @@ angular.module('app.harvestpermit.decision.document.administrativecourt', [])
         });
     })
 
-    .constant('PermitDecisionAdminstrativeCourts', [{
+    .constant('PermitDecisionAdministrativeCourts', [{
         fi: [
-            'Postiosoite: Helsingin hallinto-oikeus, Radanrakentajantie 5, 00520 Helsinki',
-            'Käyntiosoite: Helsingin hallinto-oikeus, Radanrakentajantie 5, Helsinki',
+            'Postiosoite: Helsingin hallinto-oikeus, Sörnäistenkatu 1, 00580 Helsinki',
+            'Käyntiosoite: Helsingin hallinto-oikeus, Sörnäistenkatu 1, Helsinki',
             'Sähköposti: helsinki.hao@oikeus.fi',
             'Puhelin: 029 56 42000 Faksi: 029 56 42079'].join('<br>'),
         sv: [
-            'Postadress: Helsingfors förvaltningsdomstol, Banbyggarvägen 5, 00520 Helsingfors',
-            'Besöksadress:Helsingfors förvaltningsdomstol, Banbyggarvägen 5, Helsingfors',
+            'Postadress: Helsingfors förvaltningsdomstol, Sörnäsgatan 1, 00580 Helsingfors',
+            'Besöksadress:Helsingfors förvaltningsdomstol, Sörnäsgatan 1, Helsingfors',
             'E-post: helsinki.hao@oikeus.fi',
             'Telefonnummer: 029 56 42000 Fax: 029 56 42079'].join('<br>')
     }, {
@@ -87,12 +87,12 @@ angular.module('app.harvestpermit.decision.document.administrativecourt', [])
     }, {
         fi: [
             'Postiosoite: Pohjois-Suomen hallinto-oikeus, PL 189, 90101 Oulu',
-            'Käyntiosoite: Pohjois-Suomen hallinto-oikeus, Isokatu 4, 3 krs., Oulu',
+            'Käyntiosoite: Pohjois-Suomen hallinto-oikeus, Torikatu 34–40, Oulu',
             'Sähköposti: pohjois-suomi.hao@oikeus.fi',
             'Puhelin: 029 56 42800 Faksi: 029 56 42841'].join('<br>'),
         sv: [
             'Postadress: Norra Finlands förvaltningsdomstol, PL 189, 90101 Oulu',
-            'Besöksadress: Norra Finlands förvaltningsdomstol, Isokatu 4, 3 vån., Oulu',
+            'Besöksadress: Norra Finlands förvaltningsdomstol, Torikatu 34–40, Oulu',
             'E-post: pohjois-suomi.hao@oikeus.fi',
             'Telefonnummer: 029 56 42800 Fax: 029 56 42841'].join('<br>')
     }, {
@@ -118,10 +118,8 @@ angular.module('app.harvestpermit.decision.document.administrativecourt', [])
             'E-post: vaasa.hao@oikeus.fi',
             'Telefonnummer: 029 56 42780 Fax: 029 56 42760'].join('<br>')
     }])
-    .service('PermitDecisionChangeAdministrativeCourtModal', function ($uibModal, $translate,
-                                                                       PermitDecisionAdminstrativeCourts) {
-        var courts = PermitDecisionAdminstrativeCourts;
 
+    .service('PermitDecisionChangeAdministrativeCourtModal', function ($uibModal, $translate) {
         this.open = function (selectedCourt, locale) {
             return $uibModal.open({
                 templateUrl: 'harvestpermit/decision/document/administrative-court/select-administrative-court-modal.html',
@@ -134,7 +132,7 @@ angular.module('app.harvestpermit.decision.document.administrativecourt', [])
             }).result;
         };
 
-        function ModalController($uibModalInstance, selectedCourt, locale) {
+        function ModalController($uibModalInstance, selectedCourt, locale, Helpers, PermitDecisionAdministrativeCourts) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
@@ -142,7 +140,7 @@ angular.module('app.harvestpermit.decision.document.administrativecourt', [])
 
                 var swedishLocale = locale === 'sv_FI';
 
-                $ctrl.courts = _.map(courts, function (c) {
+                $ctrl.courts = _.map(PermitDecisionAdministrativeCourts, function (c) {
                     return swedishLocale ? c.sv : c.fi;
                 });
             };

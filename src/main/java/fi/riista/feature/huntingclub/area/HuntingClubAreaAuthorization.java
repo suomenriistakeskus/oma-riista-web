@@ -13,6 +13,7 @@ import javax.annotation.Resource;
 
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_ADMIN;
 import static fi.riista.feature.account.user.SystemUser.Role.ROLE_MODERATOR;
+import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_JASEN;
 import static fi.riista.feature.organization.occupation.OccupationType.SEURAN_YHDYSHENKILO;
 
@@ -26,6 +27,7 @@ public class HuntingClubAreaAuthorization extends AbstractEntityAuthorization<Hu
         allowCRUD(ROLE_ADMIN, ROLE_MODERATOR);
         allowCRUD(SEURAN_YHDYSHENKILO);
         allow(EntityPermission.READ, SEURAN_JASEN);
+        allow(EntityPermission.UPDATE, RYHMAN_METSASTYKSENJOHTAJA);
     }
 
     @Override
@@ -40,6 +42,8 @@ public class HuntingClubAreaAuthorization extends AbstractEntityAuthorization<Hu
 
             collector.addAuthorizationRole(SEURAN_JASEN,
                     () -> userAuthorizationHelper.isClubMember(club, activePerson));
+
+            collector.addAuthorizationRole(RYHMAN_METSASTYKSENJOHTAJA, () -> userAuthorizationHelper.isLeaderOfSomeClubHuntingGroup(club, activePerson));
         });
     }
 }

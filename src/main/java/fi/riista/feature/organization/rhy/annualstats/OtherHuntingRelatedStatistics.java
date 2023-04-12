@@ -28,14 +28,14 @@ public class OtherHuntingRelatedStatistics
         AnnualStatisticsManuallyEditableFields<OtherHuntingRelatedStatistics>,
         Serializable {
 
-    public static final OtherHuntingRelatedStatistics reduce(@Nullable final OtherHuntingRelatedStatistics a,
-                                                             @Nullable final OtherHuntingRelatedStatistics b) {
+    public static OtherHuntingRelatedStatistics reduce(@Nullable final OtherHuntingRelatedStatistics a,
+                                                       @Nullable final OtherHuntingRelatedStatistics b) {
 
         final OtherHuntingRelatedStatistics result = new OtherHuntingRelatedStatistics();
-        result.setHarvestPermitApplicationPartners(nullableIntSum(a, b, s -> s.getHarvestPermitApplicationPartners()));
-        result.setMooselikeTaxationPlanningEvents(nullableIntSum(a, b, s -> s.getMooselikeTaxationPlanningEvents()));
-        result.setWolfTerritoryWorkgroups(nullableIntSum(a, b, s -> s.getWolfTerritoryWorkgroups()));
-        result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
+        result.setHarvestPermitApplicationPartners(nullableIntSum(a, b, OtherHuntingRelatedStatistics::getHarvestPermitApplicationPartners));
+        result.setMooselikeTaxationPlanningEvents(nullableIntSum(a, b, OtherHuntingRelatedStatistics::getMooselikeTaxationPlanningEvents));
+        result.setWolfTerritoryWorkgroups(nullableIntSum(a, b, OtherHuntingRelatedStatistics::getWolfTerritoryWorkgroups));
+        result.setLastModified(nullsafeMax(a, b, OtherHuntingRelatedStatistics::getLastModified));
         return result;
     }
 

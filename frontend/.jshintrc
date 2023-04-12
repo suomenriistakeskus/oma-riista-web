@@ -35,6 +35,7 @@
         "proj4": false,
         "greinerHormann": false,
         "Raven": false,
+        "DD_LOGS": false,
         "QRCode": false,
         // Angular Mocks
         "inject": false,

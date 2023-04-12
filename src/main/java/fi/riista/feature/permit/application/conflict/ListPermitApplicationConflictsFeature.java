@@ -60,6 +60,7 @@ public class ListPermitApplicationConflictsFeature {
                         PropertyIdentifier.formatPropertyIdentifier(entity.getPalstaTunnus()),
                         entity.getPalstaNimi(),
                         entity.getConflictAreaSize(),
+                        entity.getConflictAreaWaterSize(),
                         entity.isMetsahallitus()))
                 .collect(toList());
     }
@@ -118,23 +119,24 @@ public class ListPermitApplicationConflictsFeature {
         final HarvestPermitApplication application = requireEntityService.requireHarvestPermitApplication(
                 permitApplicationId, HarvestPermitApplicationAuthorization.Permission.LIST_CONFLICTS);
         final List<HarvestPermitApplication> activeConflicting = harvestPermitApplicationConflictRepository.listAllConflicting(batchId, application);
-        final Map<Long, ConfictSummaryDTO> summaries = harvestPermitApplicationConflictPalstaRepository.countConflictSummaries(batchId, application, activeConflicting);
+        final Map<Long, ConflictSummaryDTO> summaries = harvestPermitApplicationConflictPalstaRepository.countConflictSummaries(batchId, application, activeConflicting);
 
         return toDTO(activeConflicting, summaries);
     }
 
     private static List<HarvestPermitApplicationConflictDTO> toDTO(final List<HarvestPermitApplication> list,
-                                                                   final Map<Long, ConfictSummaryDTO> summaries) {
+                                                                   final Map<Long, ConflictSummaryDTO> summaries) {
 
         return F.mapNonNullsToList(list, a -> {
-            final ConfictSummaryDTO summary = summaries.get(a.getId());
+            final ConflictSummaryDTO summary = summaries.get(a.getId());
 
             // summary might be null if conflicts are not processed yet
             return summary == null
                     ? HarvestPermitApplicationConflictDTO.create(a, a.getHuntingClub(), a.getRhy(),
-                    false, false, null)
+                    false, false, null, null, null, null)
                     : HarvestPermitApplicationConflictDTO.create(a, a.getHuntingClub(), a.getRhy(),
-                    summary.isOnlyPrivateConflicts(), summary.isOnlyMhConflicts(), summary.getConflictSum());
+                    summary.isOnlyPrivateConflicts(), summary.isOnlyMhConflicts(), summary.getConflictSum(),
+                    summary.getConflictWaterSum(), summary.getConflictPrivateAreaSum(), summary.getConflictPrivateAreaWaterSum());
 
         });
     }

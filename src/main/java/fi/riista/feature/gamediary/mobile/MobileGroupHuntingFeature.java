@@ -19,6 +19,7 @@ import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
 import fi.riista.feature.huntingclub.hunting.ClubHuntingStatusService;
 import fi.riista.feature.huntingclub.hunting.MobileGroupHuntingAreaDTO;
 import fi.riista.feature.huntingclub.hunting.MobileGroupHuntingStatusDTO;
+import fi.riista.feature.huntingclub.permit.endofhunting.HuntingFinishingService;
 import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationRepository;
 import fi.riista.feature.organization.person.Person;
@@ -31,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,7 +41,6 @@ import java.util.stream.Collectors;
 
 import static fi.riista.feature.organization.OrganisationType.CLUBGROUP;
 import static fi.riista.feature.organization.occupation.OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
-import static fi.riista.util.F.indexById;
 import static fi.riista.util.F.mapNonNullsToSet;
 import static fi.riista.util.jpa.CriteriaUtils.singleQueryFunction;
 import static java.util.Collections.singleton;
@@ -81,6 +80,9 @@ public class MobileGroupHuntingFeature {
 
     @Resource
     private MobileHuntingGroupOccupationDTOTransformer occupationDTOTransformer;
+
+    @Resource
+    private HuntingFinishingService huntingFinishingService;
 
     @Transactional(readOnly = true)
     public MobileGroupHuntingLeaderDTO getHuntingGroups() {
@@ -153,8 +155,10 @@ public class MobileGroupHuntingFeature {
     @Transactional(readOnly = true)
     public MobileGroupHuntingStatusDTO getGroupStatus(final long groupId) {
         final HuntingClubGroup group = requireEntityService.requireHuntingGroup(groupId, EntityPermission.READ);
-
-        return MobileGroupHuntingStatusDTO.from(statusService.getGroupStatus(group));
+        MobileGroupHuntingStatusDTO dto = MobileGroupHuntingStatusDTO.from(
+                statusService.getGroupStatus(group),
+                huntingFinishingService.hasPermitPartnerFinishedHunting(group));
+        return dto;
     }
 
     @Nonnull

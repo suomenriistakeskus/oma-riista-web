@@ -1,15 +1,25 @@
 // Footer
 // -------------------------
 
+// When footer is hidden, and permit wizard buttons are stuck on bottom of the screen, some
+// space is needed to visualize that page content ended.
+.footer-spacing {
+  min-height: 100px;
+  display: none;
+}
+
+.footer-spacing.active {
+  display: block;
+}
+
 footer {
   background-color: @r-footer-dark-grey;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: normal;
-  color: #666666;
-  line-height: 20px;
+  color: white;
+  line-height: 23px;
   a {
-    color: #333333;
-    font-weight: bold;
+    color: white;
   }
 }
 
@@ -18,7 +28,6 @@ footer.active {
 }
 
 .footer-body {
-  box-shadow: 0px -1px 2px 0px rgba(0, 0, 0, 0.35);
   background-color: @r-footer-body;
   padding-bottom: 20px;
 }
@@ -27,6 +36,10 @@ footer.active {
   margin-top: 10px;
   padding: 10px;
   overflow: hidden;
+
+  a:hover {
+    opacity: 50%;
+  }
 }
 
 .footer-logo {
@@ -65,7 +78,7 @@ footer.active {
     .footer-bold-text;
   }
   li > a:hover {
-    color: #7e7e7e;
+    color: white;
   }
 }
 
@@ -103,5 +116,43 @@ footer.active {
   }
   a:hover {
     opacity: 1.0;
+  }
+}
+
+.r-riista-logo-portrait {
+  height: 150px;
+  background: transparent url('../images/riistakeskus-portrait-logo.png') no-repeat 0px center;
+  background-size: contain;
+  text-indent: -10000px;
+  margin-bottom: 20px;
+}
+
+.footer-contact-container {
+  line-height: 17px;
+}
+
+.footer-contact-info {
+  padding-top: 17px;
+
+  a:hover {
+    color: white;
+  }
+}
+
+.footer-information-container {
+  padding: 40px 0;
+  width: 80%;
+  margin: 0 auto;
+}
+
+@media (max-width: @screen-sm-max) {
+  .footer-information-container {
+    width: 100%;
+  }
+}
+
+@media (max-width: @screen-xs-max) {
+  .footer-information-container {
+    width: 90%;
   }
 }

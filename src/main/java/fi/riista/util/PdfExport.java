@@ -16,6 +16,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -38,9 +39,9 @@ public class PdfExport {
         private final PdfParameters pdfParameters = new PdfParameters();
         private String authenticationToken;
 
-        public Builder(final UriComponentsBuilder requestBuilder, final boolean isProduction) {
+        public Builder(final UriComponentsBuilder requestBuilder, final boolean isAwsEnvironment) {
             this.requestBuilder = requestBuilder;
-            this.binaryPath = isProduction ? "/usr/local/bin/wkhtmltopdf" : "wkhtmltopdf";
+            this.binaryPath = isAwsEnvironment ? "/usr/local/bin/wkhtmltopdf" : "wkhtmltopdf";
         }
 
         public Builder withAuthenticationToken(final String token) {
@@ -81,6 +82,11 @@ public class PdfExport {
             if (language != null) {
                 this.requestBuilder.replaceQueryParam("lang", language);
             }
+            return this;
+        }
+
+        public Builder withRequestParams(final Map<String, String> requestParams) {
+            requestParams.forEach(this.requestBuilder::replaceQueryParam);
             return this;
         }
 

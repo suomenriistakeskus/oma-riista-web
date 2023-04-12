@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.bird.population', ['app.metadata']
                 templateUrl: 'harvestpermit/applications/bird/population/population.html',
                 controller: 'DerogationPermitWizardPopulationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesPopulationList: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.getSpeciesPopulation({id: applicationId}).$promise;

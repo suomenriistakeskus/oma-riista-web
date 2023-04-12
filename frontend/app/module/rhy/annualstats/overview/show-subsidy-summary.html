@@ -40,8 +40,9 @@
                     <tr class="subtitle-row">
                         <td colspan="2" translate="rhy.annualStats.overview.subsidySummary.huntingControl"></td>
                     </tr>
-                    <tr>
-                        <td class="col-xs-9" translate="rhy.annualStats.overview.subsidySummary.huntingControlEvents"></td>
+                    <tr ng-switch="$ctrl.statistics.huntingControl.huntingControlEventsOverridden">
+                        <td ng-switch-when="true" class="col-xs-9" translate="rhy.annualStats.overview.subsidySummary.huntingControlEvents"></td>
+                        <td ng-switch-when="false" class="col-xs-9" computed-marker-title="rhy.annualStats.overview.subsidySummary.huntingControlEvents"></td>
                         <td num-pieces="::$ctrl.statistics.huntingControl.huntingControlEvents"></td>
                     </tr>
 

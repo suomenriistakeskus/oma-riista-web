@@ -1,6 +1,6 @@
 <div class="row">
-    <div class="col-xs-10 col-xs-offset-1">
-        <div class="alert alert-info">
+    <div class="col-xs-12 col-sm-10 col-sm-offset-1">
+        <div class="alert alert-info wizard-info">
             <span class="fa fa-info-circle"></span>
 
             <div class="alert-content">
@@ -13,7 +13,7 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-xs-offset-1 col-xs-5">
+    <div class="col-xs-12 col-md-offset-1 col-md-5">
         <div class="h3">
             <span class="fa fa-user"></span>
             &nbsp;
@@ -25,7 +25,7 @@
                     person="$ctrl.contactPerson"></permit-application-wizard-contact-person>
         </div>
     </div>
-    <div class="col-xs-5">
+    <div class="col-xs-12 col-md-5">
         <div class="h3">
             <permit-application-wizard-applicant-type
                     subtype="$ctrl.permitHolder.type"></permit-application-wizard-applicant-type>
@@ -46,7 +46,7 @@
 </div>
 
 <div class="row">
-    <div class="col-xs-5 col-xs-offset-6">
+    <div class="col-xs-12 col-sm-3 col-md-5 col-md-offset-6">
         <div class="text-right">
             <button class="btn btn-primary"
                     ng-click="$ctrl.changeApplicant()">

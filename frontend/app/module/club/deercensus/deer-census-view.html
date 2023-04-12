@@ -1,0 +1,100 @@
+<div>
+    <div class="modal-header">
+        <h3 class="modal-title" translate="club.deerCensus.form.title"></h3>
+    </div>
+
+    <div class="modal-body" style="min-height: 400px;">
+
+        <div class="row">
+            <div class="col-md-1 col-xs-3"
+                 ng-repeat="deerCensus in $ctrl.deerCensuses | orderBy:'-observationDate' track by deerCensus.id">
+                <a class="btn btn-default mb-2" ng-click="$ctrl.selectDeerCensus(deerCensus)"
+                    ng-class="{'btn-primary': deerCensus.id === $ctrl.deerCensus.id,
+                               'link-button': deerCensus.id !== $ctrl.deerCensus.id }">
+                    <span ng-bind="deerCensus.observationDate | date:'yyyy'"></span>
+                </a>
+            </div>
+        </div>
+
+        <div class="h4 mt-10">
+            <span translate="club.deerCensus.view.estimatedPopulation"></span>
+        </div>
+        <p class="bolded-text">
+            <span translate="club.deerCensus.view.observationDate"></span>
+            <span ng-bind="$ctrl.deerCensus.observationDate | date:'d.M.yyyy'"></span>
+        </p>
+
+        <p class="bolded-text mt-10">
+            <span translate="club.deerCensus.view.whiteTailDeers"></span>
+            <span ng-bind="$ctrl.deerCensus.whiteTailDeers"></span>
+            <span translate="global.pcs"></span>
+        </p>
+        <p class="bolded-text">
+            <span translate="club.deerCensus.form.additionalInfo"></span>
+        </p>
+        <p>
+            <span ng-bind="$ctrl.deerCensus.whiteTailDeersAdditionalInfo"></span>
+        </p>
+        <p class="bolded-text">
+            <span translate="club.deerCensus.form.attachment"></span>
+        </p>
+        <permit-application-attachment-list attachments="$ctrl.attachments"
+                                            ng-show="$ctrl.attachments.length"
+                                            attachment-type="'WHITE_TAIL_DEER'"
+                                            attachment-config="$ctrl.attachmentConfig">
+        </permit-application-attachment-list>
+
+        <p class="bolded-text mt-10">
+            <span translate="club.deerCensus.view.roeDeers"></span>
+            <span ng-bind="$ctrl.deerCensus.roeDeers"></span>
+            <span translate="global.pcs"></span>
+        </p>
+        <p class="bolded-text">
+            <span translate="club.deerCensus.form.additionalInfo"></span>
+        </p>
+        <p>
+            <span ng-bind="$ctrl.deerCensus.roeDeersAdditionalInfo"></span>
+        </p>
+        <p class="bolded-text">
+            <span translate="club.deerCensus.form.attachment"></span>
+        </p>
+        <permit-application-attachment-list attachments="$ctrl.attachments"
+                                            ng-show="$ctrl.attachments.length"
+                                            attachment-type="'ROE_DEER'"
+                                            attachment-config="$ctrl.attachmentConfig">
+        </permit-application-attachment-list>
+
+        <p class="bolded-text mt-10">
+            <span translate="club.deerCensus.view.fallowDeers"></span>
+            <span ng-bind="$ctrl.deerCensus.fallowDeers"></span>
+            <span translate="global.pcs"></span>
+        </p>
+        <p class="bolded-text">
+            <span translate="club.deerCensus.form.additionalInfo"></span>
+        </p>
+        <p>
+            <span ng-bind="$ctrl.deerCensus.fallowDeersAdditionalInfo"></span>
+        </p>
+        <p class="bolded-text">
+            <span translate="club.deerCensus.form.attachment"></span>
+        </p>
+        <permit-application-attachment-list attachments="$ctrl.attachments"
+                                            ng-show="$ctrl.attachments.length"
+                                            attachment-type="'FALLOW_DEER'"
+                                            attachment-config="$ctrl.attachmentConfig">
+        </permit-application-attachment-list>
+
+        <p ng-if="$ctrl.isEditAllowed && $ctrl.deerCensus.id" class="mt-10">
+            <a class="btn btn-primary" ng-click="$ctrl.editDeerCensus()">
+                <span translate="club.deerCensus.view.edit"></span>
+            </a>
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button"
+                class="btn btn-default link-button"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.close"></button>
+    </div>
+</div>

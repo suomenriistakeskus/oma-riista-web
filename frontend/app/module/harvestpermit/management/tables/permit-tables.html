@@ -7,6 +7,11 @@
 
 <h3 ng-bind="::$ctrl.gameSpeciesName"></h3>
 
+<h4 translate="club.permit.tables.observationSummary"></h4>
+
+<moose-hunting-table-observation-summary observation-summary="::$ctrl.observationSummary" is-moose="::$ctrl.isMoose">
+</moose-hunting-table-observation-summary>
+
 <uib-tabset active="tabSelection">
     <uib-tab heading="{{'club.permit.tabHunting' | translate}}">
         <moose-permit-table-hunting

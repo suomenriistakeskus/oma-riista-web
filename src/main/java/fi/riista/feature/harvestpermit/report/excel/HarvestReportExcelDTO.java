@@ -103,6 +103,7 @@ public class HarvestReportExcelDTO {
         }
 
         dto.pointOfTime = harvest.getPointOfTime().toDate();
+        dto.amount = harvest.getAmount();
         dto.speciesName = i18n.getTranslation(harvest.getSpecies().getNameLocalisation());
 
         final List<HarvestSpecimen> sortedSpecimens = harvest.getSortedSpecimens();
@@ -246,6 +247,9 @@ public class HarvestReportExcelDTO {
     // (string) Date and time of catch
     // Format: yyyy.mm.dd hh:mm
     private Date pointOfTime;
+
+    // (int) Amount of catch
+    private int amount;
 
     // (string) Animal species name in Finnish
     private String speciesName;
@@ -443,5 +447,9 @@ public class HarvestReportExcelDTO {
 
     public String getReportedWithPhoneCall() {
         return reportedWithPhoneCall;
+    }
+
+    public int getAmount() {
+        return amount;
     }
 }

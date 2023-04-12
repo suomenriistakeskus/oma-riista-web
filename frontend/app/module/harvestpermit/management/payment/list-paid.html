@@ -21,20 +21,20 @@
             <a ng-click="p.$$visible = !p.$$visible"
                panel-toggle="p.$$visible"></a>
         </td>
-        <td class="col-xs-2">
+        <td class="col-sm-2">
             <a class="text-muted"
                ng-click="p.$$visible = !p.$$visible"
                ng-bind="::p.invoiceNumber"></a>
         </td>
-        <td class="col-xs-4">
+        <td class="col-sm-4">
             <a class="text-muted"
                ng-click="p.$$visible = !p.$$visible"
                ng-bind="::p.invoiceDescription"></a>
         </td>
-        <td class="col-xs-2">
+        <td class="col-sm-2">
             <span ng-bind="::p.paymentDate | date:'dd.MM.yyyy'"></span>
         </td>
-        <td class="col-xs-2">
+        <td class="col-sm-2">
             <span ng-bind="::p.amount | currency: '&euro;' : 2"></span>
             <span ng-if="::p.corrected">
                 &nbsp;
@@ -43,7 +43,7 @@
                 </span>
             </span>
         </td>
-        <td class="col-xs-2" ng-switch="::(p.amount !== p.paidAmount)">
+        <td class="col-sm-2" ng-switch="::(p.amount !== p.paidAmount)">
             <span ng-switch-when="true" class="text-danger">
                 <strong ng-bind="::p.paidAmount | currency: '&euro;' : 2"></strong>
             </span>
@@ -53,7 +53,7 @@
     <tr ng-repeat-end ng-if="p.$$visible">
         <td colspan="6">
             <div class="row" style="margin: 20px 0 40px;">
-                <div class="col-xs-3 text-muted">
+                <div class="col-sm-3 text-muted">
                     <p class="text-uppercase" translate="payment.amount"></p>
 
                     <p style="font-size: 36px; line-height: 32px; font-weight: 300; margin-bottom: 16px">
@@ -65,7 +65,7 @@
                         <span translate="harvestpermit.management.downloadReceipt"></span>
                     </button>
                 </div>
-                <div class="col-xs-3 text-muted">
+                <div class="col-sm-3 text-muted">
                     <p class="text-uppercase" translate="invoice.info"></p>
 
                     <p style="margin-bottom: 6px">
@@ -81,7 +81,7 @@
                         <span ng-bind="::p.dueDate | date:'dd.MM.yyyy'"></span>
                     </p>
                 </div>
-                <div class="col-xs-6 text-muted">
+                <div class="col-sm-6 text-muted">
                     <p class="text-uppercase" translate="invoice.items"></p>
 
                     <p>

@@ -107,6 +107,11 @@ angular.module('app.common.species', ['ngResource'])
             });
         };
 
+        this.isMammalPermitSpecies = function (speciesCode) {
+            var mammals = this.getMammalPermitSpecies();
+            return _.findIndex(mammals, ['code', speciesCode]) !== -1;
+        };
+
         this.getCarnivoreSpecies = function () {
             return _.filter(speciesList, function (v) {
                 return GameSpeciesCodes.isCarnivoreSpecies(v.code);
@@ -141,6 +146,12 @@ angular.module('app.common.species', ['ngResource'])
             // Wild cat is not applicable to any permit
             return _.filter(speciesList, function (v) {
                 return v.code !== 53004;
+            });
+        };
+
+        this.getSpeciesByCode = function (codes) {
+            return _.filter(speciesList, function (species) {
+                return _.isArray(codes) ? _.includes(codes, species.code) : species.code === codes;
             });
         };
 
@@ -220,6 +231,7 @@ angular.module('app.common.species', ['ngResource'])
         var BEAN_GOOSE = 26287;
 
         var EUROPEAN_BEAVER = 48251;
+        var PARTRIDGE = 27048;
         var BROWN_HARE = 50386;
 
         var RINGED_SEAL = 200555;
@@ -241,7 +253,8 @@ angular.module('app.common.species', ['ngResource'])
             'OTTER': OTTER,
             'EUROPEAN_BEAVER': EUROPEAN_BEAVER,
             'BROWN_HARE': BROWN_HARE,
-            'RINGED_SEAL': RINGED_SEAL
+            'RINGED_SEAL': RINGED_SEAL,
+            'PARTRIDGE': PARTRIDGE
         });
 
         var deerCodes = [FALLOW_DEER, ROE_DEER, WHITE_TAILED_DEER, WILD_FOREST_REINDEER];

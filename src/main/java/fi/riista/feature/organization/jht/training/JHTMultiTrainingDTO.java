@@ -1,5 +1,6 @@
 package fi.riista.feature.organization.jht.training;
 
+import fi.riista.feature.common.training.TrainingType;
 import fi.riista.feature.organization.occupation.OccupationType;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.joda.time.LocalDate;
@@ -20,7 +21,7 @@ public class JHTMultiTrainingDTO {
     private OccupationType occupationType;
 
     @NotNull
-    private JHTTraining.TrainingType trainingType;
+    private TrainingType trainingType;
 
     @NotNull
     private LocalDate trainingDate;
@@ -50,11 +51,11 @@ public class JHTMultiTrainingDTO {
         this.occupationType = occupationType;
     }
 
-    public JHTTraining.TrainingType getTrainingType() {
+    public TrainingType getTrainingType() {
         return trainingType;
     }
 
-    public void setTrainingType(final JHTTraining.TrainingType trainingType) {
+    public void setTrainingType(final TrainingType trainingType) {
         this.trainingType = trainingType;
     }
 

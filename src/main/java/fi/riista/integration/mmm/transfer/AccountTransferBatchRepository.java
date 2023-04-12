@@ -14,4 +14,7 @@ public interface AccountTransferBatchRepository extends BaseRepository<AccountTr
     @Query("SELECT o FROM #{#entityName} o WHERE o.filenameDate = ?1")
     Optional<AccountTransferBatch> findByFilenameDate(LocalDate date);
 
+    @Query("SELECT o FROM #{#entityName} o WHERE o.filenameDate = ?1 AND o.fileNumber = ?2")
+    Optional<AccountTransferBatch> findByFilenameDateAndFileNumber(LocalDate date, Integer fileNumber);
+
 }

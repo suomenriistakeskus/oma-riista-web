@@ -10,6 +10,9 @@ import fi.riista.feature.gamediary.HarvestChangeHistory;
 import fi.riista.feature.gamediary.HarvestChangeHistoryDTO;
 import fi.riista.feature.gamediary.HarvestChangeHistoryRepository;
 import fi.riista.feature.gamediary.harvest.Harvest;
+import fi.riista.feature.harvestpermit.season.HarvestQuota;
+import fi.riista.feature.harvestpermit.season.HarvestQuotaRepository;
+import fi.riista.feature.harvestpermit.season.HarvestSeason;
 import fi.riista.feature.harvestpermit.season.HarvestSeasonDTO;
 import fi.riista.feature.harvestpermit.season.HarvestSeasonRepository;
 import fi.riista.security.EntityPermission;
@@ -26,6 +29,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 @Component
@@ -41,6 +45,9 @@ public class HarvestReportModeratorFeature {
     private HarvestSeasonRepository harvestSeasonRepository;
 
     @Resource
+    private HarvestQuotaRepository harvestQuotaRepository;
+
+    @Resource
     private HarvestChangeHistoryRepository harvestChangeHistoryRepository;
 
     @Resource
@@ -52,8 +59,17 @@ public class HarvestReportModeratorFeature {
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR')")
     public Map<String, Object> admin() {
+        final List<HarvestSeason> seasons = harvestSeasonRepository.findAll();
+        if (seasons.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        final Map<HarvestSeason, List<HarvestQuota>> seasonToQuotas =
+                harvestQuotaRepository.findByHarvestSeasonIn(seasons).stream()
+                        .collect(groupingBy(HarvestQuota::getHarvestSeason, toList()));
+
         final List<HarvestSeasonDTO> seasonDTOs =
-                F.mapNonNullsToList(harvestSeasonRepository.findAll(), HarvestSeasonDTO::createWithSpeciesAndQuotas);
+                F.mapNonNullsToList(seasons, season -> HarvestSeasonDTO.createWithSpeciesAndQuotas(season, seasonToQuotas.get(season)));
 
         return new ImmutableMap.Builder<String, Object>()
                 .put("seasons", seasonDTOs)

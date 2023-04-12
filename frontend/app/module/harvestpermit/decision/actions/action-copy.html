@@ -1,0 +1,67 @@
+<form name="form" role="form" class="form" autocomplete="off" r-force-show-errors-check-validity>
+
+    <div class="modal-header">
+        <button riista-modal-close></button>
+        <h3 class="modal-title" translate="decision.action.fromReference"></h3>
+    </div>
+
+    <div class="r-decision-action-reference-list-header">
+        <div class="column">
+            <label class="checkbox-inline">
+                <input type="checkbox"
+                       ng-model="$ctrl.selectAllModel"
+                       ng-change="$ctrl.selectAll($ctrl.selectAllModel)">
+                <span translate="global.button.selectAll"></span>
+            </label>
+        </div>
+    </div>
+
+    <div class="panel r-decision-action-reference-list-element"
+         ng-class="{'panel-primary': row.selected, 'panel-default': !row.selected}"
+         ng-repeat="row in $ctrl.referenceActionList track by row.action.id">
+        <div class="panel-heading">
+            <label class="checkbox-inline">
+                <input type="checkbox" ng-model="row.selected" ng-change="$ctrl.onRowSelected(row.selected)">
+                <span class="point-of-time" ng-bind="::row.action.pointOfTime | date:'d.M.yyyy HH:mm'"></span>
+                <span ng-bind="::row.action.text"></span>
+            </label>
+
+            <button type="button" class="btn btn-default" ng-click="row.collapsed = !row.collapsed">
+                <span ng-hide="row.collapsed" translate="global.button.open"></span>
+                <span ng-show="row.collapsed" translate="global.button.close"></span>
+            </button>
+        </div>
+
+        <div class="panel-body" ng-show="row.collapsed">
+            <div class="row">
+                <div class="col-md-4 left-column">
+                    <p class="header" translate="decision.action.actionTypeTitle"></p>
+                    <p translate="decision.action.actionType.{{::row.action.actionType}}"></p>
+
+                    <p class="header" translate="decision.action.communicationTypeTitle"></p>
+                    <p ng-if="row.action.communicationType" translate="decision.action.communicationType.{{::row.action.communicationType}}"></p>
+                </div>
+
+                <div class="col-md-4 center-column">
+                    <p class="header" translate="decision.action.text"></p>
+                    <p ng-bind="::row.action.text"></p>
+                </div>
+
+                <div class="col-md-4 right-column">
+                    <p class="header" translate="decision.action.decisionText"></p>
+                    <p ng-bind="::row.action.decisionText"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default"
+                ng-click="$ctrl.cancel()"
+                translate="global.button.cancel"></button>
+        <button type="button" class="btn btn-primary"
+                ng-click="$ctrl.save()"
+                ng-disabled="form.$invalid"
+                translate="global.button.save"></button>
+    </div>
+</form>

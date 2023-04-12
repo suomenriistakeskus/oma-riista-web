@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.nestremoval.summary', ['app.metada
                 templateUrl: 'harvestpermit/applications/nestremoval/summary/summary.html',
                 controller: 'NestRemovalPermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, NestRemovalPermitApplication) {
                         return NestRemovalPermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -139,7 +140,7 @@ angular.module('app.harvestpermit.application.nestremoval.summary', ['app.metada
         }
 
         function confirmSend() {
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
                 'harvestpermit.wizard.summary.sendConfirmation.title',
                 'harvestpermit.wizard.summary.sendConfirmation.body');
         }

@@ -69,8 +69,11 @@ public class NominationDecisionSearchQueryBuilder {
             final BooleanBuilder b = new BooleanBuilder();
             for (NominationDecisionSearchDTO.StatusSearch s : statuses) {
                 switch (s) {
+                    case DECISION_OPEN:
+                        b.or(DECISION.status.eq(DecisionStatus.DRAFT).and(DECISION.handler.isNull()));
+                        break;
                     case DRAFT:
-                        b.or(DECISION.status.eq(DecisionStatus.DRAFT));
+                        b.or(DECISION.status.eq(DecisionStatus.DRAFT).and(DECISION.handler.isNotNull()));
                         break;
                     case LOCKED:
                         b.or(DECISION.status.eq(DecisionStatus.LOCKED));

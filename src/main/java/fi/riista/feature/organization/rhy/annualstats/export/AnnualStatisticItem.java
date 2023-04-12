@@ -103,6 +103,9 @@ public enum AnnualStatisticItem implements LocalisedEnum {
     // HUNTING CONTROL
 
     HUNTING_CONTROL_EVENTS(asNumber(i -> i.getHuntingControl().getHuntingControlEvents())),
+    HUNTING_CONTROL_EVENTS_SUBSIDIZABLE(asNumber(i -> i.getHuntingControl().getHuntingControlEvents())),
+    HUNTING_CONTROL_EVENTS_NONSUBSIDIZABLE(asNumber(i -> i.getHuntingControl().getNonSubsidizableHuntingControlEvents())),
+    HUNTING_CONTROL_EVENTS_TOTAL(asNumber(i -> i.getHuntingControl().getTotalHuntingControlEvents())),
     HUNTING_CONTROL_CUSTOMERS(asNumber(i -> i.getHuntingControl().getHuntingControlCustomers())),
     HUNTING_CONTROL_PROOF_ORDERS(asNumber(i -> i.getHuntingControl().getProofOrders())),
     HUNTING_CONTROLLERS(asNumber(i -> i.getHuntingControl().getHuntingControllers())),

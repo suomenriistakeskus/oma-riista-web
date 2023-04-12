@@ -1,0 +1,220 @@
+<div class="row">
+
+    <!-- top row / header -->
+
+    <div class="col-xs-12">
+        <r-hunting-controller-event-status event="$ctrl.event"></r-hunting-controller-event-status>
+    </div>
+</div>
+<div class="row">
+    <!-- left column -->
+
+    <div class="col-md-6">
+        <table class="details">
+            <tr>
+                <th translate="rhy.huntingControlEvent.datetime"></th>
+                <th translate="rhy.huntingControlEvent.type"></th>
+            </tr>
+            <tr>
+                <td>
+                    <div>{{$ctrl.event.date |date:'d.M.yyyy'}}</div>
+                    <div>{{$ctrl.event.beginTime}}&nbsp;-&nbsp;{{$ctrl.event.endTime}}</div>
+                </td>
+                <td class="split-long-lines" ng-switch="!!$ctrl.event.eventType">
+                    <div ng-switch-when="true" translate="rhy.huntingControlEvent.eventType.{{$ctrl.event.eventType}}"></div>
+                    <div ng-switch-when="false" ng-bind="$ctrl.event.title | truncateCharacters:50"></div>
+                </td>
+            </tr>
+            <tr>
+                <th translate="rhy.huntingControlEvent.inspectors"></th>
+                <th translate="rhy.huntingControlEvent.cooperation"></th>
+            </tr>
+            <tr>
+               <td>
+                   <div ng-repeat="inspector in $ctrl.event.inspectors | orderBy: '+lastName' track by inspector.id">
+                       <div>
+                           <span ng-bind="inspector.firstName"></span>
+                           <span ng-bind="inspector.lastName"></span>
+                       </div>
+                   </div>
+               </td>
+                <td>
+                    <div ng-repeat="coop in $ctrl.event.cooperationTypes | orderBy:'+' track by coop">
+                        {{ 'rhy.huntingControlEvent.cooperationType.' + coop | translate }}
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th translate="rhy.huntingControlEvent.otherParticipants"></th>
+                <th translate="rhy.huntingControlEvent.wolfTerritory"></th>
+            </tr>
+            <tr>
+                <td ng-switch="!!$ctrl.event.otherParticipants">
+                    <div ng-switch-when="true" ng-bind="$ctrl.event.otherParticipants"></div>
+                    <div ng-switch-when="false">-</div>
+                </td>
+                <td ng-switch="$ctrl.event.wolfTerritory">
+                    <div ng-switch-when="true" translate="global.yes"></div>
+                    <div ng-switch-when="false" translate="global.no"></div>
+                </td>
+            </tr>
+            <tr>
+                <th translate="rhy.huntingControlEvent.customers"></th>
+                <th translate="rhy.huntingControlEvent.proofOrders"></th>
+            </tr>
+            <tr>
+                <td ng-bind="$ctrl.event.customers"></td>
+                <td ng-bind="$ctrl.event.proofOrders"></td>
+            </tr>
+            <tr>
+                <th colspan="2" translate="rhy.huntingControlEvent.description"></th>
+            </tr>
+            <tr ng-switch="!!$ctrl.event.description">
+                <td ng-switch-when="true" colspan="2" ng-bind="$ctrl.event.description"></td>
+                <td ng-switch-when="false" colspan="2">-</td>
+            </tr>
+            <tr>
+                <th colspan="2" translate="rhy.huntingControlEvent.locationDescription"></th>
+            </tr>
+            <tr ng-switch="!!$ctrl.event.locationDescription">
+                <td ng-switch-when="true" colspan="2" ng-bind="$ctrl.event.locationDescription"></td>
+                <td ng-switch-when="false" colspan="2">-</td>
+            </tr>
+            <tr>
+                <th colspan="2" translate="rhy.huntingControlEvent.subsidized"></th>
+            </tr>
+            <tr ng-switch="$ctrl.event.status">
+                <td ng-switch-when="ACCEPTED_SUBSIDIZED" colspan="2" translate="rhy.huntingControlEvent.subsidizedEvent.yes"></td>
+                <td ng-switch-when="ACCEPTED" colspan="2" translate="rhy.huntingControlEvent.subsidizedEvent.no"></td>
+                <td ng-switch-default colspan="2" translate="rhy.huntingControlEvent.subsidizedEvent.maybe"></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- right column -->
+
+    <div class="col-md-6">
+        <table class="details">
+            <tr>
+                <th translate="rhy.huntingControlEvent.location"></th>
+            </tr>
+            <tr>
+                <td>
+                    <leaflet class="r-cursor-pointer"
+                             id="map"
+                             defaults="$ctrl.leaflet.mapDefaults"
+                             layers="$ctrl.leaflet.mapDefaults.mmlLayers"
+                             controls="$ctrl.leaflet.mapDefaults.controls"
+                             bounds="$ctrl.leaflet.bounds"
+                             geojson="$ctrl.leaflet.mapFeatures"
+                             geojson-watch-options="$ctrl.leaflet.mapDefaults.geojsonWatchOptions"
+                             r-geolocation-marker="$ctrl.event.geoLocation"
+                             r-geolocation-editable="false"
+                             height="300px">
+                    </leaflet>
+                </td>
+            </tr>
+            <tr>
+                <th translate="rhy.huntingControlEvent.attachments"></th>
+            </tr>
+            <tr ng-switch="!!$ctrl.event.attachments">
+                <td ng-switch-when="true">
+                    <r-hunting-controller-event-attachments attachments="$ctrl.event.attachments"
+                                                            can-delete="false">
+                    </r-hunting-controller-event-attachments>
+                </td>
+                <td ng-switch-when="false">-</td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+<!-- change history -->
+
+<div ng-if="$ctrl.hasHistoryEvents()">
+    <div class="row">
+        <div class="col-xs-12">
+            <strong translate="rhy.huntingControlEvent.changeLog"></strong>
+        </div>
+    </div>
+    <div class="row" ng-repeat="change in $ctrl.visibleHistoryEvents(showFullLog) track by change.id">
+        <div class="col-md-2 col-sm-3 col-xs-6" ng-bind="::change.modificationTime | date:'d.M.yyyy HH:mm'"></div>
+        <div class="col-md-2 col-sm-3 col-xs-6">
+            <span ng-bind="::change.author.firstName"></span>
+            <span ng-bind="::change.author.lastName"></span>
+        </div>
+
+        <div class="clearfix visible-xs-block"></div>
+
+        <div class="col-md-8 col-sm-6">
+            <span translate="rhy.huntingControlEvent.changeItem.{{change.changeType}}"></span>
+            <span ng-switch="change.changeType">
+                <span ng-switch-when="CHANGE_STATUS"
+                      translate="rhy.huntingControlEvent.eventStatus.{{::change.reasonForChange}}"></span>
+                <span ng-switch-default ng-bind="::change.reasonForChange"></span>
+            </span>
+        </div>
+
+        <div class="clearfix visible-xs-block separated"></div>
+    </div>
+    <div class="row btn-link" ng-init="showFullLog = false">
+        <div class="col-xs-12" ng-click="showFullLog = !showFullLog">
+            <span ng-switch="showFullLog" ng-if="$ctrl.isFullLogButtonVisible()">
+                <span ng-switch-when="true">
+                    <span class="fa fa-minus-square"></span>
+                    <span translate="rhy.huntingControlEvent.changeLogShowLess"></span>
+                </span>
+                <span ng-switch-when="false">
+                    <span class="fa fa-plus-square"></span>
+                    <span translate="rhy.huntingControlEvent.changeLogShowAll"></span>
+                </span>
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- buttons -->
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="btn-toolbar pull-right">
+            <!--
+                reject
+            -->
+            <div class="btn-group">
+                <button ng-if="$ctrl.isCoordinator && $ctrl.canReject()" type="button" ng-click="$ctrl.reject()"
+                        class="btn btn-danger" translate="global.button.reject">
+                </button>
+            </div>
+            <!--
+                accept with choices
+            -->
+            <div ng-if="$ctrl.isCoordinator && $ctrl.canEdit()" class="btn-group" role="group" uib-dropdown dropdown-append-to-body>
+                <button type="button" ng-click="" class="btn btn-primary" uib-dropdown-toggle>
+                    <span translate="global.button.accept"></span>&nbsp;
+                    <span class="caret"></span>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-left" uib-dropdown-menu>
+                    <li><a ng-click="$ctrl.acceptSubsidized()">
+                        <span class="glyphicon glyphicon-euro"></span>&nbsp;
+                        <span translate="rhy.huntingControlEvent.subsidizedEvent.yes"></span>
+                    </a></li>
+                    <li><a ng-click="$ctrl.accept()">
+                        <span class="glyphicon glyphicon-ban-circle"></span>&nbsp;
+                        <span translate="rhy.huntingControlEvent.subsidizedEvent.no"></span>
+                    </a></li>
+                </ul>
+            </div>
+            <!--
+                edit
+            -->
+            <div class="btn-group">
+                <button ng-if="$ctrl.canEdit()" type="button" class="btn btn-default"
+                        ng-click="$ctrl.edit()"
+                        translate="global.button.edit">
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

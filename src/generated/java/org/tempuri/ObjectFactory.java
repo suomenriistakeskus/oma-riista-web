@@ -38,19 +38,19 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link TeeHenkilonTunnusKyselyResponse.TeeHenkilonTunnusKyselyResult }
-     * 
-     */
-    public TeeHenkilonTunnusKyselyResponse.TeeHenkilonTunnusKyselyResult createTeeHenkilonTunnusKyselyResponseTeeHenkilonTunnusKyselyResult() {
-        return new TeeHenkilonTunnusKyselyResponse.TeeHenkilonTunnusKyselyResult();
-    }
-
-    /**
      * Create an instance of {@link TeeHenkilonTunnusKysely }
      * 
      */
     public TeeHenkilonTunnusKysely createTeeHenkilonTunnusKysely() {
         return new TeeHenkilonTunnusKysely();
+    }
+
+    /**
+     * Create an instance of {@link TeeHenkilonTunnusKyselyResponse.TeeHenkilonTunnusKyselyResult }
+     * 
+     */
+    public TeeHenkilonTunnusKyselyResponse.TeeHenkilonTunnusKyselyResult createTeeHenkilonTunnusKyselyResponseTeeHenkilonTunnusKyselyResult() {
+        return new TeeHenkilonTunnusKyselyResponse.TeeHenkilonTunnusKyselyResult();
     }
 
 }

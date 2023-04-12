@@ -1,5 +1,9 @@
 package fi.riista.feature.huntingclub.permit.todo;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
@@ -10,16 +14,13 @@ import fi.riista.feature.organization.occupation.Occupation;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.test.EmbeddedDatabaseTest;
+import java.util.Map;
+import java.util.function.Consumer;
+import javax.annotation.Resource;
+import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import javax.annotation.Resource;
-import java.util.Map;
-import java.util.function.Consumer;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class MoosePermitTodoServiceTest extends EmbeddedDatabaseTest {
 
@@ -131,6 +132,39 @@ public class MoosePermitTodoServiceTest extends EmbeddedDatabaseTest {
         runTest(conf -> conf.occupationNotDeleted = false, this::clubTodoTest);
     }
 
+    // partner summary
+    @Test
+    public void testPartnerTodo_huntingNotFinished_datesValid() {
+        runTest(conf -> {
+            conf.harvestPermitSpeciesAmountDatesValid = true;
+            conf.partnerHuntingSummaryHasHuntingFinished = false;
+        }, this::partnerTodoTest);
+    }
+
+    @Test
+    public void testPartnerTodo_huntingNotFinished_datesExpired() {
+        runTest(conf -> {
+            conf.harvestPermitSpeciesAmountDatesValid = false;
+            conf.partnerHuntingSummaryHasHuntingFinished = false;
+        }, this::partnerTodoTest);
+    }
+
+    @Test
+    public void testPartnerTodo_noSummary_datesValid() {
+        runTest(conf -> {
+            conf.harvestPermitSpeciesAmountDatesValid = true;
+            conf.partnerHasHuntingSummary = false;
+        }, this::partnerTodoTest);
+    }
+
+    @Test
+    public void testPartnerTodo_noSummary_datesExpired() {
+        runTest(conf -> {
+            conf.harvestPermitSpeciesAmountDatesValid = false;
+            conf.partnerHasHuntingSummary = false;
+        }, this::partnerTodoTest);
+    }
+
     private static void runTest(Consumer<Conf> confMutate, Consumer<Conf> confRunner) {
         confMutate.andThen(confRunner).accept(Conf.allTrue());
     }
@@ -138,11 +172,11 @@ public class MoosePermitTodoServiceTest extends EmbeddedDatabaseTest {
     private void permitTodoTest(Conf conf) {
         final HarvestPermit permit = model().newMooselikePermit(this.rhy);
         final GameSpecies species = model().newGameSpecies();
-        model().newHarvestPermitSpeciesAmount(permit, species);
+        final HarvestPermitSpeciesAmount hpsa = model().newHarvestPermitSpeciesAmount(permit, species);
 
-        final HuntingClub clubToTest = createData(conf, permit, species);
-        final HuntingClub clubOk = createData(Conf.allTrue(), permit, species);
-        final HuntingClub clubAllTodos = createData(Conf.allFalse(), permit, species);
+        final HuntingClub clubToTest = createData(conf, permit, hpsa);
+        final HuntingClub clubOk = createData(Conf.allTrue(), permit, hpsa);
+        final HuntingClub clubAllTodos = createData(Conf.allFalse(), permit, hpsa);
 
         persistInNewTransaction();
 
@@ -167,9 +201,9 @@ public class MoosePermitTodoServiceTest extends EmbeddedDatabaseTest {
         final GameSpecies species = model().newGameSpecies();
         final HarvestPermitSpeciesAmount hpsa = model().newHarvestPermitSpeciesAmount(permit, species);
 
-        final HuntingClub clubToTest = createData(conf, permit, species);
-        final HuntingClub clubOk = createData(Conf.allTrue(), permit, species);
-        final HuntingClub clubAllTodos = createData(Conf.allFalse(), permit, species);
+        final HuntingClub clubToTest = createData(conf, permit, hpsa);
+        final HuntingClub clubOk = createData(Conf.allTrue(), permit, hpsa);
+        final HuntingClub clubAllTodos = createData(Conf.allFalse(), permit, hpsa);
 
         persistInNewTransaction();
 
@@ -185,6 +219,47 @@ public class MoosePermitTodoServiceTest extends EmbeddedDatabaseTest {
         });
     }
 
+    private void partnerTodoTest(final Conf conf) {
+        final GameSpecies species = model().newGameSpecies();
+
+        final HarvestPermit permit = model().newMooselikePermit(this.rhy);
+        final HarvestPermitSpeciesAmount hpsa = model().newHarvestPermitSpeciesAmount(permit, species);
+        if (!conf.harvestPermitSpeciesAmountDatesValid) {
+            // this fails tests on the first day of hunting year?
+            hpsa.setEndDate(LocalDate.now().minusDays(1));
+        }
+
+        final HarvestPermit prevYearPermit = model().newMooselikePermit(this.rhy);
+        final HarvestPermitSpeciesAmount prevYearHpsa = model().newHarvestPermitSpeciesAmount(prevYearPermit, species);
+        if (!conf.harvestPermitSpeciesAmountDatesValid) {
+            prevYearHpsa.setBeginDate(prevYearHpsa.getBeginDate().minusYears(1));
+            prevYearHpsa.setEndDate(prevYearHpsa.getEndDate().minusYears(1));
+        }
+
+        final HuntingClub prevYear = createData(conf, prevYearPermit, prevYearHpsa);
+        final HuntingClub clubToTest = createData(conf, permit, hpsa);
+        final HuntingClub clubOk = createData(Conf.allTrue(), permit, hpsa);
+        final HuntingClub clubAllTodos = createData(Conf.allFalse(), permit, hpsa);
+
+        persistInNewTransaction();
+
+        onSavedAndAuthenticated(createNewModerator(), () -> {
+            // permit for previous year, but asking for current year
+            assertFalse(moosePermitTodoService.listTodosForClub(prevYear, hpsa.resolveHuntingYear()).isPartnerHuntingSummaryMissing());
+
+            final MoosePermitTodoDTO result =
+                    moosePermitTodoService.listTodosForClub(clubToTest, hpsa.resolveHuntingYear());
+
+            assertFalse(result.isTodo());
+
+            final boolean datesNotValid = !conf.harvestPermitSpeciesAmountDatesValid;
+            final boolean noSummary = !conf.partnerHasHuntingSummary;
+            final boolean notFinished = !conf.partnerHuntingSummaryHasHuntingFinished;
+            final boolean expected = datesNotValid && (noSummary || notFinished);
+            assertEquals(expected, result.isPartnerHuntingSummaryMissing());
+        });
+    }
+
     private static void assertTodo(MoosePermitTodoDTO clubOkResult, boolean expected) {
         assertEquals(expected, clubOkResult.isTodo());
         assertEquals(expected, clubOkResult.isAreaMissing());
@@ -193,7 +268,7 @@ public class MoosePermitTodoServiceTest extends EmbeddedDatabaseTest {
         assertEquals(expected, clubOkResult.isGroupLeaderMissing());
     }
 
-    private HuntingClub createData(final Conf conf, final HarvestPermit permit, final GameSpecies species) {
+    private HuntingClub createData(final Conf conf, final HarvestPermit permit, final HarvestPermitSpeciesAmount hpsa) {
         final HuntingClub club = model().newHuntingClub(this.rhy);
         permit.getPermitPartners().add(club);
 
@@ -208,7 +283,7 @@ public class MoosePermitTodoServiceTest extends EmbeddedDatabaseTest {
         if (conf.hasGroup) {
             final HuntingClubGroup group = model().newHuntingClubGroup(club);
             if (conf.groupSpecies) {
-                group.setSpecies(species);
+                group.setSpecies(hpsa.getGameSpecies());
             }
             if (conf.groupPermit) {
                 group.updateHarvestPermit(permit);
@@ -221,6 +296,9 @@ public class MoosePermitTodoServiceTest extends EmbeddedDatabaseTest {
                     member.softDelete();
                 }
             }
+        }
+        if (conf.partnerHasHuntingSummary) {
+            model().newBasicHuntingSummary(hpsa, club, conf.partnerHuntingSummaryHasHuntingFinished);
         }
         return club;
     }
@@ -238,9 +316,15 @@ public class MoosePermitTodoServiceTest extends EmbeddedDatabaseTest {
         boolean occupationLeader;
         boolean occupationNotDeleted;
 
+        boolean partnerHasHuntingSummary;
+        boolean partnerHuntingSummaryHasHuntingFinished;
+        boolean harvestPermitSpeciesAmountDatesValid;
+
         Conf(boolean hasArea, boolean areaActive, boolean areaYearMatches,
              boolean hasGroup, boolean groupSpecies, boolean groupPermit,
-             boolean hasGroupOccupation, boolean occupationLeader, boolean occupationNotDeleted) {
+             boolean hasGroupOccupation, boolean occupationLeader, boolean occupationNotDeleted,
+             boolean partnerHasHuntingSummary, boolean partnerHuntingSummaryHasHuntingFinished,
+             boolean harvestPermitSpeciesAmountDatesValid) {
 
             this.hasArea = hasArea;
             this.areaActive = areaActive;
@@ -253,14 +337,18 @@ public class MoosePermitTodoServiceTest extends EmbeddedDatabaseTest {
             this.hasGroupOccupation = hasGroupOccupation;
             this.occupationLeader = occupationLeader;
             this.occupationNotDeleted = occupationNotDeleted;
+
+            this.partnerHasHuntingSummary = partnerHasHuntingSummary;
+            this.partnerHuntingSummaryHasHuntingFinished = partnerHuntingSummaryHasHuntingFinished;
+            this.harvestPermitSpeciesAmountDatesValid = harvestPermitSpeciesAmountDatesValid;
         }
 
         private static Conf allTrue() {
-            return new Conf(true, true, true, true, true, true, true, true, true);
+            return new Conf(true, true, true, true, true, true, true, true, true, true, true, true);
         }
 
         private static Conf allFalse() {
-            return new Conf(false, false, false, false, false, false, false, false, false);
+            return new Conf(false, false, false, false, false, false, false, false, false, false, false, true);
         }
     }
 }

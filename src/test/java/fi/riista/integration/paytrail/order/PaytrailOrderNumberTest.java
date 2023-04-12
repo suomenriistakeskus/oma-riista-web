@@ -14,7 +14,7 @@ public class PaytrailOrderNumberTest {
 
     @Test
     public void testParseValid() {
-        final String asText = "PAATOS-201805041633-1234";
+        final String asText = "PAATOS-20180504163342-1234";
         final PaytrailOrderNumber paytrailOrderNumber = PaytrailOrderNumber.valueOf(asText);
 
         assertEquals(InvoiceType.PERMIT_PROCESSING, paytrailOrderNumber.getOrderType());
@@ -23,6 +23,7 @@ public class PaytrailOrderNumberTest {
         assertEquals(4, paytrailOrderNumber.getCreationTime().getDayOfMonth());
         assertEquals(16, paytrailOrderNumber.getCreationTime().getHourOfDay());
         assertEquals(33, paytrailOrderNumber.getCreationTime().getMinuteOfHour());
+        assertEquals(42, paytrailOrderNumber.getCreationTime().getSecondOfMinute());
         assertEquals(1234, paytrailOrderNumber.getInvoiceNumber());
         assertEquals(asText, paytrailOrderNumber.formatAsText());
     }
@@ -32,7 +33,7 @@ public class PaytrailOrderNumberTest {
         final Invoice invoice = new Invoice(InvoiceType.PERMIT_PROCESSING, true);
         invoice.setInvoiceNumber(1234);
 
-        final DateTime now = new LocalDate(2018, 5, 4).toDateTime(new LocalTime(16, 33), Constants.DEFAULT_TIMEZONE);
+        final DateTime now = new LocalDate(2018, 5, 4).toDateTime(new LocalTime(16, 33, 42), Constants.DEFAULT_TIMEZONE);
         final PaytrailOrderNumber paytrailOrderNumber = PaytrailOrderNumber.create(invoice, now);
 
         assertEquals(2018, paytrailOrderNumber.getCreationTime().getYear());
@@ -40,7 +41,8 @@ public class PaytrailOrderNumberTest {
         assertEquals(4, paytrailOrderNumber.getCreationTime().getDayOfMonth());
         assertEquals(16, paytrailOrderNumber.getCreationTime().getHourOfDay());
         assertEquals(33, paytrailOrderNumber.getCreationTime().getMinuteOfHour());
+        assertEquals(42, paytrailOrderNumber.getCreationTime().getSecondOfMinute());
         assertEquals(1234, paytrailOrderNumber.getInvoiceNumber());
-        assertEquals("PAATOS-201805041633-1234", paytrailOrderNumber.formatAsText());
+        assertEquals("PAATOS-20180504163342-1234", paytrailOrderNumber.formatAsText());
     }
 }

@@ -56,6 +56,8 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
     private boolean hasDecisionInvoice;
     private boolean hasHarvestInvoices;
 
+    private boolean automaticDeliveryDeduction;
+
     public static PermitDecisionDTO create(final @Nonnull PermitDecision decision,
                                            final @Nonnull PermitDecisionDocument document,
                                            final List<PermitDecisionPermitDTO> permits,
@@ -115,6 +117,8 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
         dto.setHasHarvestInvoices(decision.getGrantStatus() != GrantStatus.REJECTED
                 && decision.getDecisionType() == DecisionType.HARVEST_PERMIT
                 && application.getHarvestPermitCategory().isMooselike());
+
+        dto.setAutomaticDeliveryDeduction(decision.isAutomaticDeliveryDeduction());
 
         return dto;
     }
@@ -354,5 +358,13 @@ public class PermitDecisionDTO extends BaseEntityDTO<Long> {
 
     public void setHasHarvestInvoices(final boolean hasHarvestInvoices) {
         this.hasHarvestInvoices = hasHarvestInvoices;
+    }
+
+    public boolean isAutomaticDeliveryDeduction() {
+        return automaticDeliveryDeduction;
+    }
+
+    public void setAutomaticDeliveryDeduction(final boolean automaticDeliveryDeduction) {
+        this.automaticDeliveryDeduction = automaticDeliveryDeduction;
     }
 }

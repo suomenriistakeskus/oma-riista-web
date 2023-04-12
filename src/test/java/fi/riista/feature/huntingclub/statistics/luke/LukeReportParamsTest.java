@@ -63,26 +63,26 @@ public class LukeReportParamsTest {
     private final String[][][] WTD_2019_VALUES = {
             {
                     {"RHY", "FIGURE", "WTD_PRE2020_FIGURE"},
-                    {"RHY", "TABLE_FULL", "WTD_PRE2020_TABLE_FULL"},
+                    {"RHY", "TABLE_COMPARISON", "WTD_PRE2020_TABLE_FULL"},
             },
             {
                     {"HTA", "FIGURE", "WTD_PRE2020_FIGURE"},
-                    {"HTA", "TABLE_FULL", "WTD_PRE2020_TABLE_FULL"},
+                    {"HTA", "TABLE_COMPARISON", "WTD_PRE2020_TABLE_FULL"},
             },
             {
                     {"AREA", "FIGURE", "WTD_PRE2020_FIGURE"},
-                    {"AREA", "TABLE_FULL", "WTD_PRE2020_TABLE_FULL"},
+                    {"AREA", "TABLE_COMPARISON", "WTD_PRE2020_TABLE_FULL"},
             },
             {
                     {"COUNTRY", "FIGURE", "WTD_PRE2020_FIGURE"},
-                    {"COUNTRY", "TABLE_FULL", "WTD_PRE2020_TABLE_FULL"},
+                    {"COUNTRY", "TABLE_COMPARISON", "WTD_PRE2020_TABLE_FULL"},
             },
     };
 
     private final String[][][] WTD_2020_CLUB_VALUES = {
             {
                     {"CLUB", "FIGURE", "WTD_HARVEST_FIGURE", "WTD_OBSERVATION_FIGURE"},
-                    {"CLUB", "TABLE_FULL", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
+                    {"CLUB", "TABLE_COMPARISON", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL_2020"},
             },
     };
 
@@ -90,22 +90,22 @@ public class LukeReportParamsTest {
             {
                     {"RHY", "FIGURE", "WTD_HARVEST_FIGURE", "WTD_OBSERVATION_FIGURE"},
                     {"RHY", "MAP", "WTD_HARVEST_MAP", "WTD_OBSERVATION_MAP"},
-                    {"RHY", "TABLE_FULL", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
+                    {"RHY", "TABLE_COMPARISON", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL_2020"},
             },
             {
                     {"HTA", "FIGURE", "WTD_HARVEST_FIGURE", "WTD_OBSERVATION_FIGURE"},
                     {"HTA", "MAP", "WTD_HARVEST_MAP", "WTD_OBSERVATION_MAP"},
-                    {"HTA", "TABLE_FULL", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
+                    {"HTA", "TABLE_COMPARISON", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL_2020"},
             },
             {
                     {"AREA", "FIGURE", "WTD_HARVEST_FIGURE", "WTD_OBSERVATION_FIGURE"},
                     {"AREA", "MAP", "WTD_HARVEST_MAP", "WTD_OBSERVATION_MAP"},
-                    {"AREA", "TABLE_FULL", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
+                    {"AREA", "TABLE_COMPARISON", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL_2020"},
             },
             {
                     {"COUNTRY", "FIGURE", "WTD_HARVEST_FIGURE", "WTD_OBSERVATION_FIGURE"},
                     {"COUNTRY", "MAP", "WTD_HARVEST_MAP", "WTD_OBSERVATION_MAP"},
-                    {"COUNTRY", "TABLE_FULL", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
+                    {"COUNTRY", "TABLE_COMPARISON", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL_2020"},
             }
     };
 
@@ -114,7 +114,7 @@ public class LukeReportParamsTest {
     private final String[][][] WTD_2021_CLUB_VALUES = {
             {
                     {"CLUB", "FIGURE", "WTD_HARVEST_FIGURE", "WTD_HARVEST_ANTLER_FIGURE", "WTD_HARVEST_WEIGHT_FIGURE", "WTD_OBSERVATION_FIGURE"},
-                    {"CLUB", "TABLE_FULL", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
+                    {"CLUB", "TABLE_COMPARISON", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
             },
     };
 
@@ -122,22 +122,22 @@ public class LukeReportParamsTest {
             {
                     {"RHY", "FIGURE", "WTD_HARVEST_FIGURE", "WTD_HARVEST_ANTLER_FIGURE", "WTD_HARVEST_WEIGHT_FIGURE", "WTD_OBSERVATION_FIGURE"},
                     {"RHY", "MAP", "WTD_HARVEST_MAP", "WTD_OBSERVATION_MAP"},
-                    {"RHY", "TABLE_FULL", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
+                    {"RHY", "TABLE_COMPARISON", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
             },
             {
                     {"HTA", "FIGURE", "WTD_HARVEST_FIGURE", "WTD_HARVEST_ANTLER_FIGURE", "WTD_HARVEST_WEIGHT_FIGURE", "WTD_OBSERVATION_FIGURE"},
                     {"HTA", "MAP", "WTD_HARVEST_MAP", "WTD_OBSERVATION_MAP"},
-                    {"HTA", "TABLE_FULL", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
+                    {"HTA", "TABLE_COMPARISON", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
             },
             {
                     {"AREA", "FIGURE", "WTD_HARVEST_FIGURE", "WTD_HARVEST_ANTLER_FIGURE", "WTD_HARVEST_WEIGHT_FIGURE", "WTD_OBSERVATION_FIGURE"},
                     {"AREA", "MAP", "WTD_HARVEST_MAP", "WTD_OBSERVATION_MAP"},
-                    {"AREA", "TABLE_FULL", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
+                    {"AREA", "TABLE_COMPARISON", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
             },
             {
                     {"COUNTRY", "FIGURE", "WTD_HARVEST_FIGURE", "WTD_HARVEST_ANTLER_FIGURE", "WTD_HARVEST_WEIGHT_FIGURE", "WTD_OBSERVATION_FIGURE"},
                     {"COUNTRY", "MAP", "WTD_HARVEST_MAP", "WTD_OBSERVATION_MAP"},
-                    {"COUNTRY", "TABLE_FULL", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
+                    {"COUNTRY", "TABLE_COMPARISON", "WTD_HARVEST_TABLE_FULL", "WTD_OBSERVATION_TABLE_FULL"},
             }
     };
 

@@ -1,4 +1,5 @@
-<div class="alert alert-info">
+
+<div class="alert alert-info wizard-info">
     <span class="fa fa-info-circle"></span>
 
     <div class="alert-content">
@@ -21,7 +22,8 @@
         <textarea class="form-control" rows="6"
                   name="deviateSection32" id="deviateSection32"
                   ng-model="$ctrl.forbiddenMethods.deviateSection32"
-                  required></textarea>
+                  required
+                  spellcheck="false"></textarea>
 
             <p class="help-block has-error"
                ng-show="methodsForm.deviateSection32.$invalid && methodsForm.deviateSection32.$touched"
@@ -53,7 +55,8 @@
             <textarea class="form-control" rows="6"
                       name="deviateSection33" id="deviateSection33"
                       ng-model="$ctrl.forbiddenMethods.deviateSection33"
-                      ng-required="!$ctrl.forbiddenMethods.tapeRecorders"></textarea>
+                      ng-required="!$ctrl.forbiddenMethods.tapeRecorders"
+                      spellcheck="false"></textarea>
 
             <p class="help-block has-error"
                ng-show="methodsForm.deviateSection33.$invalid && methodsForm.deviateSection33.$touched"
@@ -88,7 +91,8 @@
             <textarea class="form-control" rows="6"
                       name="deviateSection34" id="deviateSection34"
                       ng-model="$ctrl.forbiddenMethods.deviateSection34"
-                      ng-required="!$ctrl.forbiddenMethods.traps"></textarea>
+                      ng-required="!$ctrl.forbiddenMethods.traps"
+                      spellcheck="false"></textarea>
 
             <p class="help-block has-error"
                ng-show="methodsForm.deviateSection34.$invalid && methodsForm.deviateSection34.$touched"
@@ -113,7 +117,8 @@
         <textarea class="form-control" rows="6"
                   name="deviateSection35" id="deviateSection35"
                   ng-model="$ctrl.forbiddenMethods.deviateSection35"
-                  required></textarea>
+                  required
+                  spellcheck="false"></textarea>
 
             <p class="help-block has-error"
                ng-show="methodsForm.deviateSection35.$invalid && methodsForm.deviateSection35.$touched"
@@ -138,7 +143,8 @@
         <textarea class="form-control" rows="6"
                   name="deviateSection51" id="deviateSection51"
                   ng-model="$ctrl.forbiddenMethods.deviateSection51"
-                  required></textarea>
+                  required
+                  spellcheck="false"></textarea>
 
             <p class="help-block has-error"
                ng-show="methodsForm.deviateSection51.$invalid && methodsForm.deviateSection51.$touched"
@@ -177,7 +183,8 @@
                       name="justification-{{a.gameSpeciesCode}}"
                       id="justification-{{a.gameSpeciesCode}}"
                       ng-model="a.justification"
-                      ng-required="a.forbiddenMethodsUsed"></textarea>
+                      ng-required="a.forbiddenMethodsUsed"
+                      spellcheck="false"></textarea>
         </div>
     </div>
 

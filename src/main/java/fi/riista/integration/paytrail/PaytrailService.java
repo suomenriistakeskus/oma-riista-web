@@ -2,16 +2,21 @@ package fi.riista.integration.paytrail;
 
 import fi.riista.integration.paytrail.auth.PaytrailAccount;
 import fi.riista.integration.paytrail.callback.PaytrailCallbackParameters;
-import fi.riista.integration.paytrail.e2.model.CallbackUrlSet;
-import fi.riista.integration.paytrail.e2.model.Payment;
+import fi.riista.integration.paytrail.checkout.model.CallbackUrl;
+import fi.riista.integration.paytrail.checkout.model.Payment;
+import fi.riista.integration.paytrail.checkout.model.PaytrailPaymentInitResponse;
 import org.springframework.util.MultiValueMap;
 
-import java.util.Map;
+import java.util.Optional;
 
 public interface PaytrailService {
-    Map<String, String> getPaymentForm(Payment payment, PaytrailAccount account);
 
-    CallbackUrlSet createCallbacks(MultiValueMap<String, String> queryParameters);
+    PaytrailPaymentInitResponse initiatePayment(Payment payment, PaytrailAccount account);
 
-    void storePaytrailPaymentEvent(PaytrailCallbackParameters callbackParameters);
+    CallbackUrl createCallbacks(MultiValueMap<String, String> queryParameters);
+    CallbackUrl createRedirects(MultiValueMap<String, String> queryParameters);
+
+    void storePaytrailPaymentEvent(final PaytrailCallbackParameters paytrailParams);
+
+    Optional<Integer> getCallbackDelay();
 }

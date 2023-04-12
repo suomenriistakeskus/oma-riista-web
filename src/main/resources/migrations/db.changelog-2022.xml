@@ -1,0 +1,1382 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd"
+        logicalFilePath="migrations/db.changelog.xml">
+
+    <changeSet id="2022-02-04-harvest-taxation-reporting" author="vincit-miikkala">
+
+        <createTable tableName="harvest_taxation_report_state">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" primaryKeyName="harvest_taxation_report_state_pkey"/>
+            </column>
+        </createTable>
+
+        <insert tableName="harvest_taxation_report_state">
+            <column name="name">DRAFT</column>
+        </insert>
+
+        <insert tableName="harvest_taxation_report_state">
+            <column name="name">CONFIRMED</column>
+        </insert>
+
+
+
+        <createTable tableName="harvest_taxation_report">
+            <column autoIncrement="true" name="harvest_taxation_report_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_taxation_report_pkey"/>
+            </column>
+
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="harvest_taxation_report_state" type="VARCHAR(255)">
+                <constraints nullable="false" references="harvest_taxation_report_state(name)"
+                             foreignKeyName="fk_harvest_taxation_report_state"/>
+            </column>
+
+            <column name="rhy_id" type="BIGINT">
+                <constraints nullable="false" references="organisation(organisation_id)"
+                             foreignKeyName="fk_harvest_taxation_report_rhy"/>
+            </column>
+
+            <column name="hta_id" type="BIGINT">
+                <constraints nullable="false" references="hta(gid)"
+                             foreignKeyName="fk_harvest_taxation_report_hta"/>
+            </column>
+
+            <column name="hunting_year" type="INTEGER"/>
+
+            <column name="game_species_id" type="BIGINT">
+                <constraints nullable="false" references="game_species(game_species_id)"
+                             foreignKeyName="fk_harvest_taxation_report_game_species_id"/>
+            </column>
+
+            <column name="has_taxation_planning" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="planned_remaining_population" type="DECIMAL(4,1)" />
+
+            <column name="gender_distribution" type="DECIMAL(4,1)" />
+
+            <column name="young_percent" type="INTEGER" />
+
+            <column name="planned_utilization_rate_of_the_permits" type="INTEGER" />
+
+            <column name="share_of_banking_permits" type="INTEGER" />
+
+            <column name="planned_permit_min" type="INTEGER"/>
+
+            <column name="planned_permit_max" type="INTEGER"/>
+
+            <column name="planned_catch_min" type="INTEGER"/>
+
+            <column name="planned_catch_max" type="INTEGER"/>
+
+            <column name="planned_prey_density_min" type="DECIMAL(4,1)"/>
+
+            <column name="planned_prey_density_max" type="DECIMAL(4,1)"/>
+
+            <column name="planned_permit_density_min" type="DECIMAL(4,1)"/>
+
+            <column name="planned_permit_density_max" type="DECIMAL(4,1)"/>
+
+            <column name="planned_catch_young_percent" type="INTEGER" />
+
+            <column name="planned_catch_male_percent" type="INTEGER" />
+
+            <column name="stakeholders_consulted" type="DATE">
+                <constraints nullable="true"></constraints>
+            </column>
+            <column name="approved_at_the_board_meeting" type="DATE">
+                <constraints nullable="true"></constraints>
+            </column>
+            <column name="justification" type="TEXT"/>
+        </createTable>
+
+        <createTable tableName="harvest_taxation_report_attachment">
+
+            <column autoIncrement="true" name="harvest_taxation_report_attachment_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_taxation_report_attachment_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- lifecycle fields -->
+
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <!-- audit fields -->
+
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+
+            <!-- harvest taxation report -->
+
+            <column name="harvest_taxation_report_id" type="BIGINT">
+                <constraints nullable="false" references="harvest_taxation_report(harvest_taxation_report_id)"
+                             foreignKeyName="fk_harvest_taxation_report_attachment_harvest_taxation_report_id"/>
+            </column>
+
+            <!-- attachment metadata -->
+
+            <column name="attachment_metadata_id" type="CHAR(36)">
+                <constraints nullable="false"
+                             unique="true"
+                             references="file_metadata(file_metadata_uuid)"
+                             foreignKeyName="fk_harvest_taxation_report_attachment_attachment_metadata_id"/>
+            </column>
+        </createTable>
+
+        <sql><![CDATA[
+            ALTER TABLE harvest_taxation_report ADD CONSTRAINT chk_young_percent
+                CHECK (young_percent between 0 and 100);
+                ]]></sql>
+
+        <sql><![CDATA[
+            ALTER TABLE harvest_taxation_report ADD CONSTRAINT chk_planned_utilization_rate_of_the_permits
+                CHECK (planned_utilization_rate_of_the_permits between 0 and 100);
+                ]]></sql>
+
+        <sql><![CDATA[
+            ALTER TABLE harvest_taxation_report ADD CONSTRAINT chk_share_of_banking_permits
+                CHECK (share_of_banking_permits between 0 and 100);
+                ]]></sql>
+
+    </changeSet>
+
+    <changeSet id="2022-02-24-rhy-hta" author="vincit-miikkala">
+
+        <createTable tableName="rhy_hta">
+            <column name="hta_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="organisation_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="rhy_hta" columnNames="hta_id, organisation_id"/>
+
+        <addForeignKeyConstraint baseTableName="rhy_hta"
+                                 baseColumnNames="organisation_id"
+                                 constraintName="fk_rhy_hta_organisation"
+                                 referencedTableName="organisation"
+                                 referencedColumnNames="organisation_id"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <addForeignKeyConstraint baseTableName="rhy_hta"
+                                 baseColumnNames="hta_id"
+                                 constraintName="fk_rhy_hta_hta"
+                                 referencedTableName="hta"
+                                 referencedColumnNames="gid"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"/>
+
+        <createIndex tableName="rhy_hta" indexName="ndx_rhy_hta">
+            <column name="organisation_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2022-02-25-rhy-hta-data" author="vincit-miikkala">
+
+        <sql><![CDATA[
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ähtärin riistanhoitoyhdistys' and hta.nimi_ly = 'Po 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ala-Keiteleen riistanhoitoyhdistys' and hta.nimi_ly = 'KS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ala-Satakunnan riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Alajärven riistanhoitoyhdistys' and hta.nimi_ly = 'Po 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Alastaron riistanhoitoyhdistys' and hta.nimi_ly = 'VS-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Alavuden-Töysän riistanhoitoyhdistys' and hta.nimi_ly = 'Po 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Anjalan riistanhoitoyhdistys' and hta.nimi_ly = 'KAS-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Anttolan riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Asikkalan riistanhoitoyhdistys' and hta.nimi_ly = 'EH 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Asikkalan riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Askolan-Pukkilan riistanhoitoyhdistys' and hta.nimi_ly = 'UU-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Elimäen riistanhoitoyhdistys' and hta.nimi_ly = 'KAS-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Enon riistanhoitoyhdistys' and hta.nimi_ly = 'PK 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Enonkosken riistanhoitoyhdistys' and hta.nimi_ly = 'ES-KAS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Enonkosken riistanhoitoyhdistys' and hta.nimi_ly = 'PS-ES';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Enontekiön riistanhoitoyhdistys' and hta.nimi_ly = 'LA 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Espoo-Kauniaisten riistanhoitoyhdistys' and hta.nimi_ly = 'UU 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Espoo-Kauniaisten riistanhoitoyhdistys' and hta.nimi_ly = 'UU 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Etelä-Saimaan riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Etelä-Soisalon riistanhoitoyhdistys' and hta.nimi_ly = 'PS-ES';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Euran seudun riistanhoitoyhdistys' and hta.nimi_ly = 'SA 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Evijärven-Kortesjärven riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Forssan-Tammelan riistanhoitoyhdistys' and hta.nimi_ly = 'EH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Haapajärven-Reisjärven riistanhoitoyhdistys' and hta.nimi_ly = 'OU 5';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Haapaveden riistanhoitoyhdistys' and hta.nimi_ly = 'OU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hailuodon riistanhoitoyhdistys' and hta.nimi_ly = 'OU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hämeenkyrön-Viljakkalan riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hankasalmen riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Harjavallan riistanhoitoyhdistys' and hta.nimi_ly = 'SA 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Härmän riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hartolan riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hattulan-Kalvolan riistanhoitoyhdistys' and hta.nimi_ly = 'EH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hattulan-Kalvolan riistanhoitoyhdistys' and hta.nimi_ly = 'EH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hauhon-Tuuloksen riistanhoitoyhdistys' and hta.nimi_ly = 'EH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hauhon-Tuuloksen riistanhoitoyhdistys' and hta.nimi_ly = 'EH 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Haukiputaan riistanhoitoyhdistys' and hta.nimi_ly = 'OU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Haukivuori-Virtasalmi riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hausjärven-Riihimäen riistanhoitoyhdistys' and hta.nimi_ly = 'EH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hausjärven-Riihimäen riistanhoitoyhdistys' and hta.nimi_ly = 'EH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Heinolan seudun riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Himangan riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hyrynsalmen-Ristijärven riistanhoitoyhdistys' and hta.nimi_ly = 'KA 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hyvinkään riistanhoitoyhdistys' and hta.nimi_ly = 'UU 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Hyvinkään riistanhoitoyhdistys' and hta.nimi_ly = 'UU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Iin seudun riistanhoitoyhdistys' and hta.nimi_ly = 'OU 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Iisalmen riistanhoitoyhdistys' and hta.nimi_ly = 'PS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Iisalmen riistanhoitoyhdistys' and hta.nimi_ly = 'PS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Iitin riistanhoitoyhdistys' and hta.nimi_ly = 'KAS-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ikaalisten-Jämijärven riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ilmajoen riistanhoitoyhdistys' and hta.nimi_ly = 'Po 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ilomantsin riistanhoitoyhdistys' and hta.nimi_ly = 'PK 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Inarin riistanhoitoyhdistys' and hta.nimi_ly = 'LA 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Isojoen-Karijoen riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Itä-Päijänteen riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Jaalan-Kuusankosken riistanhoitoyhdistys' and hta.nimi_ly = 'KAS-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Jalannin riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Jalasjärven riistanhoitoyhdistys' and hta.nimi_ly = 'Po 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Jalasjärven riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Jämsän seudun riistanhoitoyhdistys' and hta.nimi_ly = 'KS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Janakkalan riistanhoitoyhdistys' and hta.nimi_ly = 'EH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Janakkalan riistanhoitoyhdistys' and hta.nimi_ly = 'EH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Jäppilän riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Joensuun seudun riistanhoitoyhdistys' and hta.nimi_ly = 'PK 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Jokiläänin riistanhoitoyhdistys' and hta.nimi_ly = 'VS-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Joroisten riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Joutsenon riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Juankosken riistanhoitoyhdistys' and hta.nimi_ly = 'PS-ES';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Jurvan riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Juuan riistanhoitoyhdistys' and hta.nimi_ly = 'PK 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Juvan riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Jyväskylän seudun riistanhoitoyhdistys' and hta.nimi_ly = 'KS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kaavin riistanhoitoyhdistys' and hta.nimi_ly = 'PS-ES';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kajaanin riistanhoitoyhdistys' and hta.nimi_ly = 'KA 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kalajoen-Alavieskan riistanhoitoyhdistys' and hta.nimi_ly = 'OU 5';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kalannin seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kälviän-Ullavan riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kangasalan riistanhoitoyhdistys' and hta.nimi_ly = 'PH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kangasniemen riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kannonkosken-Kivijärven riistanhoitoyhdistys' and hta.nimi_ly = 'KS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kannonkosken-Kivijärven riistanhoitoyhdistys' and hta.nimi_ly = 'KS-PS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kannuksen riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Karjalohjan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kärsämäen riistanhoitoyhdistys' and hta.nimi_ly = 'OU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Karstulan-Kyyjärven riistanhoitoyhdistys' and hta.nimi_ly = 'KS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Karttulan riistanhoitoyhdistys' and hta.nimi_ly = 'PS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kauhajoen riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kauhavan riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Keiteleen riistanhoitoyhdistys' and hta.nimi_ly = 'KS-PS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kemijärven riistanhoitoyhdistys' and hta.nimi_ly = 'LA 6';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Keminmaan riistanhoitoyhdistys' and hta.nimi_ly = 'LA 8';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kemiönsaaren riistanhoitoyhdistys' and hta.nimi_ly = 'VS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kempeleen-Oulunsalon riistanhoitoyhdistys' and hta.nimi_ly = 'OU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kerimäen riistanhoitoyhdistys' and hta.nimi_ly = 'ES-KAS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kesälahden riistanhoitoyhdistys' and hta.nimi_ly = 'PK 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Keski-Uusimaan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Keuruun riistanhoitoyhdistys' and hta.nimi_ly = 'KS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kihniön riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kiimingin-Ylikiimingin riistanhoitoyhdistys' and hta.nimi_ly = 'OU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kinnulan riistanhoitoyhdistys' and hta.nimi_ly = 'KS-PS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kirkkonummen riistanhoitoyhdistys' and hta.nimi_ly = 'UU 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kiskon piirin riistanhoitoyhdistys' and hta.nimi_ly = 'VS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kiskon piirin riistanhoitoyhdistys' and hta.nimi_ly = 'VS 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kiteen riistanhoitoyhdistys' and hta.nimi_ly = 'PK 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kittilän riistanhoitoyhdistys' and hta.nimi_ly = 'LA 5';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kiuruveden riistanhoitoyhdistys' and hta.nimi_ly = 'PS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Koillis-Savon riistanhoitoyhdistys' and hta.nimi_ly = 'PS-ES';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kokemäen-Kauvatsan riistanhoitoyhdistys' and hta.nimi_ly = 'SA 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kokkolanseudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kolarin riistanhoitoyhdistys' and hta.nimi_ly = 'LA 5';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Konneveden riistanhoitoyhdistys' and hta.nimi_ly = 'KS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Korpilahden riistanhoitoyhdistys' and hta.nimi_ly = 'KS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Korpilahden riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kuhmalahden-Sahalahden riistanhoitoyhdistys' and hta.nimi_ly = 'PH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kuhmoisten riistanhoitoyhdistys' and hta.nimi_ly = 'PH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kuhmon riistanhoitoyhdistys' and hta.nimi_ly = 'KA 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kuopion riistanhoitoyhdistys' and hta.nimi_ly = 'PS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kuopion riistanhoitoyhdistys' and hta.nimi_ly = 'PS-ES';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kuortaneen riistanhoitoyhdistys' and hta.nimi_ly = 'Po 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kurikan riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kurun riistanhoitoyhdistys' and hta.nimi_ly = 'PH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kuusamon riistanhoitoyhdistys' and hta.nimi_ly = 'OU 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kymin-Karhulan riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kyrönmaan riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lahden seudun riistanhoitoyhdistys' and hta.nimi_ly = 'EH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lahden seudun riistanhoitoyhdistys' and hta.nimi_ly = 'EH 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lahden seudun riistanhoitoyhdistys' and hta.nimi_ly = 'KAS-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Laihian riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Laitilan seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lakeuden riistanhoitoyhdistys' and hta.nimi_ly = 'Po 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lammin riistanhoitoyhdistys' and hta.nimi_ly = 'EH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lammin riistanhoitoyhdistys' and hta.nimi_ly = 'EH 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Längelmäveden riistanhoitoyhdistys' and hta.nimi_ly = 'PH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Längelmäveden riistanhoitoyhdistys' and hta.nimi_ly = 'PH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Länsi-Uudenmaan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lapinjärven riistanhoitoyhdistys' and hta.nimi_ly = 'UU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lapinlahden riistanhoitoyhdistys' and hta.nimi_ly = 'PS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lapinlahden riistanhoitoyhdistys' and hta.nimi_ly = 'PS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lappajärven-Vimpelin riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lappajärven-Vimpelin riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lapuan riistanhoitoyhdistys' and hta.nimi_ly = 'Po 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lapväärtinseudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Laukaan riistanhoitoyhdistys' and hta.nimi_ly = 'KS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lavian seudun riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lehtimäen-Soinin riistanhoitoyhdistys' and hta.nimi_ly = 'Po 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lemin-Taipalsaaren riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lempäälän seudun riistanhoitoyhdistys' and hta.nimi_ly = 'PH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lempäälän seudun riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Leppävirran-Varkauden riistanhoitoyhdistys' and hta.nimi_ly = 'PS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Leppävirran-Varkauden riistanhoitoyhdistys' and hta.nimi_ly = 'PS-ES';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lestijärven riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lieksan riistanhoitoyhdistys' and hta.nimi_ly = 'PK 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Liljendalin riistanhoitoyhdistys' and hta.nimi_ly = 'UU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Limingan seudun riistanhoitoyhdistys' and hta.nimi_ly = 'OU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Liperin riistanhoitoyhdistys' and hta.nimi_ly = 'PK 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lohjan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lohjan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lohtajan riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Loimaan seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lopen riistanhoitoyhdistys' and hta.nimi_ly = 'EH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lounais-Satakunnan riistanhoitoyhdistys' and hta.nimi_ly = 'SA 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Loviisan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Luumäen riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Maalahdenseudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Maaningan riistanhoitoyhdistys' and hta.nimi_ly = 'PS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Mäntän seudun riistanhoitoyhdistys' and hta.nimi_ly = 'PH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Mäntsälän riistanhoitoyhdistys' and hta.nimi_ly = 'UU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Mäntsälän riistanhoitoyhdistys' and hta.nimi_ly = 'UU-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Mäntyharjun-Hirvensalmen riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Marttilan seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Maskun seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Merikarvian riistanhoitoyhdistys' and hta.nimi_ly = 'SA 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Miehikkälän riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Mikkelin riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Mouhijärven piirin riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Mouhijärven piirin riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Muhoksen riistanhoitoyhdistys' and hta.nimi_ly = 'OU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Multian riistanhoitoyhdistys' and hta.nimi_ly = 'KS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Muonion riistanhoitoyhdistys' and hta.nimi_ly = 'LA 5';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Mynämäen alueen riistanhoitoyhdistys' and hta.nimi_ly = 'VS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Myrskylä-Artjärven riistanhoitoyhdistys' and hta.nimi_ly = 'UU-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Närpiönseudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Nilsiän riistanhoitoyhdistys' and hta.nimi_ly = 'PS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Nivalan riistanhoitoyhdistys' and hta.nimi_ly = 'OU 5';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Nokian seudun riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Nokian seudun riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Noormarkun seudun riistanhoitoyhdistys' and hta.nimi_ly = 'SA 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Nummi-Pusulan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Nurmijärven riistanhoitoyhdistys' and hta.nimi_ly = 'UU 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Nurmijärven riistanhoitoyhdistys' and hta.nimi_ly = 'UU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Orimattilan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Orimattilan riistanhoitoyhdistys' and hta.nimi_ly = 'UU-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Oulaisten riistanhoitoyhdistys' and hta.nimi_ly = 'OU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Oulun riistanhoitoyhdistys' and hta.nimi_ly = 'OU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Outokummun riistanhoitoyhdistys' and hta.nimi_ly = 'PK 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Padasjoen riistanhoitoyhdistys' and hta.nimi_ly = 'EH 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Paimionlahden riistanhoitoyhdistys' and hta.nimi_ly = 'VS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Paimionlahden riistanhoitoyhdistys' and hta.nimi_ly = 'VS 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pälkäneen ja Luopioisten riistanhoitoyhdistys' and hta.nimi_ly = 'PH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Paltamon riistanhoitoyhdistys' and hta.nimi_ly = 'KA 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Paraisten riistanhoitoyhdistys' and hta.nimi_ly = 'VS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Parikkalan riistanhoitoyhdistys' and hta.nimi_ly = 'ES-KAS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Parkanon-Karvian riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pelkosenniemen riistanhoitoyhdistys' and hta.nimi_ly = 'LA 6';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pellon riistanhoitoyhdistys' and hta.nimi_ly = 'LA 5';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Peräseinäjoen riistanhoitoyhdistys' and hta.nimi_ly = 'Po 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Perhon riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Perhonjokilaakson riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Perniönseudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pertunmaan riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Petäjäveden riistanhoitoyhdistys' and hta.nimi_ly = 'KS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pieksämäen riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pielaveden riistanhoitoyhdistys' and hta.nimi_ly = 'KS-PS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pielaveden riistanhoitoyhdistys' and hta.nimi_ly = 'PS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pietarsaarenseudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pihtiputaan riistanhoitoyhdistys' and hta.nimi_ly = 'KS-PS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Piippolan seudun riistanhoitoyhdistys' and hta.nimi_ly = 'OU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pohjois-Satakunnan riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Polvijärven riistanhoitoyhdistys' and hta.nimi_ly = 'PK 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Porin riistanhoitoyhdistys' and hta.nimi_ly = 'SA 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Porin riistanhoitoyhdistys' and hta.nimi_ly = 'SA 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pornaisten riistanhoitoyhdistys' and hta.nimi_ly = 'UU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Porvoon riistanhoitoyhdistys' and hta.nimi_ly = 'UU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Posion riistanhoitoyhdistys' and hta.nimi_ly = 'LA 9';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pöytyän seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pudasjärven riistanhoitoyhdistys' and hta.nimi_ly = 'OU 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Punkalaitumen riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Puolangan riistanhoitoyhdistys' and hta.nimi_ly = 'KA 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Puumalan riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Puumalan riistanhoitoyhdistys' and hta.nimi_ly = 'ES-KAS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pyhäjärven riistanhoitoyhdistys' and hta.nimi_ly = 'OU 5';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pyhtään riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pylkönmäen riistanhoitoyhdistys' and hta.nimi_ly = 'KS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Raahen seudun riistanhoitoyhdistys' and hta.nimi_ly = 'OU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Rääkkylän riistanhoitoyhdistys' and hta.nimi_ly = 'PK 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Rantasalmen riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ranuan riistanhoitoyhdistys' and hta.nimi_ly = 'LA 9';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Rautalammin riistanhoitoyhdistys' and hta.nimi_ly = 'PS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Rautavaaran riistanhoitoyhdistys' and hta.nimi_ly = 'PS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Rautjärven riistanhoitoyhdistys' and hta.nimi_ly = 'ES-KAS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Rengon seudun riistanhoitoyhdistys' and hta.nimi_ly = 'EH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Rengon seudun riistanhoitoyhdistys' and hta.nimi_ly = 'EH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ristiinan riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Rovaniemen riistanhoitoyhdistys' and hta.nimi_ly = 'LA 7';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ruokolahden-Imatran riistanhoitoyhdistys' and hta.nimi_ly = 'ES-KAS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ruotsinpyhtään riistanhoitoyhdistys' and hta.nimi_ly = 'UU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ruoveden riistanhoitoyhdistys' and hta.nimi_ly = 'PH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Rymättylän-Merimaskun riistanhoitoyhdistys' and hta.nimi_ly = 'VS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sääksmäen-Valkeakosken riistanhoitoyhdistys' and hta.nimi_ly = 'PH 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Saarijärven riistanhoitoyhdistys' and hta.nimi_ly = 'KS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Säkylän-Köyliön riistanhoitoyhdistys' and hta.nimi_ly = 'SA 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sallan riistanhoitoyhdistys' and hta.nimi_ly = 'LA 6';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Salon seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Salon seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sammatin riistanhoitoyhdistys' and hta.nimi_ly = 'UU 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sastamalan riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sastamalan riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Savitaipaleen-Suomenniemen riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Savonlinnan riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Savonlinnan riistanhoitoyhdistys' and hta.nimi_ly = 'ES-KAS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Savonrannan riistanhoitoyhdistys' and hta.nimi_ly = 'ES-KAS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Savonrannan riistanhoitoyhdistys' and hta.nimi_ly = 'PS-ES';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Savukosken riistanhoitoyhdistys' and hta.nimi_ly = 'LA 6';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sievin riistanhoitoyhdistys' and hta.nimi_ly = 'OU 5';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Siikaisten riistanhoitoyhdistys' and hta.nimi_ly = 'SA 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Siikajokilaakson riistanhoitoyhdistys' and hta.nimi_ly = 'OU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Siilinjärven riistanhoitoyhdistys' and hta.nimi_ly = 'PS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Siilinjärven riistanhoitoyhdistys' and hta.nimi_ly = 'PS-ES';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Simon riistanhoitoyhdistys' and hta.nimi_ly = 'LA 8';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sipoon riistanhoitoyhdistys' and hta.nimi_ly = 'UU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sippolan riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sodankylän riistanhoitoyhdistys' and hta.nimi_ly = 'LA 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Someron riistanhoitoyhdistys' and hta.nimi_ly = 'VS 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sonkajärven riistanhoitoyhdistys' and hta.nimi_ly = 'PS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sotkamon riistanhoitoyhdistys' and hta.nimi_ly = 'KA 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sulkavan riistanhoitoyhdistys' and hta.nimi_ly = 'ES 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sulkavan riistanhoitoyhdistys' and hta.nimi_ly = 'ES-KAS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Suolahden-Sumiaisten riistanhoitoyhdistys' and hta.nimi_ly = 'KS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Suomussalmen riistanhoitoyhdistys' and hta.nimi_ly = 'KA 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Suonenjoen riistanhoitoyhdistys' and hta.nimi_ly = 'PS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Sysmän riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Taivalkosken riistanhoitoyhdistys' and hta.nimi_ly = 'OU 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Tampereen riistanhoitoyhdistys' and hta.nimi_ly = 'PH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Tervolan riistanhoitoyhdistys' and hta.nimi_ly = 'LA 8';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Tervon riistanhoitoyhdistys' and hta.nimi_ly = 'PS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Teuvan riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Tohmajärvi-Värtsilän riistanhoitoyhdistys' and hta.nimi_ly = 'PK 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Toholammin riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Toivakan riistanhoitoyhdistys' and hta.nimi_ly = 'KS-ES-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Tornion riistanhoitoyhdistys' and hta.nimi_ly = 'LA 8';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Turun seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Turun seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Turunmaan saariston riistanhoitoyhdistys' and hta.nimi_ly = 'VS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Tuupovaaran riistanhoitoyhdistys' and hta.nimi_ly = 'PK 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Tyrnävän riistanhoitoyhdistys' and hta.nimi_ly = 'OU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ulvilan piirin riistanhoitoyhdistys' and hta.nimi_ly = 'SA 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ulvilan piirin riistanhoitoyhdistys' and hta.nimi_ly = 'SA 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Urjalan riistanhoitoyhdistys' and hta.nimi_ly = 'EH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Urjalan riistanhoitoyhdistys' and hta.nimi_ly = 'SA-PH-EH';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Utajärven riistanhoitoyhdistys' and hta.nimi_ly = 'OU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Utsjoen riistanhoitoyhdistys' and hta.nimi_ly = 'LA 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Uudenkaarlepyynseudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Uuraisten riistanhoitoyhdistys' and hta.nimi_ly = 'KS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vaalan riistanhoitoyhdistys' and hta.nimi_ly = 'OU 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vaasanseudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vakka-Suomen riistanhoitoyhdistys' and hta.nimi_ly = 'VS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Valkealan-Kouvolan riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vantaan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vantaan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Varpaisjärven riistanhoitoyhdistys' and hta.nimi_ly = 'PS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vehkalahden-Haminan riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vehmersalmen riistanhoitoyhdistys' and hta.nimi_ly = 'PS-ES';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vesannon riistanhoitoyhdistys' and hta.nimi_ly = 'KS-PS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vieremän riistanhoitoyhdistys' and hta.nimi_ly = 'PS 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vihdin ja Karkkilan riistanhoitoyhdistys' and hta.nimi_ly = 'UU 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Viitasaaren riistanhoitoyhdistys' and hta.nimi_ly = 'KS-PS';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Virolahden riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 3';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Virtain riistanhoitoyhdistys' and hta.nimi_ly = 'PH 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vöyrinseudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vuolijoen riistanhoitoyhdistys' and hta.nimi_ly = 'KA 4';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ylä-Karjalan riistanhoitoyhdistys' and hta.nimi_ly = 'PK 1';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ylämaan riistanhoitoyhdistys' and hta.nimi_ly = 'KAS 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ylistaron riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ylitornion riistanhoitoyhdistys' and hta.nimi_ly = 'LA 8';
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Ylivieskan riistanhoitoyhdistys' and hta.nimi_ly = 'OU 5';
+        ]]></sql>
+
+    </changeSet>
+
+    <changeSet id="2022-03-07-add-zone-status" author="vincit-miikkala">
+        <createTable tableName="zone_status">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="zone_status">
+            <column name="name" value="READY"/>
+        </insert>
+        <insert tableName="zone_status">
+            <column name="name" value="PENDING"/>
+        </insert>
+        <insert tableName="zone_status">
+            <column name="name" value="PROCESSING"/>
+        </insert>
+        <insert tableName="zone_status">
+            <column name="name" value="PROCESSING_FAILED"/>
+        </insert>
+
+        <addColumn tableName="zone">
+            <column name="status" type="VARCHAR(255)" defaultValue="READY">
+                <constraints nullable="false"
+                             references="zone_status(name)"
+                             foreignKeyName="fk_zone_status"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="zone">
+            <column name="status_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2022-03-29-rhy-hta-fixed-missing-data" author="vincit-miikkala">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(ra.*)
+                FROM rhy_hta ra
+                INNER JOIN organisation o ON ra.organisation_id = o.organisation_id
+                INNER JOIN hta ON ra.hta_id = hta.gid
+                WHERE o.name_finnish = 'Vaasan seudun riistanhoitoyhdistys'
+                AND hta.nimi_ly = 'RP-PO 2';
+            </sqlCheck>
+        </preConditions>
+        <sql dbms="postgresql"><![CDATA[
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vaasan seudun riistanhoitoyhdistys' AND hta.nimi_ly = 'RP-PO 2' ON CONFLICT (organisation_id, hta_id) DO NOTHING;
+            ]]></sql>
+    </changeSet>
+
+    <changeSet id="2022-04-01-rhy-hta-fixed-missing-data-2" author="vincit-miikkala">
+        <sql dbms="postgresql"><![CDATA[
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Kokkolan seudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 1' ON CONFLICT (organisation_id, hta_id) DO NOTHING;
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Pietarsaaren seudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2' ON CONFLICT (organisation_id, hta_id) DO NOTHING;
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Uudenkaarlepyyn seudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2' ON CONFLICT (organisation_id, hta_id) DO NOTHING;
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Vöyrin seudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 2' ON CONFLICT (organisation_id, hta_id) DO NOTHING;
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Maalahden seudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3' ON CONFLICT (organisation_id, hta_id) DO NOTHING;
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Närpiön seudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3' ON CONFLICT (organisation_id, hta_id) DO NOTHING;
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Lapväärtin seudun riistanhoitoyhdistys' and hta.nimi_ly = 'RP-PO 3' ON CONFLICT (organisation_id, hta_id) DO NOTHING;
+            INSERT INTO rhy_hta (organisation_id, hta_id) SELECT o.organisation_id, hta.gid FROM organisation o, hta WHERE o.name_finnish = 'Perniön seudun riistanhoitoyhdistys' and hta.nimi_ly = 'VS 3' ON CONFLICT (organisation_id, hta_id) DO NOTHING;
+            ]]></sql>
+    </changeSet>
+
+    <changeSet id="2022-04-06-add-land-area-size-to-rhy-hta" author="vincit-miikkala">
+        <addColumn tableName="rhy_hta">
+            <column name="land_area_size" type="DOUBLE"/>
+        </addColumn>
+
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE rhy_hta SET land_area_size=22661.9586928001 WHERE hta_id=3 AND organisation_id=20;
+            UPDATE rhy_hta SET land_area_size=563065.229427903 WHERE hta_id=24 AND organisation_id=130;
+            UPDATE rhy_hta SET land_area_size=49740.2298938446 WHERE hta_id=56 AND organisation_id=298;
+            UPDATE rhy_hta SET land_area_size=15769.3539162499 WHERE hta_id=2 AND organisation_id=26;
+            UPDATE rhy_hta SET land_area_size=24500.1682171624 WHERE hta_id=10 AND organisation_id=25;
+            UPDATE rhy_hta SET land_area_size=60982.146938679 WHERE hta_id=39 AND organisation_id=167;
+            UPDATE rhy_hta SET land_area_size=36086.151615549 WHERE hta_id=42 AND organisation_id=249;
+            UPDATE rhy_hta SET land_area_size=116196.451891502 WHERE hta_id=5 AND organisation_id=37;
+            UPDATE rhy_hta SET land_area_size=67338.7001057904 WHERE hta_id=40 AND organisation_id=142;
+            UPDATE rhy_hta SET land_area_size=16183.0978214228 WHERE hta_id=56 AND organisation_id=293;
+            UPDATE rhy_hta SET land_area_size=350186.967735102 WHERE hta_id=19 AND organisation_id=97;
+            UPDATE rhy_hta SET land_area_size=12117.0163642914 WHERE hta_id=48 AND organisation_id=257;
+            UPDATE rhy_hta SET land_area_size=18741.8326845852 WHERE hta_id=47 AND organisation_id=272;
+            UPDATE rhy_hta SET land_area_size=48240.4069177201 WHERE hta_id=37 AND organisation_id=222;
+            UPDATE rhy_hta SET land_area_size=104713.120260627 WHERE hta_id=26 AND organisation_id=115;
+            UPDATE rhy_hta SET land_area_size=36213.4482890412 WHERE hta_id=55 AND organisation_id=287;
+            UPDATE rhy_hta SET land_area_size=225584.21279802 WHERE hta_id=58 AND organisation_id=303;
+            UPDATE rhy_hta SET land_area_size=71767.927585812 WHERE hta_id=29 AND organisation_id=176;
+            UPDATE rhy_hta SET land_area_size=102410.18955239 WHERE hta_id=40 AND organisation_id=227;
+            UPDATE rhy_hta SET land_area_size=9564.50436002304 WHERE hta_id=2 AND organisation_id=168190;
+            UPDATE rhy_hta SET land_area_size=48773.7147566026 WHERE hta_id=56 AND organisation_id=290;
+            UPDATE rhy_hta SET land_area_size=46207.1544239279 WHERE hta_id=41 AND organisation_id=155;
+            UPDATE rhy_hta SET land_area_size=46488.1583229047 WHERE hta_id=35 AND organisation_id=203;
+            UPDATE rhy_hta SET land_area_size=5510.12987641453 WHERE hta_id=50 AND organisation_id=265;
+            UPDATE rhy_hta SET land_area_size=54682.4013613586 WHERE hta_id=9 AND organisation_id=57;
+            UPDATE rhy_hta SET land_area_size=73839.6392397033 WHERE hta_id=53 AND organisation_id=288;
+            UPDATE rhy_hta SET land_area_size=5953.53026787436 WHERE hta_id=4 AND organisation_id=49;
+            UPDATE rhy_hta SET land_area_size=50388.1134983764 WHERE hta_id=41 AND organisation_id=158;
+            UPDATE rhy_hta SET land_area_size=31655.9655237459 WHERE hta_id=5 AND organisation_id=38;
+            UPDATE rhy_hta SET land_area_size=58721.1364424894 WHERE hta_id=10 AND organisation_id=78;
+            UPDATE rhy_hta SET land_area_size=56017.3721229078 WHERE hta_id=30 AND organisation_id=181;
+            UPDATE rhy_hta SET land_area_size=165886.716160349 WHERE hta_id=25 AND organisation_id=137;
+            UPDATE rhy_hta SET land_area_size=65372.2952286245 WHERE hta_id=49 AND organisation_id=270;
+            UPDATE rhy_hta SET land_area_size=38612.5663249094 WHERE hta_id=12 AND organisation_id=94;
+            UPDATE rhy_hta SET land_area_size=46799.9468123537 WHERE hta_id=47 AND organisation_id=263;
+            UPDATE rhy_hta SET land_area_size=46354.8679214434 WHERE hta_id=44 AND organisation_id=251;
+            UPDATE rhy_hta SET land_area_size=38719.0982078621 WHERE hta_id=10 AND organisation_id=76;
+            UPDATE rhy_hta SET land_area_size=22166.6513401348 WHERE hta_id=45 AND organisation_id=248;
+            UPDATE rhy_hta SET land_area_size=48038.1824938117 WHERE hta_id=44 AND organisation_id=240;
+            UPDATE rhy_hta SET land_area_size=16849.6404085731 WHERE hta_id=50 AND organisation_id=256;
+            UPDATE rhy_hta SET land_area_size=64751.3156580438 WHERE hta_id=9 AND organisation_id=64;
+            UPDATE rhy_hta SET land_area_size=109167.04502458 WHERE hta_id=26 AND organisation_id=132;
+            UPDATE rhy_hta SET land_area_size=19104.695292531 WHERE hta_id=10 AND organisation_id=75;
+            UPDATE rhy_hta SET land_area_size=276312.766740471 WHERE hta_id=33 AND organisation_id=188;
+            UPDATE rhy_hta SET land_area_size=44073.5149860018 WHERE hta_id=38 AND organisation_id=210;
+            UPDATE rhy_hta SET land_area_size=48674.7154731152 WHERE hta_id=38 AND organisation_id=208;
+            UPDATE rhy_hta SET land_area_size=54540.9702861996 WHERE hta_id=6 AND organisation_id=33;
+            UPDATE rhy_hta SET land_area_size=27373.9976166039 WHERE hta_id=54 AND organisation_id=294;
+            UPDATE rhy_hta SET land_area_size=136641.143165656 WHERE hta_id=25 AND organisation_id=121;
+            UPDATE rhy_hta SET land_area_size=73711.9482723461 WHERE hta_id=28 AND organisation_id=160;
+            UPDATE rhy_hta SET land_area_size=643406.886225681 WHERE hta_id=19 AND organisation_id=107;
+            UPDATE rhy_hta SET land_area_size=60941.3725684556 WHERE hta_id=54 AND organisation_id=301;
+            UPDATE rhy_hta SET land_area_size=73763.7417275237 WHERE hta_id=28 AND organisation_id=140;
+            UPDATE rhy_hta SET land_area_size=78173.9840305214 WHERE hta_id=40 AND organisation_id=229;
+            UPDATE rhy_hta SET land_area_size=114394.715238777 WHERE hta_id=60 AND organisation_id=304;
+            UPDATE rhy_hta SET land_area_size=73285.0644214453 WHERE hta_id=40 AND organisation_id=228;
+            UPDATE rhy_hta SET land_area_size=39932.425331588 WHERE hta_id=29 AND organisation_id=168192;
+            UPDATE rhy_hta SET land_area_size=132787.55860745 WHERE hta_id=35 AND organisation_id=146504;
+            UPDATE rhy_hta SET land_area_size=23914.0956881015 WHERE hta_id=7 AND organisation_id=213;
+            UPDATE rhy_hta SET land_area_size=38951.3811461483 WHERE hta_id=53 AND organisation_id=285;
+            UPDATE rhy_hta SET land_area_size=45991.1238882042 WHERE hta_id=7 AND organisation_id=62;
+            UPDATE rhy_hta SET land_area_size=50709.5765565499 WHERE hta_id=7 AND organisation_id=59;
+            UPDATE rhy_hta SET land_area_size=55952.4848865743 WHERE hta_id=52 AND organisation_id=299;
+            UPDATE rhy_hta SET land_area_size=185502.519815115 WHERE hta_id=48 AND organisation_id=168189;
+            UPDATE rhy_hta SET land_area_size=146416.038070296 WHERE hta_id=37 AND organisation_id=218;
+            UPDATE rhy_hta SET land_area_size=48582.033470425 WHERE hta_id=40 AND organisation_id=152;
+            UPDATE rhy_hta SET land_area_size=42221.1394937584 WHERE hta_id=7 AND organisation_id=224;
+            UPDATE rhy_hta SET land_area_size=68703.5632047734 WHERE hta_id=60 AND organisation_id=310;
+            UPDATE rhy_hta SET land_area_size=97563.2265826045 WHERE hta_id=25 AND organisation_id=124;
+            UPDATE rhy_hta SET land_area_size=52407.0481397263 WHERE hta_id=27 AND organisation_id=126;
+            UPDATE rhy_hta SET land_area_size=71354.0845299249 WHERE hta_id=38 AND organisation_id=219;
+            UPDATE rhy_hta SET land_area_size=60862.5584521284 WHERE hta_id=2 AND organisation_id=25;
+            UPDATE rhy_hta SET land_area_size=27183.3807337284 WHERE hta_id=30 AND organisation_id=183;
+            UPDATE rhy_hta SET land_area_size=28713.3800884393 WHERE hta_id=50 AND organisation_id=258;
+            UPDATE rhy_hta SET land_area_size=173740.176260441 WHERE hta_id=18 AND organisation_id=103;
+            UPDATE rhy_hta SET land_area_size=93704.3900715072 WHERE hta_id=33 AND organisation_id=187;
+            UPDATE rhy_hta SET land_area_size=44459.9507218674 WHERE hta_id=28 AND organisation_id=165;
+            UPDATE rhy_hta SET land_area_size=47484.298411307 WHERE hta_id=28 AND organisation_id=171;
+            UPDATE rhy_hta SET land_area_size=34732.6766577437 WHERE hta_id=38 AND organisation_id=220;
+            UPDATE rhy_hta SET land_area_size=37100.7614123813 WHERE hta_id=35 AND organisation_id=223;
+            UPDATE rhy_hta SET land_area_size=56983.670042307 WHERE hta_id=11 AND organisation_id=89;
+            UPDATE rhy_hta SET land_area_size=514223.880831629 WHERE hta_id=14 AND organisation_id=112;
+            UPDATE rhy_hta SET land_area_size=125662.150706966 WHERE hta_id=9 AND organisation_id=61;
+            UPDATE rhy_hta SET land_area_size=225300.28311604 WHERE hta_id=26 AND organisation_id=129;
+            UPDATE rhy_hta SET land_area_size=15358.291127909 WHERE hta_id=47 AND organisation_id=256;
+            UPDATE rhy_hta SET land_area_size=68718.4624366385 WHERE hta_id=55 AND organisation_id=286;
+            UPDATE rhy_hta SET land_area_size=59192.8128817483 WHERE hta_id=4 AND organisation_id=91;
+            UPDATE rhy_hta SET land_area_size=8601.93492097991 WHERE hta_id=35 AND organisation_id=208;
+            UPDATE rhy_hta SET land_area_size=21425.126220611 WHERE hta_id=46 AND organisation_id=262;
+            UPDATE rhy_hta SET land_area_size=118669.60612342 WHERE hta_id=21 AND organisation_id=111;
+            UPDATE rhy_hta SET land_area_size=63933.7008902003 WHERE hta_id=53 AND organisation_id=300;
+            UPDATE rhy_hta SET land_area_size=107791.302332288 WHERE hta_id=6 AND organisation_id=56;
+            UPDATE rhy_hta SET land_area_size=12409.6064772781 WHERE hta_id=30 AND organisation_id=177;
+            UPDATE rhy_hta SET land_area_size=31621.5472362407 WHERE hta_id=45 AND organisation_id=253;
+            UPDATE rhy_hta SET land_area_size=14834.3381004492 WHERE hta_id=35 AND organisation_id=32;
+            UPDATE rhy_hta SET land_area_size=35128.4372182791 WHERE hta_id=4 AND organisation_id=86;
+            UPDATE rhy_hta SET land_area_size=52913.3021768746 WHERE hta_id=40 AND organisation_id=156;
+            UPDATE rhy_hta SET land_area_size=45208.7867393631 WHERE hta_id=5 AND organisation_id=50;
+            UPDATE rhy_hta SET land_area_size=24053.0100138315 WHERE hta_id=5 AND organisation_id=31;
+            UPDATE rhy_hta SET land_area_size=37166.3803993803 WHERE hta_id=13 AND organisation_id=93;
+            UPDATE rhy_hta SET land_area_size=51234.9537377507 WHERE hta_id=8 AND organisation_id=63;
+            UPDATE rhy_hta SET land_area_size=17289.3933117944 WHERE hta_id=1 AND organisation_id=30;
+            UPDATE rhy_hta SET land_area_size=69992.5373326253 WHERE hta_id=41 AND organisation_id=231;
+            UPDATE rhy_hta SET land_area_size=21954.2524282096 WHERE hta_id=53 AND organisation_id=297;
+            UPDATE rhy_hta SET land_area_size=38774.1256040968 WHERE hta_id=34 AND organisation_id=191;
+            UPDATE rhy_hta SET land_area_size=345080.317143566 WHERE hta_id=22 AND organisation_id=104;
+            UPDATE rhy_hta SET land_area_size=6788.86582593633 WHERE hta_id=48 AND organisation_id=268;
+            UPDATE rhy_hta SET land_area_size=98649.2291087648 WHERE hta_id=5 AND organisation_id=45;
+            UPDATE rhy_hta SET land_area_size=51424.6098683925 WHERE hta_id=10 AND organisation_id=79;
+            UPDATE rhy_hta SET land_area_size=127683.190074365 WHERE hta_id=26 AND organisation_id=127;
+            UPDATE rhy_hta SET land_area_size=32923.9261425612 WHERE hta_id=55 AND organisation_id=293;
+            UPDATE rhy_hta SET land_area_size=78679.0934249511 WHERE hta_id=25 AND organisation_id=125;
+            UPDATE rhy_hta SET land_area_size=57078.0667231061 WHERE hta_id=6 AND organisation_id=55;
+            UPDATE rhy_hta SET land_area_size=8902.16664463705 WHERE hta_id=50 AND organisation_id=264;
+            UPDATE rhy_hta SET land_area_size=48294.3389762628 WHERE hta_id=3 AND organisation_id=17;
+            UPDATE rhy_hta SET land_area_size=107345.816838643 WHERE hta_id=28 AND organisation_id=141;
+            UPDATE rhy_hta SET land_area_size=14631.6686272272 WHERE hta_id=49 AND organisation_id=266;
+            UPDATE rhy_hta SET land_area_size=59642.0024872291 WHERE hta_id=1 AND organisation_id=27;
+            UPDATE rhy_hta SET land_area_size=42096.2096554091 WHERE hta_id=8 AND organisation_id=59;
+            UPDATE rhy_hta SET land_area_size=41843.4191763379 WHERE hta_id=2 AND organisation_id=21;
+            UPDATE rhy_hta SET land_area_size=7371.61446009837 WHERE hta_id=36 AND organisation_id=209;
+            UPDATE rhy_hta SET land_area_size=67298.8277380128 WHERE hta_id=6 AND organisation_id=34;
+            UPDATE rhy_hta SET land_area_size=239988.468496458 WHERE hta_id=31 AND organisation_id=168198;
+            UPDATE rhy_hta SET land_area_size=66415.6461097007 WHERE hta_id=43 AND organisation_id=237;
+            UPDATE rhy_hta SET land_area_size=74733.8342765793 WHERE hta_id=39 AND organisation_id=164;
+            UPDATE rhy_hta SET land_area_size=57367.4107895553 WHERE hta_id=5 AND organisation_id=48;
+            UPDATE rhy_hta SET land_area_size=38994.6321042453 WHERE hta_id=4 AND organisation_id=46;
+            UPDATE rhy_hta SET land_area_size=30519.689579988 WHERE hta_id=30 AND organisation_id=174;
+            UPDATE rhy_hta SET land_area_size=107011.925379997 WHERE hta_id=9 AND organisation_id=58;
+            UPDATE rhy_hta SET land_area_size=332106.626620009 WHERE hta_id=31 AND organisation_id=196;
+            UPDATE rhy_hta SET land_area_size=71673.2614533322 WHERE hta_id=21 AND organisation_id=98;
+            UPDATE rhy_hta SET land_area_size=35601.322296863 WHERE hta_id=25 AND organisation_id=128;
+            UPDATE rhy_hta SET land_area_size=13212.5937389698 WHERE hta_id=4 AND organisation_id=50;
+            UPDATE rhy_hta SET land_area_size=144701.168526732 WHERE hta_id=6 AND organisation_id=43;
+            UPDATE rhy_hta SET land_area_size=190373.029881157 WHERE hta_id=18 AND organisation_id=101;
+            UPDATE rhy_hta SET land_area_size=40391.7257781115 WHERE hta_id=5 AND organisation_id=46;
+            UPDATE rhy_hta SET land_area_size=46596.6288940864 WHERE hta_id=36 AND organisation_id=211;
+            UPDATE rhy_hta SET land_area_size=808809.826198119 WHERE hta_id=18 AND organisation_id=99;
+            UPDATE rhy_hta SET land_area_size=26991.9870855065 WHERE hta_id=52 AND organisation_id=284;
+            UPDATE rhy_hta SET land_area_size=41783.3387899904 WHERE hta_id=3 AND organisation_id=25;
+            UPDATE rhy_hta SET land_area_size=245809.28252534 WHERE hta_id=58 AND organisation_id=307;
+            UPDATE rhy_hta SET land_area_size=27112.4431704984 WHERE hta_id=13 AND organisation_id=81;
+            UPDATE rhy_hta SET land_area_size=59123.2816408739 WHERE hta_id=52 AND organisation_id=289;
+            UPDATE rhy_hta SET land_area_size=35095.7646858491 WHERE hta_id=43 AND organisation_id=244;
+            UPDATE rhy_hta SET land_area_size=82381.8752905599 WHERE hta_id=28 AND organisation_id=161;
+            UPDATE rhy_hta SET land_area_size=85702.4135594542 WHERE hta_id=52 AND organisation_id=296;
+            UPDATE rhy_hta SET land_area_size=55639.7924278151 WHERE hta_id=41 AND organisation_id=166;
+            UPDATE rhy_hta SET land_area_size=47276.0303082054 WHERE hta_id=38 AND organisation_id=205;
+            UPDATE rhy_hta SET land_area_size=92443.2983739214 WHERE hta_id=36 AND organisation_id=225;
+            UPDATE rhy_hta SET land_area_size=27229.988434407 WHERE hta_id=47 AND organisation_id=264;
+            UPDATE rhy_hta SET land_area_size=36153.7141439459 WHERE hta_id=6 AND organisation_id=71;
+            UPDATE rhy_hta SET land_area_size=47884.3087236152 WHERE hta_id=55 AND organisation_id=295;
+            UPDATE rhy_hta SET land_area_size=22872.6335054894 WHERE hta_id=37 AND organisation_id=202;
+            UPDATE rhy_hta SET land_area_size=22280.6642739169 WHERE hta_id=43 AND organisation_id=250;
+            UPDATE rhy_hta SET land_area_size=17134.9437342537 WHERE hta_id=4 AND organisation_id=32;
+            UPDATE rhy_hta SET land_area_size=37549.2605289837 WHERE hta_id=2 AND organisation_id=23;
+            UPDATE rhy_hta SET land_area_size=67319.3935597362 WHERE hta_id=35 AND organisation_id=204;
+            UPDATE rhy_hta SET land_area_size=5736.76254516732 WHERE hta_id=47 AND organisation_id=274;
+            UPDATE rhy_hta SET land_area_size=572509.782538289 WHERE hta_id=19 AND organisation_id=106;
+            UPDATE rhy_hta SET land_area_size=44473.7894336296 WHERE hta_id=32 AND organisation_id=195;
+            UPDATE rhy_hta SET land_area_size=56714.7180217564 WHERE hta_id=9 AND organisation_id=73;
+            UPDATE rhy_hta SET land_area_size=82789.9780270532 WHERE hta_id=39 AND organisation_id=157;
+            UPDATE rhy_hta SET land_area_size=72636.0233847963 WHERE hta_id=32 AND organisation_id=193;
+            UPDATE rhy_hta SET land_area_size=44273.9785859708 WHERE hta_id=41 AND organisation_id=149;
+            UPDATE rhy_hta SET land_area_size=30779.7771478012 WHERE hta_id=8 AND organisation_id=70;
+            UPDATE rhy_hta SET land_area_size=52284.2091236169 WHERE hta_id=3 AND organisation_id=28;
+            UPDATE rhy_hta SET land_area_size=795243.75669282 WHERE hta_id=16 AND organisation_id=95;
+            UPDATE rhy_hta SET land_area_size=60905.780267851 WHERE hta_id=13 AND organisation_id=92;
+            UPDATE rhy_hta SET land_area_size=57281.8236125842 WHERE hta_id=27 AND organisation_id=139;
+            UPDATE rhy_hta SET land_area_size=80351.2365070079 WHERE hta_id=32 AND organisation_id=197;
+            UPDATE rhy_hta SET land_area_size=78870.5945389007 WHERE hta_id=27 AND organisation_id=133;
+            UPDATE rhy_hta SET land_area_size=164007.40994246 WHERE hta_id=33 AND organisation_id=189;
+            UPDATE rhy_hta SET land_area_size=91849.3916019712 WHERE hta_id=27 AND organisation_id=119;
+            UPDATE rhy_hta SET land_area_size=18075.0741314827 WHERE hta_id=50 AND organisation_id=274;
+            UPDATE rhy_hta SET land_area_size=48175.8280560447 WHERE hta_id=40 AND organisation_id=169;
+            UPDATE rhy_hta SET land_area_size=103020.765501182 WHERE hta_id=39 AND organisation_id=226;
+            UPDATE rhy_hta SET land_area_size=1168010.07885579 WHERE hta_id=17 AND organisation_id=109;
+            UPDATE rhy_hta SET land_area_size=37411.6612275486 WHERE hta_id=6 AND organisation_id=44;
+            UPDATE rhy_hta SET land_area_size=159667.458448594 WHERE hta_id=32 AND organisation_id=190;
+            UPDATE rhy_hta SET land_area_size=60471.5579149698 WHERE hta_id=28 AND organisation_id=146;
+            UPDATE rhy_hta SET land_area_size=20752.2679591161 WHERE hta_id=48 AND organisation_id=260;
+            UPDATE rhy_hta SET land_area_size=76344.7488657253 WHERE hta_id=47 AND organisation_id=269;
+            UPDATE rhy_hta SET land_area_size=18639.3355407006 WHERE hta_id=2 AND organisation_id=19;
+            UPDATE rhy_hta SET land_area_size=77875.5253109659 WHERE hta_id=45 AND organisation_id=242;
+            UPDATE rhy_hta SET land_area_size=107406.436163628 WHERE hta_id=7 AND organisation_id=67;
+            UPDATE rhy_hta SET land_area_size=37921.1980539063 WHERE hta_id=3 AND organisation_id=26;
+            UPDATE rhy_hta SET land_area_size=82859.6232920985 WHERE hta_id=41 AND organisation_id=147;
+            UPDATE rhy_hta SET land_area_size=83752.2719140544 WHERE hta_id=34 AND organisation_id=199;
+            UPDATE rhy_hta SET land_area_size=108285.345544826 WHERE hta_id=4 AND organisation_id=53;
+            UPDATE rhy_hta SET land_area_size=36194.0468049064 WHERE hta_id=46 AND organisation_id=261;
+            UPDATE rhy_hta SET land_area_size=32960.2513823658 WHERE hta_id=49 AND organisation_id=259;
+            UPDATE rhy_hta SET land_area_size=66538.4377877844 WHERE hta_id=43 AND organisation_id=241;
+            UPDATE rhy_hta SET land_area_size=127093.871813157 WHERE hta_id=39 AND organisation_id=168186;
+            UPDATE rhy_hta SET land_area_size=42153.1482408557 WHERE hta_id=13 AND organisation_id=84;
+            UPDATE rhy_hta SET land_area_size=47982.7895146314 WHERE hta_id=39 AND organisation_id=162;
+            UPDATE rhy_hta SET land_area_size=69970.4184370141 WHERE hta_id=26 AND organisation_id=123;
+            UPDATE rhy_hta SET land_area_size=28937.2138674438 WHERE hta_id=13 AND organisation_id=85;
+            UPDATE rhy_hta SET land_area_size=133481.200996417 WHERE hta_id=8 AND organisation_id=60;
+            UPDATE rhy_hta SET land_area_size=54767.0713477871 WHERE hta_id=30 AND organisation_id=178;
+            UPDATE rhy_hta SET land_area_size=33770.7741224389 WHERE hta_id=43 AND organisation_id=180;
+            UPDATE rhy_hta SET land_area_size=255542.247215972 WHERE hta_id=18 AND organisation_id=100;
+            UPDATE rhy_hta SET land_area_size=90690.8918948937 WHERE hta_id=8 AND organisation_id=69;
+            UPDATE rhy_hta SET land_area_size=36603.9320229774 WHERE hta_id=50 AND organisation_id=262;
+            UPDATE rhy_hta SET land_area_size=107806.295867529 WHERE hta_id=4 AND organisation_id=87;
+            UPDATE rhy_hta SET land_area_size=130068.409419818 WHERE hta_id=25 AND organisation_id=138;
+            UPDATE rhy_hta SET land_area_size=7977.6058788564 WHERE hta_id=6 AND organisation_id=17;
+            UPDATE rhy_hta SET land_area_size=65455.4551566175 WHERE hta_id=5 AND organisation_id=52;
+            UPDATE rhy_hta SET land_area_size=66060.3849722666 WHERE hta_id=30 AND organisation_id=175;
+            UPDATE rhy_hta SET land_area_size=60263.8409894976 WHERE hta_id=33 AND organisation_id=200;
+            UPDATE rhy_hta SET land_area_size=13028.9348766913 WHERE hta_id=48 AND organisation_id=272;
+            UPDATE rhy_hta SET land_area_size=5707.46465752861 WHERE hta_id=1 AND organisation_id=21;
+            UPDATE rhy_hta SET land_area_size=86382.6111595387 WHERE hta_id=40 AND organisation_id=230;
+            UPDATE rhy_hta SET land_area_size=66497.4568557609 WHERE hta_id=6 AND organisation_id=51;
+            UPDATE rhy_hta SET land_area_size=51078.32760693 WHERE hta_id=52 AND organisation_id=24;
+            UPDATE rhy_hta SET land_area_size=122197.223227942 WHERE hta_id=41 AND organisation_id=232;
+            UPDATE rhy_hta SET land_area_size=35242.7139511013 WHERE hta_id=30 AND organisation_id=173;
+            UPDATE rhy_hta SET land_area_size=20106.1025099044 WHERE hta_id=25 AND organisation_id=116;
+            UPDATE rhy_hta SET land_area_size=59748.1860375291 WHERE hta_id=42 AND organisation_id=234;
+            UPDATE rhy_hta SET land_area_size=480441.875589577 WHERE hta_id=59 AND organisation_id=305;
+            UPDATE rhy_hta SET land_area_size=43696.2640974272 WHERE hta_id=44 AND organisation_id=253;
+            UPDATE rhy_hta SET land_area_size=102064.173385788 WHERE hta_id=43 AND organisation_id=247;
+            UPDATE rhy_hta SET land_area_size=78069.784741459 WHERE hta_id=35 AND organisation_id=210;
+            UPDATE rhy_hta SET land_area_size=25478.2502170275 WHERE hta_id=39 AND organisation_id=144;
+            UPDATE rhy_hta SET land_area_size=51829.0214602351 WHERE hta_id=53 AND organisation_id=291;
+            UPDATE rhy_hta SET land_area_size=68393.1852770574 WHERE hta_id=41 AND organisation_id=233;
+            UPDATE rhy_hta SET land_area_size=45716.4895345889 WHERE hta_id=25 AND organisation_id=117;
+            UPDATE rhy_hta SET land_area_size=72124.9194481362 WHERE hta_id=35 AND organisation_id=168197;
+            UPDATE rhy_hta SET land_area_size=156078.801464297 WHERE hta_id=21 AND organisation_id=110;
+            UPDATE rhy_hta SET land_area_size=37576.4973909584 WHERE hta_id=37 AND organisation_id=217;
+            UPDATE rhy_hta SET land_area_size=57443.6799008776 WHERE hta_id=5 AND organisation_id=36;
+            UPDATE rhy_hta SET land_area_size=30994.6156828646 WHERE hta_id=12 AND organisation_id=80;
+            UPDATE rhy_hta SET land_area_size=48253.9790945846 WHERE hta_id=7 AND organisation_id=206;
+            UPDATE rhy_hta SET land_area_size=75353.2642425064 WHERE hta_id=12 AND organisation_id=77;
+            UPDATE rhy_hta SET land_area_size=34235.2664199506 WHERE hta_id=8 AND organisation_id=68;
+            UPDATE rhy_hta SET land_area_size=74921.9788146764 WHERE hta_id=11 AND organisation_id=83;
+            UPDATE rhy_hta SET land_area_size=36565.4006934635 WHERE hta_id=48 AND organisation_id=277;
+            UPDATE rhy_hta SET land_area_size=757345.065022957 WHERE hta_id=20 AND organisation_id=105;
+            UPDATE rhy_hta SET land_area_size=232052.300469727 WHERE hta_id=24 AND organisation_id=118;
+            UPDATE rhy_hta SET land_area_size=36371.8990252773 WHERE hta_id=49 AND organisation_id=281;
+            UPDATE rhy_hta SET land_area_size=33350.989736333 WHERE hta_id=35 AND organisation_id=49;
+            UPDATE rhy_hta SET land_area_size=57919.5055271677 WHERE hta_id=45 AND organisation_id=235;
+            UPDATE rhy_hta SET land_area_size=50146.0407224755 WHERE hta_id=40 AND organisation_id=145;
+            UPDATE rhy_hta SET land_area_size=7352.87036956276 WHERE hta_id=47 AND organisation_id=260;
+            UPDATE rhy_hta SET land_area_size=57589.876223099 WHERE hta_id=8 AND organisation_id=54;
+            UPDATE rhy_hta SET land_area_size=44985.4152207531 WHERE hta_id=49 AND organisation_id=279;
+            UPDATE rhy_hta SET land_area_size=165402.216938288 WHERE hta_id=26 AND organisation_id=134;
+            UPDATE rhy_hta SET land_area_size=7632.28512248686 WHERE hta_id=42 AND organisation_id=244;
+            UPDATE rhy_hta SET land_area_size=67976.7347182698 WHERE hta_id=29 AND organisation_id=178;
+            UPDATE rhy_hta SET land_area_size=55872.8582982301 WHERE hta_id=5 AND organisation_id=47;
+            UPDATE rhy_hta SET land_area_size=47613.5066751117 WHERE hta_id=28 AND organisation_id=154;
+            UPDATE rhy_hta SET land_area_size=116207.033876177 WHERE hta_id=29 AND organisation_id=186;
+            UPDATE rhy_hta SET land_area_size=86443.6476838683 WHERE hta_id=29 AND organisation_id=179;
+            UPDATE rhy_hta SET land_area_size=52874.9216010292 WHERE hta_id=28 AND organisation_id=148;
+            UPDATE rhy_hta SET land_area_size=34734.8456538859 WHERE hta_id=9 AND organisation_id=72;
+            UPDATE rhy_hta SET land_area_size=2444.3860691555 WHERE hta_id=35 AND organisation_id=217;
+            UPDATE rhy_hta SET land_area_size=202801.668589347 WHERE hta_id=21 AND organisation_id=113;
+            UPDATE rhy_hta SET land_area_size=28569.5148610129 WHERE hta_id=39 AND organisation_id=159;
+            UPDATE rhy_hta SET land_area_size=61430.4717041984 WHERE hta_id=53 AND organisation_id=292;
+            UPDATE rhy_hta SET land_area_size=24192.1339109552 WHERE hta_id=42 AND organisation_id=172;
+            UPDATE rhy_hta SET land_area_size=53939.7334633185 WHERE hta_id=37 AND organisation_id=209;
+            UPDATE rhy_hta SET land_area_size=129856.446078188 WHERE hta_id=41 AND organisation_id=151;
+            UPDATE rhy_hta SET land_area_size=183462.318136704 WHERE hta_id=19 AND organisation_id=102;
+            UPDATE rhy_hta SET land_area_size=34913.8845115594 WHERE hta_id=1 AND organisation_id=168190;
+            UPDATE rhy_hta SET land_area_size=49244.546395952 WHERE hta_id=25 AND organisation_id=136;
+            UPDATE rhy_hta SET land_area_size=264545.161695144 WHERE hta_id=60 AND organisation_id=308;
+            UPDATE rhy_hta SET land_area_size=42742.2320817885 WHERE hta_id=34 AND organisation_id=198;
+            UPDATE rhy_hta SET land_area_size=144568.07847723 WHERE hta_id=21 AND organisation_id=108;
+            UPDATE rhy_hta SET land_area_size=124734.510365043 WHERE hta_id=7 AND organisation_id=74;
+            UPDATE rhy_hta SET land_area_size=91297.4188360797 WHERE hta_id=36 AND organisation_id=213;
+            UPDATE rhy_hta SET land_area_size=243567.389090282 WHERE hta_id=23 AND organisation_id=135;
+            UPDATE rhy_hta SET land_area_size=66755.9588086493 WHERE hta_id=56 AND organisation_id=302;
+            UPDATE rhy_hta SET land_area_size=40606.3139138838 WHERE hta_id=45 AND organisation_id=252;
+            UPDATE rhy_hta SET land_area_size=73279.9252836014 WHERE hta_id=9 AND organisation_id=65;
+            UPDATE rhy_hta SET land_area_size=45607.0362250135 WHERE hta_id=9 AND organisation_id=66;
+            UPDATE rhy_hta SET land_area_size=53907.6748653825 WHERE hta_id=4 AND organisation_id=41;
+            UPDATE rhy_hta SET land_area_size=92783.3883942667 WHERE hta_id=11 AND organisation_id=90;
+            UPDATE rhy_hta SET land_area_size=47447.1981266109 WHERE hta_id=39 AND organisation_id=150;
+            UPDATE rhy_hta SET land_area_size=36921.4465961432 WHERE hta_id=42 AND organisation_id=250;
+            UPDATE rhy_hta SET land_area_size=35936.5996337114 WHERE hta_id=55 AND organisation_id=298;
+            UPDATE rhy_hta SET land_area_size=106789.544545628 WHERE hta_id=6 AND organisation_id=40;
+            UPDATE rhy_hta SET land_area_size=80430.686460577 WHERE hta_id=28 AND organisation_id=170;
+            UPDATE rhy_hta SET land_area_size=135574.847913762 WHERE hta_id=43 AND organisation_id=246;
+            UPDATE rhy_hta SET land_area_size=91863.0087944409 WHERE hta_id=58 AND organisation_id=306;
+            UPDATE rhy_hta SET land_area_size=88864.8629184199 WHERE hta_id=1 AND organisation_id=18;
+            UPDATE rhy_hta SET land_area_size=42495.5496213532 WHERE hta_id=40 AND organisation_id=159;
+            UPDATE rhy_hta SET land_area_size=49541.4165173472 WHERE hta_id=1 AND organisation_id=19;
+            UPDATE rhy_hta SET land_area_size=28936.6884018115 WHERE hta_id=41 AND organisation_id=148;
+            UPDATE rhy_hta SET land_area_size=44646.010219229 WHERE hta_id=44 AND organisation_id=243;
+            UPDATE rhy_hta SET land_area_size=29606.6702458502 WHERE hta_id=44 AND organisation_id=248;
+            UPDATE rhy_hta SET land_area_size=20714.9624788682 WHERE hta_id=5 AND organisation_id=53;
+            UPDATE rhy_hta SET land_area_size=132638.157217576 WHERE hta_id=36 AND organisation_id=207;
+            UPDATE rhy_hta SET land_area_size=30202.1584974641 WHERE hta_id=42 AND organisation_id=30;
+            UPDATE rhy_hta SET land_area_size=1504332.0954835 WHERE hta_id=15 AND organisation_id=96;
+            UPDATE rhy_hta SET land_area_size=82240.3570159543 WHERE hta_id=11 AND organisation_id=88;
+            UPDATE rhy_hta SET land_area_size=55251.5853587881 WHERE hta_id=46 AND organisation_id=265;
+            UPDATE rhy_hta SET land_area_size=86531.1585689716 WHERE hta_id=34 AND organisation_id=192;
+            UPDATE rhy_hta SET land_area_size=71079.5419218321 WHERE hta_id=37 AND organisation_id=212;
+            UPDATE rhy_hta SET land_area_size=28793.3392681961 WHERE hta_id=56 AND organisation_id=287;
+            UPDATE rhy_hta SET land_area_size=12347.4017226769 WHERE hta_id=44 AND organisation_id=236;
+            UPDATE rhy_hta SET land_area_size=17119.8319496594 WHERE hta_id=1 AND organisation_id=23;
+            UPDATE rhy_hta SET land_area_size=24175.2708456009 WHERE hta_id=49 AND organisation_id=267;
+            UPDATE rhy_hta SET land_area_size=526854.57755479 WHERE hta_id=57 AND organisation_id=309;
+            UPDATE rhy_hta SET land_area_size=53741.6983640367 WHERE hta_id=38 AND organisation_id=214;
+            UPDATE rhy_hta SET land_area_size=35712.0001574633 WHERE hta_id=46 AND organisation_id=254;
+            UPDATE rhy_hta SET land_area_size=61833.8040649982 WHERE hta_id=44 AND organisation_id=245;
+            UPDATE rhy_hta SET land_area_size=35679.4782231844 WHERE hta_id=43 AND organisation_id=239;
+            UPDATE rhy_hta SET land_area_size=56215.6876466988 WHERE hta_id=11 AND organisation_id=82;
+            UPDATE rhy_hta SET land_area_size=105676.904827035 WHERE hta_id=5 AND organisation_id=42;
+            UPDATE rhy_hta SET land_area_size=19971.6171712958 WHERE hta_id=6 AND organisation_id=73;
+            UPDATE rhy_hta SET land_area_size=28530.8065371398 WHERE hta_id=2 AND organisation_id=20;
+            UPDATE rhy_hta SET land_area_size=115007.093342698 WHERE hta_id=37 AND organisation_id=215;
+            UPDATE rhy_hta SET land_area_size=28756.3328639453 WHERE hta_id=39 AND organisation_id=163;
+            UPDATE rhy_hta SET land_area_size=130582.588127278 WHERE hta_id=27 AND organisation_id=131;
+            UPDATE rhy_hta SET land_area_size=14772.4622539692 WHERE hta_id=42 AND organisation_id=180;
+            UPDATE rhy_hta SET land_area_size=497530.577580888 WHERE hta_id=23 AND organisation_id=122;
+            UPDATE rhy_hta SET land_area_size=14243.0470612795 WHERE hta_id=49 AND organisation_id=278;
+            UPDATE rhy_hta SET land_area_size=57871.0811172932 WHERE hta_id=42 AND organisation_id=177;
+            UPDATE rhy_hta SET land_area_size=77662.6601667687 WHERE hta_id=29 AND organisation_id=182;
+            UPDATE rhy_hta SET land_area_size=303691.642620248 WHERE hta_id=22 AND organisation_id=311;
+            UPDATE rhy_hta SET land_area_size=53342.9394542669 WHERE hta_id=36 AND organisation_id=202;
+            UPDATE rhy_hta SET land_area_size=123271.605135431 WHERE hta_id=27 AND organisation_id=114;
+            UPDATE rhy_hta SET land_area_size=19236.1709171267 WHERE hta_id=25 AND organisation_id=120;
+            UPDATE rhy_hta SET land_area_size=13021.4549714626 WHERE hta_id=54 AND organisation_id=299;
+            UPDATE rhy_hta SET land_area_size=96292.3850105756 WHERE hta_id=43 AND organisation_id=238;
+            ]]></sql>
+    </changeSet>
+
+    <changeSet id="2022-04-21-add-conflict_area_water_size-to-conflict_palsta" author="vincit-nikooj">
+        <comment>Since PG11 adding a new column with a default value is pretty much instant.</comment>
+        <addColumn tableName="harvest_permit_application_conflict_palsta">
+            <column name="conflict_area_water_size" type="DOUBLE" defaultValueNumeric="0"/>
+        </addColumn>
+    </changeSet>
+    
+    <changeSet id="2022-01-20-add-mobile_client_ref_id-to-hunting_control_event" author="vincit-nikooj">
+        <addColumn tableName="hunting_control_event">
+            <column name="mobile_client_ref_id" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2022-02-11-add-hunting_control_event_change_type-add_attachments" author="vincit-nikooj">
+        <insert tableName="hunting_control_event_change_type">
+            <column name="name">ADD_ATTACHMENTS</column>
+        </insert>
+    </changeSet>
+
+    <!-- Enable in separate commit
+
+        <changeSet id="2021-09-03-drop-hunting_control_event-cooperation_type-column" author="vincit-nikooj">
+            <comment>
+                Drop unused hunting_control_event.cooperation_type column.
+            </comment>
+            <dropForeignKeyConstraint baseTableName="hunting_control_event"
+                                      constraintName="fk_hunting_control_event_cooperation_type"/>
+            <dropColumn tableName="hunting_control_event" columnName="cooperation_type"/>
+        </changeSet>
+
+        <changeSet id="2021-09-03-drop-hunting_control_event-cooperation_type-column" author="vincit-nikooj">
+            <comment>
+                Drop unused hunting_control_event.inspectors column.
+            </comment>
+            <dropColumn tableName="hunting_control_event" columnName="inspectors"/>
+        </changeSet>
+
+    -->
+
+    <changeSet id="2022-04-06-add-non_subsidizable_hunting_control_events-to-rhy_annual_statistics"
+               author="vincit-mikkori">
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="non_subsidizable_hunting_control_events" type="INT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2022-04-08-add-hunter-exam-results-to-calendar_event" author="vincit-mikkori">
+        <addColumn tableName="calendar_event">
+            <column name="passed_attempts" type="INT"/>
+            <column name="failed_attempts" type="INT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2022-04-11-add-hunter-exam-results-overridden-flag" author="vincit-mikkori">
+        <addColumn tableName="rhy_annual_statistics">
+            <column name="hunter_exam_attempt_results_overridden" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2022-04-20-add-new-board-representation-roles" author="vincit-mikkori">
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="RH_MAKSU_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="MMM_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="LUKE_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="JARJESTO_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="HENKILOSTO_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="ALUEKOKOUKSEN_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="YMPARISTOMINISTERION_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="METSATALOUS_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="METSASTYS_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="LUONNONSUOJELU_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="ALUEKOKOUKSEN_JASEN"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="MAAKUNTALIITON_JASEN"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="ELY_KESKUKSEN_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="METSAKESKUKSEN_EDUSTAJA"/>
+        </insert>
+        <insert tableName="occupation_board_representation_role">
+            <column name="name" value="ALUEELLISEN_MAANOMISTAJAN_EDUSTAJA"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2022-05-10-move-taxation-report-attachments-to-different-s3-dir" author="vincit-miikkala">
+        <sql dbms="postgresql"><![CDATA[
+            UPDATE file_metadata AS fm
+            SET resource_url = CONCAT(
+                    SUBSTRING(fm.resource_url FROM '(.*)/[^/]*$'),
+                    '/taxationreportattachment/',
+                    SUBSTRING(fm.resource_url FROM '([^/]*)$')
+                )
+            FROM harvest_taxation_report_attachment AS htra
+            WHERE htra.attachment_metadata_id = fm.file_metadata_uuid;
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="2022-04-20-harvest-taxation-reporting-add-uniques" author="vincit-miikkala">
+        <sql dbms="postgresql"><![CDATA[
+            ALTER TABLE harvest_taxation_report ADD CONSTRAINT unique_taxation_report_fields UNIQUE (rhy_id,hta_id,hunting_year,game_species_id);
+            ]]></sql>
+
+    </changeSet>
+
+    <changeSet id="2022-06-03-add-deny_announcement_email-to-person-table" author="vincit-mikkori">
+        <addColumn tableName="person">
+            <column name="deny_announcement_email" type="boolean" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="2022-06-08-drop-moose_hunting_summary-constraints" author="vincit-mikkori">
+        <sql><![CDATA[
+            ALTER TABLE moose_hunting_summary DROP CONSTRAINT ck_hunting_area_and_remaining_population_must_be_given;
+            ]]></sql>
+    </changeSet>
+
+    <changeSet id="2022-06-08-drop-basic_club_hunting_summary-constraints" author="vincit-mikkori">
+        <sql><![CDATA[
+            ALTER TABLE basic_club_hunting_summary DROP CONSTRAINT ck_basic_summary_hunting_area_and_remaining_population_must_be_given;
+            ]]></sql>
+    </changeSet>
+
+    <changeSet id="2022-04-04-add-additional-srva-fields" author="vincit-mikkome">
+        <insert tableName="srva_method_type">
+            <column name="name" value="VEHICLE"/>
+        </insert>
+        <insert tableName="srva_method_type">
+            <column name="name" value="CHASING_WITH_PEOPLE"/>
+        </insert>
+
+        <createTable tableName="srva_event_type_details">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+        </createTable>
+        <insert tableName="srva_event_type_details">
+            <column name="name" value="CARED_HOUSE_AREA"/>
+        </insert>
+        <insert tableName="srva_event_type_details">
+            <column name="name" value="FARM_ANIMAL_BUILDING"/>
+        </insert>
+        <insert tableName="srva_event_type_details">
+            <column name="name" value="URBAN_AREA"/>
+        </insert>
+        <insert tableName="srva_event_type_details">
+            <column name="name" value="CARCASS_AT_FOREST"/>
+        </insert>
+        <insert tableName="srva_event_type_details">
+            <column name="name" value="CARCASS_NEAR_HOUSES_AREA"/>
+        </insert>
+        <insert tableName="srva_event_type_details">
+            <column name="name" value="GARBAGE_CAN"/>
+        </insert>
+        <insert tableName="srva_event_type_details">
+            <column name="name" value="BEEHIVE"/>
+        </insert>
+        <insert tableName="srva_event_type_details">
+            <column name="name" value="OTHER"/>
+        </insert>
+
+        <createTable tableName="srva_event_result_details">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+        </createTable>
+        <insert tableName="srva_event_result_details">
+            <column name="name" value="ANIMAL_CONTACTED_AND_DEPORTED"/>
+        </insert>
+        <insert tableName="srva_event_result_details">
+            <column name="name" value="ANIMAL_CONTACTED"/>
+        </insert>
+        <insert tableName="srva_event_result_details">
+            <column name="name" value="UNCERTAIN_RESULT"/>
+        </insert>
+
+        <addColumn tableName="srva_event">
+            <column name="deportation_order_number" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="srva_event">
+            <column name="event_type_detail" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="srva_event">
+            <column name="other_event_type_detail_description" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="srva_event">
+            <column name="event_result_detail" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint 
+            baseTableName="srva_event"
+            baseColumnNames="event_type_detail"
+            constraintName="fk_srva_event_type_detail"
+            onDelete="NO ACTION" onUpdate="NO ACTION"
+            referencedTableName="srva_event_type_details"
+            referencedColumnNames="name"
+        />
+
+        <addForeignKeyConstraint 
+            baseTableName="srva_event"
+            baseColumnNames="event_result_detail"
+            constraintName="fk_srva_event_result_detail"
+            onDelete="NO ACTION" onUpdate="NO ACTION"
+            referencedTableName="srva_event_result_details"
+            referencedColumnNames="name"
+        />
+    </changeSet>
+
+
+    <changeSet id="2022-04-21-add-values-to-contact-info-share" author="vincit-miikkala">
+        <insert tableName="contact_info_share">
+            <column name="name" value="SAME_PERMIT_LEVEL"/>
+        </insert>
+        <insert tableName="contact_info_share">
+            <column name="name" value="RHY_LEVEL"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2022-09-08-account-transfer-batch-file-number" author="vincit-terole">
+        <dropIndex tableName="account_transfer_batch" indexName="uk_account_transfer_batch_date"></dropIndex>
+        <dropUniqueConstraint tableName="account_transfer_batch"
+                              constraintName="account_transfer_batch_filename_date_key"/>
+
+        <addColumn tableName="account_transfer_batch">
+            <column type="int" name="file_number"/>
+        </addColumn>
+
+        <createIndex tableName="account_transfer_batch" indexName="ndx_account_transfer_batch_date_file_num"
+                     unique="true">
+            <column name="filename_date"></column>
+            <column name="file_number"></column>
+        </createIndex>
+
+    </changeSet>
+
+    <changeSet id="2022-05-06-add-harvest-registry-api-search-log" author="vincit-miikkala">
+
+        <createTable tableName="harvest_registry_external_request_reason">
+            <column name="name" type="VARCHAR(255)">
+                <constraints primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <insert tableName="harvest_registry_external_request_reason">
+            <column name="name">HUNTING_CONTROL</column>
+        </insert>
+        <insert tableName="harvest_registry_external_request_reason">
+            <column name="name">HUNTING_MONITORING</column>
+        </insert>
+
+        <createTable tableName="harvest_registry_external_request">
+            <column autoIncrement="true" name="harvest_registry_external_request_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_registry_external_request_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT"/>
+            <column name="deleted_by_user_id" type="BIGINT"/>
+            <column name="modified_by_user_id" type="BIGINT"/>
+            <column name="creation_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modification_time" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE"/>
+
+            <column name="reason" type="VARCHAR(255)">
+                <constraints nullable="false"
+                             references="harvest_registry_external_request_reason(name)"
+                             foreignKeyName="fk_harvest_registry_external_request_reason" />
+            </column>
+
+            <column name="remote_user" type="VARCHAR(255)" />
+
+            <column name="remote_address" type="VARCHAR(255)" />
+
+            <column name="begin_date" type="DATE">
+                <constraints nullable="false" />
+            </column>
+            <column name="end_date" type="DATE">
+                <constraints nullable="false" />
+            </column>
+
+            <column name="all_species" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="municipality_code" type="CHAR(3)"/>
+            <column name="rka_code" type="VARCHAR(3)" />
+            <column name="rhy_code" type="VARCHAR(3)" />
+            <column name="shooter_hunter_number" type="VARCHAR(255)" />
+            <column name="page" type="INTEGER">
+                <constraints nullable="false" />
+            </column>
+            <column name="page_size" type="INTEGER">
+                <constraints nullable="false" />
+            </column>
+
+        </createTable>
+
+        <createTable tableName="harvest_registry_external_request_species">
+            <column autoIncrement="true" name="harvest_registry_external_request_species_id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="harvest_registry_external_request_species_pkey"/>
+            </column>
+
+            <column name="harvest_registry_external_request_id" type="BIGINT">
+                <constraints nullable="false" references="harvest_registry_external_request(harvest_registry_external_request_id)"
+                             foreignKeyName="fk_harvest_registry_external_request_species_harvest_registry_api_request_id"/>
+            </column>
+            <column name="species" type="INTEGER">
+                <constraints nullable="false"></constraints>
+            </column>
+
+        </createTable>
+        <addUniqueConstraint tableName="harvest_registry_external_request_species" constraintName="uc_harvest_registry_external_request_species"
+                             columnNames="harvest_registry_external_request_id,species"/>
+    </changeSet>
+
+    <changeSet id="2022-10-07-deleted-game-diary-entity-tables" author="vincit-terole">
+        <createTable tableName="deleted_harvest">
+            <column autoIncrement="true" name="deleted_harvest_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="deleted_harvest_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="harvest_id" type="BIGINT">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_deleted_harvest_harvest_id"/>
+            </column>
+            <column name="author_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shooter_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="deleted_observation">
+            <column autoIncrement="true" name="deleted_observation_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="deleted_observation_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="observation_id" type="BIGINT">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_deleted_observation_observation_id"/>
+            </column>
+            <column name="author_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="observer_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="deleted_srva_event">
+            <column autoIncrement="true" name="deleted_srva_event_id" type="BIGSERIAL">
+                <constraints primaryKey="true" primaryKeyName="deleted_srva_event_pkey"/>
+            </column>
+            <column name="consistency_version" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="srva_event_id" type="BIGINT">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_deleted_srva_event_srva_event_id"/>
+            </column>
+            <column name="author_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deletion_time" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="2022-11-09-application-types-for-beaver-and-partridge" author="vincit-terole">
+        <insert tableName="harvest_permit_category">
+            <column name="name" value="EUROPEAN_BEAVER"></column>
+        </insert>
+        <insert tableName="harvest_permit_category">
+            <column name="name" value="PARTRIDGE"></column>
+        </insert>
+    </changeSet>
+
+    <changeSet id="2022-11-09-beaver-and-partridge-application-schedule" author="vincit-terole">
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="EUROPEAN_BEAVER"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+        <insert tableName="harvest_permit_application_schedule">
+            <column name="category" value="PARTRIDGE"/>
+            <column name="active_override" value="TRUE"/>
+        </insert>
+
+        <delete tableName="harvest_permit_application_schedule">
+            <where>category = 'LAW_SECTION_TEN'</where>
+        </delete>
+    </changeSet>
+
+    <changeSet id="2022-11-17-additional-fields-for-section-ten" author="vincit-terole">
+        <addColumn tableName="law_section_ten_permit_application">
+            <column name="justification" type="TEXT"></column>
+            <column name="population_description" type="TEXT"></column>
+            <column name="damages_caused" type="TEXT"></column>
+            <column name="transferred_animal_origin" type="TEXT"></column>
+            <column name="transferred_animal_amount" type="INT"></column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

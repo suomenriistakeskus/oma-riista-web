@@ -21,20 +21,7 @@ public final class JCEUtil {
     private static final Logger LOG = LoggerFactory.getLogger(JCEUtil.class);
 
     public static void removeJavaCryptographyAPIRestrictions() {
-        try {
-            final Field field = Class.forName("javax.crypto.JceSecurity").
-                    getDeclaredField("isRestricted");
-            field.setAccessible(true);
-
-            final Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-            field.set(null, Boolean.FALSE);
-
-        } catch (Exception ex) {
-            LOG.error("Could not remove JCE restrictions", ex);
-        }
+        // FIXME This method can be removed? https://bugs.openjdk.org/browse/JDK-8170157
     }
 
     public static PrivateKey loadEllipticCurvePkcs8PrivateKey(String p8key) throws Exception {

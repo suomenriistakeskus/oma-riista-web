@@ -24,9 +24,8 @@ public class OccupationDTO extends BaseEntityDTO<Long> implements HasBeginAndEnd
         dto.setPersonId(occupation.getPerson().getId());
         dto.setPerson(createPersonDTO(occupation, showPersonInfo, showContactInformation));
         dto.setModificationTime(DateUtil.toLocalDateTimeNullSafe(occupation.getModificationTime()));
-        if (showContactInformation) {
-            dto.setContactInfoShare(occupation.getContactInfoShare());
-        }
+        dto.setContactInfoShare(occupation.getContactInfoShare());
+
         return dto;
     }
 

@@ -75,45 +75,46 @@ public class ShootingTestExportServiceTest extends EmbeddedDatabaseTest implemen
 
     @Test
     public void testExportShootingTestData_verifyingEventsFilteredByDate() {
-        final LocalDate today = today();
+        final LocalDate reportDate = today().minusDays(1);
+        final LocalDate firstValidDateForReportDate = reportDate.minusYears(3);
 
         withRhy(rhy -> {
 
-            final ShootingTestEvent event1 = openEvent(rhy, today.minusYears(3).minusDays(2));
+            final ShootingTestEvent event1 = openEvent(rhy, firstValidDateForReportDate.minusDays(1));
             createParticipantWithOneAttempt(event1);
 
-            final ShootingTestEvent event2 = openEvent(rhy, today.minusYears(3).minusDays(1));
+            final ShootingTestEvent event2 = openEvent(rhy, firstValidDateForReportDate);
             final ShootingTestAttempt attempt2 = createParticipantWithOneAttempt(event2);
 
-            final ShootingTestEvent event3 = openEvent(rhy, today.minusDays(1));
+            final ShootingTestEvent event3 = openEvent(rhy, reportDate);
             final ShootingTestAttempt attempt3 = createParticipantWithOneAttempt(event3);
 
-            final ShootingTestEvent event4 = openEvent(rhy, today);
+            final ShootingTestEvent event4 = openEvent(rhy, reportDate.plusDays(1));
             createParticipantWithOneAttempt(event4);
 
             Stream.of(event1, event2, event3, event4).forEach(ShootingTestEvent::close);
 
             persistInNewTransaction();
-            assertResult(today.minusDays(1), attempt2, attempt3);
+            assertResult(reportDate, attempt2, attempt3);
         });
     }
 
     @Test
-    public void testExportShootingTestData_verifyingOnlyCompletedEventsIncluded() {
+    public void testExportShootingTestData_verifyingAlsoIncompletedEventsIncluded() {
         final LocalDate today = today();
 
         withRhy(rhy -> {
 
             final ShootingTestEvent event1 = openEvent(rhy, today.minusDays(1));
-            createParticipantWithOneAttempt(event1);
+            final ShootingTestAttempt incompletedAttempt = createParticipantWithOneAttempt(event1);
             // event1 not closed
 
             final ShootingTestEvent event2 = openEvent(rhy, today.minusDays(2));
-            final ShootingTestAttempt expectedAttempt = createParticipantWithOneAttempt(event2);
+            final ShootingTestAttempt completedAttempt = createParticipantWithOneAttempt(event2);
             event2.close();
 
             persistInNewTransaction();
-            assertResult(today, expectedAttempt);
+            assertResult(today, incompletedAttempt, completedAttempt);
         });
     }
 

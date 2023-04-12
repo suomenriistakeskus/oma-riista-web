@@ -3,6 +3,7 @@ package fi.riista.api.harvestpermit;
 import fi.riista.feature.harvestpermit.payment.PermitInvoiceListDTO;
 import fi.riista.feature.harvestpermit.payment.PermitInvoiceListFeature;
 import fi.riista.feature.harvestpermit.payment.PermitInvoicePaymentFeature;
+import fi.riista.integration.paytrail.checkout.model.PaytrailPaymentInitResponse;
 import fi.riista.util.MediaTypeExtras;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,6 @@ import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/harvestpermit/{permitId:\\d+}/invoice")
@@ -53,7 +53,9 @@ public class HarvestPermitInvoiceApiResource {
     }
 
     @PostMapping(value = "/{invoiceId:\\d+}/payment", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, String> getPaymentForm(final @PathVariable long permitId, final @PathVariable long invoiceId) {
-        return invoicePaymentFeature.getPaymentForm(permitId, invoiceId);
+    public PaytrailPaymentInitResponse initiatePayment(final @PathVariable long permitId,
+                                                       final @PathVariable long invoiceId,
+                                                       final Locale locale) {
+        return invoicePaymentFeature.initiatePayment(permitId, invoiceId, locale);
     }
 }

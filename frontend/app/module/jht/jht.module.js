@@ -25,5 +25,7 @@ angular.module('app.jht', [
     'app.jht.nominationdecision.document.text',
     'app.jht.natura',
     'app.jht.otherwisedeceased',
-    'app.jht.largecarnivorereport'
+    'app.jht.largecarnivorereport',
+    'app.jht.applicationschedule',
+    'app.jht.harvestseasons'
 ]);

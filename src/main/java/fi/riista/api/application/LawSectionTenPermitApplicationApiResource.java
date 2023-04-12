@@ -1,6 +1,7 @@
 package fi.riista.api.application;
 
 import fi.riista.feature.permit.application.PermitHolderDTO;
+import fi.riista.feature.permit.application.derogation.population.DerogationPermitApplicationSpeciesPopulationDTO;
 import fi.riista.feature.permit.application.lawsectionten.LawSectionTenPermitApplicationSummaryDTO;
 import fi.riista.feature.permit.application.lawsectionten.LawSectionTenPermitApplicationSummaryFeature;
 import fi.riista.feature.permit.application.lawsectionten.amount.LawSectionTenPermitApplicationSpeciesAmountDTO;
@@ -8,6 +9,8 @@ import fi.riista.feature.permit.application.lawsectionten.amount.LawSectionTenPe
 import fi.riista.feature.permit.application.lawsectionten.applicant.LawSectionTenPermitApplicationApplicantFeature;
 import fi.riista.feature.permit.application.lawsectionten.period.LawSectionTenPermitApplicationSpeciesPeriodDTO;
 import fi.riista.feature.permit.application.lawsectionten.period.LawSectionTenPermitApplicationSpeciesPeriodFeature;
+import fi.riista.feature.permit.application.lawsectionten.population.LawSectionTenPopulationDTO;
+import fi.riista.feature.permit.application.lawsectionten.population.LawSectionTenPopulationFeature;
 import net.rossillo.spring.web.mvc.CacheControl;
 import net.rossillo.spring.web.mvc.CachePolicy;
 import org.springframework.http.HttpStatus;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Resource;
 import javax.validation.Valid;
 
+import java.util.List;
 import java.util.Locale;
 
 import static fi.riista.api.application.HarvestPermitApplicationApiResource.API_PREFIX;
@@ -39,6 +43,9 @@ public class LawSectionTenPermitApplicationApiResource {
 
     @Resource
     private LawSectionTenPermitApplicationSpeciesPeriodFeature lawSectionTenPermitApplicationSpeciesPeriodFeature;
+
+    @Resource
+    private LawSectionTenPopulationFeature populationFeature;
 
     @Resource
     private LawSectionTenPermitApplicationSummaryFeature lawSectionTenPermitApplicationSummaryFeature;
@@ -96,5 +103,21 @@ public class LawSectionTenPermitApplicationApiResource {
             @PathVariable final long applicationId,
             @Valid @RequestBody final LawSectionTenPermitApplicationSpeciesPeriodDTO dto) {
         lawSectionTenPermitApplicationSpeciesPeriodFeature.saveSpeciesPeriods(applicationId, dto);
+    }
+
+    // POPULATION
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping(value = "/{applicationId:\\d+}/population", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void updatePopulation(
+            @PathVariable final long applicationId,
+            @Valid @RequestBody final LawSectionTenPopulationDTO dto) {
+        populationFeature.saveSpeciesPopulation(applicationId, dto);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{applicationId:\\d+}/population", produces = MediaType.APPLICATION_JSON_VALUE)
+    public LawSectionTenPopulationDTO getPopulation(@PathVariable final long applicationId) {
+        return populationFeature.getSpeciesPopulation(applicationId);
     }
 }

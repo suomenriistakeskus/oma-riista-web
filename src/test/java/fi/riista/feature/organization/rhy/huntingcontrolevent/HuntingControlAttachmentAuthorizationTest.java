@@ -1,12 +1,16 @@
 package fi.riista.feature.organization.rhy.huntingcontrolevent;
 
+import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.storage.metadata.PersistentFileMetadata;
 import fi.riista.test.EmbeddedDatabaseTest;
+import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 
+import static fi.riista.feature.organization.occupation.OccupationType.METSASTYKSENVALVOJA;
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 import static fi.riista.security.EntityPermission.CREATE;
 import static fi.riista.security.EntityPermission.DELETE;
@@ -20,12 +24,15 @@ public class HuntingControlAttachmentAuthorizationTest extends EmbeddedDatabaseT
     private HuntingControlEvent event;
     private PersistentFileMetadata metadata;
     private HuntingControlAttachment attachment;
+    private Person inspector;
 
     @Before
     public void setup() {
         rhy = model().newRiistanhoitoyhdistys();
         event = model().newHuntingControlEvent(rhy);
         metadata = model().newPersistentFileMetadata();
+        inspector = model().newPerson(rhy);
+        event.setInspectors(Collections.singleton(inspector));
         createAttachment();
     }
 
@@ -47,7 +54,7 @@ public class HuntingControlAttachmentAuthorizationTest extends EmbeddedDatabaseT
     public void testActiveCoordinator() {
         withPerson(person -> {
             model().newOccupation(rhy, person, TOIMINNANOHJAAJA);
-            onSavedAndAuthenticated(createUser(person), () -> testAllPermissions(true));
+            onSavedAndAuthenticated(createUser(person), () -> testAllPermissions(true, 4, 2));
         });
     }
 
@@ -55,7 +62,7 @@ public class HuntingControlAttachmentAuthorizationTest extends EmbeddedDatabaseT
     public void testExpiredCoordinator() {
         withPerson(person -> {
             model().newOccupation(rhy, person, TOIMINNANOHJAAJA).setEndDate(today().minusDays(1));
-            onSavedAndAuthenticated(createUser(person), () -> testAllPermissions(false));
+            onSavedAndAuthenticated(createUser(person), () -> testAllPermissions(false, 5, 3));
         });
     }
 
@@ -63,18 +70,50 @@ public class HuntingControlAttachmentAuthorizationTest extends EmbeddedDatabaseT
     public void testActiveCoordinatorInDifferentRhy() {
         withRhy(anotherRhy -> withPerson(person -> {
             model().newOccupation(anotherRhy, person, TOIMINNANOHJAAJA);
-            onSavedAndAuthenticated(createUser(person), () -> testAllPermissions(false));
+            onSavedAndAuthenticated(createUser(person), () -> testAllPermissions(false, 5, 3));
+        }));
+    }
+
+    @Test
+    public void testActiveGameWarden() {
+        model().newOccupation(rhy, inspector, METSASTYKSENVALVOJA);
+        onSavedAndAuthenticated(createUser(inspector), () -> testAllPermissions(true, 6, 4));
+    }
+
+    @Test
+    public void testExpiredGameWarden() {
+        final LocalDate nominationBegin = LocalDate.now().minusDays(2);
+        final LocalDate nominationEnd = LocalDate.now().minusDays(1);
+
+        model().newOccupation(rhy, inspector, METSASTYKSENVALVOJA, nominationBegin, nominationEnd);
+        onSavedAndAuthenticated(createUser(inspector), () -> testAllPermissions(false, 5, 3));
+    }
+
+    @Test
+    public void testActiveGameWardenThatIsNotInspector() {
+        withPerson(anotherGameWarden -> {
+            model().newOccupation(rhy, anotherGameWarden, METSASTYKSENVALVOJA);
+            onSavedAndAuthenticated(createUser(anotherGameWarden), () -> testAllPermissions(false, 7, 4));
+        });
+    }
+
+    @Test
+    public void testActiveGameWardenInDifferentRhy() {
+        withRhy(anotherRhy -> withPerson(anotherRhyInspector -> {
+            model().newOccupation(anotherRhy, anotherRhyInspector, METSASTYKSENVALVOJA);
+            event.setInspectors(Collections.singleton(anotherRhyInspector));
+            onSavedAndAuthenticated(createUser(anotherRhyInspector), () -> testAllPermissions(false, 5, 3));
         }));
     }
 
     @Test
     public void testNonRhyOccupiedPerson() {
-        onSavedAndAuthenticated(createUserWithPerson(), () -> testAllPermissions(false));
+        onSavedAndAuthenticated(createUserWithPerson(), () -> testAllPermissions(false, 5, 3));
     }
 
-    private void testAllPermissions(final boolean permitted) {
-        testReadUpdateDeletePermissions(permitted, 3);
-        testCreatePermission(permitted, 2);
+    private void testAllPermissions(final boolean permitted, final int rudQueryCount, final int cQueryCount) {
+        testReadUpdateDeletePermissions(permitted, rudQueryCount);
+        testCreatePermission(permitted, cQueryCount);
     }
 
     private void testAllPermissions(final boolean permitted, final int queryCount) {

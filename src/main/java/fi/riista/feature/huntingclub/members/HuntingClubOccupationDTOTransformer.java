@@ -49,7 +49,8 @@ public class HuntingClubOccupationDTOTransformer extends ListTransformer<Occupat
     private static boolean checkShowContactInfo(final boolean isLeader, final Occupation occupation) {
         final ContactInfoShare cis = occupation.getContactInfoShare();
 
-        return cis == ContactInfoShare.ALL_MEMBERS || cis == ContactInfoShare.ONLY_OFFICIALS && isLeader;
+        return cis == ContactInfoShare.ALL_MEMBERS
+                || cis == ContactInfoShare.ONLY_OFFICIALS && isLeader;
     }
 
     private boolean isLeader(final Person activePerson, final Organisation organisation) {
@@ -57,29 +58,10 @@ public class HuntingClubOccupationDTOTransformer extends ListTransformer<Occupat
             return false;
         }
 
-        boolean isLeader = userAuthorizationHelper.hasRoleInOrganisation(
+        return userAuthorizationHelper.hasRoleInOrganisation(
                 organisation,
                 activePerson,
-                getLeaderOccupationType(organisation));
-
-        // If not leader in group then check if leader in club
-        if (!isLeader && organisation.getOrganisationType() == OrganisationType.CLUBGROUP) {
-            isLeader = userAuthorizationHelper.hasRoleInOrganisation(
-                    organisation.getParentOrganisation(),
-                    activePerson,
-                    OccupationType.SEURAN_YHDYSHENKILO);
-        }
-
-        return isLeader;
+                OccupationType.SEURAN_YHDYSHENKILO);
     }
 
-    private static OccupationType getLeaderOccupationType(final Organisation organisation) {
-        if (organisation.getOrganisationType() == OrganisationType.CLUB) {
-            return OccupationType.SEURAN_YHDYSHENKILO;
-        } else if (organisation.getOrganisationType() == OrganisationType.CLUBGROUP) {
-            return OccupationType.RYHMAN_METSASTYKSENJOHTAJA;
-        }
-
-        throw new IllegalArgumentException("Unexpected organisationType: " + organisation.getOrganisationType());
-    }
 }

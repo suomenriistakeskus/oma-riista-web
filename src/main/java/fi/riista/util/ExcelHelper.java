@@ -3,7 +3,6 @@ package fi.riista.util;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
@@ -111,6 +110,14 @@ public class ExcelHelper {
         for (String header : headers) {
             appendTextCell(header);
         }
+        return this;
+    }
+
+    public ExcelHelper applyBordersToCurrentRow() {
+        final int rowNum = currentRow.getRowNum();
+        final int columnNum = currentColumnIndex - 1;
+        final CellRangeAddress range = new CellRangeAddress(rowNum, rowNum, 0, columnNum);
+        createBorders(range, IndexedColors.BLACK.getIndex(), THIN, THIN, NONE, NONE);
         return this;
     }
 
@@ -257,7 +264,7 @@ public class ExcelHelper {
     private Optional<Cell> appendTextCellInternal(final String value) {
         Cell cell = null;
 
-        if (!StringUtils.isEmpty(value)) {
+        if (StringUtils.hasText(value)) {
             cell = currentRow.createCell(currentColumnIndex);
             cell.setCellValue(value);
         }
@@ -384,7 +391,7 @@ public class ExcelHelper {
     public ExcelHelper appendTextCell(final String value, final CellStyle style) {
         final Cell cell = currentRow.createCell(currentColumnIndex);
 
-        if (!StringUtils.isEmpty(value)) {
+        if (StringUtils.hasText(value)) {
             cell.setCellValue(value);
         }
         cell.setCellStyle(style);

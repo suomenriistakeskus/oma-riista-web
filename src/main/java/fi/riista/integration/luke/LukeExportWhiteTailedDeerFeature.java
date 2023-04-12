@@ -1,5 +1,6 @@
 package fi.riista.integration.luke;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import fi.riista.feature.gamediary.GameDiaryEntry;
 import fi.riista.feature.gamediary.GameDiaryEntry_;
@@ -48,7 +49,9 @@ import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static fi.riista.util.Collect.groupingByIdOf;
 import static fi.riista.util.Collect.idSet;
 import static fi.riista.util.jpa.JpaSpecs.and;
@@ -60,6 +63,7 @@ import static java.util.stream.Collectors.toSet;
 @Service
 public class LukeExportWhiteTailedDeerFeature {
 
+    public static final int MAX_BATCH_SIZE = 2_000;
     @Resource
     private GameSpeciesService gameSpeciesService;
 
@@ -106,22 +110,24 @@ public class LukeExportWhiteTailedDeerFeature {
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasPrivilege('EXPORT_LUKE_MOOSE')") // TODO: Deer privilege needed?
+    @PreAuthorize("hasPrivilege('EXPORT_LUKE_MOOSE')")
     public LED_Permits exportDeer(final int huntingYear) {
-        return exportDeer(huntingYear, 16_000);
+        return exportDeer(huntingYear, MAX_BATCH_SIZE);
     }
 
     @Transactional(readOnly = true)
-    @PreAuthorize("hasPrivilege('EXPORT_LUKE_MOOSE')") // TODO: Deer privilege needed?
+    @PreAuthorize("hasPrivilege('EXPORT_LUKE_MOOSE')")
     public LED_Permits exportDeer(final int huntingYear, final int batchSize) {
+        checkArgument(batchSize <= MAX_BATCH_SIZE, "Batch size cannot exceed " + MAX_BATCH_SIZE);
+
         final GameSpecies species = getSpecies();
         final List<HarvestPermit> permits = findPermits(huntingYear, species, PermitTypeCode.MOOSELIKE);
         final Map<Long, HarvestPermitSpeciesAmount> amounts = findSpeciesAmountsByPermitId(permits, species);
 
-        final List<HuntingClubGroup> groups = findGroups(permits, species);
+        final List<HuntingClubGroup> groups = findGroups(permits, species, batchSize);
         final Map<Long, List<HarvestPermitSpeciesAmount>> amendmentAmounts = findAmendmentAmountsBySpeciesAmountId(huntingYear, species); // 2 DB queries
 
-        final List<GroupHuntingDay> days = findDays(groups);
+        final List<GroupHuntingDay> days = findDays(groups, batchSize);
         final List<Harvest> harvests = findHarvests(days, species, batchSize);
         final Map<Long, HarvestSpecimen> harvestSpecimens = findHarvestSpecimensByHarvestId(harvests, batchSize);
         final List<Observation> observations = findObservations(days, species, batchSize);
@@ -149,10 +155,12 @@ public class LukeExportWhiteTailedDeerFeature {
                 equal(HarvestPermit_.permitTypeCode, permitTypeCode)));
     }
 
-    private List<HuntingClubGroup> findGroups(final List<HarvestPermit> permits, final GameSpecies species) {
-        return huntingClubGroupRepository.findAll(and(
-                inCollection(HuntingClubGroup_.harvestPermit, permits),
-                equal(HuntingClubGroup_.species, species)));
+    private List<HuntingClubGroup> findGroups(final List<HarvestPermit> permits, final GameSpecies species, final int batchSize) {
+        return Lists.partition(permits, batchSize).stream()
+                .flatMap(partition -> huntingClubGroupRepository.findAll(and(
+                        inCollection(HuntingClubGroup_.harvestPermit, partition),
+                        equal(HuntingClubGroup_.species, species))).stream())
+                .collect(Collectors.toList());
     }
 
 
@@ -173,8 +181,11 @@ public class LukeExportWhiteTailedDeerFeature {
                 amount -> amount.getHarvestPermit().getId());
     }
 
-    private List<GroupHuntingDay> findDays(final List<HuntingClubGroup> groups) {
-            return groupHuntingDayRepository.findAll(inCollection(GroupHuntingDay_.group, groups));
+    private List<GroupHuntingDay> findDays(final List<HuntingClubGroup> groups, final int batchSize) {
+        return Lists.partition(groups, batchSize).stream()
+                .flatMap(partition ->
+                        groupHuntingDayRepository.findAll(inCollection(GroupHuntingDay_.group, partition)).stream())
+                .collect(Collectors.toList());
     }
 
     private List<Harvest> findHarvests(final List<GroupHuntingDay> days, final GameSpecies species, final int batchSize) {
@@ -210,7 +221,7 @@ public class LukeExportWhiteTailedDeerFeature {
 
     private ClubHuntingSummaryBasicInfoByPermitAndClub findSummaries(final List<HarvestPermit> permits) {
         return clubHuntingSummaryBasicInfoService.getHuntingSummaries(F.getUniqueIds(permits),
-                                                                      GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER);
+                GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER);
     }
 
     private HarvestCountByPermitAndClub findModeratedHarvestCounts(final List<HarvestPermit> permits) {

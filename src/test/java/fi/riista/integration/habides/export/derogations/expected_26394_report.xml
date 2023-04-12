@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <derogations xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" country="FI" userIdentity="FIMMM" labelLanguage="en" xml:lang="en" xsi:noNamespaceSchemaLocation="http://dd.eionet.europa.eu/schemas/habides-2.0/derogations.xsd">
-    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-1-2020-1-000-00192-7-26394" user_derogation_ref="2020-1-000-00192-7" userIdentity="FIMMM" status="complete">
+    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-001-2020-1-000-00192-7-26394" user_derogation_ref="2020-1-000-00192-7" userIdentity="FIMMM" status="complete">
         <species>Avis 4</species>
         <speciesGroup></speciesGroup>
         <coversAllSpecies></coversAllSpecies>
@@ -60,7 +60,7 @@
         <supervisoryMeasure>Testikeskus Yksi</supervisoryMeasure>
         <comments>2020-08-01 - 2020-08-30</comments>
     </derogation>
-    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-1-2020-1-000-00235-3-26394" user_derogation_ref="2020-1-000-00235-3" userIdentity="FIMMM" status="complete">
+    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-002-2020-1-000-00235-3-26394" user_derogation_ref="2020-1-000-00235-3" userIdentity="FIMMM" status="complete">
         <species>Avis 4</species>
         <speciesGroup></speciesGroup>
         <coversAllSpecies></coversAllSpecies>
@@ -118,7 +118,7 @@
         <supervisoryMeasure>Testikeskus Kaksi</supervisoryMeasure>
         <comments>2020-08-01 - 2020-08-30</comments>
     </derogation>
-    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-1-2020-1-000-00596-5-26394" user_derogation_ref="2020-1-000-00596-5" userIdentity="FIMMM" status="complete">
+    <derogation country="FI" directive="http://rod.eionet.europa.eu/obligations/276" derogation_reference="FIMMM-B-003-2020-1-000-00596-5-26394" user_derogation_ref="2020-1-000-00596-5" userIdentity="FIMMM" status="complete">
         <species>Avis 4</species>
         <speciesGroup></speciesGroup>
         <coversAllSpecies></coversAllSpecies>

@@ -2,7 +2,9 @@ package fi.riista.feature.organization.rhy.huntingcontrolevent;
 
 import fi.riista.feature.common.entity.GeoLocation;
 import fi.riista.feature.common.entity.LifecycleEntity;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsService;
 import org.hibernate.annotations.Type;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
@@ -10,7 +12,9 @@ import org.locationtech.jts.geom.Point;
 
 import javax.persistence.Access;
 import javax.persistence.AccessType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -19,6 +23,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
@@ -27,8 +34,11 @@ import javax.persistence.Transient;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import static fi.riista.util.DateUtil.today;
 
@@ -42,29 +52,45 @@ public class HuntingControlEvent extends LifecycleEntity<Long> {
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private Riistanhoitoyhdistys rhy;
 
-    @NotNull
+    // Replaces title field
+    @Enumerated(EnumType.STRING)
+    private HuntingControlEventType eventType;
+
+    @Enumerated(EnumType.STRING)
+    private HuntingControlEventStatus status;
+
+    @ManyToMany
+    @JoinTable(name = "hunting_control_event_inspector",
+            joinColumns = {@JoinColumn(name = "hunting_control_event_id", referencedColumnName = "hunting_control_event_id")},
+            inverseJoinColumns = {@JoinColumn(name = "person_id", referencedColumnName = "person_id")})
+    private Set<Person> inspectors = new HashSet<>();
+
+    @Deprecated
     @Size(min = 2, max = 255)
-    @Column(nullable = false)
+    @Column
     private String title;
 
     @Column(nullable = false)
     private int inspectorCount;
 
-    @NotNull
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private HuntingControlCooperationType cooperationType;
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "hunting_control_cooperation", joinColumns = @JoinColumn(name = "hunting_control_event_id"))
+    @Column(name = "type")
+    private Set<HuntingControlCooperationType> cooperationTypes = new HashSet<>();
 
     @Column(nullable = false)
     private boolean wolfTerritory;
 
-    @NotNull
-    @Column(nullable = false, columnDefinition = "text")
-    private String inspectors;
+    @Column(columnDefinition = "text")
+    private String otherParticipants;
 
     @Valid
     @Embedded
     private GeoLocation geoLocation;
+
+    @Column(columnDefinition = "text")
+    private String locationDescription;
 
     @NotNull
     @Column(nullable = false)
@@ -84,12 +110,14 @@ public class HuntingControlEvent extends LifecycleEntity<Long> {
     @Column(nullable = false)
     private int proofOrders;
 
-    @NotNull
-    @Column(nullable = false, columnDefinition = "text")
+    @Column(columnDefinition = "text")
     private String description;
 
     @OneToMany(mappedBy = "huntingControlEvent")
     private List<HuntingControlAttachment> attachments = new LinkedList<>();
+
+    @OneToMany(mappedBy = "huntingControlEvent")
+    private List<HuntingControlEventChange> changeHistory = new ArrayList<>();
 
     // Geometry for GIS index. Updated using JPA lifecycle hooks. No accessor on purpose to avoid confusion.
     @NotNull
@@ -115,8 +143,12 @@ public class HuntingControlEvent extends LifecycleEntity<Long> {
 
     @Transient
     public boolean isLockedAsPastStatistics() {
-        return date.getYear() < today().minusDays(15).getYear();
+        return AnnualStatisticsService.hasDeadlinePassed(date);
     }
+
+    // For preventing duplicate entries from mobiles
+    @Column
+    private Long mobileClientRefId;
 
     // Accessors -->
 
@@ -142,6 +174,30 @@ public class HuntingControlEvent extends LifecycleEntity<Long> {
         this.rhy = rhy;
     }
 
+    public HuntingControlEventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(final HuntingControlEventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public HuntingControlEventStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(final HuntingControlEventStatus status) {
+        this.status = status;
+    }
+
+    public Set<Person> getInspectors() {
+        return inspectors;
+    }
+
+    public void setInspectors(final Set<Person> inspectors) {
+        this.inspectors = inspectors;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -158,12 +214,12 @@ public class HuntingControlEvent extends LifecycleEntity<Long> {
         this.inspectorCount = inspectorCount;
     }
 
-    public HuntingControlCooperationType getCooperationType() {
-        return cooperationType;
+    public Set<HuntingControlCooperationType> getCooperationTypes() {
+        return cooperationTypes;
     }
 
-    public void setCooperationType(final HuntingControlCooperationType cooperationType) {
-        this.cooperationType = cooperationType;
+    public void setCooperationTypes(final Set<HuntingControlCooperationType> cooperationTypes) {
+        this.cooperationTypes = cooperationTypes;
     }
 
     public boolean getWolfTerritory() {
@@ -174,12 +230,12 @@ public class HuntingControlEvent extends LifecycleEntity<Long> {
         this.wolfTerritory = wolfTerritory;
     }
 
-    public String getInspectors() {
-        return inspectors;
+    public String getOtherParticipants() {
+        return otherParticipants;
     }
 
-    public void setInspectors(final String inspectors) {
-        this.inspectors = inspectors;
+    public void setOtherParticipants(final String otherParticipants) {
+        this.otherParticipants = otherParticipants;
     }
 
     public GeoLocation getGeoLocation() {
@@ -188,6 +244,14 @@ public class HuntingControlEvent extends LifecycleEntity<Long> {
 
     public void setGeoLocation(final GeoLocation geoLocation) {
         this.geoLocation = geoLocation;
+    }
+
+    public String getLocationDescription() {
+        return locationDescription;
+    }
+
+    public void setLocationDescription(final String locationDescription) {
+        this.locationDescription = locationDescription;
     }
 
     public LocalDate getDate() {
@@ -244,5 +308,21 @@ public class HuntingControlEvent extends LifecycleEntity<Long> {
 
     public void setAttachments(final List<HuntingControlAttachment> attachments) {
         this.attachments = attachments;
+    }
+
+    public List<HuntingControlEventChange> getChangeHistory() {
+        return changeHistory;
+    }
+
+    public void setChangeHistory(final List<HuntingControlEventChange> changeHistory) {
+        this.changeHistory = changeHistory;
+    }
+
+    public Long getMobileClientRefId() {
+        return mobileClientRefId;
+    }
+
+    public void setMobileClientRefId(final Long mobileClientRefId) {
+        this.mobileClientRefId = mobileClientRefId;
     }
 }

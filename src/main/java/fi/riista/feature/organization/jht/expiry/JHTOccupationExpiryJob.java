@@ -35,7 +35,10 @@ public class JHTOccupationExpiryJob extends RunAsAdminJob {
 
     @Override
     public void executeAsAdmin() {
-        final LocalDate expiryDate = DateUtil.today().plusMonths(6);
+        // Training needs to be refreshed when there is less than 6 months left of the nomination.
+        // Subtract two days to avoid sending email when training is not available yet.
+        final LocalDate expiryDate = DateUtil.today().plusMonths(6).minusDays(2);
+
         final List<JHTOccupationExpiryDTO> reminderList = jhtOccupationExpiryResolver.resolve(expiryDate);
         final Map<Long, Set<String>> rhyEmailMapping = jhtOccupationExpiryResolver.resolveRhyEmails(reminderList);
 

@@ -5,9 +5,9 @@ import fi.riista.feature.common.entity.HasID;
 import fi.riista.feature.common.entity.LifecycleEntity;
 import fi.riista.feature.gis.zone.GISZone;
 import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.poi.PoiLocationGroup;
 import fi.riista.util.LocalisedString;
 import fi.riista.util.RandomStringUtil;
-import javax.validation.constraints.NotBlank;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,14 +21,18 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.security.SecureRandom;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -83,6 +87,12 @@ public class HuntingClubArea extends LifecycleEntity<Long> {
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(unique = true)
     private GISZone zone;
+
+    @ManyToMany
+    @JoinTable(name = "hunting_club_area_poi",
+            joinColumns = {@JoinColumn(name = ID_COLUMN_NAME, referencedColumnName = ID_COLUMN_NAME)},
+            inverseJoinColumns = {@JoinColumn(name = PoiLocationGroup.ID_COLUMN_NAME, referencedColumnName = PoiLocationGroup.ID_COLUMN_NAME)})
+    private Set<PoiLocationGroup> poiLocationGroups = new HashSet<>();
 
     @Nonnull
     public LocalisedString getNameLocalisation() {
@@ -208,5 +218,13 @@ public class HuntingClubArea extends LifecycleEntity<Long> {
 
     public void setZone(GISZone zone) {
         this.zone = zone;
+    }
+
+    public Set<PoiLocationGroup> getPoiLocationGroups() {
+        return poiLocationGroups;
+    }
+
+    public void setPoiLocationGroups(final Set<PoiLocationGroup> poiLocationGroups) {
+        this.poiLocationGroups = poiLocationGroups;
     }
 }

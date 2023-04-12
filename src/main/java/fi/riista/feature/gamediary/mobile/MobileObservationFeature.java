@@ -1,37 +1,61 @@
 package fi.riista.feature.gamediary.mobile;
 
+import com.google.common.collect.ImmutableList;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.common.entity.EntityLifecycleFields_;
 import fi.riista.feature.error.MessageExposableValidationException;
-import fi.riista.feature.gamediary.image.GameDiaryImageService;
+import fi.riista.feature.gamediary.observation.DeletedObservation;
+import fi.riista.feature.gamediary.observation.DeletedObservationRepository;
+import fi.riista.feature.gamediary.observation.DeletedObservation_;
 import fi.riista.feature.gamediary.observation.Observation;
 import fi.riista.feature.gamediary.observation.ObservationCategory;
 import fi.riista.feature.gamediary.observation.ObservationLockInfo;
 import fi.riista.feature.gamediary.observation.ObservationModifierInfo;
 import fi.riista.feature.gamediary.observation.ObservationRepository;
+import fi.riista.feature.gamediary.observation.ObservationService;
 import fi.riista.feature.gamediary.observation.ObservationSpecVersion;
 import fi.riista.feature.gamediary.observation.ObservationType;
 import fi.riista.feature.gamediary.observation.ObservationUpdateService;
+import fi.riista.feature.gamediary.observation.Observation_;
 import fi.riista.feature.gamediary.observation.metadata.ObservationFieldValidator;
 import fi.riista.feature.gamediary.observation.metadata.ObservationFieldsMetadataService;
 import fi.riista.feature.gamediary.observation.metadata.ObservationMetadataDTO;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimen;
 import fi.riista.feature.gamediary.observation.specimen.ObservationSpecimenService;
+import fi.riista.feature.gamediary.srva.SrvaEvent_;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDayService;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.security.EntityPermission;
+import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
 import fi.riista.util.F;
+import fi.riista.util.jpa.JpaSpecs;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeComparator;
+import org.joda.time.LocalDateTime;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.jpa.domain.JpaSort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.Resource;
+import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import static fi.riista.feature.gamediary.GameDiarySpecs.author;
+import static fi.riista.feature.gamediary.GameDiarySpecs.observationAuthor;
 import static fi.riista.feature.gamediary.GameDiarySpecs.observationsByHuntingYear;
 import static fi.riista.feature.gamediary.GameDiarySpecs.observer;
 import static fi.riista.feature.gamediary.GameDiarySpecs.temporalSort;
@@ -39,14 +63,17 @@ import static fi.riista.feature.gamediary.observation.ObservationType.PESA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_KEKO;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_PENKKA;
 import static fi.riista.feature.gamediary.observation.ObservationType.PESA_SEKA;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Objects.requireNonNull;
+import static org.springframework.data.jpa.domain.Specification.not;
 import static org.springframework.data.jpa.domain.Specification.where;
 
 @Service
 public class MobileObservationFeature {
 
+    private static final int SYNC_PAGE_SIZE = 50;
     @Resource
     private ObservationFieldsMetadataService observationFieldsMetadataService;
 
@@ -54,13 +81,13 @@ public class MobileObservationFeature {
     private ObservationRepository observationRepository;
 
     @Resource
+    private DeletedObservationRepository deletedObservationRepository;
+
+    @Resource
     private ObservationUpdateService observationUpdateService;
 
     @Resource
     private ObservationSpecimenService observationSpecimenService;
-
-    @Resource
-    private GameDiaryImageService gameDiaryImageService;
 
     @Resource
     private GroupHuntingDayService groupHuntingDayService;
@@ -76,6 +103,9 @@ public class MobileObservationFeature {
 
     @Resource
     private MobileObservationService mobileObservationService;
+
+    @Resource
+    private ObservationService observationService;
 
     @Transactional(readOnly = true)
     public ObservationMetadataDTO getMobileObservationFieldMetadata(@Nonnull final ObservationSpecVersion specVersion) {
@@ -98,6 +128,48 @@ public class MobileObservationFeature {
                 temporalSort(Direction.ASC));
 
         return observationDtoTransformer.apply(observations, specVersion);
+    }
+
+
+    @Transactional(readOnly = true)
+    public MobileDiaryEntryPageDTO<MobileObservationDTO> fetchPageForActiveUser(final LocalDateTime modifiedAfter,
+                                                                                final ObservationSpecVersion specVersion) {
+        requireNonNull(specVersion);
+
+        final Person person = activeUserService.requireActivePerson();
+
+
+        final Specification<Observation> specs = Specification
+                .where(observer(person))
+                .and(modifiedAfter == null
+                        ? null
+                        : JpaSpecs.modificationTimeAfter(DateUtil.toDateTimeNullSafe(modifiedAfter)));
+
+        final JpaSort sort = JpaSort.of(Sort.Direction.ASC,
+                JpaSort.path(SrvaEvent_.lifecycleFields).dot(EntityLifecycleFields_.modificationTime),
+                JpaSort.path(SrvaEvent_.id));
+
+        final Page<Observation> page = observationRepository.findAll(specs, PageRequest.of(0, SYNC_PAGE_SIZE, sort));
+        final List<Observation> content = page.getContent();
+
+        final DateTime latestModificationTime = content.isEmpty()
+                ? null
+                : content.get(content.size() - 1).getModificationTime();
+
+
+        final List<Observation> otherWithSameModificationTime = page.hasNext()
+                ? fetchMissingForTimestamp(F.getUniqueIds(content), person, latestModificationTime)
+                : emptyList();
+
+        final List<Observation> entities = ImmutableList.<Observation>builder()
+                .addAll(content)
+                .addAll(otherWithSameModificationTime)
+                .build();
+
+        final List<MobileObservationDTO> dtos =
+                observationDtoTransformer.apply(entities, specVersion);
+
+        return new MobileDiaryEntryPageDTO<>(dtos, DateUtil.toLocalDateTimeNullSafe(latestModificationTime), page.hasNext());
     }
 
     @Transactional
@@ -259,11 +331,69 @@ public class MobileObservationFeature {
     public void deleteObservation(final long observationId) {
         final Observation observation = requireEntityService.requireObservation(observationId, EntityPermission.DELETE);
 
-        final ObservationLockInfo lockInfo =
-                observationUpdateService.getObservationLockInfo(observation, ObservationSpecVersion.MOST_RECENT);
+        observationService.deleteObservation(observation);
+    }
 
-        observationSpecimenService.deleteAllSpecimens(observation);
-        gameDiaryImageService.deleteGameDiaryImages(observation);
-        observationUpdateService.deleteObservation(observation, lockInfo);
+    @Transactional(readOnly = true)
+    public MobileDeletedDiaryEntriesDTO getDeletedObservationIds(final LocalDateTime deletedAfter) {
+        final List<DeletedObservation> deletedObservations = deletedObservationRepository.findAll(
+                deletionTimeNewerThan(DateUtil.toDateTimeNullSafe(deletedAfter),
+                        activeUserService.requireActivePerson().getId()));
+
+        final LocalDateTime latestDeletion = deletedObservations.stream()
+                .map(DeletedObservation::getDeletionTime)
+                .max(DateTimeComparator.getInstance())
+                .map(DateUtil::toLocalDateTimeNullSafe)
+                .orElse(null);
+
+        return new MobileDeletedDiaryEntriesDTO(
+                latestDeletion, F.mapNonNullsToList(deletedObservations, DeletedObservation::getObservationId));
+    }
+
+    @Transactional(readOnly = true)
+    public MobileDeletedDiaryEntriesDTO getObservationsWhereOnlyAuthor() {
+        final SystemUser activeUser = activeUserService.requireActiveUser();
+        final Person activePerson = activeUser.requirePerson();
+
+        final List<Long> observationIdsWhereOnlyAuthor =
+                observationRepository.getObservationIdsWhereOnlyAuthor(activePerson.getId());
+        return new MobileDeletedDiaryEntriesDTO(null, observationIdsWhereOnlyAuthor);
+    }
+
+
+    private static Specification<DeletedObservation> deletionTimeNewerThan(
+            @Nullable final DateTime deletedSince,
+            final long activePersonId) {
+
+        return (root, query, cb) -> {
+            final Path<Long> authorId = root.get(DeletedObservation_.authorId);
+            final Path<Long> observerId = root.get(DeletedObservation_.observerId);
+
+            final Predicate authorOrObserver = cb.or(cb.equal(authorId, activePersonId), cb.equal(observerId, activePersonId));
+            if (deletedSince == null) {
+                return authorOrObserver;
+            }
+
+            final Path<DateTime> dateField =
+                    root.get(DeletedObservation_.deletionTime);
+            return cb.and(cb.greaterThan(dateField, deletedSince),
+                    authorOrObserver);
+        };
+    }
+
+    private List<Observation> fetchMissingForTimestamp(final Set<Long> alreadyFoundIds,
+                                                       final Person person,
+                                                       final DateTime latestModificationTime) {
+        if (latestModificationTime == null) {
+            return emptyList();
+        }
+
+        // If more than pageful was found, find rest with same modification time to avoid issues in sync
+        final Specification<Observation> specs = Specification
+                .where(observer(person))
+                .and(JpaSpecs.modificationTimeEqual(latestModificationTime))
+                .and(not(JpaSpecs.inCollection(Observation_.id, alreadyFoundIds)));
+
+        return observationRepository.findAll(specs);
     }
 }

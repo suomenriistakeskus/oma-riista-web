@@ -15,7 +15,11 @@ angular.module('app.account.application', [])
                 harvestPermitCategory === 'LARGE_CARNIVORE_WOLF';
             var isMammalApplication = harvestPermitCategory === 'MAMMAL';
             var isNestRemovalApplication = harvestPermitCategory === 'NEST_REMOVAL';
-            var isLawSectionTenApplication = harvestPermitCategory === 'LAW_SECTION_TEN';
+            var isEuropeanBeaverApplication = harvestPermitCategory === 'EUROPEAN_BEAVER';
+            var isPartridgeApplication = harvestPermitCategory === 'PARTRIDGE';
+            var isLawSectionTenApplication = harvestPermitCategory === 'LAW_SECTION_TEN' ||
+                isEuropeanBeaverApplication ||
+                isPartridgeApplication;
             var isWeaponTransportationApplication = harvestPermitCategory === 'WEAPON_TRANSPORTATION';
             var isDisabilityApplication = harvestPermitCategory === 'DISABILITY';
             var isDogUnleashApplication = harvestPermitCategory === 'DOG_UNLEASH';
@@ -38,6 +42,7 @@ angular.module('app.account.application', [])
                                                   DogUnleashApplication, DogDisturbanceApplication,
                                                   DeportationPermitApplication, ResearchPermitApplication,
                                                   ImportingPermitApplication, GameManagementPermitApplication) {
+
                         if (isMooselikeApplication) {
                             return MooselikePermitApplication.getFullDetails({id: application.id}).$promise;
                         } else if (isBirdApplication) {

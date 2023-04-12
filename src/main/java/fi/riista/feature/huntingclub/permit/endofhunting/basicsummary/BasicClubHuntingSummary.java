@@ -126,18 +126,9 @@ public class BasicClubHuntingSummary extends LifecycleEntity<Long> implements Mu
         return speciesAmount.getGameSpecies().getOfficialCode();
     }
 
-    // Hunting summary is considered empty if no summary data is present.
+    // Hunting summary is considered empty if no mandatory summary data is present.
     public boolean isEmpty() {
-        return huntingEndDate == null || areaSizeAndPopulation == null || areaSizeAndPopulation.isEmpty();
-    }
-
-    public boolean isHuntingAreaAndRemainingPopulationPresent() {
-        return getAreaSizeAndPopulation().isHuntingAreaAndRemainingPopulationPresent();
-    }
-
-    @AssertTrue
-    public boolean isHuntingAreaAndRemainingPopulationPresentWhenHuntingFinished() {
-        return !huntingFinished || isHuntingAreaAndRemainingPopulationPresent();
+        return huntingEndDate == null;
     }
 
     @AssertTrue

@@ -17,6 +17,9 @@
                            class="form-control"
                            uib-datepicker-popup is-open="isDatePickerOpen"
                            date-between-min-max
+                           ng-change="$ctrl.onDateChanged($ctrl.selectedAction.date, oldValue)"
+                           ng-init="oldValue = $ctrl.selectedAction.date"
+                           ng-focus="oldValue = $ctrl.selectedAction.date"
                            ng-model="$ctrl.selectedAction.date"
                            ng-model-options="{ updateOn: 'blur' }"
                            required
@@ -55,6 +58,7 @@
                 <label for="actionType" translate="decision.action.actionTypeTitle"></label>
                 <select name="actionType" id="actionType"
                         class="form-control"
+                        ng-change="$ctrl.onActionTypeChanged($ctrl.selectedAction.actionType, '{{$ctrl.selectedAction.actionType}}')"
                         ng-model="$ctrl.selectedAction.actionType"
                         ng-options="a as (('decision.action.actionType.' + a) | translate) for a in $ctrl.actionTypes"
                         required
@@ -66,6 +70,7 @@
                 <label for="type" translate="decision.action.communicationTypeTitle"></label>
                 <select name="type" id="type"
                         class="form-control"
+                        ng-change="$ctrl.onCommunicationTypeChanged($ctrl.selectedAction.communicationType, '{{$ctrl.selectedAction.communicationType}}')"
                         ng-model="$ctrl.selectedAction.communicationType"
                         ng-options="a as (('decision.action.communicationType.' + a) | translate) for a in $ctrl.communicationTypes"
                         ie10-optgroup-fix>
@@ -79,8 +84,10 @@
                 <label for="text" translate="decision.action.text"></label>
                 <textarea name="text" id="text" class="form-control" rows="6"
                           required
+                          ng-disabled="!$ctrl.isTextFieldsEnabled()"
                           ng-model="$ctrl.selectedAction.text"
-                          minlength="5"></textarea>
+                          minlength="5"
+                          spellcheck="false"></textarea>
                 <p class="help-block has-error"
                    ng-show="form.text.$invalid"
                    ng-messages="form.text.$error">
@@ -91,7 +98,9 @@
             <div class="form-group" show-errors>
                 <label for="decisionText" translate="decision.action.decisionText"></label>
                 <textarea name="decisionText" id="decisionText" class="form-control" rows="6"
-                          ng-model="$ctrl.selectedAction.decisionText"></textarea>
+                          ng-disabled="!$ctrl.isTextFieldsEnabled()"
+                          ng-model="$ctrl.selectedAction.decisionText"
+                          spellcheck="false"></textarea>
                 <p class="help-block has-error"
                    ng-show="form.decisionText.$invalid"
                    ng-messages="form.decisionText.$error">

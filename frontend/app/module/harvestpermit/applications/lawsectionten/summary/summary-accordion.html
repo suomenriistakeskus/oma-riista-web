@@ -4,14 +4,14 @@
          template-url="common/accordion-group.html">
         <uib-accordion-heading>
             <div class="row">
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="panel-title">
                         <span panel-toggle="$ctrl.toggle.a"></span>
                         <span translate="harvestpermit.wizard.summary.summaryTitle"></span>
                     </div>
                 </div>
 
-                <div class="col-xs-6 text-right">
+                <div class="col-sm-6 text-right">
                     <div class="panel-title"
                          translate="harvestpermit.wizard.summary.permitCategory.{{$ctrl.application.harvestPermitCategory}}"></div>
                 </div>
@@ -27,14 +27,14 @@
          template-url="common/accordion-group.html">
         <uib-accordion-heading>
             <div class="row">
-                <div class="col-xs-6">
+                <div class="col-sm-6">
                     <div class="panel-title">
                         <span panel-toggle="$ctrl.toggle.b"></span>
                         <span translate="harvestpermit.wizard.navigation.species"></span>
                     </div>
                 </div>
 
-                <div class="col-xs-6 text-right">
+                <div class="col-sm-6 text-right">
                     <div class="panel-title">
                         <div>
                             <span ng-bind="::($ctrl.application.speciesAmount.gameSpeciesCode | translateSpeciesCode)"></span>
@@ -55,13 +55,13 @@
          template-url="common/accordion-group.html">
         <uib-accordion-heading>
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-sm-9">
                     <div class="panel-title">
                         <span panel-toggle="$ctrl.toggle.c"></span>
                         <span translate="harvestpermit.wizard.bird.summary.areaTitle"></span>
                     </div>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-sm-3 text-right">
                     <div class="panel-title">
                         <span ng-bind="$ctrl.application.protectedArea.name"></span>
                     </div>
@@ -70,8 +70,8 @@
         </uib-accordion-heading>
 
         <lawsectionten-application-summary-area application="$ctrl.application"
-                                         attachments="$ctrl.application.areaAttachments"
-                                         base-uri="$ctrl.attachmentBaseUri"></lawsectionten-application-summary-area>
+                                                attachments="$ctrl.application.areaAttachments"
+                                                base-uri="$ctrl.attachmentBaseUri"></lawsectionten-application-summary-area>
     </div>
 
     <div uib-accordion-group class="panel-default"
@@ -79,19 +79,20 @@
          template-url="common/accordion-group.html">
         <uib-accordion-heading>
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-sm-9">
                     <div class="panel-title">
                         <span panel-toggle="$ctrl.toggle.e"></span>
                         <span translate="harvestpermit.wizard.bird.summary.periodTitle"></span>
                     </div>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-sm-3 text-right">
 
                 </div>
             </div>
         </uib-accordion-heading>
 
-        <lawsectionten-application-summary-periods period="$ctrl.application.speciesPeriod"></lawsectionten-application-summary-periods>
+        <lawsectionten-application-summary-periods
+                period="$ctrl.application.speciesPeriod"></lawsectionten-application-summary-periods>
     </div>
 
     <div uib-accordion-group class="panel-default"
@@ -99,20 +100,29 @@
          template-url="common/accordion-group.html">
         <uib-accordion-heading>
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-sm-9">
                     <div class="panel-title">
                         <span panel-toggle="$ctrl.toggle.h"></span>
                         <span translate="harvestpermit.wizard.bird.summary.populationTitle"></span>
                     </div>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-sm-3 text-right">
 
                 </div>
             </div>
         </uib-accordion-heading>
 
-        <lawsectionten-application-summary-population
-                population="$ctrl.application.population"></lawsectionten-application-summary-population>
+        <div ng-switch="::$ctrl.application.harvestPermitCategory">
+            <lawsectionten-application-summary-population
+                    ng-switch-when="LAW_SECTION_TEN"
+                    population="$ctrl.application.population"></lawsectionten-application-summary-population>
+            <european-beaver-application-summary-population
+                    ng-switch-when="EUROPEAN_BEAVER"
+                    application="::$ctrl.application"></european-beaver-application-summary-population>
+            <partridge-application-summary-population
+                    ng-switch-when="PARTRIDGE"
+                    application="::$ctrl.application"></partridge-application-summary-population>
+        </div>
     </div>
 
     <div uib-accordion-group class="panel-default"
@@ -120,14 +130,14 @@
          template-url="common/accordion-group.html">
         <uib-accordion-heading>
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-sm-9">
                     <div class="panel-title">
                         <span panel-toggle="$ctrl.toggle.i"></span>
                         <span translate="harvestpermit.wizard.navigation.attachments"></span>
                     </div>
                 </div>
 
-                <div class="col-xs-3 text-right">
+                <div class="col-sm-3 text-right">
                     <span class="panel-title">
                         <span ng-bind="::$ctrl.getAttachmentCount()"></span>
                         <span translate="global.pcs"></span>
@@ -146,13 +156,13 @@
          template-url="common/accordion-group.html">
         <uib-accordion-heading>
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-sm-9">
                     <div class="panel-title">
                         <span panel-toggle="$ctrl.toggle.j"></span>
                         <span translate="harvestpermit.wizard.summary.delivery.title"></span>
                     </div>
                 </div>
-                <div class="col-xs-3 text-right">
+                <div class="col-sm-3 text-right">
 
                 </div>
             </div>

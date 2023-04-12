@@ -2,6 +2,8 @@ package fi.riista.feature.organization.rhy.annualstats;
 
 import fi.riista.feature.organization.rhy.annualstats.export.AnnualStatisticGroup;
 import fi.riista.util.F;
+import io.vavr.Tuple;
+import io.vavr.Tuple2;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -13,10 +15,14 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantField.PUBLIC_EVENTS;
+import static fi.riista.feature.organization.rhy.annualstats.AnnualStatisticsParticipantFieldGroup.PUBLIC_EVENT_STATISTICS;
 import static fi.riista.util.F.nullsafeMax;
 import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Objects.requireNonNull;
@@ -25,16 +31,17 @@ import static java.util.Objects.requireNonNull;
 @Access(AccessType.FIELD)
 public class PublicEventStatistics
         implements AnnualStatisticsFieldsetReadiness,
+        AnnualStatisticsFieldsetParticipants,
         AnnualStatisticsManuallyEditableFields<PublicEventStatistics>,
         Serializable {
 
-    public static final PublicEventStatistics reduce(@Nullable final PublicEventStatistics a,
-                                                     @Nullable final PublicEventStatistics b) {
+    public static PublicEventStatistics reduce(@Nullable final PublicEventStatistics a,
+                                               @Nullable final PublicEventStatistics b) {
 
         final PublicEventStatistics result = new PublicEventStatistics();
-        result.setPublicEvents(nullableIntSum(a, b, s -> s.getPublicEvents()));
-        result.setPublicEventParticipants(nullableIntSum(a, b, s -> s.getPublicEventParticipants()));
-        result.setLastModified(nullsafeMax(a, b, s -> s.getLastModified()));
+        result.setPublicEvents(nullableIntSum(a, b, PublicEventStatistics::getPublicEvents));
+        result.setPublicEventParticipants(nullableIntSum(a, b, PublicEventStatistics::getPublicEventParticipants));
+        result.setLastModified(nullsafeMax(a, b, PublicEventStatistics::getLastModified));
         return result;
     }
 
@@ -98,7 +105,20 @@ public class PublicEventStatistics
 
     @Override
     public boolean isReadyForInspection() {
-        return F.allNotNull(publicEvents, publicEventParticipants);
+        return F.allNotNull(publicEvents, publicEventParticipants) && hasParticipants();
+    }
+
+    private boolean hasParticipants() {
+        return listMissingParticipants()._2.isEmpty();
+    }
+
+    @Override
+    public Tuple2<AnnualStatisticsParticipantFieldGroup, List<AnnualStatisticsParticipantField>> listMissingParticipants() {
+        final List<AnnualStatisticsParticipantField> missing = new ArrayList<>();
+        if (publicEvents != null && publicEvents > 0 && publicEventParticipants <= 0) {
+            missing.add(PUBLIC_EVENTS);
+        }
+        return Tuple.of(PUBLIC_EVENT_STATISTICS, missing);
     }
 
     @Override

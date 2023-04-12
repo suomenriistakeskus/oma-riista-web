@@ -32,7 +32,7 @@ public class PersonSearchFeature {
 
     @Nonnull
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR,ROLE_COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_COORDINATOR')")
     public PersonContactInfoDTO findPersonContactInfoByHunterNumber(final String hunterNumber,
                                                                     final boolean isForeignPersonEligible) {
         checkArgument(hasText(hunterNumber), "empty hunterNumber");
@@ -45,7 +45,7 @@ public class PersonSearchFeature {
 
     @Nonnull
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR,ROLE_COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_COORDINATOR')")
     public List<PersonContactInfoDTO> findPersonContactInfoByHunterNumbers(final List<String> hunterNumbers,
                                                                            final boolean isForeignPersonEligible) {
         checkArgument(!hunterNumbers.isEmpty(), "empty hunterNumbers");
@@ -78,7 +78,7 @@ public class PersonSearchFeature {
 
     @Nonnull
     @Transactional(readOnly = true)
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN,ROLE_MODERATOR,ROLE_COORDINATOR')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_COORDINATOR')")
     public PersonContactInfoDTO findPersonContactInfoBySsn(final String ssn) {
         checkArgument(hasText(ssn), "empty ssn");
 

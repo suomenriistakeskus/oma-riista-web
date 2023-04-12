@@ -37,7 +37,8 @@
             <span ng-show="decision.handler" ng-bind="::decision.handler.firstName"></span>
         </td>
         <td>
-            <span translate="jht.nomination.decision.status.{{::decision.status}}"></span>
+            <span ng-if="decision.handler" translate="jht.nomination.decision.status.{{::decision.status}}"></span>
+            <span ng-if="!decision.handler" translate="jht.nomination.decision.status.DECISION_OPEN"></span>
         </td>
         <td class="text-right">
             <button type="button"

@@ -28,7 +28,7 @@ public class HarvestQuota extends LifecycleEntity<Long> {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     private HarvestArea harvestArea;
 
-    @Min(1)
+    @Min(0)
     @Column(nullable = true)
     private Integer quota;
 

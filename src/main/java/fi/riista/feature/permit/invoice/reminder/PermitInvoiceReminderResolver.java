@@ -100,12 +100,13 @@ public class PermitInvoiceReminderResolver {
             final Long decisionId = F.getId(decisionInvoice.getDecision());
             final List<Long> permitIdList = uniquePermitIdsForDecision.getOrDefault(decisionId, emptyList());
 
-            if (permitIdList.size() != 1) {
-                LOG.error("Could not resolve permitId for decisionId {}. Got {} results.",
-                        decisionId, permitIdList.size());
+            if (permitIdList.size() < 1) {
+                LOG.error("Could not resolve permitId for decisionId {}. Permits not found.", decisionId);
                 return null;
             }
 
+            // If the decision is for multiyear permit, use first one in the list. For reminder email, it is sufficient
+            // to provide a link to any permit under the decision to pay the decision invoice
             return permitIdList.get(0);
         };
     }
@@ -118,6 +119,7 @@ public class PermitInvoiceReminderResolver {
         return jpqlQueryFactory.select(keyExpression, valueExpression)
                 .from(PERMIT)
                 .where(PERMIT.permitDecision.in(decisionList))
+                .orderBy(PERMIT.permitYear.asc())
                 .transform(GroupBy.groupBy(keyExpression).as(GroupBy.list(valueExpression)));
     }
 

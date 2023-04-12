@@ -320,9 +320,9 @@ public class NominationDecisionTextService {
                         "valtioneuvoston asetus riistahallinnosta (171/2011) 10 §\n" +
                         "maa- ja metsätalousministeriön " +
                         "asetus riistanhoitoyhdistyksentoimihenkilöiden koulutusvaatimuksista (553/2011) 1-5 §\n" +
-                        "maa- ja metsätalousministeriön asetus Suomen riistakeskuksen jariistanhoitoyhdistysten " +
+                        "maa- ja metsätalousministeriön asetus Suomen riistakeskuksen ja riistanhoitoyhdistysten " +
                         "julkisten " +
-                        "hallintotehtävien maksuista vuosina 2020 ja 2021 (1319/2019) 2 §",
+                        "hallintotehtävien maksuista vuosina 2022 ja 2023 (902/2021) 2 §",
                 "Vid beslutsfattande har följande rättsnormer tillämpats:\n" +
                         "jaktlag (615/1993) 90 §\n" +
                         "viltförvaltningslag (158/2011) 2 §, 20-22 § och 30 §\n" +
@@ -330,8 +330,8 @@ public class NominationDecisionTextService {
                         "om viltförvaltningen (171/2011) 10 §\n" +
                         "jord- och skogsbruksministeriets förordning om utbildningskrav för jaktvårdsföreningens " +
                         "funktionärer (553/2011) 1-5 §\n" +
-                        "jord- och skogsbruksministeriets förordning om avgifterna 2020 och 2021 för Finlands " +
-                        "viltcentrals och jaktvårdsföreningarnas offentliga förvaltningsuppgifter (1319/2019) 2 §") +
+                        "jord- och skogsbruksministeriets förordning om avgifterna 2022 och 2023 för Finlands " +
+                        "viltcentrals och jaktvårdsföreningarnas offentliga förvaltningsuppgifter (902/2021) 2 §") +
                 "\n\n";
     }
 

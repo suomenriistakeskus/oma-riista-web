@@ -392,8 +392,9 @@
             };
         })
 
-        .controller('ShootingTestEventListController', function ($state, ActiveRoleService, rhyId, ShootingTestCalendarEvents,
-                                                                 events, availableYears, calendarYear) {
+        .controller('ShootingTestEventListController', function ($state, ActiveRoleService, RhyAnnualStatisticsService,
+                                                                 rhyId, ShootingTestCalendarEvents, events,
+                                                                 availableYears, calendarYear) {
             var $ctrl = this;
 
             $ctrl.events = events;
@@ -433,9 +434,9 @@
             };
 
             $ctrl.isEventUpdateable = function (event) {
-                // Events updateable for coordinator until 15th of January the next year
+                // Events updateable for coordinator until mid January the next year
                 return ActiveRoleService.isModerator() ||
-                    ActiveRoleService.isCoordinator && moment(event.date).year() >= moment().subtract('days', 15).year();
+                    ActiveRoleService.isCoordinator && !RhyAnnualStatisticsService.hasDeadlinePassed(event.date);
             };
         })
 

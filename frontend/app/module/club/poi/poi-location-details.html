@@ -1,0 +1,14 @@
+<div class="form-control-static" ng-repeat="loc in ::$ctrl.poiLocations | orderBy:'visibleId'" track by loc.id>
+    <div class="poi-list-item-detail-row">
+        <div>
+            <span class="fa fa-map-marker poi-location-icon"></span>
+            <strong ng-bind="::$ctrl.poiId"></strong>
+            <strong>-</strong>
+            <strong ng-bind="::loc.visibleId"></strong>
+        </div>
+        <div>
+            <span class="poi-list-item-description" ng-bind="::loc.description"></span>
+        </div>
+        <hr class="poi-location-item-separator">
+    </div>
+</div>

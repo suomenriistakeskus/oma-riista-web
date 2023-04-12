@@ -5,7 +5,7 @@ angular.module('app.harvestpermit.management.payment', [])
         var apiPrefix = '/api/v1/harvestpermit/:permitId/invoice/:id';
 
         return $resource(apiPrefix, {id: '@id', permitId: '@permitId'}, {
-            getPaymentForm: {method: 'POST', url: apiPrefix + '/payment'},
+            initPayment: {method: 'POST', url: apiPrefix + '/payment'},
             listDueByPermit: {method: 'GET', url: apiPrefix + '/due', isArray: true},
             listPaidByPermit: {method: 'GET', url: apiPrefix + '/paid', isArray: true}
         });
@@ -71,8 +71,8 @@ angular.module('app.harvestpermit.management.payment', [])
                     invoice: function (PermitInvoice, permitId, invoiceId) {
                         return PermitInvoice.get({permitId: permitId, id: invoiceId}).$promise;
                     },
-                    paymentForm: function (PermitInvoice, permitId, invoiceId) {
-                        return PermitInvoice.getPaymentForm({permitId: permitId, id: invoiceId}).$promise;
+                    paymentOptions: function (PermitInvoice, permitId, invoiceId) {
+                        return PermitInvoice.initPayment({permitId: permitId, id: invoiceId}).$promise;
                     }
                 }
             })
@@ -98,9 +98,13 @@ angular.module('app.harvestpermit.management.payment', [])
 
         $ctrl.$onInit = function () {
             $ctrl.paymentList = paymentList;
+            $ctrl.paymentStarted = false;
         };
 
+
         $ctrl.startPayment = function (invoice) {
+            $ctrl.paymentStarted = true;
+
             $state.go('permitmanagement.payment.confirmation', {
                 permitId: permitId,
                 invoiceId: invoice.id
@@ -120,16 +124,46 @@ angular.module('app.harvestpermit.management.payment', [])
         };
     })
 
-    .controller('HarvestPermitPaymentConfirmationController', function (FormPostService, invoice, paymentForm) {
+    .controller('HarvestPermitPaymentConfirmationController', function (FormPostService, invoice, paymentOptions) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
             $ctrl.invoice = invoice;
+            $ctrl.paymentOptionsAvailable = !!paymentOptions.groups;
+            $ctrl.providerGroups = paymentOptions.groups;
+            $ctrl.providers = paymentOptions.providers;
+            $ctrl.terms = paymentOptions.terms;
+            $ctrl.groupsByKey = _.chain(paymentOptions.groups).keyBy('id').value();
+            $ctrl.providersByGroup = _.chain(paymentOptions.providers).keyBy('group').value();
+            $ctrl.selectedProvider = null;
+        };
+
+        $ctrl.selectProvider = function (provider) {
+            $ctrl.selectedProvider = provider;
+        };
+
+        $ctrl.isSelected = function (provider) {
+            return !!$ctrl.selectedProvider &&
+                !!provider &&
+                $ctrl.selectedProvider.name === provider.name;
+
         };
 
         $ctrl.makePayment = function () {
-            FormPostService.submitFormUsingSelfTarget('https://payment.paytrail.com/e2', paymentForm, true);
+            if (!!$ctrl.selectedProvider) {
+                var provider = $ctrl.selectedProvider;
+                $ctrl.selectedProvider = null;
+
+                var convertedParams = {};
+                _.forEach(provider.parameters, function (p) {
+                    convertedParams[p.name] = p.value;
+                });
+
+                FormPostService.submitFormUsingSelfTarget(provider.url, convertedParams, true);
+            }
         };
+
+
     })
 
     .controller('HarvestPermitPaymentReceiptController', function (FormPostService, permitId, invoice) {

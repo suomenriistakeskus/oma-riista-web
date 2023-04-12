@@ -13,29 +13,55 @@ angular.module('app.login.controllers', ['ui.router', 'app.login.services'])
             });
     })
 
-    .controller('LoginController', function ($uibModal, ActiveRoleService, AvailableRoleService, NotificationService,
-                                             LoginService, AuthenticationService, LanguageService) {
+    .controller('LoginController', function ($q, $uibModal, $translate, $http, ActiveRoleService, AvailableRoleService, NotificationService,
+                                             LoginService, AuthenticationService, LanguageService, isProductionEnvironment, News) {
         var $ctrl = this;
 
         $ctrl.$onInit = function () {
             $ctrl.isSelectedLanguage = LanguageService.isSelectedLanguage;
-            $ctrl.changeLanguage = LanguageService.changeLanguage;
             $ctrl.credentials = {
                 username: null,
                 password: null,
                 rememberMe: true
             };
 
+            $ctrl.isProductionEnvironment = isProductionEnvironment;
+
+            $ctrl.news = [];
+            $ctrl.metsastajaFeeds = [];
+            $ctrl.riistaFeeds = [];
+
             // Check if already authenticated?
             AuthenticationService.authenticate().catch(function () {
-                // Load twitter widget only when "login is required" and user is not immediately redirected away
-                window.setTimeout(function () {
-                    try {
-                        loadTwitterWidget();
-                    } catch (e) {
-                        console.error(e);
-                    }
-                }, 0);
+                News.listLatest().$promise.then(function (news) {
+                    $ctrl.news = news;
+                });
+
+                var feedLanguage =  $ctrl.getLanguage();
+                loadMetsastajaFeeds(feedLanguage).then(function (feeds) {
+                    $ctrl.metsastajaFeeds = feeds;
+                });
+
+                loadRiistaFeeds(feedLanguage, 1, []).then(function (feeds) {
+                    $ctrl.riistaFeeds = feeds;
+                });
+            });
+
+        };
+
+        $ctrl.getLanguage = function () {
+            var language = $translate.proposedLanguage() || $translate.use();
+            return language === 'sv' ? 'sv' : 'fi';
+        };
+
+        $ctrl.changeLanguage = function (language) {
+            LanguageService.changeLanguage(language);
+            var feedLanguage = language === 'sv' ? 'sv' : 'fi';
+            loadMetsastajaFeeds(feedLanguage).then(function (feeds) {
+                $ctrl.metsastajaFeeds = feeds;
+            });
+            loadRiistaFeeds(feedLanguage,1, []).then(function (feeds) {
+                $ctrl.riistaFeeds = feeds;
             });
         };
 
@@ -75,32 +101,60 @@ angular.module('app.login.controllers', ['ui.router', 'app.login.services'])
             }, onLoginFailure);
         }
 
-        function loadTwitterWidget() {
-            window.twttr = (function (d, s, id) {
-                var fjs = d.getElementsByTagName(s)[0];
-                var t = window.twttr || {};
+        function loadMetsastajaFeeds(language) {
+            return $q(function (resolve) {
+                $http({
+                    url: 'https://metsastajalehti.fi/wp-json/wp/v2/posts',
+                    method: "GET",
+                    params: {_fields: 'id, title, link', per_page: 3, lang: language}
+                }).then(function (res) {
+                    var queryResult = _.map(res.data, function (item) {
+                        return {
+                            id: item.id,
+                            title: item.title.rendered,
+                            link: item.link
+                        };
+                    });
+                    resolve(queryResult);
+                });
+            });
+        }
 
-                if (d.getElementById(id)) {
-                    return t;
-                }
+        function loadRiistaFeeds(language, page, queryResult) {
+            return $q(function (resolve) {
+                $http({
+                    url: 'https://riista.fi/wp-json/wp/v2/posts',
+                    method: "GET",
+                    params: {_fields: 'id, title, link', page: page}
+                }).then(function (res) {
+                    queryResult = queryResult.concat(_.chain(res.data)
+                        .filter(function (item) {
+                            return riistaFeedsFilter(item, language);
+                        })
+                        .map(function (item) {
+                            return {
+                                id: item.id,
+                                title: item.title.rendered,
+                                link: item.link
+                            };
+                        })
+                        .value());
+                    if (queryResult.length >= 3 || page === res.headers(['x-wp-totalpages'])) {
+                        queryResult = _.slice(queryResult, 0, 3);
+                        resolve(queryResult);
+                    } else {
+                        loadRiistaFeeds(language,page + 1, queryResult).then(function (res) {
+                            resolve(res);
+                        });
+                    }
+                });
+            });
+        }
 
-                var js = d.createElement(s);
-                js.id = id;
-                js.src = "https://platform.twitter.com/widgets.js";
-                fjs.parentNode.insertBefore(js, fjs);
-
-                t._e = [];
-
-                t.ready = function (f) {
-                    t._e.push(f);
-                };
-
-                return t;
-            }(document, "script", "twitter-wjs"));
-
-            if (window.twttr.ready()) {
-                window.twttr.widgets.load();
-            }
+        function riistaFeedsFilter(item, language) {
+            return language === 'sv' ?
+                _.startsWith(item.link, 'https://riista.fi/sv') :
+                !_.startsWith(item.link, 'https://riista.fi/sv');
         }
     })
 
@@ -118,4 +172,31 @@ angular.module('app.login.controllers', ['ui.router', 'app.login.services'])
         $ctrl.submit = function () {
             $uibModalInstance.close($ctrl.otp);
         };
+    })
+
+    .component('loginAdditionalInfo', {
+        templateUrl: 'login/additional-info.html',
+        bindings: {
+            riistaFeeds: '<',
+            metsastajaFeeds: '<',
+            isSelectedLanguage: '&'
+        },
+        controllerAs: '$ctrl'
+    })
+
+    .component('loginLogoRow', {
+        templateUrl: 'login/logo-row.html'
+    })
+
+    .component('loginStaticInfo', {
+        templateUrl: 'login/static-info.html'
+    })
+
+    .component('loginNews', {
+        templateUrl: 'login/news.html',
+        bindings: {
+            news: '<',
+            getLanguage: '&'
+        },
+        controllerAs: '$ctrl'
     });

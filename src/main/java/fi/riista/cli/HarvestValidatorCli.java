@@ -6,7 +6,6 @@ import fi.riista.config.Constants;
 import fi.riista.config.DataSourceConfig;
 import fi.riista.config.JPAConfig;
 import fi.riista.config.LiquibaseConfig;
-import fi.riista.config.PapertrailConfig;
 import fi.riista.config.SerializationConfig;
 import fi.riista.feature.RuntimeEnvironmentUtil;
 import fi.riista.feature.gamediary.harvest.Harvest;
@@ -47,8 +46,7 @@ public class HarvestValidatorCli {
             JPAConfig.class,
             LiquibaseConfig.class,
             RuntimeEnvironmentUtil.class,
-            SerializationConfig.class,
-            PapertrailConfig.class
+            SerializationConfig.class
     })
     public static class Context {
         @Bean
@@ -114,6 +112,8 @@ public class HarvestValidatorCli {
                 }
             }
 
+            final HarvestSpecVersion specVersion = HarvestSpecVersion.CURRENTLY_SUPPORTED;
+
             // Validate updated fields
             final int speciesCode = harvest.getSpecies().getOfficialCode();
             final GroupHuntingDay huntingDayOfGroup = harvest.getHuntingDayOfGroup();
@@ -124,9 +124,11 @@ public class HarvestValidatorCli {
             final int huntingYear = DateUtil.huntingYearContaining(harvest.getPointOfTimeAsLocalDate());
             final HarvestReportingType reportingType = harvest.resolveReportingType();
 
+            final boolean withPermit = harvest.getHarvestPermit() != null;
+
             final RequiredHarvestFields.Specimen specimenFieldRequirements = RequiredHarvestFields.getSpecimenFields(
                     huntingYear, speciesCode, harvest.getHuntingMethod(), reportingType, legallyMandatoryFieldsOnly,
-                    HarvestSpecVersion.CURRENTLY_SUPPORTED);
+                    specVersion, withPermit);
 
             final RequiredHarvestFields.Report reportRequirements = RequiredHarvestFields.getFormFields(
                     huntingYear, speciesCode, reportingType, legallyMandatoryFieldsOnly);
@@ -151,7 +153,7 @@ public class HarvestValidatorCli {
             for (final HarvestSpecimen specimen : harvest.getSortedSpecimens()) {
                 final HarvestSpecimenValidator specimenValidator =
                         new HarvestSpecimenValidator(specimenFieldRequirements, specimen, speciesCode,
-                                associatedWithHuntingDay);
+                                associatedWithHuntingDay, specVersion, withPermit);
                 specimenValidator.validateAll();
 
                 if (specimenValidator.hasErrors()) {

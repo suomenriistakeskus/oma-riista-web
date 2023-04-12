@@ -46,4 +46,5 @@ public interface BasicClubHuntingSummaryRepository extends BaseRepository<BasicC
                 .and(equal(BasicClubHuntingSummary_.moderatorOverride, true)));
     }
 
+    List<BasicClubHuntingSummary> findAllByClub(HuntingClub club);
 }

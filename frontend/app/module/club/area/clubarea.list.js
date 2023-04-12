@@ -49,6 +49,40 @@
                             }
 
                             return _.max(_.map(preloadedHuntingYears, 'year'));
+                        },
+                        pois: function (ClubPois, club) {
+                            return ClubPois.listPois({id: club.id}).$promise;
+                        }
+                    }
+                })
+                .state('club.area.areapoi', {
+                    url: '/areapoi?{areaId:[0-9]{1,8}}',
+                    templateUrl: 'club/area/club-area-pois.html',
+                    controller: 'ClubAreaPoiController',
+                    controllerAs: '$ctrl',
+                    bindToController: true,
+                    wideLayout: true,
+                    reloadOnSearch: false,
+                    params: {
+                        areaId: {
+                            value: null
+                        }
+                    },
+                    resolve: {
+                        selectedAreaId: function ($stateParams) {
+                            return _.parseInt($stateParams.areaId);
+                        },
+                        area: function (ClubAreas, selectedAreaId) {
+                            return selectedAreaId ? ClubAreas.get({id: selectedAreaId}).$promise : null;
+                        },
+                        pois: function (ClubPois, club) {
+                            return ClubPois.listPois({id: club.id}).$promise;
+                        },
+                        featureCollection: function (ClubAreas, selectedAreaId) {
+                            return ClubAreas.combinedFeatures({id: selectedAreaId}).$promise;
+                        },
+                        connectedPois: function (ClubAreas, selectedAreaId) {
+                            return ClubAreas.listPois({id: selectedAreaId}).$promise;
                         }
                     }
                 });
@@ -72,6 +106,10 @@
                     method: 'PUT',
                     url: apiPrefix + '/features'
                 },
+                getZoneStatus: {
+                    method: 'GET',
+                    url: apiPrefix + '/zone/status'
+                },
                 combinedFeatures: {
                     method: 'GET',
                     url: apiPrefix + '/combinedFeatures'
@@ -93,6 +131,14 @@
                     url: apiPrefix + '/import-personal/:personalAreaId',
                     params: {personalAreaId: '@personalAreaId'},
                     isArray: false
+                },
+                listPois: {
+                    method: 'GET',
+                    url: apiPrefix + '/pois'
+                },
+                updatePois: {
+                    method: 'PUT',
+                    url: apiPrefix + '/pois'
                 }
             });
         })
@@ -129,10 +175,11 @@
             };
         })
 
-        .controller('ClubAreaListController', function ($location, $scope, HuntingYearService,
+        .controller('ClubAreaListController', function ($location, $scope, Helpers, HuntingYearService,
                                                         ClubAreas, ClubAreaFormSidebar, ClubAreaListService,
-                                                        club, clubId, selectedAreaId, huntingYear, showDeactive,
-                                                        rhyBounds, preloadedHuntingYears) {
+                                                        ClubPoiMarkerColors,
+                                                        club, clubId, selectedAreaId, huntingYear,
+                                                        showDeactive, rhyBounds, pois, preloadedHuntingYears) {
             var $ctrl = this;
 
             $ctrl.areas = [];
@@ -145,6 +192,9 @@
 
             $ctrl.rhyBounds = rhyBounds;
             $ctrl.showDeactive = showDeactive;
+
+            $ctrl.hidePoiMarkers = false;
+            $ctrl.visiblePoiMarkers = [];
 
             $ctrl.$onInit = function () {
                 $ctrl.reloadAreas();
@@ -182,10 +232,23 @@
                 }
             });
 
+            $ctrl.goToStore = function () {
+                Helpers.goToStore();
+            };
+
+            $ctrl.showStoreButton = function () {
+                var system = Helpers.getMobileOperatingSystem();
+                return system === 'android' || system === 'ios';
+            };
+
             $ctrl.onAreaSelect = function (area) {
                 if (area && $ctrl.selectedAreaId !== area.id) {
                     showArea(area);
                 }
+            };
+
+            $ctrl.hidePoiMarkersChanged = function () {
+                $ctrl.hidePoiMarkers = !$ctrl.hidePoiMarkers;
             };
 
             function focusSelectedArea() {
@@ -206,6 +269,33 @@
 
                 ClubAreas.combinedFeatures({id: area.id}).$promise.then(function (featureCollection) {
                     $ctrl.featureCollection = featureCollection;
+                });
+
+                ClubAreas.listPois({id: area.id}).$promise.then(function (result) {
+                    var connectedPoiIds = result.poiIds;
+                    $ctrl.visiblePoiMarkers =
+                        _.chain(pois)
+                            .filter(function (poi) {
+                                return _.findIndex(connectedPoiIds, function (id) {
+                                    return id === poi.id;
+                                }) >= 0;
+                            })
+                            .map(function (poi) {
+                                return {
+                                    locations: poi.locations,
+                                    color: ClubPoiMarkerColors.deduceColor(poi)
+                                };
+                            })
+                            .flatMap(function (data) {
+                                var locations = _.chain(data.locations)
+                                    .map(function (l) {
+                                        l.icon = data.icon;
+                                        return l;
+                                    })
+                                    .value();
+                                return ClubPoiMarkerColors.assignColor(locations, data.color);
+                            })
+                            .value();
                 });
             }
         })
@@ -246,9 +336,16 @@
                 function isContactPerson() {
                     return ActiveRoleService.isClubContact() || ActiveRoleService.isModerator();
                 }
-
+                function isContactPersonOrGroupLeader() {
+                    return ActiveRoleService.isClubGroupLeader() || isContactPerson();
+                }
                 $ctrl.canEditAreaGeometry = function () {
                     return isContactPerson() && $ctrl.area
+                        && $ctrl.area.sourceType !== 'EXTERNAL';
+                };
+
+                $ctrl.canConnectPois = function () {
+                    return isContactPersonOrGroupLeader() && $ctrl.area
                         && $ctrl.area.sourceType !== 'EXTERNAL';
                 };
 
@@ -257,7 +354,122 @@
                         areaId: $ctrl.area.id
                     });
                 };
+
+                $ctrl.selectPois = function () {
+                    $state.go('club.area.areapoi', {
+                        areaId: $ctrl.area.id
+                    });
+                };
             }
+        })
+
+        .controller('ClubAreaPoiController', function ($location, $scope, $state, HuntingYearService,
+                                                       ClubAreas, ClubAreaFormSidebar, ClubAreaListService,
+                                                       ClubPoiMarkerColors, ClubPoiTypes, ClubPoiMarkerBounds,
+                                                       FetchAndSaveBlob, NotificationService,
+                                                       club, clubId, area, pois, featureCollection, connectedPois) {
+            var $ctrl = this;
+
+            $ctrl.$onInit = function () {
+                $ctrl.area = area;
+                $ctrl.filterMode = null;
+                $ctrl.pois = _.chain(pois)
+                    .map(function (p) {
+                        p.connected = _.findIndex(connectedPois.poiIds, function (c) {
+                            return c === p.id;
+                        }) >= 0;
+                        return p;
+                    })
+                    .value();
+                $ctrl.featureCollection = featureCollection;
+                $ctrl.showOnlyConnected = false;
+                $ctrl.typeOptions = _.values(ClubPoiTypes);
+                $ctrl.connectedFilterOptions = ['ALL', 'CONNECTED', 'DETACHED'];
+                $ctrl.connectedFilterMode = 'ALL';
+                $ctrl.selectAll = false;
+                $ctrl.filterChanged();
+            };
+
+            $ctrl.close = function () {
+                $state.go('club.area.list', {
+                    areaId: $ctrl.area.id
+                });
+            };
+
+            $ctrl.save = function () {
+                var ids = _.chain($ctrl.pois)
+                    .filter('connected')
+                    .map('id')
+                    .value();
+                ClubAreas.updatePois({id: area.id}, {poiIds: ids}).$promise.then(NotificationService.showDefaultSuccess);
+
+            };
+
+            $ctrl.filterChanged = function () {
+                $ctrl.visibleMarkers =
+                    _.chain($ctrl.pois)
+                        .filter($ctrl.isPoiVisible)
+                        .map(function (poi) {
+                            return {
+                                locations: poi.locations,
+                                icon: poi.connected ? 'check' : 'none',
+                                color: ClubPoiMarkerColors.deduceColor(poi)
+                            };
+                        })
+                        .flatMap(function (data) {
+                            var locations = _.chain(data.locations)
+                                .map(function (l) {
+                                    l.icon = data.icon;
+                                    return l;
+                                })
+                                .value();
+                            return ClubPoiMarkerColors.assignColor(locations, data.color);
+                        })
+                        .value();
+            };
+
+            $ctrl.selectAllChanged = function () {
+                _.forEach($ctrl.pois, function (poi) {
+                    if ($ctrl.isPoiVisible(poi)) {
+                        poi.connected = $ctrl.selectAll;
+                    }
+                });
+                $ctrl.filterChanged();
+            };
+
+            $ctrl.isPoiVisible = function (poi) {
+                return isVisibleThroughPoiTypeFiltering(poi) &&
+                    isVisibleThroughConnectedFiltering(poi);
+            };
+
+            function isVisibleThroughConnectedFiltering(poi) {
+                return $ctrl.connectedFilterMode === 'ALL' ||
+                    $ctrl.connectedFilterMode === 'CONNECTED' && poi.connected ||
+                    $ctrl.connectedFilterMode === 'DETACHED' && !poi.connected;
+            }
+
+            function isVisibleThroughPoiTypeFiltering(poi) {
+                return !$ctrl.filterMode || poi.type === $ctrl.filterMode;
+            }
+
+            $ctrl.selectPoi = function (poi) {
+                $ctrl.selectedPoi = poi;
+            };
+
+            $ctrl.onMarkerClick = function (markerId) {
+                var clickedId = _.parseInt(markerId);
+                var poi = _.find($ctrl.pois, ['id', clickedId]);
+                if (poi) {
+                    $ctrl.selectPoi(poi);
+                }
+                $scope.$digest();
+            };
+
+            $ctrl.zoomTo = function (poi) {
+                $ctrl.selectPoi(poi);
+                ClubPoiMarkerBounds.zoomToContain(_.filter($ctrl.visibleMarkers, ['poiId', poi.id]));
+            };
+
         })
 
         .component('clubAreaFunctionDropdown', {
@@ -265,10 +477,10 @@
             bindings: {
                 area: '<'
             },
-            controller: function ($q, $scope, $window, ActiveRoleService, ClubAreas,
+            controller: function ($q, $scope, $stateParams, $window, ActiveRoleService, ClubAreas,
                                   FetchAndSaveBlob, TranslatedBlockUI,
                                   ClubAreaFormSidebar, ClubAreaCopyModal, ClubAreaImportModal,
-                                  ClubAreaImportFromPersonalAreaModal, MapPdfModal) {
+                                  ClubAreaImportFromPersonalAreaModal, MapPdfModal, NotificationService) {
                 var $ctrl = this;
 
                 $ctrl.isContactPerson = function () {
@@ -288,8 +500,20 @@
                 };
 
                 $ctrl.importArea = function () {
-                    ClubAreaImportModal.importArea($ctrl.area).then(notifyAreaChange);
+                    checkAreaCalculated($ctrl.area).then(function () {
+                        return ClubAreaImportModal.importArea($ctrl.area).then(function (area) {
+                            notifyAreaChange(area);
+                        });
+                    }, function () {
+                        NotificationService.showMessage('club.area.messages.areaCalculationRunning', 'warn');
+                    });
                 };
+
+                function checkAreaCalculated(huntingClubArea) {
+                    return ClubAreas.get({id: huntingClubArea.id}).$promise.then(function (a) {
+                        return a.size.status !== 'PROCESSING' ? $q.resolve() : $q.reject();
+                    });
+                }
 
                 $ctrl.importPersonalArea = function () {
                     ClubAreaImportFromPersonalAreaModal.importPersonalArea($ctrl.area).then(notifyAreaChange);
@@ -352,11 +576,19 @@
                 };
 
                 $ctrl.isAreaWithGeometry = function () {
-                    return $ctrl.area && $ctrl.area.zoneId && !!$ctrl.area.size;
+                    return $ctrl.area && $ctrl.area.zoneId && !!$ctrl.area.size && $ctrl.area.size.all.total > 1;
                 };
 
                 $ctrl.isLocalAreaWithGeometry = function () {
                     return $ctrl.isAreaWithGeometry() && $ctrl.isLocalArea();
+                };
+
+                $ctrl.exportPoisToExcel = function () {
+                    FetchAndSaveBlob.post('api/v1/club/' + $stateParams.id + '/poi/excel/' + $ctrl.area.id);
+                };
+
+                $ctrl.exportPoisToGpx = function () {
+                    FetchAndSaveBlob.post('api/v1/club/' + $stateParams.id + '/poi/gpx/' + $ctrl.area.id);
                 };
             }
         })
@@ -365,9 +597,11 @@
             templateUrl: 'club/area/area-map.html',
             bindings: {
                 initialViewBounds: '<',
-                featureCollection: '<'
+                featureCollection: '<',
+                poiLocations: '<',
+                hideMarkers: '<'
             },
-            controller: function ($filter, $translate, MapDefaults, MapState, MapBounds) {
+            controller: function ($filter, $translate, $scope, ClubPoiViewMarkers, MapDefaults, MapState, MapBounds) {
                 var $ctrl = this;
                 $ctrl.mapDefaults = MapDefaults.create();
                 $ctrl.mapEvents = MapDefaults.getMapBroadcastEvents();
@@ -381,6 +615,14 @@
                 $ctrl.$onChanges = function (c) {
                     if (c.featureCollection) {
                         setFeatureCollection(c.featureCollection.currentValue);
+                    }
+
+                    if (c.hideMarkers) {
+                        setPois($ctrl.poiLocations);
+                    }
+
+                    if (c.poiLocations) {
+                        setPois($ctrl.poiLocations);
                     }
                 };
 
@@ -407,6 +649,16 @@
                     } else {
                         $ctrl.geojson = null;
                         MapState.updateMapBounds(null, $ctrl.initialViewBounds, true);
+                    }
+                }
+
+                function setPois(pois) {
+                    if (pois) {
+                        if ($ctrl.hideMarkers) {
+                            $ctrl.markers = [];
+                        } else {
+                            $ctrl.markers = ClubPoiViewMarkers.createMarkers(pois, null, false, null, null, $scope);
+                        }
                     }
                 }
             }
@@ -489,7 +741,8 @@
                 $ctrl.areaCopyData = {
                     id: area.id,
                     huntingYear: area.huntingYear,
-                    copyGroups: true
+                    copyGroups: true,
+                    copyPOIs: true
                 };
 
                 $ctrl.save = function () {
@@ -502,7 +755,8 @@
             }
         })
 
-        .service('ClubAreaImportModal', function ($q, $filter, $translate, $uibModal, dialogs, NotificationService) {
+        .service('ClubAreaImportModal', function ($q, $filter, $translate, $uibModal, dialogs, NotificationService,
+                                                  ClubMapZoneProcessingModal) {
             this.importArea = function (area) {
                 return confirmAreaImport(area).then(function () {
                     return $uibModal.open({
@@ -515,8 +769,12 @@
                             areaId: _.constant(area.id)
                         }
                     }).result.then(function () {
-                        NotificationService.showMessage('club.area.import.success', 'success');
-                        return area;
+                        return ClubMapZoneProcessingModal.open(area.id).then(function () {
+                            NotificationService.showMessage('club.area.import.success', 'success');
+                            return area;
+                        }, function () {
+                            NotificationService.showDefaultFailure();
+                        });
                     });
                 });
             };

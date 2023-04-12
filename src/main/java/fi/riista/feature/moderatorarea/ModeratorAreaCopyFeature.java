@@ -24,14 +24,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static fi.riista.feature.moderatorarea.ModeratorAreaImportDTO.ModeratorAreaImportType.CLUB;
+import static fi.riista.feature.moderatorarea.ModeratorAreaImportDTO.ModeratorAreaImportType.MODERATOR_AREA;
 import static fi.riista.feature.moderatorarea.ModeratorAreaImportDTO.ModeratorAreaImportType.PERSONAL;
 import static fi.riista.feature.moderatorarea.ModeratorAreaImportDTO.ModeratorAreaImportType.PERSONAL_AREA_UNION;
 
 @Service
 public class ModeratorAreaCopyFeature {
-
-    @Resource
-    private ModeratorAreaRepository moderatorAreaRepository;
 
     @Resource
     private ModeratorAreaDTOTransformer dtoTransformer;
@@ -59,6 +57,9 @@ public class ModeratorAreaCopyFeature {
 
     @Resource
     private HarvestPermitAreaRepository harvestPermitAreaRepository;
+
+    @Resource
+    private ModeratorAreaRepository moderatorAreaRepository;
 
     @Transactional
     public ModeratorAreaDTO copy(final long areaId, final int year) {
@@ -134,9 +135,13 @@ public class ModeratorAreaCopyFeature {
                     }
 
                     final Optional<PersonalAreaUnion> personalAreaUnionOptional = personalAreaUnionRepository.findByExternalId(externalId);
-                    return personalAreaUnionOptional
-                            .map(area -> ModeratorAreaImportDTO.createFromPersonalAreaUnion(area, externalId))
-                            .orElseGet(() -> new ModeratorAreaImportDTO(null, null, externalId, null, null));
+                    if (personalAreaUnionOptional.isPresent()){
+                        return personalAreaUnionOptional
+                                .map(area -> ModeratorAreaImportDTO.createFromPersonalAreaUnion(area, externalId))
+                                .orElseGet(() -> new ModeratorAreaImportDTO(null, null, externalId, null, null));
+                    }
+                    final Optional<ModeratorArea> moderatorAreaOptional = moderatorAreaRepository.findByExternalId(externalId);
+                    return ModeratorAreaImportDTO.createFromModeratorArea(moderatorAreaOptional.get());
                 })
                 .collect(Collectors.toList());
     }
@@ -163,6 +168,12 @@ public class ModeratorAreaCopyFeature {
                 harvestPermitAreaRepository.findByExternalId(area.getExternalId())
                         .map(HarvestPermitArea::getZone)
                         .map(harvestPermitAreaZone -> gisZoneRepository.addAreas(harvestPermitAreaZone,
+                                Optional.ofNullable(moderatorArea.getZone()).orElseGet(GISZone::new)))
+                        .ifPresent(moderatorArea::setZone);
+            } else if (area.getType() == MODERATOR_AREA) {
+                moderatorAreaRepository.findByExternalId(area.getExternalId())
+                        .map(ModeratorArea::getZone)
+                        .map(areaZone-> gisZoneRepository.addAreas(areaZone,
                                 Optional.ofNullable(moderatorArea.getZone()).orElseGet(GISZone::new)))
                         .ifPresent(moderatorArea::setZone);
             }

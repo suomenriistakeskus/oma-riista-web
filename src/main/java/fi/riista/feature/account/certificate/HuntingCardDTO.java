@@ -9,6 +9,7 @@ import org.joda.time.LocalDate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.security.PrivateKey;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.util.Objects.requireNonNull;
@@ -58,7 +59,15 @@ public class HuntingCardDTO {
             dto.qrCode = HuntingCardQRCodeGenerator.forPerson(person).build(signatureKey, languageCode);
         }
 
-        dto.occupations = occupations;
+        dto.isMultipage = (occupations.size() + qualifiedShootingTests.size()) > 5;
+
+        if (dto.isMultipage && occupations.size() > 10) {
+            dto.occupationsPage1 = occupations.subList(0, 10);
+            dto.occupationsPage2 = occupations.subList(10, occupations.size());
+        } else {
+            dto.occupationsPage1 = occupations;
+        }
+
         dto.shootingTests = qualifiedShootingTests;
 
         return dto;
@@ -139,9 +148,12 @@ public class HuntingCardDTO {
 
     private String qrCode;
 
-    private List<OccupationDTO> occupations;
+    private List<OccupationDTO> occupationsPage1;
+    private List<OccupationDTO> occupationsPage2;
 
     private List<AccountShootingTestDTO> shootingTests;
+
+    private boolean isMultipage;
 
     public String getFirstName() {
         return firstName;
@@ -211,11 +223,19 @@ public class HuntingCardDTO {
         return qrCode;
     }
 
-    public List<OccupationDTO> getOccupations() {
-        return occupations;
+    public List<OccupationDTO> getOccupationsPage1() {
+        return occupationsPage1;
+    }
+
+    public List<OccupationDTO> getOccupationsPage2() {
+        return occupationsPage2;
     }
 
     public List<AccountShootingTestDTO> getShootingTests() {
         return shootingTests;
+    }
+
+    public boolean getIsMultipage() {
+        return isMultipage;
     }
 }

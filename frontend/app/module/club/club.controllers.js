@@ -48,18 +48,16 @@ angular.module('app.club.controllers', [])
             })
 
             .state('club.harvestsummary', {
-                url: '/harvestsummary?year',
+                url: '/harvestsummary',
                 templateUrl: 'club/harvestsummary/harvestsummary.html',
                 controllerAs: '$ctrl',
-                controller: 'ClubHarvestSummaryController',
-                resolve: {
-                    year: function ($stateParams) {
-                        return $stateParams.year ? _.parseInt($stateParams.year) : new Date().getFullYear();
-                    },
-                    summary: function (club, year, Clubs) {
-                        return Clubs.harvestSummary({id: club.id, calendarYear: year}).$promise;
-                    }
-                }
+                controller: 'ClubHarvestSummaryController'
+            })
+            .state('club.gamestatistics', {
+                url: '/gamestatistics',
+                templateUrl: 'club/gamestatistics/gamestatistics.html',
+                controllerAs: '$ctrl',
+                controller: 'ClubGameStatisticsController'
             });
     })
 
@@ -193,9 +191,48 @@ angular.module('app.club.controllers', [])
                     ClubMembers.delete(requestParams).$promise.then(ok, fail);
                 });
             };
-
-            $scope.save = function (member) {
+            $scope.saveClub = function (member) {
                 var updates = [{occupationId: member.id, share: member.contactInfoShare}];
-                Account.contactShare(updates).$promise.then(ok, fail);
+                Account.contactShare({list: updates}).$promise.then(ok, fail);
             };
-        });
+
+        })
+
+    .controller('HuntingLeaderContactShareController', function ($q, $scope, $state, $translate, dialogs,
+                                                                 NotificationService, Account, permitsWithGroups) {
+        var $ctrl = this;
+
+        $ctrl.permitsWithGroups = permitsWithGroups;
+
+        $ctrl.getGroupsForClub = function (permit, club) {
+            return _.filter(permit.huntingClubGroups, function (group) {
+                return group.clubId === club.id;
+            });
+        };
+
+        $ctrl.savePermit = function (permit) {
+            if (_.isNull(permit.groupOccupation)) {
+                permit.groupOccupation.nameVisibility = false;
+                permit.groupOccupation.phoneNumberVisibility = false;
+                permit.groupOccupation.emailVisibility = false;
+            } else if (_.includes(['SAME_PERMIT_LEVEL', 'RHY_LEVEL'], permit.groupOccupation.contactInfoShare)) {
+                permit.groupOccupation.nameVisibility = true;
+            }
+
+            var updates = [{
+                permitId: permit.id,
+                nameVisibility: permit.groupOccupation.nameVisibility,
+                phoneNumberVisibility: permit.groupOccupation.phoneNumberVisibility,
+                emailVisibility: permit.groupOccupation.emailVisibility,
+                share: permit.groupOccupation.contactInfoShare
+            }];
+
+            Account.contactShareAndVisibility({list: updates}).$promise.then(function () {
+                $state.reload();
+                NotificationService.showDefaultSuccess();
+            }, function () {
+                $state.reload();
+                NotificationService.showDefaultFailure();
+            });
+        };
+    });

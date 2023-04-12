@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.deportation.species', ['app.metada
                 templateUrl: 'harvestpermit/applications/deportation/species/species.html',
                 controller: 'DeportationPermitWizardSpeciesController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesAmount: function (DeportationPermitApplication, applicationId) {
                         return DeportationPermitApplication.getSpeciesAmount({id: applicationId}).$promise;
@@ -103,7 +104,7 @@ angular.module('app.harvestpermit.application.deportation.species', ['app.metada
         };
 
         function invalid(form) {
-            return form.$invalid || !$ctrl.speciesAmount;
+            return form.$invalid || !$ctrl.speciesAmount || !$ctrl.speciesAmount.gameSpeciesCode;
         }
 
         function getSpeciesList() {

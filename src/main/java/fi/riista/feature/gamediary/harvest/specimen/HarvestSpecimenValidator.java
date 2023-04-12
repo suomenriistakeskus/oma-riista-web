@@ -3,9 +3,9 @@ package fi.riista.feature.gamediary.harvest.specimen;
 import fi.riista.feature.gamediary.GameAge;
 import fi.riista.feature.gamediary.GameGender;
 import fi.riista.feature.gamediary.HasGameSpeciesCode;
+import fi.riista.feature.gamediary.harvest.HarvestSpecVersion;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestFields;
 import fi.riista.feature.gamediary.harvest.fields.RequiredHarvestSpecimenField;
-import fi.riista.util.F;
 
 import javax.annotation.Nonnull;
 import java.util.EnumSet;
@@ -25,15 +25,23 @@ public class HarvestSpecimenValidator implements HasGameSpeciesCode {
     private final EnumSet<HarvestSpecimenFieldName> illegalFields = EnumSet.noneOf(HarvestSpecimenFieldName.class);
     private final Map<HarvestSpecimenFieldName, String> illegalValues = new HashMap<>();
 
+    private final HarvestSpecVersion specVersion;
+
+    private final boolean withPermit;
+
     public HarvestSpecimenValidator(@Nonnull final RequiredHarvestFields.Specimen requirements,
                                     @Nonnull final HarvestSpecimenBusinessFields specimenFields,
                                     final int gameSpeciesCode,
-                                    final boolean associatedWithHuntingDay) {
+                                    final boolean associatedWithHuntingDay,
+                                    final HarvestSpecVersion specVersion,
+                                    final boolean withPermit) {
 
         this.requirements = requirements;
         this.specimenFields = requireNonNull(specimenFields);
         this.gameSpeciesCode = gameSpeciesCode;
         this.associatedWithHuntingDay = associatedWithHuntingDay;
+        this.specVersion = specVersion;
+        this.withPermit = withPermit;
     }
 
     @Override
@@ -123,9 +131,20 @@ public class HarvestSpecimenValidator implements HasGameSpeciesCode {
         final GameAge age = specimenFields.getAge();
 
         validateField(HarvestSpecimenFieldName.AGE, requirements.getAge(), age);
-
-        if (associatedWithHuntingDay && isMooseOrDeerRequiringPermitForHunting() && age == GameAge.UNKNOWN) {
-            illegalValues.put(HarvestSpecimenFieldName.AGE, age.name());
+        if(isMooseOrDeerRequiringPermitForHunting()) {
+            if (specVersion.supportsMandatoryAgeAndGenderFieldsForMooselikeHarvest()) {
+                if (!withPermit
+                        && age == GameAge.UNKNOWN) {
+                    // basic
+                    illegalValues.put(HarvestSpecimenFieldName.AGE, age.name());
+                }
+            } else {
+                // old way
+                if (associatedWithHuntingDay
+                        && age == GameAge.UNKNOWN) {
+                    illegalValues.put(HarvestSpecimenFieldName.AGE, age.name());
+                }
+            }
         }
 
         return this;
@@ -134,10 +153,22 @@ public class HarvestSpecimenValidator implements HasGameSpeciesCode {
     public HarvestSpecimenValidator validateGender() {
         final GameGender gender = specimenFields.getGender();
 
-        if (associatedWithHuntingDay && isMooseOrDeerRequiringPermitForHunting() && gender == GameGender.UNKNOWN) {
-            illegalValues.put(HarvestSpecimenFieldName.GENDER, gender.name());
+        if(isMooseOrDeerRequiringPermitForHunting()) {
+            if (specVersion.supportsMandatoryAgeAndGenderFieldsForMooselikeHarvest()) {
+                // new ones
+                if (!withPermit
+                        && gender == GameGender.UNKNOWN) {
+                    // basic
+                    illegalValues.put(HarvestSpecimenFieldName.GENDER, gender.name());
+                }
+            } else {
+                // old way
+                if (associatedWithHuntingDay
+                        && gender == GameGender.UNKNOWN) {
+                    illegalValues.put(HarvestSpecimenFieldName.GENDER, gender.name());
+                }
+            }
         }
-
         validateField(HarvestSpecimenFieldName.GENDER, requirements.getGender(), gender);
 
         return this;

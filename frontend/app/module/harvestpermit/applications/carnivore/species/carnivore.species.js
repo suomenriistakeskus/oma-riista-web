@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.carnivore.species', ['app.metadata
                 templateUrl: 'harvestpermit/applications/carnivore/species/species.html',
                 controller: 'CarnicorePermitWizardSpeciesController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesAmount: function (CarnivorePermitApplication, applicationId) {
                         return CarnivorePermitApplication.listSpeciesAmounts({id: applicationId}).$promise;

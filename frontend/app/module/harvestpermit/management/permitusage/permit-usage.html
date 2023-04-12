@@ -24,7 +24,7 @@
         <div ng-repeat="usage in $ctrl.permitUsages">
             <h5 ng-bind="$ctrl.getSpeciesName(usage.speciesCode) | capitalize"></h5>
             <div class="row" style="padding-left: 16px">
-                <div ng-if="usage.permitSpecimenAmount" class="col-xs-4">
+                <div ng-if="usage.permitSpecimenAmount" class="col-xs-6 col-sm-6 col-md-4">
                     <span translate="harvestpermit.management.dashboard.permitUsage.specimenAmount"></span>
                     <i>
                         (
@@ -36,7 +36,7 @@
                     </i>
 
                     <div class="form-group" style="margin-top: 8px" show-errors>
-                        <div class="col-xs-3">
+                        <div class="col-xs-10 col-sm-4 col-md-5">
                             <input type="number" class="form-control"
                                    name="amount-specimen-{{usage.speciesCode}}" id="amount-specimen-{{usage.speciesCode}}"
                                    min="0"
@@ -48,7 +48,7 @@
                         <div style="padding-top: 12px" translate="global.pcs"></div>
                     </div>
                 </div>
-                <div ng-if="usage.permitEggAmount" class="col-xs-4">
+                <div ng-if="usage.permitEggAmount" class="col-xs-6 col-sm-6 col-md-4">
                     <span translate="harvestpermit.management.dashboard.permitUsage.eggAmount"></span>
                     <i>
                         (
@@ -60,7 +60,7 @@
                     </i>
 
                     <div class="form-group" style="margin-top: 8px" show-errors>
-                        <div class="col-xs-3">
+                        <div class="col-xs-10 col-sm-4 col-md-5">
                             <input type="number" class="form-control"
                                    name="amount-egg-{{usage.speciesCode}}" id="amount-egg-{{usage.speciesCode}}"
                                    min="0"

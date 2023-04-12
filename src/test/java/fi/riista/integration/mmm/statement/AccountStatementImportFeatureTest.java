@@ -3,6 +3,7 @@ package fi.riista.integration.mmm.statement;
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.error.NotFoundException;
 import fi.riista.integration.mmm.transfer.AccountTransfer;
+import fi.riista.integration.mmm.transfer.AccountTransferBatch;
 import fi.riista.integration.mmm.transfer.AccountTransferBatchRepository;
 import fi.riista.integration.mmm.transfer.AccountTransferRepository;
 import fi.riista.integration.mmm.transfer.AccountTransfer_;
@@ -19,10 +20,14 @@ import java.util.Optional;
 import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE_OP;
 import static fi.riista.integration.mmm.statement.AccountStatementTestData.LINE_SAMPLE_OP_2;
 import static fi.riista.test.Asserts.assertEmpty;
+import static fi.riista.test.Asserts.assertThat;
 import static fi.riista.test.TestUtils.ld;
 import static fi.riista.util.DateUtil.today;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -81,6 +86,50 @@ public class AccountStatementImportFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test
+    public void testImportAccountTransfers_allowSameDateFromDifferentFile() {
+        final LocalDate date = ld(2018, 1, 8);
+
+        final AccountStatement firstInput = newAccountStatement(date, newAccountStatementLine(LINE_SAMPLE_OP));
+        final AccountStatement secondInput = newAccountStatement(date, newAccountStatementLine(LINE_SAMPLE_OP_2));
+        secondInput.setFileNumber(1);
+
+        onSavedAndAuthenticated(createNewAdmin(), () -> {
+            feature.importAccountTransfers(firstInput);
+            feature.importAccountTransfers(secondInput);
+        });
+
+        runInTransaction(() -> {
+            final Optional<AccountTransferBatch> firstOptional =
+                    batchRepo.findByFilenameDateAndFileNumber(date, 0);
+            assertThat(firstOptional.isPresent(), is(true));
+            final AccountTransferBatch firstBatch = firstOptional.get();
+            assertThat(firstBatch.getStatementDate(), equalTo(date));
+            assertThat(firstBatch.getFileNumber(), equalTo(0));
+
+            final List<AccountTransfer> firstBatchTransfers =
+                    transferRepo.findAccountTransfersByBatch(firstBatch);
+
+            assertThat(firstBatchTransfers, hasSize(1));
+            assertTransferResult(firstInput.getLines().get(0), firstBatchTransfers.get(0));
+
+            final Optional<AccountTransferBatch> secondOptional =
+                    batchRepo.findByFilenameDateAndFileNumber(date, 1);
+            assertThat(secondOptional.isPresent(), is(true));
+            final AccountTransferBatch secondBatch = secondOptional.get();
+
+            assertThat(secondBatch.getStatementDate(), equalTo(date));
+            assertThat(secondBatch.getFileNumber(), equalTo(1));
+
+            final List<AccountTransfer> secondBatchTransfers =
+                    transferRepo.findAccountTransfersByBatch(secondBatch);
+
+            assertThat(secondBatchTransfers, hasSize(1));
+            assertTransferResult(secondInput.getLines().get(0), secondBatchTransfers.get(0));
+
+        });
+    }
+
+    @Test
     public void testImportAccountTransfers_mustFailOnInvalidData() {
         final LocalDate date = today();
 
@@ -100,11 +149,14 @@ public class AccountStatementImportFeatureTest extends EmbeddedDatabaseTest {
     }
 
     private static AccountStatement newAccountStatement(final LocalDate date, final AccountStatementLine... lines) {
-        return new AccountStatement(date, asList(lines));
+        final AccountStatement statement = new AccountStatement(asList(lines));
+        statement.setFilenameDate(date);
+        statement.setFileNumber(0);
+        return statement;
     }
 
     private static AccountStatementLine newAccountStatementLine(final String str) {
-        return AccountStatementParser.parseAccountTransferLine(str, Optional.empty());
+        return AccountStatementParser.parseAccountTransferLine(str, -1);
     }
 
     private static void assertTransferResult(final AccountStatementLine input, final AccountTransfer output) {
@@ -116,4 +168,5 @@ public class AccountStatementImportFeatureTest extends EmbeddedDatabaseTest {
         assertEquals(CreditorReference.fromNullable(input.getCreditorReference()), output.getCreditorReference());
         assertEquals(input.getAccountServiceReference(), output.getAccountServiceReference());
     }
+
 }

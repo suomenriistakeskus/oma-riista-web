@@ -38,7 +38,7 @@
                             ng-model="specimen.gender"
                             ng-options="('gamediary.gender.' + a | translate) for a in getAvailableGameGenders()"
                             ng-required="genderRequired"
-                            ng-disabled="!entry.canEdit"></select>
+                            ng-disabled="!canEdit()"></select>
                 </td>
 
                 <td class="col-xs-2 form-group" ng-if="ageVisible" show-errors>
@@ -47,7 +47,7 @@
                             ng-model="specimen.age"
                             ng-options="(age | gameAge: entry.gameSpeciesCode) for age in getAvailableGameAges()"
                             ng-required="ageRequired"
-                            ng-disabled="!entry.canEdit"></select>
+                            ng-disabled="!canEdit()"></select>
                 </td>
 
                 <td ng-class="{'col-xs-1': lengthOfPawVisible, 'col-xs-2': !lengthOfPawVisible}" ng-if="widthOfPawVisible">
@@ -56,7 +56,7 @@
                             ng-model="specimen.widthOfPaw"
                             ng-options="n for n in getWidthOfPawOptions()"
                             ng-required="isFieldRequired('widthOfPaw')"
-                            ng-disabled="!entry.canEdit"></select>
+                            ng-disabled="!canEdit()"></select>
                 </td>
 
                 <td class="col-xs-1" ng-if="lengthOfPawVisible">
@@ -65,7 +65,7 @@
                             ng-model="specimen.lengthOfPaw"
                             ng-options="n for n in getLengthOfPawOptions()"
                             ng-required="isFieldRequired('lengthOfPaw')"
-                            ng-disabled="!entry.canEdit"></select>
+                            ng-disabled="!canEdit()"></select>
                 </td>
 
                 <td class="col-xs-2 form-group" ng-if="stateVisible" show-errors>
@@ -74,7 +74,7 @@
                             ng-model="specimen.state"
                             ng-options="('observation.gamestate.' + state | translate) for state in getAvailableGameStates()"
                             ng-required="stateRequired"
-                            ng-disabled="!entry.canEdit"></select>
+                            ng-disabled="!canEdit()"></select>
                 </td>
 
                 <td class="col-xs-2 form-group" ng-if="markingVisible" show-errors>
@@ -83,7 +83,7 @@
                             ng-model="specimen.marking"
                             ng-options="('observation.marking.' + marking | translate) for marking in getAvailableGameMarkings()"
                             ng-required="markingRequired"
-                            ng-disabled="!entry.canEdit"></select>
+                            ng-disabled="!canEdit()"></select>
                 </td>
             </tr>
             </tbody>

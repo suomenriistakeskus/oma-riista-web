@@ -30,7 +30,7 @@ public class PdfExportFactory {
     }
 
     public PdfExport.Builder create(final UriComponentsBuilder uriBuilder) {
-        return new PdfExport.Builder(uriBuilder, runtimeEnvironmentUtil.isProductionEnvironment())
+        return new PdfExport.Builder(uriBuilder, runtimeEnvironmentUtil.isAwsEnvironment())
                 .withDpi(runtimeEnvironmentUtil.isDevelopmentEnvironment() ? 300 : 72)
                 .withImageDpi(runtimeEnvironmentUtil.isDevelopmentEnvironment() ? 300 : 72)
                 .withAuthenticationToken(activeUserService.createLoginTokenForActiveUser(PDF_JWT_TTL));

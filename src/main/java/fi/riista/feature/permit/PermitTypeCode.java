@@ -27,6 +27,8 @@ public class PermitTypeCode {
     public static final String NEST_REMOVAL_BASED = "615";
 
     public static final String LAW_SECTION_TEN_BASED = "255";
+    public static final String EUROPEAN_BEAVER = "250";
+    public static final String PARTRIDGE = "253";
 
     public static final String WEAPON_TRANSPORTATION_BASED = "380";
 
@@ -49,8 +51,8 @@ public class PermitTypeCode {
             FORBIDDEN_METHODS);
 
     // XXX: Legacy option for harvest reporting. Consider removing.
-    private static final Set<String> PERMIT_TYPES_AS_LIST = ImmutableSet.of("200", "210", "250", "251", "253", "300",
-            "305", "310", "345", ANNUAL_UNPROTECTED_BIRD, FORBIDDEN_METHODS);
+    private static final Set<String> PERMIT_TYPES_AS_LIST = ImmutableSet.of("200", "210", EUROPEAN_BEAVER, "251",
+            PARTRIDGE, "300", "305", "310", "345", ANNUAL_UNPROTECTED_BIRD, FORBIDDEN_METHODS);
 
     public static final Set<String> DEROGATION_PERMIT_CODES = ImmutableSet.of("200", BEAR_DAMAGE_BASED, LYNX_DAMAGE_BASED,
             "204", "206", BEAR_KANNAHOIDOLLINEN, LYNX_KANNANHOIDOLLINEN, WOLF_KANNANHOIDOLLINEN, "210",
@@ -110,6 +112,10 @@ public class PermitTypeCode {
                 return IMPORTING;
             case GAME_MANAGEMENT:
                 return GAME_MANAGEMENT;
+            case EUROPEAN_BEAVER:
+                return EUROPEAN_BEAVER;
+            case PARTRIDGE:
+                return PARTRIDGE;
             default:
                 throw new IllegalArgumentException("Unsupported permit category: " + permitCategory);
         }
@@ -191,6 +197,8 @@ public class PermitTypeCode {
             case WOLF_KANNANHOIDOLLINEN:
                 return PermitDecisionName.LARGE_CARNIVORE;
             case LAW_SECTION_TEN_BASED:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 return PermitDecisionName.LAW_SECTION_TEN;
             case WEAPON_TRANSPORTATION_BASED:
                 return PermitDecisionName.WEAPON_TRANSPORTATION;

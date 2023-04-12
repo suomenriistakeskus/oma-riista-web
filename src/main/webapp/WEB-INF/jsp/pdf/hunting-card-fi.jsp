@@ -16,201 +16,297 @@
 </head>
 <body>
 
-<div class="container">
-    <div class="header-logo">
-        <img width="280" alt="image" src="01.jpg"/>
-    </div>
+<!-- Page 1 -->
+<div>
+    <%@include file="hunting-card-header-fi.jsp"%>
 
-    <%@include file="hunting-card-qrcode.jsp"%>
+    <div class="container">
+        <%@include file="hunting-card-qrcode.jsp"%>
 
-    <div class="header-text">
-        TULOSTETTU<br/>
-        OMA RIISTA -PALVELUSTA<br/>
-        <joda:format value="${model.currentDate}" pattern="d.M.YYYY" />
-    </div>
+        <br/>
 
-    <p>TODISTUS RIISTANHOITOMAKSUN SUORITTAMISESTA</p>
+        <p>TODISTUS RIISTANHOITOMAKSUN SUORITTAMISESTA</p>
 
-    <h1>
-        METSÄSTYSKORTTI<br/>
-        <joda:format value="${model.huntingCardStart}" pattern="dd.MM.YYYY" />
-        &dash;
-        <joda:format value="${model.huntingCardEnd}" pattern="dd.MM.YYYY" />
-    </h1>
+        <h1>
+            METSÄSTYSKORTTI<br/>
+            <joda:format value="${model.huntingCardStart}" pattern="dd.MM.YYYY" />
+            &dash;
+            <joda:format value="${model.huntingCardEnd}" pattern="dd.MM.YYYY" />
+        </h1>
 
-    <dl>
-        <dt>
-            Metsästäjän nimi:
-        </dt>
-        <dd>
-           ${model.firstName}&nbsp;${model.lastName}
-        </dd>
+        <dl>
+            <dt>
+                Metsästäjän nimi:
+            </dt>
+            <dd>
+               ${model.firstName}&nbsp;${model.lastName}
+            </dd>
 
-        <dt>
-            Jakeluosoite:
-        </dt>
-        <dd>
-            ${model.streetAddress}<br/>
-            ${model.postalCode}&nbsp;${model.postOffice}
-        </dd>
+            <dt>
+                Jakeluosoite:
+            </dt>
+            <dd>
+                ${model.streetAddress}<br/>
+                ${model.postalCode}&nbsp;${model.postOffice}
+            </dd>
 
-        <dt>
-            Kotipaikka:
-        </dt>
-        <dd>
-            <c:choose>
-                <c:when test="${model.homeMunicipalityName != null}">
-                    <strong>
-                            ${model.homeMunicipalityName}&nbsp;
-                            ${model.homeMunicipalityCode}
-                    </strong>
-                </c:when>
-                <c:otherwise>
-                    <strong class="indent-right">Ei tiedossa</strong>
-                </c:otherwise>
-            </c:choose>
-        </dd>
+            <dt>
+                Kotipaikka:
+            </dt>
+            <dd>
+                <c:choose>
+                    <c:when test="${model.homeMunicipalityName != null}">
+                        <strong>
+                                ${model.homeMunicipalityName}&nbsp;
+                                ${model.homeMunicipalityCode}
+                        </strong>
+                    </c:when>
+                    <c:otherwise>
+                        <strong class="indent-right">Ei tiedossa</strong>
+                    </c:otherwise>
+                </c:choose>
+            </dd>
 
-        <dt>
-            Maksupäivä:
-        </dt>
-        <dd>
-            <c:choose>
-                <c:when test="${model.paymentDate != null}">
-                    <joda:format value="${model.paymentDate}" pattern="dd.MM.YYYY" />
-                </c:when>
-                <c:otherwise>
-                    <span style="color:red">EI MAKSETTU</span>
-                </c:otherwise>
-            </c:choose>
-        </dd>
+            <dt>
+                Maksupäivä:
+            </dt>
+            <dd>
+                <c:choose>
+                    <c:when test="${model.paymentDate != null}">
+                        <joda:format value="${model.paymentDate}" pattern="dd.MM.YYYY" />
+                    </c:when>
+                    <c:otherwise>
+                        <span style="color:red">EI MAKSETTU</span>
+                    </c:otherwise>
+                </c:choose>
+            </dd>
 
-        <dt>
-            Metsästäjänumero:
-        </dt>
-        <dd>
-            ${model.hunterNumber}
-        </dd>
+            <dt>
+                Metsästäjänumero:
+            </dt>
+            <dd>
+                ${model.hunterNumber}
+            </dd>
 
-        <dt>
-            Syntymäaika:
-        </dt>
-        <dd>
-            <joda:format value="${model.dateOfBirth}" pattern="dd.MM.YYYY" />
-        </dd>
+            <dt>
+                Syntymäaika:
+            </dt>
+            <dd>
+                <joda:format value="${model.dateOfBirth}" pattern="dd.MM.YYYY" />
+            </dd>
 
-        <dt>
-            Riistanhoitoyhdistys ja nro:
-        </dt>
-        <dd>
-            <c:choose>
-                <c:when test="${model.rhyName != null}">
-                    ${model.rhyName}
-                    <c:if test="${model.rhyOfficialCode != null}">&nbsp;(${model.rhyOfficialCode})</c:if>
-                </c:when>
-                <c:otherwise>
-                    Ei RHY jäsenyyttä
-                </c:otherwise>
-            </c:choose>
-        </dd>
-    </dl>
+            <dt>
+                Riistanhoitoyhdistys ja nro:
+            </dt>
+            <dd>
+                <c:choose>
+                    <c:when test="${model.rhyName != null}">
+                        ${model.rhyName}
+                        <c:if test="${model.rhyOfficialCode != null}">&nbsp;(${model.rhyOfficialCode})</c:if>
+                    </c:when>
+                    <c:otherwise>
+                        Ei RHY jäsenyyttä
+                    </c:otherwise>
+                </c:choose>
+            </dd>
+        </dl>
 
-    <hr/>
+        <hr/>
 
-    <c:if test="${fn:length(model.occupations) > 0}">
-        <h2>TEHTÄVÄT RIISTANHOITOYHDISTYKSESSÄ:</h2>
+        <c:if test="${fn:length(model.occupationsPage1) > 0}">
+            <h2>TEHTÄVÄT RIISTANHOITOYHDISTYKSESSÄ:</h2>
 
-        <table width="100%">
-            <tbody>
-            <c:forEach items="${model.occupations}" var="o">
-                <tr>
-                    <td class="occupation-name">
-                        <strong>${o.occupationName}</strong><br/>
-                        ${o.organisationName}&nbsp;(${o.organisationOfficialCode})
-                    </td>
+            <table width="100%">
+                <tbody>
+                <c:forEach items="${model.occupationsPage1}" var="o">
+                    <tr>
+                        <td class="occupation-name">
+                            <strong>${o.occupationName}</strong><br/>
+                            ${o.organisationName}&nbsp;(${o.organisationOfficialCode})
+                        </td>
 
-                    <td>
-                        <c:choose>
-                            <c:when test="${o.beginDate == null && o.endDate == null}">
+                        <td>
+                            <c:choose>
+                                <c:when test="${o.beginDate == null && o.endDate == null}">
+                                    Voimassa
+                                </c:when>
+                                <c:when test="${o.endDate == null}">
+                                    Voimassa
+                                </c:when>
+                                <c:when test="${o.beginDate == null}">
+                                    <joda:format value="${o.endDate}" pattern="d.M.YYYY" /> asti
+                                </c:when>
+                                <c:otherwise>
+                                    <joda:format value="${o.beginDate}" pattern="d.M.YYYY" />
+                                    &dash;
+                                    <joda:format value="${o.endDate}" pattern="d.M.YYYY" />
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
+                    </tr>
+                </c:forEach>
+                </tbody>
+            </table>
+            <hr/>
+        </c:if>
+
+        <c:if test="${model.isMultipage == false}">
+            <c:if test="${fn:length(model.shootingTests) > 0}">
+                <h2>AMPUMAKOKEET:</h2>
+
+                <table width="100%">
+                    <tbody>
+                    <c:forEach items="${model.shootingTests}" var="t">
+                        <tr>
+                            <td class="shooting-test-entry">
+                                <div>${t.typeName}</div>
+                                <div>${t.rhyName}&nbsp;(${t.rhyCode})</div>
+                            </td>
+                            <td>
                                 Voimassa
-                            </c:when>
-                            <c:when test="${o.endDate == null}">
-                                Voimassa
-                            </c:when>
-                            <c:when test="${o.beginDate == null}">
-                                <joda:format value="${o.endDate}" pattern="d.M.YYYY" /> asti
-                            </c:when>
-                            <c:otherwise>
-                                <joda:format value="${o.beginDate}" pattern="d.M.YYYY" />
+                                <joda:format value="${t.begin}" pattern="d.M.YYYY" />
                                 &dash;
-                                <joda:format value="${o.endDate}" pattern="d.M.YYYY" />
-                            </c:otherwise>
-                        </c:choose>
-                    </td>
-                </tr>
-            </c:forEach>
-            </tbody>
-        </table>
-        <hr/>
-    </c:if>
+                                <joda:format value="${t.end}" pattern="d.M.YYYY" />
+                            </td>
+                        </tr>
+                    </c:forEach>
+                    </tbody>
+                </table>
+                <hr/>
+            </c:if>
 
-    <c:if test="${fn:length(model.shootingTests) > 0}">
-        <h2>AMPUMAKOKEET:</h2>
+            <h2 style="padding-top: 0;">HUOM!</h2>
 
-        <table width="100%">
-            <tbody>
-            <c:forEach items="${model.shootingTests}" var="t">
-                <tr>
-                    <td class="shooting-test-entry">
-                        <div>${t.typeName}</div>
-                        <div>${t.rhyName}&nbsp;(${t.rhyCode})</div>
-                    </td>
-                    <td>
-                        Voimassa
-                        <joda:format value="${t.begin}" pattern="d.M.YYYY" />
-                        &dash;
-                        <joda:format value="${t.end}" pattern="d.M.YYYY" />
-                    </td>
-                </tr>
-            </c:forEach>
-            </tbody>
-        </table>
-        <hr/>
-    </c:if>
+            <div>
+                <p class="small-print">
+                    Tässä kuitissa mainittu metsästäjä on vastuuvakuutettu maksupäivästä lukien metsästysvuoden loppuun.
+                    Vakuutus on voimassa Pohjoismaissa, EU-maissa, Sveitsissä ja Iso-Britanniassa enintään 60 vuorokautta
+                    kestävillä metsästysmatkoilla. Vakuutus kattaa ampuma-aseella toiselle aiheutetut vahingot - ei kuitenkaan
+                    esinevahinkoja. Vakuutukseen liittyvä metsästäjän yksityistapaturmavakuutus kattaa aseen laukeamisesta tai
+                    räjähtämisestä metsästäjälle itselleen aiheutuneet vahingot. Vahingoittunutta eläintä poliisin
+                    toimeksiannosta Suomessa jäljittävä riistanhoitomaksun maksanut metsästäjä kuuluu vakuutuksen piiriin samoin
+                    kuin hänen jäljitystehtävää suorittava koiransa. Vahingon tapahduttua ottakaa viipymättä yhteys
+                    LähiTapiolaan, Vastuuvahingot ja SRVA-toiminnassa tapahtuneet koiravahingot puh. 09 453 4150 tai Metsästäjän
+                    ja toimitsijan tapaturmavahingot puh. 09 453 3666. Jos haluatte vaihtaa riistanhoitoyhdistystä, on siitä
+                    ilmoitettava metsästäjärekisteriin puhelimitse, sähköpostilla tai postitse. Kaikissa metsästyskorttiin ja
+                    Metsästäjä-lehden postitukseen liittyvissä asioissa Teitä palvelee:
+                </p>
 
-    <h2 style="padding-top: 0;">HUOM!</h2>
-
-    <div>
-        <p class="small-print">
-            Tässä kuitissa mainittu metsästäjä on vastuuvakuutettu maksupäivästä lukien kuitin voimassaolon loppuun.
-            Vakuutus kattaa ampuma-aseella toiselle aiheutetut vahingot - ei kuitenkaan esinevahinkoja.
-            Vakuutukseen liittyvä metsästäjän yksityistapaturmavakuutus kattaa aseen laukeamisesta tai räjähtämisestä
-            metsästäjälle itselleen aiheutuneet vahingot. Vakuutus on näiltä osin voimassa myös Pohjoismaissa, Sveitsissä ja
-            EU-maissa. Vahingoittunutta eläintä poliisin toimeksiannosta Suomessa jäljittävä riistanhoitomaksun
-            maksanut metsästäjä kuuluu vakuutuksen piiriin samoin kuin hänen jäljitystehtävää suorittava koiransa.
-            Vahingon tapahduttua ottakaa viipymättä yhteys LähiTapiolaan, puh. 010 19 5105
-        </p>
-
-        <p class="small-print">
-            Jos haluatte vaihtaa riistanhoitoyhdistystä, on siitä ilmoitettava metsästäjärekisteriin sähköpostilla tai postitse.
-        </p>
-
-        <p class="small-print">
-            Kaikissa metsästyskorttiin ja Metsästäjä-lehden postitukseen liittyvissä asioissa Teitä palvelee:
-        </p>
-
-        <address>
-            Metsästäjärekisteri<br/>
-            PL 22<br/>
-            00331 Helsinki<br/>
-            puh 029 431 2002 (arkisin marras-kesäkuu: klo 9-16 ja heinä-lokakuu: klo 8-18)<br/>
-            e-mail: metsastajarekisteri@riista.fi
-        </address>
+                <address>
+                    Metsästäjärekisteri<br/>
+                    PL 22<br/>
+                    00331 Helsinki<br/>
+                    puh 029 431 2002 (arkisin marras-kesäkuu: klo 9-16 ja heinä-lokakuu: klo 8-17)<br/>
+                    e-mail: metsastajarekisteri@riista.fi
+                </address>
+            </div>
+        </c:if>
     </div>
 
-    <div class="footer" style="margin-top: 330pt">
+    <div class="footer" style="margin-top: 700pt">
         <%@include file="footer-fi.jsp"%>
     </div>
 </div>
+
+<!-- Page 2 -->
+<c:if test="${model.isMultipage == true}">
+<div>
+    <%@include file="hunting-card-header-fi.jsp"%>
+
+    <div class="container">
+        <c:if test="${fn:length(model.occupationsPage2) > 0}">
+            <h2>TEHTÄVÄT RIISTANHOITOYHDISTYKSESSÄ:</h2>
+
+            <table width="100%">
+                <tbody>
+                <c:forEach items="${model.occupationsPage2}" var="o">
+                    <tr>
+                        <td class="occupation-name">
+                            <strong>${o.occupationName}</strong><br/>
+                                ${o.organisationName}&nbsp;(${o.organisationOfficialCode})
+                        </td>
+
+                        <td>
+                            <c:choose>
+                                <c:when test="${o.beginDate == null && o.endDate == null}">
+                                    Voimassa
+                                </c:when>
+                                <c:when test="${o.endDate == null}">
+                                    Voimassa
+                                </c:when>
+                                <c:when test="${o.beginDate == null}">
+                                    <joda:format value="${o.endDate}" pattern="d.M.YYYY" /> asti
+                                </c:when>
+                                <c:otherwise>
+                                    <joda:format value="${o.beginDate}" pattern="d.M.YYYY" />
+                                    &dash;
+                                    <joda:format value="${o.endDate}" pattern="d.M.YYYY" />
+                                </c:otherwise>
+                            </c:choose>
+                        </td>
+                    </tr>
+                </c:forEach>
+                </tbody>
+            </table>
+            <hr/>
+        </c:if>
+
+        <c:if test="${fn:length(model.shootingTests) > 0}">
+            <h2>AMPUMAKOKEET:</h2>
+
+            <table width="100%">
+                <tbody>
+                <c:forEach items="${model.shootingTests}" var="t">
+                    <tr>
+                        <td class="shooting-test-entry">
+                            <div>${t.typeName}</div>
+                            <div>${t.rhyName}&nbsp;(${t.rhyCode})</div>
+                        </td>
+                        <td>
+                            Voimassa
+                            <joda:format value="${t.begin}" pattern="d.M.YYYY" />
+                            &dash;
+                            <joda:format value="${t.end}" pattern="d.M.YYYY" />
+                        </td>
+                    </tr>
+                </c:forEach>
+                </tbody>
+            </table>
+            <hr/>
+        </c:if>
+
+        <h2 style="padding-top: 0;">HUOM!</h2>
+
+        <div>
+            <p class="small-print">
+                Tässä kuitissa mainittu metsästäjä on vastuuvakuutettu maksupäivästä lukien metsästysvuoden loppuun.
+                Vakuutus on voimassa Pohjoismaissa, EU-maissa, Sveitsissä ja Iso-Britanniassa enintään 60 vuorokautta
+                kestävillä metsästysmatkoilla. Vakuutus kattaa ampuma-aseella toiselle aiheutetut vahingot - ei kuitenkaan
+                esinevahinkoja. Vakuutukseen liittyvä metsästäjän yksityistapaturmavakuutus kattaa aseen laukeamisesta tai
+                räjähtämisestä metsästäjälle itselleen aiheutuneet vahingot. Vahingoittunutta eläintä poliisin
+                toimeksiannosta Suomessa jäljittävä riistanhoitomaksun maksanut metsästäjä kuuluu vakuutuksen piiriin samoin
+                kuin hänen jäljitystehtävää suorittava koiransa. Vahingon tapahduttua ottakaa viipymättä yhteys
+                LähiTapiolaan, Vastuuvahingot ja SRVA-toiminnassa tapahtuneet koiravahingot puh. 09 453 4150 tai Metsästäjän
+                ja toimitsijan tapaturmavahingot puh. 09 453 3666. Jos haluatte vaihtaa riistanhoitoyhdistystä, on siitä
+                ilmoitettava metsästäjärekisteriin puhelimitse, sähköpostilla tai postitse. Kaikissa metsästyskorttiin ja
+                Metsästäjä-lehden postitukseen liittyvissä asioissa Teitä palvelee:
+            </p>
+
+            <address>
+                Metsästäjärekisteri<br/>
+                PL 22<br/>
+                00331 Helsinki<br/>
+                puh 029 431 2002 (arkisin marras-kesäkuu: klo 9-16 ja heinä-lokakuu: klo 8-17)<br/>
+                e-mail: metsastajarekisteri@riista.fi
+            </address>
+        </div>
+    </div>
+
+    <div class="footer" style="margin-top: 700pt">
+        <%@include file="footer-fi.jsp"%>
+    </div>
+</div>
+</c:if>
+
 </body>
 </html>

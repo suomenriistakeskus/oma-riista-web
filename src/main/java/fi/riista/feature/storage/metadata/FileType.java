@@ -21,7 +21,9 @@ public enum FileType {
     MOOSE_DATA_CARD(StorageType.AWS_S3_BUCKET),
     SHOOTING_TEST_EXPORT(StorageType.AWS_S3_BUCKET),
     HUNTING_CONTROL_ATTACHMENT(StorageType.AWS_S3_BUCKET),
-    OTHERWISE_DECEASED_ATTACHMENT(StorageType.AWS_S3_BUCKET);
+    OTHERWISE_DECEASED_ATTACHMENT(StorageType.AWS_S3_BUCKET),
+    TAXATION_REPORT_ATTACHMENT(StorageType.AWS_S3_BUCKET),
+    DEER_CENSUS_ATTACHMENT(StorageType.AWS_S3_BUCKET),;
 
     private final StorageType storageType;
 
@@ -94,6 +96,12 @@ public enum FileType {
 
             case OTHERWISE_DECEASED_ATTACHMENT:
                 return "otherwisedeceasedattachment/" + formatFilename(metadata);
+
+            case TAXATION_REPORT_ATTACHMENT:
+                return "taxationreportattachment/" + formatFilename(metadata);
+
+            case DEER_CENSUS_ATTACHMENT:
+                return "deercensusattachment/" + formatFilename(metadata);
 
             default:
                 return formatFilename(metadata);

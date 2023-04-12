@@ -1,19 +1,25 @@
 package fi.riista.feature.permit.application.conflict;
 
+import fi.riista.util.NumberUtils;
+
 public class HarvestPermitApplicationConflictPalstaDTO {
     private final Integer palstaId;
     private final String palstaTunnus;
     private final String palstaNimi;
     private final Double areaSize;
+    private final Double waterAreaSize;
+    private final Double landAreaSize;
     private final boolean metsahallitus;
 
     public HarvestPermitApplicationConflictPalstaDTO(final Integer palstaId, final String palstaTunnus,
                                                      final String palstaNimi, final Double areaSize,
-                                                     final boolean metsahallitus) {
+                                                     final Double waterAreaSize, final boolean metsahallitus) {
         this.palstaId = palstaId;
         this.palstaTunnus = palstaTunnus;
         this.palstaNimi = palstaNimi;
         this.areaSize = areaSize;
+        this.waterAreaSize = waterAreaSize;
+        this.landAreaSize = NumberUtils.nullableDoubleSubtraction(areaSize, waterAreaSize);
         this.metsahallitus = metsahallitus;
     }
 
@@ -31,6 +37,14 @@ public class HarvestPermitApplicationConflictPalstaDTO {
 
     public Double getAreaSize() {
         return areaSize;
+    }
+
+    public Double getWaterAreaSize() {
+        return waterAreaSize;
+    }
+
+    public Double getLandAreaSize() {
+        return landAreaSize;
     }
 
     public boolean isMetsahallitus() {

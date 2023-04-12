@@ -1,0 +1,26 @@
+<div class="row">
+    <div ng-if="$ctrl.getLanguage() === 'fi'"
+         class="col-sm-6 r-news-item"
+         ng-class="($ctrl.news.length === 2 && $index === 1) ? 'r-news-item-right' : null"
+         ng-repeat="news in $ctrl.news track by news.id">
+        <h3 ng-bind="news.titleFi"></h3>
+        <r-paragraphed-text content="news.textFi"></r-paragraphed-text>
+        <p ng-if="!!news.linkFi"><span translate="main.news.readMore"></span> <a href="{{news.linkFi}}" target="_blank">{{news.linkFi}}</a></p>
+        <p><i><span translate="main.news.published"></span>&nbsp;
+            <span ng-bind="news.publishDate |date:'d.M.yyyy'"></span>&nbsp;
+            <span ng-bind="news.publishTime |date:'hh:MM'"></span>
+        </i></p>
+    </div>
+    <div ng-if="$ctrl.getLanguage() === 'sv'"
+         class="col-sm-6 r-news-item"
+         ng-class="($ctrl.news.length === 2 && $index === 1) ? 'r-news-item-right' : null"
+         ng-repeat="news in $ctrl.news track by news.id">
+        <h3 ng-bind="news.titleSv"></h3>
+        <r-paragraphed-text content="news.textSv"></r-paragraphed-text>
+        <p ng-if="!!news.linkSv"><span translate="main.news.readMore"></span> <a href="{{news.linkSv}}" target="_blank">{{news.linkSv}}</a></p>
+        <p><i><span translate="main.news.published"></span>&nbsp;
+            <span ng-bind="news.publishDate |date:'d.M.yyyy'"></span>&nbsp;
+            <span ng-bind="news.publishTime |date:'hh:MM'"></span>
+        </i></p>
+    </div>
+</div>

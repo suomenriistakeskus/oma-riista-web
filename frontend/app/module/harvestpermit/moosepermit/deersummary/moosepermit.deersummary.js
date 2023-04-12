@@ -128,44 +128,20 @@ angular.module('app.moosepermit.deerhuntingsummary', [])
         };
 
         $ctrl.isValidForFinalSubmit = function (form) {
-            return $ctrl.isValid(form) && allRequiredFieldsPopulated();
+            return $ctrl.isValid(form);
         };
 
         $ctrl.getGameSpeciesName = function () {
             return getGameSpeciesName($ctrl.summary.gameSpeciesCode);
         };
 
-        $ctrl.showAlertForPermitAreaSize = function () {
+        $ctrl.showAlertForPermitAreaSize = function (form) {
             var summary = $ctrl.summary;
-            var totalHuntingArea = summary.totalHuntingArea;
+            // Parse area from $viewValue to show alert if value is too big. Model is not updated when entered
+            // input value is over maximum set for input
+            var totalHuntingArea = parseInt(form.totalHuntingArea.$viewValue, 10);
 
-            return !_.isFinite(totalHuntingArea) || totalHuntingArea > summary.permitAreaSize;
-        };
-
-        $ctrl.isTotalHuntingAreaRequired = function () {
-            return !_.isFinite($ctrl.summary.effectiveHuntingArea);
-        };
-
-        $ctrl.isEffectiveHuntingAreaRequired = function () {
-            return !_.isFinite($ctrl.summary.totalHuntingArea);
-        };
-
-        $ctrl.isRemainingPopulationForTotalAreaRequired = function () {
-            var summary = $ctrl.summary;
-
-            return !_.isFinite(summary.effectiveHuntingArea) ||
-                !_.isFinite(summary.remainingPopulationInEffectiveArea) &&
-                _.isFinite(summary.totalHuntingArea) &&
-                _.isFinite(summary.effectiveHuntingArea);
-        };
-
-        $ctrl.isRemainingPopulationForEffectiveAreaRequired = function () {
-            var summary = $ctrl.summary;
-
-            return !_.isFinite(summary.totalHuntingArea) ||
-                !_.isFinite(summary.remainingPopulationInTotalArea) &&
-                _.isFinite(summary.totalHuntingArea) &&
-                _.isFinite(summary.effectiveHuntingArea);
+            return _.isFinite(totalHuntingArea) && totalHuntingArea > summary.permitAreaSize;
         };
 
         $ctrl.getMaxForEffectiveHuntingArea = function () {
@@ -187,21 +163,6 @@ angular.module('app.moosepermit.deerhuntingsummary', [])
         $ctrl.isHuntingFinishedAndNotLocked = function () {
             return $ctrl.isHuntingFinished() && formEditingEnabled;
         };
-
-        function allRequiredFieldsPopulated() {
-            var summary = $ctrl.summary;
-
-            var isDefined = function (value) {
-                return angular.isDefined(value) && value !== null;
-            };
-
-            var isHuntingAreaAndRemainingPopulationDefined = function () {
-                return isDefined(summary.totalHuntingArea) && isDefined(summary.remainingPopulationInTotalArea) ||
-                    isDefined(summary.effectiveHuntingArea) && isDefined(summary.remainingPopulationInEffectiveArea);
-            };
-
-            return $ctrl.huntingEndDate && isHuntingAreaAndRemainingPopulationDefined();
-        }
 
         function prepareForSubmit(form, checkFormValidFn) {
             $scope.$broadcast('show-errors-check-validity');

@@ -121,6 +121,8 @@ import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.
 import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41B;
 import static fi.riista.feature.permit.decision.derogation.DerogationLawSection.SECTION_41C;
 import static fi.riista.feature.permit.decision.document.PermitDecisionTextUtils.escape;
+import static fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount.RestrictionType;
+import static fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount.RestrictionType.AU;
 import static fi.riista.util.DateUtil.DATE_FORMAT_FINNISH;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.naturalOrder;
@@ -319,6 +321,8 @@ public class PermitDecisionTextService {
             case NEST_REMOVAL:
                 return createNestRemovalApplicationSummaryGenerator(application, locale).generateApplicationMain();
             case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 return createLawSectionTenApplicationSummaryGenerator(application, locale).generateApplicationMain();
             case WEAPON_TRANSPORTATION:
                 return createWeaponTransportationApplicationSummaryGenerator(application, locale).generateApplicationMain();
@@ -570,6 +574,8 @@ public class PermitDecisionTextService {
             case NEST_REMOVAL:
                 return createNestRemovalApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
             case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 return createLawSectionTenApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
             case WEAPON_TRANSPORTATION:
                 return createWeaponTransportationApplicationSummaryGenerator(application, locale).generateApplicationReasoning();
@@ -1185,10 +1191,13 @@ public class PermitDecisionTextService {
             case DEPORTATION:
             case RESEARCH:
             case GAME_MANAGEMENT:
+            case DISABILITY:
                 return i18n(decision,
                         "Suomen riistakeskus on päättänyt myöntää poikkeusluvan seuraavasti:",
                         "Finlands viltcentral har beslutat att bevilja dispens enligt följande:");
             case LAW_SECTION_TEN:
+            case EUROPEAN_BEAVER:
+            case PARTRIDGE:
                 return i18n(decision,
                         "Suomen riistakeskus on päättänyt myöntää pyyntiluvan seuraavasti:",
                         "Finlands viltcentral har beslutat bevilja jaktlicens enligt följande:");
@@ -1196,10 +1205,6 @@ public class PermitDecisionTextService {
                 return i18n(decision,
                         "Suomen riistakeskus on päättänyt myöntää aseenkuljetusluvan seuraavasti:",
                         "Finlands viltcentral har beslutat att bevilja tillstånd för transport av vapen enligt följande:");
-            case DISABILITY:
-                return i18n(decision,
-                        "Suomen riistakeskus on päättänyt myöntää luvan moottoriajoneuvon käyttöön liikuntarajoitteisena seuraavasti:",
-                        "Suomen riistakeskus on päättänyt myöntää luvan moottoriajoneuvon käyttöön liikuntarajoitteisena seuraavasti:");
             case DOG_DISTURBANCE:
             case DOG_UNLEASH:
                 return i18n(decision,
@@ -1223,32 +1228,83 @@ public class PermitDecisionTextService {
         final StringBuilder sb = new StringBuilder();
 
         for (final PermitDecisionSpeciesAmount speciesAmount : getSortedSpecies(decision)) {
-            if (speciesAmount.getRestrictionAmount() != null && speciesAmount.getRestrictionType() != null) {
-                sb.append(formatSpeciesName(speciesAmount, decision.getLocale()));
-                sb.append(" ");
-                sb.append(i18n(decision, "määrä enintään", "antal högst"));
+            final RestrictionType restrictionType = speciesAmount.getRestrictionType();
+            final Float restrictionAmount = speciesAmount.getRestrictionAmount();
+            if (restrictionAmount != null && restrictionType != null) {
+                sb.append(i18n(decision, "Pyyntiluvan nojalla saa kaataa enintään", "Med stöd av jaktlicens får fällas högst"));
                 sb.append(" ");
                 sb.append(NF.format(speciesAmount.getRestrictionAmount()));
                 sb.append(" ");
 
-                switch (speciesAmount.getRestrictionType()) {
-                    case AE:
-                        sb.append(i18n(decision,
-                                "aikuista eläintä",
-                                "djur"));
-                        break;
-                    case AU:
-                        sb.append(i18n(decision,
-                                "aikuista urosta",
-                                Math.round(speciesAmount.getSpecimenAmount()) > 1 ? "tjurar" : "tjur"));
-                        break;
-                }
+                final boolean hasMany = restrictionAmount.compareTo(1.0f) > 0;
+
+                sb.append(hasMany ? i18n(decision, "aikuista", "fullvuxna") : i18n(decision, "aikuisen", "fullvuxen"));
+                sb.append(" ");
+
+                final int speciesCode = speciesAmount.getGameSpecies().getOfficialCode();
+                sb.append(getRestrictionSpeciesAndType(decision, speciesCode, restrictionType, hasMany));
+
                 sb.append(".\n");
             }
         }
 
         return sb.toString();
     }
+
+    private String getRestrictionSpeciesAndType(final PermitDecision decision,
+                                                final int speciesCode,
+                                                final RestrictionType restrictionType,
+                                                final boolean hasMany) {
+            final StringBuilder sb = new StringBuilder();
+
+            switch (speciesCode) {
+                case 47503:
+                    if (restrictionType == AU) {
+                        sb.append(hasMany
+                                ? i18n(decision, "uroshirveä", "älgtjurar")
+                                : i18n(decision, "uroshirven", "älgtjur"));
+                    } else {
+                        sb.append(hasMany
+                                ? i18n(decision, "hirveä", "älgar")
+                                : i18n(decision, "hirven", "älg"));
+                    }
+                    break;
+                case 47629:
+                    if (restrictionType == AU) {
+                        sb.append(hasMany
+                                ? i18n(decision, "valkohäntäpeuraurosta", "vitsvanshjortbockar")
+                                : i18n(decision, "valkohäntäpeurauroksen", "vitsvanshjortbock"));
+                    } else {
+                        sb.append(hasMany
+                                ? i18n(decision, "valkohäntäpeuraa", "vitsvanshjortar")
+                                : i18n(decision, "valkohäntäpeuran", "vitsvanshjort"));
+                    }
+                    break;
+                case 47484:
+                    if (restrictionType == AU) {
+                        sb.append(hasMany
+                                ? i18n(decision, "kuusipeuraurosta", "dovhjorttjurar")
+                                : i18n(decision, "kuusipeurauroksen", "dovhjorttjur"));
+                    } else {
+                        sb.append(hasMany
+                                ? i18n(decision, "kuusipeuraa", "dovhjortar")
+                                : i18n(decision, "kuusipeuran", "dovhjort"));
+                    }
+                    break;
+                case 200556:
+                    if (restrictionType == AU) {
+                        sb.append(hasMany
+                                ? i18n(decision, "metsäpeuraurosta", "skogsvildrentjurar")
+                                : i18n(decision, "metsäpeurauroksen", "skogsvildrentjur"));
+                    } else {
+                        sb.append(hasMany
+                                ? i18n(decision, "metsäpeuraa", "skogsvildrenar")
+                                : i18n(decision, "metsäpeuran", "skogsvildren"));
+                    }
+                    break;
+            }
+            return sb.toString();
+        }
 
     @Transactional(readOnly = true, noRollbackFor = RuntimeException.class)
     public String generateProcessing(final PermitDecision decision) {
@@ -1406,11 +1462,16 @@ public class PermitDecisionTextService {
 
     @Transactional(readOnly = true, noRollbackFor = RuntimeException.class)
     public String generateDelivery(final PermitDecision decision) {
+        final List<PermitDecisionDelivery> delivery = decision.getDelivery();
+        if (delivery.isEmpty()) {
+            return "";
+        }
+
         return i18n(decision,
                 "Tiedoksi",
                 "Till kännedom") +
                 ":\n" +
-                decision.getDelivery().stream()
+                delivery.stream()
                         .map(PermitDecisionDelivery::getName)
                         .filter(StringUtils::isNotBlank)
                         .map(String::trim)

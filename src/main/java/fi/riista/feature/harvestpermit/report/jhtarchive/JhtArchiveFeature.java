@@ -77,7 +77,9 @@ public class JhtArchiveFeature {
             PermitTypeCode.DEPORTATION,
             PermitTypeCode.RESEARCH,
             PermitTypeCode.GAME_MANAGEMENT,
-            PermitTypeCode.FORBIDDEN_METHODS);
+            PermitTypeCode.FORBIDDEN_METHODS,
+            PermitTypeCode.EUROPEAN_BEAVER,
+            PermitTypeCode.PARTRIDGE);
 
     private static final Set<String> IMMATERIAL_PERMIT_TYPES = ImmutableSet.of(
             PermitTypeCode.DISABILITY_BASED,

@@ -4,6 +4,7 @@ import fi.riista.feature.common.decision.authority.DecisionAuthoritiesDTO;
 import fi.riista.feature.permit.application.search.HarvestPermitApplicationSearchDTO;
 import fi.riista.feature.permit.decision.CreatePermitDecisionDTO;
 import fi.riista.feature.permit.decision.DecisionAppealSettingsDTO;
+import fi.riista.feature.permit.decision.DecisionInformationPublishingDTO;
 import fi.riista.feature.permit.decision.DecisionPublishSettingsDTO;
 import fi.riista.feature.permit.decision.DecisionUnlockDTO;
 import fi.riista.feature.permit.decision.PermitDecisionCompleteStatus;
@@ -13,6 +14,7 @@ import fi.riista.feature.permit.decision.PermitDecisionDocument;
 import fi.riista.feature.permit.decision.PermitDecisionDocumentSettingsDTO;
 import fi.riista.feature.permit.decision.PermitDecisionFeature;
 import fi.riista.feature.permit.decision.PermitDecisionGrantStatusDTO;
+import fi.riista.feature.permit.decision.PublishDecisionInformationDTO;
 import fi.riista.feature.permit.decision.action.PermitDecisionActionDTO;
 import fi.riista.feature.permit.decision.action.PermitDecisionActionFeature;
 import fi.riista.feature.permit.decision.authority.PermitDecisionAuthorityFeature;
@@ -23,6 +25,7 @@ import fi.riista.feature.permit.decision.document.PermitDecisionDocumentFeature;
 import fi.riista.feature.permit.decision.document.PermitDecisionDocumentSectionDTO;
 import fi.riista.feature.permit.decision.document.PermitDecisionSectionIdentifier;
 import fi.riista.feature.permit.decision.document.UpdateDecisionPaymentDTO;
+import fi.riista.feature.permit.decision.informationrequest.PermitDecisionInformationRequestFeature;
 import fi.riista.feature.permit.decision.legal.PermitDecisionLegalFieldsDTO;
 import fi.riista.feature.permit.decision.legal.PermitDecisionLegalFieldsFeature;
 import fi.riista.feature.permit.decision.methods.PermitDecisionForbiddenMethodDTO;
@@ -122,6 +125,9 @@ public class PermitDecisionApiResource {
     @Resource
     private AdminPermitDecisionInvoiceCreateFeature adminPermitDecisionInvoiceCreateFeature;
 
+    @Resource
+    private PermitDecisionInformationRequestFeature permitDecisionInformationRequestFeature;
+
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "{decisionId:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
     public PermitDecisionDTO getDecision(final @PathVariable long decisionId) {
@@ -169,7 +175,7 @@ public class PermitDecisionApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "admin/invoice/processing/create", produces = MediaType.APPLICATION_JSON_VALUE)
-    public void adminCreateProcessingInvoicePdf(final @RequestParam List<Long> ids) throws IOException{
+    public void adminCreateProcessingInvoicePdf(final @RequestParam List<Long> ids) throws IOException {
         adminPermitDecisionInvoiceCreateFeature.createInvoicePdfs(ids);
     }
 
@@ -377,6 +383,12 @@ public class PermitDecisionApiResource {
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping(value = "{decisionId:\\d+}/automatic-delivery-deduction")
+    public void updateAutomaticDeliveryDeduction(final @PathVariable long decisionId, final @RequestParam boolean enabled) {
+        permitDecisionFeature.updateAutomaticDeliveryDeduction(decisionId, enabled);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping(value = "{decisionId:\\d+}/lock")
     public void lockDecision(final @PathVariable long decisionId) {
         permitDecisionRevisionFeature.lockDecision(decisionId);
@@ -467,6 +479,13 @@ public class PermitDecisionApiResource {
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping(value = "{decisionId:\\d+}/action/copy-actions", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public void createActions(final @PathVariable long decisionId,
+                              final @Valid @RequestBody List<PermitDecisionActionDTO> list) {
+        permitDecisionActionFeature.createActions(decisionId, list);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping(value = "{decisionId:\\d+}/action/{actionId:\\d+}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void updateAction(final @PathVariable long decisionId,
                              final @PathVariable long actionId,
@@ -515,4 +534,25 @@ public class PermitDecisionApiResource {
         permitDecisionFeature.updateGrantStatus(decisionId, dto);
     }
 
+    // INFORMATION REQUESTS
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping(value = "{decisionId:\\d+}/inforequests")
+    public void createInformationRequestLink(final @PathVariable long decisionId,
+                                             final @RequestBody @Valid PublishDecisionInformationDTO dto) {
+        dto.setId(decisionId);
+        permitDecisionInformationRequestFeature.createAndSendInformationRequestLink(dto);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "{decisionId:\\d+}/inforequests", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<DecisionInformationPublishingDTO> listInformationRequestLinks(final @PathVariable long decisionId) {
+        return permitDecisionInformationRequestFeature.getInformationRequestsStatistics(decisionId);
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping(value = "{decisionId:\\d+}/inforequests/{linkId}")
+    public void deleteInformationRequestLink(final @PathVariable long decisionId,
+                                             final @PathVariable long linkId) {
+        permitDecisionInformationRequestFeature.invalidateInformationRequestLink(decisionId, linkId);
+    }
 }

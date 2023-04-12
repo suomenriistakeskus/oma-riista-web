@@ -37,13 +37,22 @@ angular.module('app.moosepermit.services', [])
             },
             clubHuntingLeaders: {
                 method: 'GET',
-                isArray: true,
                 url: apiPrefix + '/:permitId/leaders'
+            },
+            clubHuntingLeadersForContactPerson: {
+                method: 'GET',
+                url: apiPrefix + '/:permitId/leaders-contactperson'
             },
             rhyStatistics: {
                 method: 'GET',
                 isArray: true,
                 url: apiPrefix + '/:permitId/rhystatistics/:speciesCode',
+                params: {permitId: '@permitId', speciesCode: '@speciesCode'}
+            },
+            rhyStatisticsForClub: {
+                method: 'GET',
+                isArray: true,
+                url: apiPrefix + '/:permitId/rhystatistics/club/:speciesCode',
                 params: {permitId: '@permitId', speciesCode: '@speciesCode'}
             },
             updateAllocations: {
@@ -73,7 +82,12 @@ angular.module('app.moosepermit.services', [])
                     permitId: '@permitId',
                     speciesCode: '@speciesCode'
                 }
-            }
+            },
+            getObservationSummary: {
+                method: 'GET',
+                url: apiPrefix + '/:permitId/observationsummary',
+                params: {permitId: '@permitId'}
+            },
         });
     })
 
@@ -82,7 +96,7 @@ angular.module('app.moosepermit.services', [])
             return $uibModal.open({
                 templateUrl: 'harvestpermit/moosepermit/permit-leaders.html',
                 resolve: {
-                    leaders: function () {
+                    leaderData: function () {
                         return MoosePermits.clubHuntingLeaders({
                             permitId: params.id,
                             huntingYear: params.huntingYear,
@@ -97,15 +111,48 @@ angular.module('app.moosepermit.services', [])
             }).result;
         };
 
-        function ModalController($uibModalInstance, leaders) {
+        this.showLeadersForContactPerson = function (params) {
+            return $uibModal.open({
+                templateUrl: 'harvestpermit/moosepermit/permit-leaders.html',
+                resolve: {
+                    leaderData: function () {
+                        return MoosePermits.clubHuntingLeadersForContactPerson({
+                            permitId: params.id,
+                            huntingYear: params.huntingYear,
+                            gameSpeciesCode: params.gameSpeciesCode
+                        }).$promise;
+                    }
+                },
+                size: 'lg',
+                controllerAs: '$ctrl',
+                controller: ModalController,
+                bindToController: true
+            }).result;
+        };
+
+        function ModalController($uibModalInstance, leaderData) {
             var $ctrl = this;
 
             $ctrl.$onInit = function () {
-                $ctrl.leaders = leaders;
+                $ctrl.leaders = leaderData.partnerLeaders;
+                $ctrl.otherLeaders = leaderData.otherLeaders;
+
+                $ctrl.activeTab = 0;
 
                 var previousClub = null;
 
                 // Hide repetitive club names
+                clearRepetitiveClubData($ctrl.leaders);
+                clearRepetitiveClubData($ctrl.otherLeaders);
+
+            };
+
+            $ctrl.close = function () {
+                $uibModalInstance.close();
+            };
+
+            function clearRepetitiveClubData(leaders) {
+                var previousClub = null;
                 for (var i = 0; i < leaders.length; i++) {
                     var club = leaders[i].club;
                     if (previousClub && angular.equals(previousClub, club)) {
@@ -113,10 +160,14 @@ angular.module('app.moosepermit.services', [])
                     }
                     previousClub = club;
                 }
-            };
-
-            $ctrl.close = function () {
-                $uibModalInstance.close();
-            };
+            }
         }
+    })
+
+    .component('moosePermitHuntingLeaderContactTable', {
+        templateUrl: 'harvestpermit/moosepermit/permit-leader-details.html',
+        bindings: {
+            contactDetails: '<'
+        },
+        controllerAs: '$ctrl'
     });

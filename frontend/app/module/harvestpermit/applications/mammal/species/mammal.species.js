@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.mammal.species', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/mammal/species/species.html',
                 controller: 'MammalPermitWizardSpeciesController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesAmountList: function (MammalPermitApplication, applicationId) {
                         return MammalPermitApplication.listSpeciesAmounts({id: applicationId}).$promise;

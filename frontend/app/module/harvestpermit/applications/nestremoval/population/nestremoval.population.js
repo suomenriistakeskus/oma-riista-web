@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.nestremoval.population', ['app.met
                 templateUrl: 'harvestpermit/applications/nestremoval/population/population.html',
                 controller: 'DerogationPermitWizardPopulationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     speciesPopulationList: function (DerogationPermitApplication, applicationId) {
                         return DerogationPermitApplication.getSpeciesPopulation({id: applicationId}).$promise;

@@ -1,5 +1,7 @@
 package fi.riista.api;
 
+import fi.riista.feature.huntingclub.search.HuntingClubNameDTO;
+import fi.riista.feature.huntingclub.search.HuntingClubSearchFeature;
 import fi.riista.feature.organization.calendar.VenueDTO;
 import fi.riista.feature.organization.calendar.VenueSearchFeature;
 import fi.riista.feature.organization.person.PersonSearchFeature;
@@ -33,6 +35,9 @@ public class SearchApiResource {
 
     @Resource
     private PersonSearchFeature personSearchFeature;
+
+    @Resource
+    private HuntingClubSearchFeature huntingClubSearchFeature;
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping
@@ -70,5 +75,13 @@ public class SearchApiResource {
     @PostMapping(value = "/person")
     public List<PersonWithHunterNumberDTO> findByPersonNameOrHunterNumber(@RequestParam String searchTerm) {
         return personSearchFeature.findPersonsByHunterNumberOrNameFuzzyMatch(searchTerm);
+    }
+    @PostMapping(value = "/club/officialcode")
+    public HuntingClubNameDTO findByOfficialCode(@RequestParam String officialCode) {
+        return huntingClubSearchFeature.findNameByOfficialCode(officialCode);
+    }
+    @PostMapping(value = "/club/huntingclubid")
+    public HuntingClubNameDTO findByHuntingClubId(@RequestParam Long huntingClubId) {
+        return huntingClubSearchFeature.findNameById(huntingClubId);
     }
 }

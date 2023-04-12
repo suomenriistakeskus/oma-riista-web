@@ -15,7 +15,7 @@ public class ExecutorConfig {
     @Bean
     public ThreadPoolTaskScheduler commonTaskScheduler() {
         final ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(runtimeEnvironmentUtil.isDevelopmentEnvironment() ? 1 : 20);
+        scheduler.setPoolSize(20);
         scheduler.setWaitForTasksToCompleteOnShutdown(true);
         scheduler.setAwaitTerminationSeconds(30);
 

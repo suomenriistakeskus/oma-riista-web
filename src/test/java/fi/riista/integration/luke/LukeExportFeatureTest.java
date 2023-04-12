@@ -7,21 +7,19 @@ import fi.riista.feature.harvestpermit.HarvestPermit;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
 import fi.riista.feature.huntingclub.HuntingClub;
+import fi.riista.feature.huntingclub.HuntingClubSubtype;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
 import fi.riista.feature.huntingclub.hunting.day.GroupHuntingDay;
 import fi.riista.feature.organization.RiistakeskuksenAlue;
-import fi.riista.feature.organization.address.Address;
 import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.permit.application.PermitHolder;
-import fi.riista.integration.luke_export.mooselikeharvests.LEM_Address;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Amount;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Club;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Group;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_HuntingDay;
 import fi.riista.integration.luke_export.mooselikeharvests.LEM_Permit;
-import fi.riista.integration.luke_export.mooselikeharvests.LEM_Person;
 import fi.riista.test.Asserts;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.F;
@@ -31,6 +29,7 @@ import org.junit.Test;
 import org.springframework.security.access.AccessDeniedException;
 
 import javax.annotation.Resource;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,6 +40,7 @@ import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class LukeExportFeatureTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
@@ -102,11 +102,14 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest implements Hunti
     @Test
     public void testOnlyPermitExists() {
         // Only permit exists, no partners etc. This should not happen in real life
-        HarvestPermit permit = createMoosePermit();
+        final HarvestPermit permit = createMoosePermit();
 
         onSavedAndAuthenticated(apiUser, () -> {
-            List<LEM_Permit> exportDtos = feature.exportMoose(YEAR).getPermits();
+            final List<LEM_Permit> exportDtos = feature.exportMoose(YEAR).getPermits();
             assertEquals(1, exportDtos.size());
+            assertNull(exportDtos.get(0).getContactPerson());
+            assertEquals(1, exportDtos.get(0).getHuntingClubs().size());
+            assertNull(exportDtos.get(0).getHuntingClubs().get(0).getContactPerson());
             runInTransaction(() -> assertPermit(reload(permit), exportDtos));
         });
     }
@@ -123,7 +126,7 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest implements Hunti
 
 
             onSavedAndAuthenticated(apiUser, () -> {
-                List<LEM_Permit> exportDtos = feature.exportMoose(fixture.permit.getPermitYear()).getPermits();
+                final List<LEM_Permit> exportDtos = feature.exportMoose(fixture.permit.getPermitYear()).getPermits();
                 assertThat(exportDtos, hasSize(1));
 
                 final LEM_Permit permit = exportDtos.get(0);
@@ -144,49 +147,49 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest implements Hunti
 
     }
 
-    private HarvestPermit reload(HarvestPermit permit) {
+    private HarvestPermit reload(final HarvestPermit permit) {
         return harvestPermitRepository.getOne(permit.getId());
     }
 
     private HarvestPermit createMoosePermit() {
-        final HarvestPermit permit = model().newMooselikePermit(model().newRiistanhoitoyhdistys(this.rka), YEAR);
+        final Riistanhoitoyhdistys rhy = model().newRiistanhoitoyhdistys(this.rka);
+        final HarvestPermit permit = model().newMooselikePermit(rhy, YEAR);
         createSpeciesAmount(permit, mooseSpecies);
+        permit.setHuntingClub(createClubWithPerson(rhy, "A", "A", "290990-421S", "22222222"));
+
+        permit.setPermitPartners(new HashSet<HuntingClub>() {{
+            add(createClubWithPerson(rhy, "First", "LastName", "010101-0101", "88888888"));
+        }});
         return permit;
     }
 
-    private static void assertPermit(HarvestPermit permit, List<LEM_Permit> exportDtos) {
-        List<LEM_Permit> matchingDtos = exportDtos.stream()
+    private HuntingClub createClubWithPerson(final Riistanhoitoyhdistys rhy,
+                                             final String firstName,
+                                             final String lastName,
+                                             final String ssn,
+                                             final String hunterNumber) {
+        final HuntingClub huntingClub = model().newHuntingClub(rhy);
+        final Person clubPerson = model().newPerson(firstName, lastName, ssn, hunterNumber);
+        huntingClub.setClubPerson(clubPerson);
+        huntingClub.setSubtype(HuntingClubSubtype.PERSON);
+        return huntingClub;
+    }
+
+    private static void assertPermit(final HarvestPermit permit, final List<LEM_Permit> exportDtos) {
+        final List<LEM_Permit> matchingDtos = exportDtos.stream()
                 .filter(d -> Objects.equals(permit.getPermitNumber(), d.getPermitNumber()))
                 .collect(toList());
         assertEquals(1, matchingDtos.size());
         assertPermit(permit, matchingDtos.get(0));
     }
 
-    private static void assertPermit(HarvestPermit entity, LEM_Permit dto) {
+    private static void assertPermit(final HarvestPermit entity, final LEM_Permit dto) {
         assertEquals(entity.getPermitNumber(), dto.getPermitNumber());
         assertEquals(entity.getRhy().getOfficialCode(), dto.getRhyOfficialCode());
-        assertPerson(entity.getOriginalContactPerson(), dto.getContactPerson());
+        assertNull(dto.getContactPerson());
         assertMooseAmount(entity.getSpeciesAmounts(), dto.getMooseAmount());
         // amendmentPermits?
         assertClubs(entity.getPermitPartners(), dto.getHuntingClubs());
-    }
-
-    private static void assertPerson(final Person entity, final LEM_Person dto) {
-        assertEquals(entity.getFirstName(), dto.getFirstName());
-        assertEquals(entity.getLastName(), dto.getLastName());
-        assertEquals(entity.getEmail(), dto.getEmail());
-        assertEquals(entity.getPhoneNumber(), dto.getPhoneNumber());
-
-        assertAddress(entity.getAddress(), dto.getAddress());
-    }
-
-    private static void assertAddress(final Address entity, final LEM_Address dto) {
-        if (validateNulls(entity, dto)) {
-            assertEquals(entity.getStreetAddress(), dto.getStreetAddress());
-            assertEquals(entity.getCity(), dto.getCity());
-            assertEquals(entity.getPostalCode(), dto.getPostalCode());
-            assertEquals(entity.getCountry(), dto.getCountry());
-        }
     }
 
     private static void assertMooseAmount(final List<HarvestPermitSpeciesAmount> speciesAmounts, final LEM_Amount dto) {
@@ -209,12 +212,14 @@ public class LukeExportFeatureTest extends EmbeddedDatabaseTest implements Hunti
 
     private static void assertClub(final HuntingClub entity, final LEM_Club dto) {
         if (validateNulls(entity, dto)) {
-            assertEquals(entity.getOfficialCode(), dto.getRhyOfficialCode());
+            assertEquals(entity.getOfficialCode(), dto.getClubOfficialCode());
             assertEquals(entity.getNameFinnish(), dto.getNameFinnish());
             // contactPerson?
-            assertEquals(entity.getGeoLocation().getLatitude(), dto.getGeoLocation().getLatitude());
-            assertEquals(entity.getGeoLocation().getLongitude(), dto.getGeoLocation().getLongitude());
-            assertEqualNames(entity.getGeoLocation().getSource(), dto.getGeoLocation().getSource());
+            if (entity.getGeoLocation() != null) {
+                assertEquals(entity.getGeoLocation().getLatitude(), dto.getGeoLocation().getLatitude());
+                assertEquals(entity.getGeoLocation().getLongitude(), dto.getGeoLocation().getLongitude());
+                assertEqualNames(entity.getGeoLocation().getSource(), dto.getGeoLocation().getSource());
+            }
             assertEquals(entity.getParentOrganisation().getOfficialCode(), dto.getRhyOfficialCode());
             // huntingDays?
             // huntingSummary?

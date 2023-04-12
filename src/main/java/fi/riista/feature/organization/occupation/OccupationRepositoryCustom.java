@@ -10,6 +10,8 @@ import java.util.Set;
 public interface OccupationRepositoryCustom {
     List<Occupation> findActiveByOrganisation(Organisation organisation);
 
+    Map<Long, Occupation> findActiveByOrganisationAndPersonIds(Organisation organisation, List<Long> persons);
+
     List<Occupation> findActiveByParentOrganisation(Organisation organisation);
 
     Map<Long, Set<Occupation>> findActiveByOccupationTypeGroupByOrganisationId(OccupationType occupationType);

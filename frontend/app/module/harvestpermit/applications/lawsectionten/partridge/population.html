@@ -1,0 +1,75 @@
+<div class="alert alert-info wizard-info">
+    <span class="fa fa-info-circle"></span>
+
+    <div class="alert-content">
+        <p class="alert-title" translate="harvestpermit.wizard.partridge.population.title"></p>
+        <p translate="harvestpermit.wizard.partridge.population.info"></p>
+    </div>
+</div>
+
+<form name="speciesPopulationForm" r-force-show-errors-check-validity>
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="justification"
+               translate="harvestpermit.wizard.partridge.population.justification"></label>
+
+        <textarea class="form-control" rows="4"
+                  name="populationDescription"
+                  id="justification"
+                  ng-model="$ctrl.speciesPopulation.justification"
+                  required
+                  spellcheck="false"></textarea>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="transferredAnimalOrigin"
+               translate="harvestpermit.wizard.partridge.population.transferredAnimalOrigin"></label>
+
+        <textarea class="form-control" rows="4"
+                  name="transferredAnimalOrigin"
+                  id="transferredAnimalOrigin"
+                  ng-model="$ctrl.speciesPopulation.transferredAnimalOrigin"
+                  required
+                  spellcheck="false"></textarea>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="transferredAnimalAmount"
+               translate="harvestpermit.wizard.partridge.population.transferredAnimalAmount"></label>
+
+        <div class="input-group">
+            <input type="number" class="form-control no-spinner"
+                   name="transferredAnimalAmount"
+                   id="transferredAnimalAmount"
+                   ng-model="$ctrl.speciesPopulation.transferredAnimalAmount"
+                   required
+                   min="1" max="99999" step="1"
+                   r-click-select>
+    </div>
+
+    <div class="form-group" show-errors>
+        <label class="control-label"
+               for="populationDescription"
+               translate="harvestpermit.wizard.partridge.population.populationDescription"></label>
+
+        <textarea class="form-control" rows="4"
+                  name="populationDescription"
+                  id="populationDescription"
+                  ng-model="$ctrl.speciesPopulation.populationDescription"
+                  required
+                  spellcheck="false"></textarea>
+    </div>
+
+    <hr class="invisible">
+    <hr class="invisible">
+</form>
+
+
+<permit-application-wizard-navigation
+        exit="$ctrl.exit(speciesPopulationForm)"
+        previous="$ctrl.previous(speciesPopulationForm)"
+        next="$ctrl.next()"
+        next-disabled="$ctrl.nextDisabled(speciesPopulationForm)">
+</permit-application-wizard-navigation>

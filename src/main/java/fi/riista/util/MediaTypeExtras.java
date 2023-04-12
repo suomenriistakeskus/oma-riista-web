@@ -7,6 +7,8 @@ public class MediaTypeExtras {
     public final static String TEXT_PLAIN_UTF8_VALUE = "text/plain;charset=UTF-8";
     public final static MediaType TEXT_PLAIN_UTF8 = MediaType.parseMediaType("text/plain;charset=UTF-8");
 
+    // TODO: Is there already a constant for this?
+    public final static MediaType APPLICATION_JSON_UTF8 = MediaType.parseMediaType("application/json;charset=utf-8");
     public static final String IMAGE_TIFF_VALUE = "image/tiff";
     public static final MediaType IMAGE_TIFF = MediaType.parseMediaType(IMAGE_TIFF_VALUE);
 

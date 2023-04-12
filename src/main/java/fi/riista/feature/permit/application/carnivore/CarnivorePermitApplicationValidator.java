@@ -112,9 +112,6 @@ public class CarnivorePermitApplicationValidator {
                                                             final HarvestPermitApplicationSpeciesAmount speciesAmount) {
 
         assertHasText(speciesAmount.getPopulationAmount(), "population amount", speciesAmount);
-        assertHasText(speciesAmount.getPopulationDescription(), "population description", speciesAmount);
-        assertHasText(carnivorePermitApplication.getAdditionalJustificationInfo(), "additional justification info",
-                null);
         assertHasText(carnivorePermitApplication.getAlternativeMeasures(), "alternative measures", null);
     }
 

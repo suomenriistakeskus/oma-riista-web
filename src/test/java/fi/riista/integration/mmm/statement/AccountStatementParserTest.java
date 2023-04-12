@@ -75,7 +75,7 @@ public class AccountStatementParserTest {
     }
 
     private static AccountStatementLine doParseLine(final String line) {
-        return AccountStatementParser.parseAccountTransferLine(line, Optional.empty());
+        return AccountStatementParser.parseAccountTransferLine(line, -1);
     }
 
     @Test
@@ -85,8 +85,6 @@ public class AccountStatementParserTest {
                 date, singletonList(asList(LINE_SAMPLE_OP, LINE_SAMPLE_OP_2)));
 
         final AccountStatement result = AccountStatementParser.parseFile(content);
-
-        assertEquals(date, result.getStatementDate());
 
         final List<AccountStatementLine> expectedLines =
                 asList(doParseLine(LINE_SAMPLE_OP), doParseLine(LINE_SAMPLE_OP_2));
@@ -101,8 +99,6 @@ public class AccountStatementParserTest {
                 date, asList(singletonList(LINE_SAMPLE_DANSKE), singletonList(LINE_SAMPLE_OP)));
 
         final AccountStatement result = AccountStatementParser.parseFile(content);
-
-        assertEquals(date, result.getStatementDate());
 
         final List<AccountStatementLine> expectedLines =
                 asList(doParseLine(LINE_SAMPLE_DANSKE), doParseLine(LINE_SAMPLE_OP));

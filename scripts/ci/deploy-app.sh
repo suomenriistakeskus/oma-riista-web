@@ -8,8 +8,7 @@ REQUIRED_VARIABLES='AWS_ACCESS_KEY_ID
                     AWS_REGION
                     CI_COMMIT_SHA
                     ENV_NAME
-                    GITLAB_USER_LOGIN
-                    SENTRY_URL'
+                    GITLAB_USER_LOGIN'
 
 # Error codes
 OK=0
@@ -63,31 +62,6 @@ function update_environment {
 
 }
 
-function notify_newrelic {
-
-    local GIT_HASH="$1"
-    local USERNAME="$2"
-
-    java -jar ./target/riistakeskus/WEB-INF/newrelic/newrelic.jar deployment \
-        --revision="${GIT_HASH}" \
-        --user="${USERNAME}" &&
-    return $OK
-
-}
-
-
-function notify_sentry {
-
-    local GIT_HASH="$1"
-
-    curl -k "${SENTRY_URL}" \
-        -X POST \
-        -H 'Content-Type: application/json' \
-        -d "{\"version\": \"$GIT_HASH\"}"   &&
-    return $OK
-
-}
-
 ##   ##  ####  #### ##  ##
 ### ### ##  ##  ##  ### ##
 ## # ## ######  ##  ## ###
@@ -95,6 +69,4 @@ function notify_sentry {
 
 check_tools                                                     &&
 check_variables                                                 &&
-update_environment  "app-$(latest_git_tag)"                     &&
-notify_newrelic     "${CI_COMMIT_SHA}" "${GITLAB_USER_LOGIN}"   &&
-notify_sentry       "${CI_COMMIT_SHA}"
+update_environment  "app-$(latest_git_tag)"

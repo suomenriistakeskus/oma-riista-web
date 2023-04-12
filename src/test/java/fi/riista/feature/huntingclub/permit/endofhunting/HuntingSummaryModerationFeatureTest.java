@@ -447,19 +447,74 @@ public class HuntingSummaryModerationFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
-    @Test(expected = ConstraintViolationException.class)
-    public void testProcessModeratorOverriddenHuntingSummaries_failBecauseMissingDataViolatesDbConstraint() {
+    @Test
+    public void testProcessModeratorOverriddenHuntingSummaries_mooseWithOnlyRequiredHuntingEndDate() {
         onSavedAndAuthenticated(createNewModerator(), () -> {
+            final MooseHuntingSummary summary = model().newMooseHuntingSummary(permit, permitHolder, false);
+            summary.setHuntingEndDate(speciesAmount.getEndDate().minusDays(1));
+
+            persistInNewTransaction();
 
             final List<BasicClubHuntingSummaryDTO> inputs =
                     feature.getHuntingSummariesForModeration(permit.getId(), getSpeciesCode()).stream()
                             .peek(dto -> {
                                 dto.setModeratorOverridden(true);
                                 dto.setHuntingFinished(true);
+                                dto.setHuntingEndDate(speciesAmount.getEndDate());
+                                dto.setTotalHuntingArea(null);
+                                dto.setEffectiveHuntingArea(null);
+                                dto.setRemainingPopulationInTotalArea(null);
+                                dto.setRemainingPopulationInEffectiveArea(null);
                             })
                             .collect(toList());
 
             feature.processModeratorOverriddenHuntingSummaries(permit.getId(), getSpeciesCode(), true, inputs);
+
+            runInTransaction(() -> {
+                final List<BasicClubHuntingSummary> summaries = basicHuntingSummaryRepo.findAll();
+
+                summaries.forEach(s -> {
+                    assertTrue(s.isHuntingFinished());
+                    assertTrue(s.isModeratorOverride());
+                    assertEquals(s.getHuntingEndDate(), speciesAmount.getEndDate());
+                });
+            });
+        });
+    }
+
+    @Test
+    public void testProcessModeratorOverriddenHuntingSummaries_deerWithOnlyRequiredHuntingEndDate() {
+        final int speciesCode = GameSpecies.OFFICIAL_CODE_WHITE_TAILED_DEER;
+        species.setOfficialCode(speciesCode);
+
+        final BasicClubHuntingSummary summary = model().newBasicHuntingSummary(speciesAmount, permitHolder, false);
+        summary.setHuntingEndDate(speciesAmount.getEndDate().minusDays(1));
+
+        onSavedAndAuthenticated(createNewModerator(), () -> {
+            final List<BasicClubHuntingSummaryDTO> inputs =
+                    feature.getHuntingSummariesForModeration(permit.getId(), getSpeciesCode()).stream()
+                            .peek(dto -> {
+                                dto.setModeratorOverridden(true);
+                                dto.setHuntingFinished(true);
+                                dto.setHuntingEndDate(speciesAmount.getEndDate());
+                                dto.setTotalHuntingArea(null);
+                                dto.setEffectiveHuntingArea(null);
+                                dto.setRemainingPopulationInTotalArea(null);
+                                dto.setRemainingPopulationInEffectiveArea(null);
+                            })
+                            .collect(toList());
+
+            feature.processModeratorOverriddenHuntingSummaries(permit.getId(), getSpeciesCode(), true, inputs);
+
+            runInTransaction(() -> {
+                final List<BasicClubHuntingSummary> summaries = basicHuntingSummaryRepo.findAll();
+
+                summaries.forEach(s -> {
+                    assertTrue(s.isHuntingFinished());
+                    assertTrue(s.isModeratorOverride());
+                    assertEquals(s.getHuntingEndDate(), speciesAmount.getEndDate());
+                });
+            });
         });
     }
 

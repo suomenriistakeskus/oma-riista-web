@@ -3,6 +3,7 @@ package fi.riista.util;
 import org.junit.Test;
 
 import static fi.riista.util.NumberUtils.isInRange;
+import static fi.riista.util.NumberUtils.nullableDoubleSubtraction;
 import static fi.riista.util.NumberUtils.nullableIntSum;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
@@ -73,6 +74,15 @@ public class NumberUtilsTest {
         assertEquals(Integer.valueOf(2), nullableIntSum(asList(IntegerHolder.ONE, IntegerHolder.ONE), IntegerHolder::value));
         assertEquals(Integer.valueOf(3), nullableIntSum(IntegerHolder.ONE, new IntegerHolder(2), IntegerHolder::value));
         assertEquals(Integer.valueOf(3), nullableIntSum(asList(IntegerHolder.ONE, IntegerHolder.ONE, IntegerHolder.ONE), IntegerHolder::value));
+    }
+
+    @Test
+    public void testNullableDoubleSubtraction() {
+        assertNull(nullableDoubleSubtraction(null, null));
+        assertNull(nullableDoubleSubtraction(1.0, null));
+        assertNull(nullableDoubleSubtraction(null, 1.0));
+        assertEquals(Double.valueOf(1.0999999999999996),
+                     nullableDoubleSubtraction(Double.valueOf(3.3), Double.valueOf(2.2)));
     }
 
     private static class IntegerHolder {

@@ -74,9 +74,9 @@ public class OtherwiseDeceasedExcelView extends AbstractXlsxView {
                 "weight",
                 "rejected",
                 "cause",
-                "causeOther",
+                "causeDescription",
                 "source",
-                "sourceOther",
+                "sourceDescription",
                 "rka",
                 "rhy",
                 "municipality",
@@ -101,9 +101,9 @@ public class OtherwiseDeceasedExcelView extends AbstractXlsxView {
                 .appendNumberCell(item.getWeight())
                 .appendTextCell(localiser.getTranslation(item.isRejected()))
                 .appendTextCell(localiser.getTranslation(item.getCause()))
-                .appendTextCell(item.getCauseOther())
+                .appendTextCell(item.getCauseDescription())
                 .appendTextCell(localiser.getTranslation(item.getSource()))
-                .appendTextCell(item.getSourceOther())
+                .appendTextCell(item.getSourceDescription())
                 .appendTextCell(localiser.getTranslation(item.getRka().getNameLocalisation()))
                 .appendTextCell(localiser.getTranslation(item.getRhy().getNameLocalisation()))
                 .appendTextCell(localiser.getTranslation(item.getMunicipality().getNameLocalisation()))

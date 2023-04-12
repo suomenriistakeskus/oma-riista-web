@@ -3,6 +3,7 @@ package fi.riista.api.harvestpermit;
 import fi.riista.feature.common.EnumLocaliser;
 import fi.riista.feature.gamediary.harvest.HarvestDTO;
 import fi.riista.feature.harvestpermit.HarvestPermitDetailsFeature;
+import fi.riista.feature.harvestpermit.MooselikePermitObservationSummaryDTO;
 import fi.riista.feature.harvestpermit.allocation.MoosePermitAllocationDTO;
 import fi.riista.feature.harvestpermit.allocation.MoosePermitAllocationFeature;
 import fi.riista.feature.harvestpermit.endofhunting.EndOfMooselikePermitHuntingFeature;
@@ -16,6 +17,7 @@ import fi.riista.feature.harvestpermit.statistics.MoosePermitStatisticsReportTyp
 import fi.riista.feature.huntingclub.hunting.overview.SharedPermitMapFeature;
 import fi.riista.feature.huntingclub.members.HuntingClubContactDetailDTO;
 import fi.riista.feature.huntingclub.members.HuntingClubContactFeature;
+import fi.riista.feature.huntingclub.members.PermitHuntingLeaderContactInfoDTO;
 import fi.riista.feature.huntingclub.permit.HuntingClubPermitDTO;
 import fi.riista.feature.huntingclub.permit.endofhunting.HuntingSummaryModerationFeature;
 import fi.riista.feature.huntingclub.permit.endofhunting.basicsummary.BasicClubHuntingSummaryDTO;
@@ -36,6 +38,7 @@ import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -121,6 +124,13 @@ public class MoosePermitApiResource {
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{permitId:\\d+}/observationsummary", produces = MediaType.APPLICATION_JSON_VALUE)
+    public MooselikePermitObservationSummaryDTO getObservationSummary(final @PathVariable long permitId,
+                                                                      final @RequestParam int species) {
+        return harvestPermitDetailsFeature.getObservationSummary(permitId, species);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/{permitId:\\d+}/rhy", produces = MediaType.APPLICATION_JSON_VALUE)
     public OrganisationNameDTO getRhyCode(final @PathVariable long permitId) {
         return harvestPermitDetailsFeature.getRhyCode(permitId);
@@ -128,10 +138,18 @@ public class MoosePermitApiResource {
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/{permitId:\\d+}/leaders", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<HuntingClubContactDetailDTO> leaders(final @PathVariable long permitId,
+    public PermitHuntingLeaderContactInfoDTO leaders(final @PathVariable long permitId,
                                                      final @RequestParam int huntingYear,
                                                      final @RequestParam int gameSpeciesCode) {
         return huntingClubContactFeature.listClubHuntingLeaders(permitId, huntingYear, gameSpeciesCode);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{permitId:\\d+}/leaders-contactperson", produces = MediaType.APPLICATION_JSON_VALUE)
+    public PermitHuntingLeaderContactInfoDTO leadersForContactPerson(final @PathVariable long permitId,
+                                                     final @RequestParam int huntingYear,
+                                                     final @RequestParam int gameSpeciesCode) {
+        return huntingClubContactFeature.listClubHuntingLeadersForContactPerson(permitId, huntingYear, gameSpeciesCode);
     }
 
     @GetMapping(value = "/{permitId:\\d+}/harvest", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -241,10 +259,20 @@ public class MoosePermitApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @GetMapping(value = "/{permitId:\\d+}/rhystatistics/{speciesCode:\\d+}",
             produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_MODERATOR','ROLE_COORDINATOR')")
     public List<MoosePermitStatisticsDTO> getRhyStats(final @PathVariable long permitId,
                                                       final @PathVariable int speciesCode,
                                                       final Locale locale) {
-        return moosePermitStatisticsFeature.getRhyStatistics(permitId, speciesCode, locale);
+        return moosePermitStatisticsFeature.getRhyStatistics(permitId, speciesCode, locale, false);
+    }
+
+    @CacheControl(policy = CachePolicy.NO_CACHE)
+    @GetMapping(value = "/{permitId:\\d+}/rhystatistics/club/{speciesCode:\\d+}",
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<MoosePermitStatisticsDTO> getRhyStatsForClub(final @PathVariable long permitId,
+                                                             final @PathVariable int speciesCode,
+                                                             final Locale locale) {
+        return moosePermitStatisticsFeature.getRhyStatistics(permitId, speciesCode, locale, true);
     }
 
     @CacheControl(policy = CachePolicy.NO_CACHE)
@@ -270,5 +298,4 @@ public class MoosePermitApiResource {
         return new ModelAndView(new MoosePermitStatisticsExcelView(new EnumLocaliser(messageSource, locale),
                 moosePermitStatisticsFeature.calculate(locale, reportType, groupBy, false, species, year, orgType, orgCode)));
     }
-
 }

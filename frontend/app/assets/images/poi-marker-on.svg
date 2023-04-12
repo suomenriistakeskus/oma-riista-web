@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="26px" height="26px" viewBox="0 0 26 26" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Poi-marker-on</title>
+    <defs>
+        <path d="M8.52367708,24.4955995 C1.33445313,14.2104946 0,13.1549284 0,9.37499771 C0,4.19731343 4.25327865,0 9.5,0 C14.7467214,0 19,4.19731343 19,9.37499771 C19,13.1549284 17.6655469,14.2104946 10.4763229,24.4955995 C10.0045391,25.1681579 8.99541146,25.1681091 8.52367708,24.4955995 Z M9.5,13.2812468 C11.686138,13.2812468 13.4583333,11.5323702 13.4583333,9.37499771 C13.4583333,7.21762519 11.686138,5.46874866 9.5,5.46874866 C7.31386198,5.46874866 5.54166667,7.21762519 5.54166667,9.37499771 C5.54166667,11.5323702 7.31386198,13.2812468 9.5,13.2812468 Z" id="path-1"></path>
+    </defs>
+    <g id="Components" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Paikkapisteet-Menu" transform="translate(-468.000000, -340.000000)">
+            <g id="Poi-marker-on" transform="translate(468.000000, 340.000000)">
+                <g id="Solid/search-Copy-16" transform="translate(4.000000, 0.000000)">
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <use id="Mask" fill="#919191" fill-rule="nonzero" xlink:href="#path-1"></use>
+                </g>
+                <rect id="Rectangle" x="0" y="0" width="26" height="26"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

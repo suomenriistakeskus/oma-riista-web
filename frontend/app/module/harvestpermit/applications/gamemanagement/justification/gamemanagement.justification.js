@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.gamemanagement.justification', ['a
                 templateUrl: 'harvestpermit/applications/gamemanagement/justification/justification.html',
                 controller: 'GameManagementPermitWizardJustificationController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     justification: function (GameManagementPermitApplication, applicationId) {
                         return GameManagementPermitApplication.getJustification({id: applicationId}).$promise;

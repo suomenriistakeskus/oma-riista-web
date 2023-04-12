@@ -1,0 +1,16 @@
+<form name="form" role="form" novalidate class="form form-horizontal r-news-confirmation-dialog" ng-submit="$ctrl.remove()">
+
+    <div class="modal-header r-news-confirmation-header">
+        <button riista-modal-close></button>
+        <h3 translate="news.form.remove"></h3>
+    </div>
+
+    <div class="modal-body">
+        <div class="r-news-confirmation" translate="news.form.removeConfirmation"></div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="btn btn-default" ng-click="$ctrl.cancel()" translate="global.button.cancel"></button>
+        <button type="submit" class="btn btn-primary" ng-disabled="form.$invalid" translate="global.button.delete"></button>
+    </div>
+</form>

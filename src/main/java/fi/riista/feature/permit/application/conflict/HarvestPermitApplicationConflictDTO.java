@@ -6,6 +6,7 @@ import fi.riista.feature.organization.OrganisationNameDTO;
 import fi.riista.feature.organization.person.PersonContactInfoDTO;
 import fi.riista.feature.permit.application.HarvestPermitApplication;
 import fi.riista.util.DtoUtil;
+import fi.riista.util.NumberUtils;
 
 import java.util.Optional;
 
@@ -19,13 +20,21 @@ public class HarvestPermitApplicationConflictDTO extends BaseEntityDTO<Long> {
     private boolean onlyPrivateConflicts;
     private boolean onlyMhConflicts;
     private Double conflictSum;
+    private Double conflictWaterSum;
+    private Double conflictLandSum;
+    private Double conflictPrivateAreaSum;
+    private Double conflictPrivateAreaWaterSum;
+    private Double conflictPrivateAreaLandSum;
 
     public static HarvestPermitApplicationConflictDTO create(final HarvestPermitApplication entity,
                                                              final Organisation holder,
                                                              final Organisation rhy,
                                                              final boolean onlyPrivateConflicts,
                                                              final boolean onlyMhConflicts,
-                                                             final Double conflictSum) {
+                                                             final Double conflictSum,
+                                                             final Double conflictWaterSum,
+                                                             final Double conflictPrivateAreaSum,
+                                                             final Double conflictPrivateAreaWaterSum) {
 
         final HarvestPermitApplicationConflictDTO dto = new HarvestPermitApplicationConflictDTO();
         DtoUtil.copyBaseFields(entity, dto);
@@ -39,6 +48,11 @@ public class HarvestPermitApplicationConflictDTO extends BaseEntityDTO<Long> {
         dto.setOnlyPrivateConflicts(onlyPrivateConflicts);
         dto.setOnlyMhConflicts(onlyMhConflicts);
         dto.setConflictSum(conflictSum);
+        dto.setConflictWaterSum(conflictWaterSum);
+        dto.setConflictLandSum(NumberUtils.nullableDoubleSubtraction(conflictSum, conflictWaterSum));
+        dto.setConflictPrivateAreaSum(conflictPrivateAreaSum);
+        dto.setConflictPrivateAreaWaterSum(conflictPrivateAreaWaterSum);
+        dto.setConflictPrivateAreaLandSum(NumberUtils.nullableDoubleSubtraction(conflictPrivateAreaSum, conflictPrivateAreaWaterSum));
 
         return dto;
     }
@@ -117,5 +131,45 @@ public class HarvestPermitApplicationConflictDTO extends BaseEntityDTO<Long> {
 
     public void setConflictSum(final Double conflictSum) {
         this.conflictSum = conflictSum;
+    }
+
+    public Double getConflictWaterSum() {
+        return conflictWaterSum;
+    }
+
+    public void setConflictWaterSum(final Double conflictWaterSum) {
+        this.conflictWaterSum = conflictWaterSum;
+    }
+
+    public Double getConflictLandSum() {
+        return conflictLandSum;
+    }
+
+    public void setConflictLandSum(final Double conflictLandSum) {
+        this.conflictLandSum = conflictLandSum;
+    }
+
+    public Double getConflictPrivateAreaSum() {
+        return conflictPrivateAreaSum;
+    }
+
+    public void setConflictPrivateAreaSum(final Double conflictPrivateAreaSum) {
+        this.conflictPrivateAreaSum = conflictPrivateAreaSum;
+    }
+
+    public Double getConflictPrivateAreaWaterSum() {
+        return conflictPrivateAreaWaterSum;
+    }
+
+    public void setConflictPrivateAreaWaterSum(final Double conflictPrivateAreaWaterSum) {
+        this.conflictPrivateAreaWaterSum = conflictPrivateAreaWaterSum;
+    }
+
+    public Double getConflictPrivateAreaLandSum() {
+        return conflictPrivateAreaLandSum;
+    }
+
+    public void setConflictPrivateAreaLandSum(final Double conflictPrivateAreaLandSum) {
+        this.conflictPrivateAreaLandSum = conflictPrivateAreaLandSum;
     }
 }

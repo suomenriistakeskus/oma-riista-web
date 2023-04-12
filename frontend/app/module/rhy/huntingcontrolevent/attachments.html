@@ -1,0 +1,19 @@
+<div class="container-fluid">
+    <div class="row attachment-list" ng-repeat="attachment in $ctrl.attachments">
+        <div class="col-xs-2" ng-switch="attachment.isImage">
+            <a ng-click="$ctrl.downloadAttachment(attachment.id)">
+                <img ng-switch-when="true" height="48px" width="48px" ng-src="/api/v1/riistanhoitoyhdistys/huntingcontrolevents/attachment/{{attachment.id}}/thumbnail">
+                <span ng-switch-default class="fa fa-file-o fa-3x"></span>
+            </a>
+        </div>
+        <div class="filename" ng-class="$ctrl.canDelete ? 'col-xs-7' : 'col-xs-10'">
+            <a ng-click="$ctrl.downloadAttachment(attachment.id)" ng-bind="attachment.fileName"></a>
+        </div>
+        <div class="col-xs-3 delete" ng-if="$ctrl.canDelete">
+            <span ng-click="$ctrl.removeAttachment(attachment.id)">
+                <span translate="global.button.delete"></span>
+                <span class="fa fa-trash fa-2x"></span>
+            </span>
+        </div>
+    </div>
+</div>

@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.deportation.summary', ['app.metada
                 templateUrl: 'harvestpermit/applications/deportation/summary/summary.html',
                 controller: 'DeportationPermitWizardSummaryController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, DeportationPermitApplication) {
                         return DeportationPermitApplication.getFullDetails({id: applicationId}).$promise;
@@ -139,7 +140,7 @@ angular.module('app.harvestpermit.application.deportation.summary', ['app.metada
         }
 
         function confirmSend() {
-            return ConfirmationDialogService.showConfimationDialogWithPrimaryAccept(
+            return ConfirmationDialogService.showConfirmationDialogWithPrimaryAccept(
                 'harvestpermit.wizard.summary.sendConfirmation.title',
                 'harvestpermit.wizard.summary.sendConfirmation.body');
         }

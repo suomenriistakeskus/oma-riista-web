@@ -3,7 +3,9 @@ package fi.riista.feature.harvestpermit;
 import com.querydsl.core.annotations.QueryDelegate;
 import com.querydsl.core.types.Path;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.DateExpression;
 import com.querydsl.core.types.dsl.DatePath;
+import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.jpa.JPAExpressions;
 import fi.riista.feature.common.entity.Has2BeginEndDates;
 import fi.riista.feature.common.entity.LifecycleEntity;
@@ -12,6 +14,7 @@ import fi.riista.feature.gamediary.QGameSpecies;
 import fi.riista.feature.harvestpermit.endofhunting.MooselikeHuntingFinishedException;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import java.util.Date;
 import org.joda.time.LocalDate;
 
 import javax.persistence.Access;
@@ -34,6 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.querydsl.core.types.dsl.DateTimeExpression.currentDate;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -363,6 +367,11 @@ public class HarvestPermitSpeciesAmount extends LifecycleEntity<Long> implements
         final LocalDate end = DateUtil.huntingYearEndDate(year);
         return validBetween(spa.beginDate, spa.endDate, begin, end)
                 .or(validBetween(spa.beginDate2, spa.endDate2, begin, end));
+    }
+
+    @QueryDelegate(HarvestPermitSpeciesAmount.class)
+    public static BooleanExpression validityPassed(QHarvestPermitSpeciesAmount spa) {
+        return currentDate(LocalDate.class).after(spa.endDate2.coalesce(spa.endDate));
     }
 
     private static BooleanExpression validBetween(DatePath<LocalDate> beginDate, DatePath<LocalDate> endDate, LocalDate begin, LocalDate end) {

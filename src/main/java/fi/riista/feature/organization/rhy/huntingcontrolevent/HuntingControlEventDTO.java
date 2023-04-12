@@ -6,6 +6,7 @@ import fi.riista.config.jackson.LocalTimeToStringSerializer;
 import fi.riista.config.jackson.StringToLocalTimeDeserializer;
 import fi.riista.feature.common.dto.BaseEntityDTO;
 import fi.riista.feature.common.entity.GeoLocation;
+import fi.riista.feature.organization.person.Person;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.feature.organization.rhy.RiistanhoitoyhdistysDTO;
 import fi.riista.util.DtoUtil;
@@ -13,12 +14,19 @@ import org.hibernate.validator.constraints.SafeHtml;
 import org.hibernate.validator.constraints.SafeHtml.WhiteListType;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import javax.validation.constraints.AssertTrue;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.Set;
+
+import static java.util.stream.Collectors.toList;
+import static org.springframework.util.StringUtils.hasText;
 
 public class HuntingControlEventDTO extends BaseEntityDTO<Long> {
 
@@ -28,25 +36,34 @@ public class HuntingControlEventDTO extends BaseEntityDTO<Long> {
     @Valid
     private RiistanhoitoyhdistysDTO rhy;
 
-    @NotNull
     @Size(min = 2, max = 255)
     @SafeHtml(whitelistType = WhiteListType.NONE)
     private String title;
 
+    private HuntingControlEventType eventType;
+
+    private HuntingControlEventStatus status;
+
+    // Cannot be NotEmpty due old events' inspectors are in otherParticipants field.
+    @Valid
+    private List<HuntingControlInspectorDTO> inspectors;
+
     private int inspectorCount;
 
-    @NotNull
-    private HuntingControlCooperationType cooperationType;
+    @NotEmpty
+    private Set<HuntingControlCooperationType> cooperationTypes;
 
     private boolean wolfTerritory;
 
-    @NotNull
     @SafeHtml(whitelistType = WhiteListType.NONE)
-    private String inspectors;
+    private String otherParticipants;
 
     @NotNull
     @Valid
     private GeoLocation geoLocation;
+
+    @SafeHtml(whitelistType = WhiteListType.NONE)
+    private String locationDescription;
 
     @NotNull
     private LocalDate date;
@@ -65,7 +82,6 @@ public class HuntingControlEventDTO extends BaseEntityDTO<Long> {
 
     private int proofOrders;
 
-    @NotNull
     @SafeHtml(whitelistType = WhiteListType.NONE)
     private String description;
 
@@ -74,25 +90,43 @@ public class HuntingControlEventDTO extends BaseEntityDTO<Long> {
     @Valid
     private List<HuntingControlAttachmentDTO> attachments;
 
-    // Only output for client
+    @Valid
+    private List<ChangeHistoryDTO> changeHistory;
+
+    /** Fill in only when updating */
+
+    @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
+    private String reasonForChange;
+
+    /** Only output for client */
+
     private Boolean lockedAsPastStatistics;
+
+    // Constructors / factories
 
     public HuntingControlEventDTO() {}
 
     public static HuntingControlEventDTO create(final HuntingControlEvent event,
                                                 final Riistanhoitoyhdistys rhy,
-                                                final List<HuntingControlAttachmentDTO> attachments) {
+                                                final Set<Person> inspectors,
+                                                final Set<HuntingControlCooperationType> cooperationTypes,
+                                                final List<HuntingControlAttachmentDTO> attachments,
+                                                final List<ChangeHistoryDTO> changes) {
         final HuntingControlEventDTO dto = new HuntingControlEventDTO();
         DtoUtil.copyBaseFields(event, dto);
 
         dto.setRhy(RiistanhoitoyhdistysDTO.create(rhy));
 
+        dto.setEventType(event.getEventType());
+        dto.setStatus(event.getStatus() != null ? event.getStatus() : HuntingControlEventStatus.ACCEPTED_SUBSIDIZED);
+        dto.setInspectors(inspectors.stream().map(HuntingControlInspectorDTO::create).collect(toList()));
         dto.setTitle(event.getTitle());
         dto.setInspectorCount(event.getInspectorCount());
-        dto.setCooperationType(event.getCooperationType());
+        dto.setCooperationTypes(cooperationTypes);
         dto.setWolfTerritory(event.getWolfTerritory());
-        dto.setInspectors(event.getInspectors());
+        dto.setOtherParticipants(event.getOtherParticipants());
         dto.setGeoLocation(event.getGeoLocation());
+        dto.setLocationDescription(event.getLocationDescription());
         dto.setDate(event.getDate());
         dto.setBeginTime(event.getBeginTime());
         dto.setEndTime(event.getEndTime());
@@ -100,6 +134,7 @@ public class HuntingControlEventDTO extends BaseEntityDTO<Long> {
         dto.setProofOrders(event.getProofOrders());
         dto.setDescription(event.getDescription());
         dto.setAttachments(attachments);
+        dto.setChangeHistory(changes);
         dto.setLockedAsPastStatistics(event.isLockedAsPastStatistics());
 
         return dto;
@@ -143,6 +178,30 @@ public class HuntingControlEventDTO extends BaseEntityDTO<Long> {
         this.title = title;
     }
 
+    public HuntingControlEventType getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(final HuntingControlEventType eventType) {
+        this.eventType = eventType;
+    }
+
+    public HuntingControlEventStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(final HuntingControlEventStatus status) {
+        this.status = status;
+    }
+
+    public List<HuntingControlInspectorDTO> getInspectors() {
+        return inspectors;
+    }
+
+    public void setInspectors(final List<HuntingControlInspectorDTO> inspectors) {
+        this.inspectors = inspectors;
+    }
+
     public int getInspectorCount() {
         return inspectorCount;
     }
@@ -151,12 +210,12 @@ public class HuntingControlEventDTO extends BaseEntityDTO<Long> {
         this.inspectorCount = inspectorCount;
     }
 
-    public HuntingControlCooperationType getCooperationType() {
-        return cooperationType;
+    public Set<HuntingControlCooperationType> getCooperationTypes() {
+        return cooperationTypes;
     }
 
-    public void setCooperationType(final HuntingControlCooperationType cooperationType) {
-        this.cooperationType = cooperationType;
+    public void setCooperationTypes(final Set<HuntingControlCooperationType> cooperationTypes) {
+        this.cooperationTypes = cooperationTypes;
     }
 
     public boolean getWolfTerritory() {
@@ -167,12 +226,12 @@ public class HuntingControlEventDTO extends BaseEntityDTO<Long> {
         this.wolfTerritory = wolfTerritory;
     }
 
-    public String getInspectors() {
-        return inspectors;
+    public String getOtherParticipants() {
+        return otherParticipants;
     }
 
-    public void setInspectors(final String inspectors) {
-        this.inspectors = inspectors;
+    public void setOtherParticipants(final String otherParticipants) {
+        this.otherParticipants = otherParticipants;
     }
 
     public GeoLocation getGeoLocation() {
@@ -181,6 +240,14 @@ public class HuntingControlEventDTO extends BaseEntityDTO<Long> {
 
     public void setGeoLocation(final GeoLocation geoLocation) {
         this.geoLocation = geoLocation;
+    }
+
+    public String getLocationDescription() {
+        return locationDescription;
+    }
+
+    public void setLocationDescription(final String locationDescription) {
+        this.locationDescription = locationDescription;
     }
 
     public LocalDate getDate() {
@@ -247,11 +314,34 @@ public class HuntingControlEventDTO extends BaseEntityDTO<Long> {
         this.attachments = attachments;
     }
 
+    public List<ChangeHistoryDTO> getChangeHistory() {
+        return changeHistory;
+    }
+
+    public void setChangeHistory(final List<ChangeHistoryDTO> changeHistory) {
+        this.changeHistory = changeHistory;
+    }
+
+    public String getReasonForChange() {
+        return reasonForChange;
+    }
+
+    public void setReasonForChange(final String reasonForChange) {
+        this.reasonForChange = reasonForChange;
+    }
+
     public Boolean getLockedAsPastStatistics() {
         return lockedAsPastStatistics;
     }
 
     public void setLockedAsPastStatistics(final Boolean lockedAsPastStatistics) {
         this.lockedAsPastStatistics = lockedAsPastStatistics;
+    }
+
+    @AssertTrue
+    public boolean isDescriptionPresentWhenTypeOther() {
+        // Description is mandatory when type is OTHER
+        return eventType != HuntingControlEventType.OTHER
+                || hasText(description);
     }
 }

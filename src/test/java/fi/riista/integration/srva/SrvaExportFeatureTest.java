@@ -5,15 +5,21 @@ import fi.riista.feature.account.user.SystemUserPrivilege;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.srva.SrvaEvent;
 import fi.riista.feature.gamediary.srva.SrvaEventNameEnum;
+import fi.riista.feature.gamediary.srva.SrvaEventResultDetailsEnum;
 import fi.riista.feature.gamediary.srva.SrvaEventStateEnum;
+import fi.riista.feature.gamediary.srva.SrvaEventTypeDetailsEnum;
 import fi.riista.feature.gamediary.srva.SrvaEventTypeEnum;
+import fi.riista.feature.gamediary.srva.SrvaResultEnum;
 import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
 import fi.riista.integration.srva.dto.SrvaPublicExportDTO;
 import fi.riista.integration.srva.rvr.RVR_SrvaEvent;
+import fi.riista.integration.srva.rvr.RVR_SrvaEventResultDetailsEnum;
+import fi.riista.integration.srva.rvr.RVR_SrvaEventTypeDetailsEnum;
 import fi.riista.integration.srva.rvr.RVR_SrvaEvents;
 import fi.riista.test.EmbeddedDatabaseTest;
 import fi.riista.util.DateUtil;
 import fi.riista.util.F;
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeUtils;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
@@ -26,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static fi.riista.feature.gamediary.srva.SrvaEventNameEnum.ACCIDENT;
@@ -34,8 +41,13 @@ import static fi.riista.feature.gamediary.srva.SrvaEventNameEnum.INJURED_ANIMAL;
 import static fi.riista.feature.gamediary.srva.SrvaEventStateEnum.APPROVED;
 import static fi.riista.feature.gamediary.srva.SrvaEventStateEnum.REJECTED;
 import static fi.riista.feature.gamediary.srva.SrvaEventStateEnum.UNFINISHED;
+import static fi.riista.test.Asserts.assertThat;
+import static fi.riista.util.DateUtil.currentYear;
 import static java.util.Optional.ofNullable;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
 
@@ -55,62 +67,173 @@ public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
     }
 
     @Test(expected = AccessDeniedException.class)
-    public void testExportRvrWithWrongPrivilege() {
+    public void testExportRvrV1WithWrongPrivilege() {
         final SystemUser apiUser = createNewApiUser(SystemUserPrivilege.EXPORT_HUNTINGCLUB_AREA);
 
-        onSavedAndAuthenticated(apiUser, srvaExportFeature::exportRVR);
+        onSavedAndAuthenticated(apiUser, () -> srvaExportFeature.exportRVRV1Xml(Optional.empty()));
     }
 
     @Test(expected = AccessDeniedException.class)
-    public void testExportRvrWithNormalUser() {
-        onSavedAndAuthenticated(createNewUser(), srvaExportFeature::exportRVR);
+    public void testExportRvrV2WithWrongPrivilege() {
+        final SystemUser apiUser = createNewApiUser(SystemUserPrivilege.EXPORT_HUNTINGCLUB_AREA);
+
+        onSavedAndAuthenticated(apiUser, () -> srvaExportFeature.exportRVRV2Xml(Optional.empty()));
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void testExportRvrV1WithNormalUser() {
+        onSavedAndAuthenticated(createNewUser(), () -> srvaExportFeature.exportRVRV1Xml(Optional.empty()));
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void testExportRvrV2WithNormalUser() {
+        onSavedAndAuthenticated(createNewUser(), () -> srvaExportFeature.exportRVRV2Xml(Optional.empty()));
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void testExportRVRV1ForCalendarYearNormalUser() {
+        onSavedAndAuthenticated(createNewUser(), () -> srvaExportFeature.exportRVRV1Xml(Optional.of(currentYear())));
+    }
+
+    @Test(expected = AccessDeniedException.class)
+    public void testExportRVRV2ForCalendarYearNormalUser() {
+        onSavedAndAuthenticated(createNewUser(), () -> srvaExportFeature.exportRVRV2Xml(Optional.of(currentYear())));
     }
 
     @Test
-    public void testExportRvrCount() {
+    public void testExportRvrV1Count() {
         final SystemUser apiUser = createNewApiUser(SystemUserPrivilege.EXPORT_SRVA_RVR);
         final int numberOfEvents = 23;
 
-        for (int i = 0; i < 23; i++) {
+        for (int i = 0; i < numberOfEvents; i++) {
             createSrvaEventWithNameAndState(
                     ACCIDENT, APPROVED, createNewUser(), true, true);
         }
 
         onSavedAndAuthenticated(apiUser, () -> {
-            assertEquals(numberOfEvents, srvaExportFeature.getRVREventsForXmlMarshal().getSrvaEvent().size());
-            srvaExportFeature.exportRVR();
+            final List<RVR_SrvaEvent> events = srvaExportFeature.exportRVRV1(Optional.empty()).getSrvaEvent();
+            assertThat(events, hasSize(numberOfEvents));
+
+        });
+    }
+
+    @Test
+    public void testExportRvrV2Count() {
+        final SystemUser apiUser = createNewApiUser(SystemUserPrivilege.EXPORT_SRVA_RVR);
+        final int numberOfEvents = 23;
+
+        for (int i = 0; i < numberOfEvents; i++) {
+            createSrvaEventWithNameAndState(
+                    ACCIDENT, APPROVED, createNewUser(), true, true);
+        }
+
+        onSavedAndAuthenticated(apiUser, () -> {
+            final List<RVR_SrvaEvent> events = srvaExportFeature.exportRVRV2(Optional.empty()).getSrvaEvent();
+            assertThat(events, hasSize(numberOfEvents));
+        });
+    }
+
+    @Test
+    public void testExportRvrV1Count_onlyCurrentYearIncluded() {
+        final SystemUser apiUser = createNewApiUser(SystemUserPrivilege.EXPORT_SRVA_RVR);
+
+        final SrvaEvent currentYearsEvent = createSrvaEventWithNameAndState(
+                ACCIDENT, APPROVED, createNewUser(), true, true);
+        final DateTime startOfCurrentYear = DateUtil.beginOfCalendarYear(currentYear());
+        currentYearsEvent.setPointOfTime(startOfCurrentYear);
+        final SrvaEvent previousYearsEvent = createSrvaEventWithNameAndState(
+                ACCIDENT, APPROVED, createNewUser(), true, true);
+        previousYearsEvent.setPointOfTime(startOfCurrentYear.minusSeconds(1));
+
+        onSavedAndAuthenticated(apiUser, () -> {
+            final RVR_SrvaEvents rvrEventsForXmlMarshal =
+                    srvaExportFeature.exportRVRV1(Optional.of(currentYear()));
+            assertThat(rvrEventsForXmlMarshal.getSrvaEvent(), hasSize(1));
+            final RVR_SrvaEvent event = rvrEventsForXmlMarshal.getSrvaEvent().get(0);
+
+            assertThat(event.getId(), equalTo(currentYearsEvent.getId()));
+        });
+    }
+
+    @Test
+    public void testExportRvrV2Count_onlyCurrentYearIncluded() {
+        final SystemUser apiUser = createNewApiUser(SystemUserPrivilege.EXPORT_SRVA_RVR);
+
+        final SrvaEvent currentYearsEvent = createSrvaEventWithNameAndState(
+                ACCIDENT, APPROVED, createNewUser(), true, true);
+        final DateTime startOfCurrentYear = DateUtil.beginOfCalendarYear(currentYear());
+        currentYearsEvent.setPointOfTime(startOfCurrentYear);
+        final SrvaEvent previousYearsEvent = createSrvaEventWithNameAndState(
+                ACCIDENT, APPROVED, createNewUser(), true, true);
+        previousYearsEvent.setPointOfTime(startOfCurrentYear.minusSeconds(1));
+
+        onSavedAndAuthenticated(apiUser, () -> {
+            final RVR_SrvaEvents rvrEventsForXmlMarshal =
+                    srvaExportFeature.exportRVRV2(Optional.of(currentYear()));
+            assertThat(rvrEventsForXmlMarshal.getSrvaEvent(), hasSize(1));
+            final RVR_SrvaEvent event = rvrEventsForXmlMarshal.getSrvaEvent().get(0);
+
+            assertThat(event.getId(), equalTo(currentYearsEvent.getId()));
         });
     }
 
     @Test
     @Transactional
     public void testExportRvrAllFields() {
-        testExportRvr(true, true);
+        testExportRvr(true, true, false, false);
     }
 
     @Test
     @Transactional
     public void testExportRvrMandatoryFields() {
-        testExportRvr(false, false);
+        testExportRvr(false, false, false, false);
     }
 
-    private void testExportRvr(final boolean allFields, final boolean otherSpecies) {
+    @Test
+    @Transactional
+    public void testExportDeportationRvrV1() {
+        testExportRvr(true, true, false, true);
+    }
+
+    @Test
+    @Transactional
+    public void testExportDeportationRvrV2() {
+        testExportRvr(true, true, true, true);
+    }
+
+    private void testExportRvr(final boolean allFields, final boolean otherSpecies, final boolean testSpecV2, final boolean addSpecV2Fields) {
         final SystemUser apiUser = createNewApiUser(SystemUserPrivilege.EXPORT_SRVA_RVR);
 
         final SrvaEvent event = createSrvaEventWithNameAndState(
                 ACCIDENT, APPROVED, createNewUser(), allFields, otherSpecies);
 
+        if (addSpecV2Fields) {
+            event.setEventName(SrvaEventNameEnum.DEPORTATION);
+            event.setEventType(SrvaEventTypeEnum.ANIMAL_NEAR_HOUSES_AREA);
+            event.setDeportationOrderNumber("123456");
+            event.setEventTypeDetail(SrvaEventTypeDetailsEnum.OTHER);
+            event.setOtherEventTypeDetailDescription("otherDetail");
+            event.setEventResult(SrvaResultEnum.ANIMAL_DEPORTED);
+            event.setEventResultDetail(SrvaEventResultDetailsEnum.ANIMAL_CONTACTED_AND_DEPORTED);
+        }
+
         onSavedAndAuthenticated(apiUser, () -> {
-            final RVR_SrvaEvents rvrEvents = srvaExportFeature.getRVREventsForXmlMarshal();
+            final RVR_SrvaEvents rvrEvents = testSpecV2
+                    ? srvaExportFeature.exportRVRV2(Optional.empty())
+                    : srvaExportFeature.exportRVRV1(Optional.empty());
             assertEquals(1, rvrEvents.getSrvaEvent().size());
 
-            assertRvrEvent(rvrEvents.getSrvaEvent().get(0), event);
+            assertRvrEvent(rvrEvents.getSrvaEvent().get(0), event, testSpecV2);
 
-            srvaExportFeature.exportRVR();
+            if (testSpecV2) {
+                srvaExportFeature.exportRVRV2(Optional.empty());
+            } else {
+                srvaExportFeature.exportRVRV1(Optional.empty());
+            }
         });
     }
 
-    private static void assertRvrEvent(final RVR_SrvaEvent rvrEvent, final SrvaEvent event) {
+    private static void assertRvrEvent(final RVR_SrvaEvent rvrEvent, final SrvaEvent event, final boolean specV2Fields) {
         assertEquals(event.getEventName().name(), rvrEvent.getEventName().name());
         assertEquals(event.getEventType().name(), rvrEvent.getEventType().name());
         assertEquals(event.getOtherTypeDescription(), rvrEvent.getOtherTypeDescription());
@@ -136,6 +259,20 @@ public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
 
         assertEquals(ofNullable(event.getEventResult()).map(Enum::name).orElse(null),
                 ofNullable(rvrEvent.getEventResult()).map(Enum::name).orElse(null));
+
+        if (specV2Fields) {
+            assertEquals(event.getDeportationOrderNumber(), rvrEvent.getDeportationOrderNumber());
+            assertEquals(ofNullable(event.getEventTypeDetail()).map(SrvaEventTypeDetailsEnum::name).orElse(null),
+                    ofNullable(rvrEvent.getEventTypeDetail()).map(RVR_SrvaEventTypeDetailsEnum::name).orElse(null));
+            assertEquals(event.getOtherEventTypeDetailDescription(), rvrEvent.getOtherEventTypeDetailDescription());
+            assertEquals(ofNullable(event.getEventResultDetail()).map(SrvaEventResultDetailsEnum::name).orElse(null),
+                    ofNullable(rvrEvent.getEventResultDetail()).map(RVR_SrvaEventResultDetailsEnum::name).orElse(null));
+        } else {
+            assertNull(rvrEvent.getDeportationOrderNumber());
+            assertNull(rvrEvent.getEventTypeDetail());
+            assertNull(rvrEvent.getOtherEventTypeDetailDescription());
+            assertNull(rvrEvent.getEventResultDetail());
+        }
     }
 
     private SrvaEvent createSrvaEventWithNameAndState(final SrvaEventNameEnum name,
@@ -186,6 +323,7 @@ public class SrvaExportFeatureTest extends EmbeddedDatabaseTest {
             srvaEvent.setSpecies(null);
             srvaEvent.setOtherSpeciesDescription("Other species");
         }
+
 
         return srvaEvent;
     }

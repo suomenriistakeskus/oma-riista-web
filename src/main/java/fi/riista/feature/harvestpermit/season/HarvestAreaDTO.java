@@ -14,6 +14,8 @@ public class HarvestAreaDTO extends BaseEntityDTO<Long> {
         DtoUtil.copyBaseFields(harvestArea, dto);
         dto.setNameFI(harvestArea.getNameFinnish());
         dto.setNameSV(harvestArea.getNameSwedish());
+        dto.setHarvestAreaType(harvestArea.getType());
+        dto.setOfficialCode(harvestArea.getOfficialCode());
         return dto;
     }
 
@@ -25,6 +27,9 @@ public class HarvestAreaDTO extends BaseEntityDTO<Long> {
 
     @SafeHtml(whitelistType = SafeHtml.WhiteListType.NONE)
     private String nameSV;
+
+    private HarvestArea.HarvestAreaType harvestAreaType;
+    private String officialCode;
 
     public HarvestAreaDTO() {
     }
@@ -71,4 +76,19 @@ public class HarvestAreaDTO extends BaseEntityDTO<Long> {
         return nameSV;
     }
 
+    public HarvestArea.HarvestAreaType getHarvestAreaType() {
+        return harvestAreaType;
+    }
+
+    public void setHarvestAreaType(final HarvestArea.HarvestAreaType harvestAreaType) {
+        this.harvestAreaType = harvestAreaType;
+    }
+
+    public String getOfficialCode() {
+        return officialCode;
+    }
+
+    public void setOfficialCode(final String officialCode) {
+        this.officialCode = officialCode;
+    }
 }

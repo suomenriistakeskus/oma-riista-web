@@ -39,6 +39,11 @@ public class LawSectionTenPermitApplicationSummaryDTO {
         this.areaAttachments = builder.areaAttachments;
         this.otherAttachments = builder.otherAttachments;
         this.derogationPermitApplicationAreaDTO = builder.derogationPermitApplicationAreaDTO;
+        this.justification = builder.justification;
+        this.populationDescription = builder.populationDescription;
+        this.damagesCaused = builder.damagesCaused;
+        this.transferredAnimalOrigin = builder.transferredAnimalOrigin;
+        this.transferredAnimalAmount = builder.transferredAnimalAmount;
         this.email1 = builder.email1;
         this.email2 = builder.email2;
         this.deliveryByMail = builder.deliveryByMail;
@@ -84,6 +89,11 @@ public class LawSectionTenPermitApplicationSummaryDTO {
                         .map(DerogationPermitApplicationAttachmentDTO::new)
                         .collect(Collectors.toList()))
                 .withArea(DerogationPermitApplicationAreaDTO.createFrom(lawSectionTenPermitApplication))
+                .withJustification(lawSectionTenPermitApplication.getJustification())
+                .withPopulationDescription(lawSectionTenPermitApplication.getPopulationDescription())
+                .withDamagesCaused(lawSectionTenPermitApplication.getDamagesCaused())
+                .withTransferredAnimalOrigin(lawSectionTenPermitApplication.getTransferredAnimalOrigin())
+                .withTransferredAnimalAmount(lawSectionTenPermitApplication.getTransferredAnimalAmount())
                 .withEmail1(Optional.ofNullable(entity.getEmail1()).orElse(null))
                 .withEmail2(Optional.ofNullable(entity.getEmail2()).orElse(null))
                 .withDeliveryByMail(Optional.ofNullable(entity.getDeliveryByMail()).orElse(null))
@@ -107,6 +117,11 @@ public class LawSectionTenPermitApplicationSummaryDTO {
     private final List<DerogationPermitApplicationAttachmentDTO> areaAttachments;
     private final List<DerogationPermitApplicationAttachmentDTO> otherAttachments;
     private final DerogationPermitApplicationAreaDTO derogationPermitApplicationAreaDTO;
+    private final String justification;
+    private final String populationDescription;
+    private final String damagesCaused;
+    private final String transferredAnimalOrigin;
+    private final Integer transferredAnimalAmount;
     private final String email1;
     private final String email2;
     private final Boolean deliveryByMail;
@@ -173,6 +188,26 @@ public class LawSectionTenPermitApplicationSummaryDTO {
         return derogationPermitApplicationAreaDTO;
     }
 
+    public String getJustification() {
+        return justification;
+    }
+
+    public String getPopulationDescription() {
+        return populationDescription;
+    }
+
+    public String getDamagesCaused() {
+        return damagesCaused;
+    }
+
+    public String getTransferredAnimalOrigin() {
+        return transferredAnimalOrigin;
+    }
+
+    public Integer getTransferredAnimalAmount() {
+        return transferredAnimalAmount;
+    }
+
     public String getEmail1() {
         return email1;
     }
@@ -209,6 +244,11 @@ public class LawSectionTenPermitApplicationSummaryDTO {
         private List<DerogationPermitApplicationAttachmentDTO> areaAttachments;
         private List<DerogationPermitApplicationAttachmentDTO> otherAttachments;
         private DerogationPermitApplicationAreaDTO derogationPermitApplicationAreaDTO;
+        private String justification;
+        private String populationDescription;
+        private String damagesCaused;
+        private String transferredAnimalOrigin;
+        private Integer transferredAnimalAmount;
         private String email1;
         private String email2;
         private Boolean deliveryByMail;
@@ -290,6 +330,31 @@ public class LawSectionTenPermitApplicationSummaryDTO {
 
         public Builder withArea(DerogationPermitApplicationAreaDTO derogationPermitApplicationAreaDTO) {
             this.derogationPermitApplicationAreaDTO = derogationPermitApplicationAreaDTO;
+            return this;
+        }
+
+        public Builder withJustification(String justification) {
+            this.justification = justification;
+            return this;
+        }
+
+        public Builder withPopulationDescription(String populationDescription) {
+            this.populationDescription = populationDescription;
+            return this;
+        }
+
+        public Builder withDamagesCaused(String damagesCaused) {
+            this.damagesCaused = damagesCaused;
+            return this;
+        }
+
+        public Builder withTransferredAnimalOrigin(String transferredAnimalOrigin) {
+            this.transferredAnimalOrigin = transferredAnimalOrigin;
+            return this;
+        }
+
+        public Builder withTransferredAnimalAmount(Integer transferredAnimalAmount) {
+            this.transferredAnimalAmount = transferredAnimalAmount;
             return this;
         }
 

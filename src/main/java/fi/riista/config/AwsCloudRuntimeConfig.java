@@ -38,7 +38,7 @@ public class AwsCloudRuntimeConfig {
             ctx.refresh();
             ctx.start();
 
-            if (ctx.getBean(RuntimeEnvironmentUtil.class).isProductionEnvironment()) {
+            if (ctx.getBean(RuntimeEnvironmentUtil.class).isAwsEnvironment()) {
                 final String s3config = ctx.getEnvironment().getProperty("aws.config.s3location");
                 final Resource resource = ctx.getBean(SimpleStorageResourceLoader.class).getResource(s3config);
                 return Optional.of(new ResourcePropertySource("aws", resource));

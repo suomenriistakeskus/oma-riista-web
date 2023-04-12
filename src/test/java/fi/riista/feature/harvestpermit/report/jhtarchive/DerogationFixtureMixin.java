@@ -17,6 +17,7 @@ import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
 
 import java.util.function.Consumer;
 
+import static fi.riista.util.DateUtil.currentYear;
 import static java.util.Collections.singletonList;
 
 public interface DerogationFixtureMixin extends FixtureMixin {
@@ -69,7 +70,7 @@ public interface DerogationFixtureMixin extends FixtureMixin {
             application.setSpeciesAmounts(singletonList(applicationAmount)); // For BIRD, must be set before decision
             decision = es.newPermitDecision(application);
             decisionAmount = es.newPermitDecisionSpeciesAmount(decision, species, 1f);
-            permit = es.newHarvestPermit(rhy);
+            permit = es.newHarvestPermit(rhy, es.permitNumber(currentYear()));
             permit.setPermitDecision(decision);
             permit.setPermitTypeCode(PermitTypeCode.getPermitTypeCode(permitCategory, 1));
             permit.setPermitAreaSize(131313); // For MOOSELIKE

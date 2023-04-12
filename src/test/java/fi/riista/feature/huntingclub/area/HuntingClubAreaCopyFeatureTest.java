@@ -4,6 +4,9 @@ import fi.riista.feature.huntingclub.HuntingClub;
 import fi.riista.feature.huntingclub.copy.HuntingClubAreaCopyDTO;
 import fi.riista.feature.huntingclub.group.HuntingClubGroup;
 import fi.riista.feature.huntingclub.group.HuntingClubGroupRepository;
+import fi.riista.feature.huntingclub.poi.PoiIdAllocation;
+import fi.riista.feature.huntingclub.poi.PoiLocationGroup;
+import fi.riista.feature.huntingclub.poi.PointOfInterestType;
 import fi.riista.feature.organization.occupation.OccupationType;
 import fi.riista.test.EmbeddedDatabaseTest;
 import org.junit.Test;
@@ -26,32 +29,48 @@ public class HuntingClubAreaCopyFeatureTest extends EmbeddedDatabaseTest {
     private HuntingClubGroupRepository groupRepository;
 
     @Test
-    public void testCopySameYearExcludingGroups() {
-        testCopy(0, false);
+    public void testCopySameYearExcludingGroupsAndPOIs() {
+        testCopy(0, false, false);
     }
 
     @Test
-    public void testCopySameYearIncludingGroups() {
-        testCopy(0, true);
+    public void testCopySameYearExcludingGroupsAndIncludingPOIs() {
+        testCopy(0, false, true);
     }
 
     @Test
-    public void testCopyNextYearExcludingGroups() {
-        testCopy(1, false);
+    public void testCopySameYearIncludingGroupsAndExcludingPOIs() {
+        testCopy(0, true, false);
     }
 
     @Test
-    public void testCopyNextYearIncludingGroups() {
-        testCopy(1, true);
+    public void testCopyNextYearExcludingGroupsAndExcludingPOIs() {
+        testCopy(1, false, false);
     }
 
-    private void testCopy(int yearDelta, boolean copyGroups) {
+    @Test
+    public void testCopyNextYearExcludingGroupsAndIncludingPOIs() {
+        testCopy(1, false, true);
+    }
+
+    @Test
+    public void testCopyNextYearIncludingGroupsAndExcludingPOIs() {
+        testCopy(1, true, false);
+    }
+
+    private void testCopy(final int yearDelta, final boolean copyGroups, final boolean copyPOIs) {
         withPerson(person -> {
             final HuntingClub club = model().newHuntingClub();
             final HuntingClubArea area = model().newHuntingClubArea(club);
             final HuntingClubGroup group = model().newHuntingClubGroup(club);
             group.setHuntingYear(area.getHuntingYear());
             group.setHuntingArea(area);
+
+            final PoiIdAllocation POIIdAllocation = model().newPoiIdAllocation(club);
+            final PoiLocationGroup POILocationGroup = model().newPoiLocationGroup(POIIdAllocation, PointOfInterestType.OTHER);
+            model().newPoiLocation(POILocationGroup);
+
+            area.getPoiLocationGroups().add(POILocationGroup);
 
             final int newYear = group.getHuntingYear() + yearDelta;
 
@@ -64,15 +83,17 @@ public class HuntingClubAreaCopyFeatureTest extends EmbeddedDatabaseTest {
                 dto.setId(area.getId());
                 dto.setHuntingYear(newYear);
                 dto.setCopyGroups(copyGroups);
+                dto.setCopyPOIs(copyPOIs);
 
                 final HuntingClubAreaDTO savedDto = huntingClubAreaCopyFeature.copy(dto);
                 assertAreaEquals(area.getId(), savedDto.getId());
                 assertGroups(club, copyGroups ? 2 : 1);
+                assertPOIs(savedDto.getId(), copyPOIs ? 1 : 0);
             });
         });
     }
 
-    private void assertAreaEquals(Long originalId, Long copyId) {
+    private void assertAreaEquals(final Long originalId, final Long copyId) {
         runInTransaction(() -> {
             final HuntingClubArea original = huntingClubAreaRepository.getOne(originalId);
             final HuntingClubArea copy = huntingClubAreaRepository.getOne(copyId);
@@ -94,7 +115,11 @@ public class HuntingClubAreaCopyFeatureTest extends EmbeddedDatabaseTest {
         });
     }
 
-    private void assertGroups(HuntingClub club, int expectedCount) {
+    private void assertGroups(final HuntingClub club, final int expectedCount) {
         runInTransaction(() -> assertEquals(expectedCount, groupRepository.findByParentOrganisation(club).size()));
+    }
+
+    private void assertPOIs(final Long areaId, final int expectedCount) {
+        runInTransaction(() -> assertEquals(expectedCount, huntingClubAreaRepository.listPois(areaId).size()));
     }
 }

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
+import java.util.Collection;
 import java.util.List;
 
 public interface HarvestQuotaRepository extends BaseRepository<HarvestQuota, Long>{
@@ -23,4 +24,7 @@ public interface HarvestQuotaRepository extends BaseRepository<HarvestQuota, Lon
             return cb.and(cb.equal(seasonToJoin, harvestSeason), cb.equal(areaToJoin, harvestArea));
         }).orElse(null);
     }
+
+    List<HarvestQuota> findByHarvestSeasonIn(Collection<HarvestSeason> seasons);
+    List<HarvestQuota> findByHarvestSeason(HarvestSeason season);
 }

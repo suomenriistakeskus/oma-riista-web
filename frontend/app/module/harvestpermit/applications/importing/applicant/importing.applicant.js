@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.importing.applicant', ['app.metada
                 templateUrl: 'harvestpermit/applications/importing/applicant/applicant.html',
                 controller: 'ImportingPermitWizardApplicantController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     application: function (applicationId, HarvestPermitApplications) {
                         return HarvestPermitApplications.get({id: applicationId}).$promise;

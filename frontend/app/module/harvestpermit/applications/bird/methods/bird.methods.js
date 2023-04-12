@@ -8,6 +8,7 @@ angular.module('app.harvestpermit.application.bird.methods', ['app.metadata'])
                 templateUrl: 'harvestpermit/applications/bird/methods/methods.html',
                 controller: 'DerogationPermitWizardMethodsController',
                 controllerAs: '$ctrl',
+                hideFooter: true,
                 resolve: {
                     forbiddenMethods: function (BirdPermitApplication, applicationId) {
                         return BirdPermitApplication.getCurrentDeviationJustification({id: applicationId}).$promise;

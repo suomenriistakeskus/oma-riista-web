@@ -38,6 +38,11 @@
         <span translate="{{ 'srva.event.' + $ctrl.entry.eventName }}"></span>
     </div>
 
+    <div ng-if="::$ctrl.entry.deportationOrderNumber">
+        <h5 translate="srva.form.deportationOrderNumber"></h5>
+        <span ng-bind="::$ctrl.entry.deportationOrderNumber"></span>
+    </div>
+
     <div>
         <h5 translate="srva.form.type"></h5>
         <span translate="{{ 'srva.type.' + $ctrl.entry.eventType }}"></span>
@@ -46,9 +51,22 @@
               ng-bind="::$ctrl.entry.otherTypeDescription"></span>
     </div>
 
+    <div ng-if="::$ctrl.entry.eventTypeDetail">
+        <h5 translate="srva.form.typeDetail"></h5>
+        <span translate="{{ 'srva.typeDetail.' + $ctrl.entry.eventTypeDetail }}"></span>
+        <br ng-if="::$ctrl.entry.otherEventTypeDetailDescription">
+        <span ng-if="::$ctrl.entry.otherEventTypeDetailDescription"
+              ng-bind="::$ctrl.entry.otherEventTypeDetailDescription"></span>
+    </div>
+
     <div ng-if="::$ctrl.entry.eventResult">
         <h5 translate="global.result"></h5>
         <span translate="srva.result.{{::$ctrl.entry.eventResult}}"></span>
+    </div>
+
+    <div ng-if="::$ctrl.entry.eventResultDetail">
+        <h5 translate="srva.form.resultDetail"></h5>
+        <span translate="srva.resultDetail.{{::$ctrl.entry.eventResultDetail}}"></span>
     </div>
 
     <div ng-if="::$ctrl.showSrvaMethodsInSidebar($ctrl.entry.methods)">

@@ -4,13 +4,35 @@
             <li active-if-state-includes="jht.home">
                 <a ui-sref="jht.home" translate="admin.menu.main"></a>
             </li>
-            <li active-if-state-includes="jht.harvestreport">
+            <li ng-if="::!$ctrl.isAuthorizedForHarvestReportReviwew" active-if-state-includes="jht.harvestreport">
                 <a ui-sref="jht.harvestreport.list" translate="harvestreport.admin.menu"></a>
+            </li>
+
+            <li ng-if="::$ctrl.isAuthorizedForHarvestReportReviwew" class="dropdown"
+                active-if-state-includes="jht.harvestreport,jht.harvestreportreview.list"
+                uib-dropdown dropdown-append-to-body>
+                <a uib-dropdown-toggle>
+                    <span translate="harvestreport.admin.menu"></span>
+                    <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu r-nav-dropdown-menu" uib-dropdown-menu>
+                    <li ui-sref-active="active">
+                        <a ui-sref="jht.harvestreport.list">
+                            <span translate="harvestreport.admin.menu"></span>
+                        </a>
+
+                    </li>
+                    <li ui-sref-active="active">
+                        <a ui-sref="jht.harvestreportreview.list">
+                            <span translate="jht.menu.harvestReportReview"></span>
+                        </a>
+                    </li>
+                </ul>
             </li>
             <li class="dropdown" active-if-state-includes="jht.applications,jht.decision,jht.nominationdecisions"
                 uib-dropdown dropdown-append-to-body>
                 <a uib-dropdown-toggle>
-                    <span ng-if="$ctrl.myRenewalTodos" class="r-account-todo" ng-bind="$ctrl.myRenewalTodos"></span>
+                    <span ng-if="$ctrl.myRenewalTodos" class="r-jht-todo" ng-bind="$ctrl.myRenewalTodos"></span>
                     <span translate="jht.menu.applicationsAndDecisions"></span>
                     <span class="caret"></span>
                 </a>
@@ -26,6 +48,11 @@
                     <li ui-sref-active="active">
                         <a ui-sref="jht.nominationdecisions" ui-sref-opts="{inherit: false}">
                             <span translate="jht.menu.nominationDecisions"></span>
+                        </a>
+                    </li>
+                    <li ng-if="::$ctrl.isAuthorizedForApplicationSchedule" ui-sref-active="active">
+                        <a ui-sref="jht.applicationschedules" ui-sref-opts="{inherit: false}">
+                            <span translate="jht.menu.applicationSchedules"></span>
                         </a>
                     </li>
                 </ul>
@@ -94,6 +121,9 @@
             </li>
             <li ng-if="::$ctrl.isAuthorizedForOtherwiseDeceased" active-if-state-includes="jht.otherwisedeceased">
                 <a ui-sref="jht.otherwisedeceased" translate="jht.menu.otherwiseDeceased"></a>
+            </li>
+            <li ng-if="::$ctrl.isAuthorizedForHarvestSeasons" active-if-state-includes="jht.harvestseasons">
+                <a ui-sref="jht.harvestseasons" translate="jht.menu.harvestSeasons"></a>
             </li>
         </ul>
     </div>

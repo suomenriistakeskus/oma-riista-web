@@ -1,0 +1,61 @@
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <td></td>
+        <td ng-repeat="timestamp in $ctrl.deadMoosesTableData.timestamps track by $index"
+            class="bolded-text">
+            {{timestamp | date:'yyyy'}}
+        </td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td class="bolded-text" translate="club.gamestatistics.numberOfDrownedMooses"></td>
+        <td ng-repeat="amount in $ctrl.deadMoosesTableData.datasets.drownedMooses track by $index">
+            {{amount}}
+        </td>
+    </tr>
+    <tr>
+        <td class="bolded-text" translate="club.gamestatistics.numberOfMoosesKilledByBear"></td>
+        <td ng-repeat="amount in $ctrl.deadMoosesTableData.datasets.moosesKilledByBear track by $index">
+            {{amount}}
+        </td>
+    </tr>
+    <tr>
+        <td class="bolded-text" translate="club.gamestatistics.numberOfMoosesKilledByWolf"></td>
+        <td ng-repeat="amount in $ctrl.deadMoosesTableData.datasets.moosesKilledByWolf track by $index">
+            {{amount}}
+        </td>
+    </tr>
+    <tr>
+        <td class="bolded-text" translate="club.gamestatistics.numberOfMoosesKilledInTrafficAccident"></td>
+        <td ng-repeat="amount in $ctrl.deadMoosesTableData.datasets.moosesKilledInTrafficAccident track by $index">
+            {{amount}}
+        </td>
+    </tr>
+    <tr>
+        <td class="bolded-text" translate="club.gamestatistics.numberOfMoosesKilledByPoaching"></td>
+        <td ng-repeat="amount in $ctrl.deadMoosesTableData.datasets.moosesKilledByPoaching track by $index">
+            {{amount}}
+        </td>
+    </tr>
+    <tr>
+        <td class="bolded-text" translate="club.gamestatistics.numberOfMoosesKilledInRutFight"></td>
+        <td ng-repeat="amount in $ctrl.deadMoosesTableData.datasets.moosesKilledInRutFight track by $index">
+            {{amount}}
+        </td>
+    </tr>
+    <tr>
+        <td class="bolded-text" translate="club.gamestatistics.numberOfStarvedMooses"></td>
+        <td ng-repeat="amount in $ctrl.deadMoosesTableData.datasets.starvedMooses track by $index">
+            {{amount}}
+        </td>
+    </tr>
+    <tr>
+        <td class="bolded-text" translate="club.gamestatistics.numberOfMoosesDeceasedByOtherReason"></td>
+        <td ng-repeat="amount in $ctrl.deadMoosesTableData.datasets.moosesDeceasedByOtherReason track by $index">
+            {{amount}}
+        </td>
+    </tr>
+    </tbody>
+</table>

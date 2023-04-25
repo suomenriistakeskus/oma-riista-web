@@ -1,25 +1,19 @@
 package fi.riista.feature.account.payment;
 
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.joining;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import fi.riista.feature.common.entity.CreditorReference;
 import fi.riista.feature.common.money.FinnishBankAccount;
 import fi.riista.util.InvoiceUtil;
+import java.util.List;
+import javax.annotation.Nonnull;
 import org.iban4j.Iban;
 import org.joda.time.LocalDate;
 
-import javax.annotation.Nonnull;
-import java.util.List;
-
-import static java.util.Objects.requireNonNull;
-import static java.util.stream.Collectors.joining;
-
 public final class HuntingPaymentInfo {
-
-    private static final List<FinnishBankAccount> ACCOUNT_DETAILS_OLD = ImmutableList.of(
-            FinnishBankAccount.GAME_MANAGEMENT_FEE_OP_POHJOLA,
-            FinnishBankAccount.GAME_MANAGEMENT_FEE_NORDEA,
-            FinnishBankAccount.GAME_MANAGEMENT_FEE_DANSKE_BANK);
 
     private static final List<FinnishBankAccount> ACCOUNT_DETAILS = ImmutableList.of(
             FinnishBankAccount.GAME_MANAGEMENT_FEE_DANSKE_BANK,
@@ -42,27 +36,19 @@ public final class HuntingPaymentInfo {
         requireNonNull(dateOfBirth);
         requireNonNull(invoiceReference);
 
-        switch (huntingYear) {
-            case 2018:
-                return new HuntingPaymentInfo(39, 0, invoiceReference, ACCOUNT_DETAILS_OLD);
+        if (huntingYear == 2022) {
+            // 31.7.2004 jälkeen syntyneet saavat 20 € laskun
+            // 31.7.2004 ja sitä aiemmin syntyneet 39 € laskun
+            final LocalDate dateBoundary = new LocalDate(2004, 7, 31);
+            final int euros = dateOfBirth.isAfter(dateBoundary) ? 20 : 39;
 
-            case 2019: {
-                // 31.7.2001 jälkeen syntyneet saavat 20 € laskun
-                // 31.7.2001 ja sitä aiemmin syntyneet 39 € laskun
-                final LocalDate dateBoundary = new LocalDate(2001, 7, 31);
-                final int euros = dateOfBirth.isAfter(dateBoundary) ? 20 : 39;
-
-                return new HuntingPaymentInfo(euros, 0, invoiceReference, ACCOUNT_DETAILS_OLD);
-            }
-
-            default: {
-                // Minors (after 31.7.huntingYear), reduced payment
-                final LocalDate dateBoundary = new LocalDate(huntingYear - 18, 7, 31);
-                final int euros = dateOfBirth.isAfter(dateBoundary) ? 20 : 39;
-
-                return new HuntingPaymentInfo(euros, 0, invoiceReference, ACCOUNT_DETAILS);
-            }
+            return new HuntingPaymentInfo(euros, 0, invoiceReference, ACCOUNT_DETAILS);
         }
+        // Minors (after 31.7.huntingYear), reduced payment
+        final LocalDate dateBoundary = new LocalDate(huntingYear - 18, 7, 31);
+        final int euros = dateOfBirth.isAfter(dateBoundary) ? 10 : 43;
+
+        return new HuntingPaymentInfo(euros, 0, invoiceReference, ACCOUNT_DETAILS);
     }
 
     private final List<FinnishBankAccount> accounts;

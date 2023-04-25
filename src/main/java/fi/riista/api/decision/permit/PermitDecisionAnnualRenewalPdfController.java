@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -66,7 +65,6 @@ public class PermitDecisionAnnualRenewalPdfController {
     @ResponseBody
     @PostMapping(value = "/print/pdf", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void pdf(final @PathVariable long permitId,
-                    final HttpServletRequest httpServletRequest,
                     final HttpServletResponse httpServletResponse) {
         final AnnualRenewalPermitPdfModelDTO model = pdfFeature.getModel(permitId);
 
@@ -76,7 +74,7 @@ public class PermitDecisionAnnualRenewalPdfController {
         ContentDispositionUtil.addHeader(httpServletResponse, filename);
 
         try (final OutputStream os = httpServletResponse.getOutputStream()) {
-            pdfExportFactory.create(httpServletRequest)
+            pdfExportFactory.create()
                     .withHtmlPath(getHtmlPath(permitId))
                     .withMargin(0, 0, 0, 0)
                     .build()

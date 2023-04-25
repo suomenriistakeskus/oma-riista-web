@@ -76,13 +76,12 @@ public class HarvestPermitAreaMmlPdfController {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @PostMapping(value = "{applicationId:\\d+}/print/pdf", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void pdf(final @PathVariable long applicationId,
-                    final HttpServletRequest httpServletRequest,
                     final HttpServletResponse httpServletResponse,
                     final Locale locale) {
         ContentDispositionUtil.addHeader(httpServletResponse, getFileName(locale));
 
         try (final OutputStream os = httpServletResponse.getOutputStream()) {
-            pdfExportFactory.create(httpServletRequest)
+            pdfExportFactory.create()
                     .withHtmlPath(getHtmlPath(applicationId))
                     .withLanguage(locale)
                     .build()

@@ -1,5 +1,7 @@
 package fi.riista.feature.search;
 
+import static java.util.EnumSet.of;
+
 import com.google.common.base.Joiner;
 import fi.riista.feature.harvestpermit.HarvestPermitRepository;
 import fi.riista.feature.organization.Organisation;
@@ -11,19 +13,16 @@ import fi.riista.util.Locales;
 import fi.riista.validation.Validators;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-
-import static java.util.EnumSet.of;
+import javax.annotation.Resource;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class SiteSearchFeature {
@@ -45,12 +44,14 @@ public class SiteSearchFeature {
 
     @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_MODERATOR')")
     @Transactional(readOnly = true)
-    public SearchResultsDTO search(final String searchTerm, final Locale userLocale) {
-        if (searchTerm == null || searchTerm.length() <= 3) {
+    public SearchResultsDTO search(final SearchDTO dto) {
+        final String searchTerm = dto.getTerm();
+
+        if (searchTerm.length() <= 3) {
             return SearchResultsDTO.EMPTY;
         }
 
-        final SearchResultsDTO.Builder builder = new SearchResultsDTO.Builder(userLocale);
+        final SearchResultsDTO.Builder builder = new SearchResultsDTO.Builder(dto.getLocale());
 
         if (Validators.isValidHuntingClubOfficialCode(searchTerm)) {
             return builder.setClubs(organisationRepository.findByTypeAndOfficialCode(OrganisationType.CLUB, searchTerm)).build();

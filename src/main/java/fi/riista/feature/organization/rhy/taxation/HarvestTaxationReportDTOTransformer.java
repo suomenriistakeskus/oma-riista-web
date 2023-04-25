@@ -1,29 +1,24 @@
 package fi.riista.feature.organization.rhy.taxation;
 
-import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.account.user.UserRepository;
+import static java.util.stream.Collectors.toList;
+
+import fi.riista.feature.common.dto.LastModifierDTO;
+import fi.riista.feature.common.service.LastModifierService;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gamediary.GameSpeciesRepository;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.gis.hta.GISHirvitalousalueRepository;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.feature.organization.OrganisationRepository;
-import fi.riista.util.F;
 import fi.riista.util.ListTransformer;
 import fi.riista.util.jpa.CriteriaUtils;
 import fi.riista.util.jpa.JpaGroupingUtils;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
-
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Resource;
+import org.springframework.stereotype.Component;
 
 @Component
 public class HarvestTaxationReportDTOTransformer extends ListTransformer<HarvestTaxationReport, HarvestTaxationReportDTO> {
@@ -35,13 +30,13 @@ public class HarvestTaxationReportDTOTransformer extends ListTransformer<Harvest
     private OrganisationRepository organisationRepository;
 
     @Resource
-    private UserRepository userRepository;
-
-    @Resource
     private HarvestTaxationReportAttachmentRepository attachmentRepository;
 
     @Resource
     private GISHirvitalousalueRepository gisHirvitalousalueRepository;
+
+    @Resource
+    private LastModifierService lastModifierService;
 
     @Nonnull
     @Override
@@ -52,7 +47,7 @@ public class HarvestTaxationReportDTOTransformer extends ListTransformer<Harvest
         final Function<HarvestTaxationReport, Organisation> rhyMapper = getRhyMapper(items);
         final Function<HarvestTaxationReport, GISHirvitalousalue> htaMapper = getHtaMapper(items);
         final Map<HarvestTaxationReport, List<HarvestTaxationReportAttachment>> groupedAttachments = getAttachments(items);
-        final Map<Long, SystemUser> moderatorMapper = getModeratorMapper(items);
+        final Map<HarvestTaxationReport, LastModifierDTO> lastModifiers = lastModifierService.getLastModifiers(items);
 
         return items.stream()
                 .map(item -> {
@@ -62,17 +57,13 @@ public class HarvestTaxationReportDTOTransformer extends ListTransformer<Harvest
                             rhyMapper.apply(item),
                             htaMapper.apply(item),
                             attachments,
-                            moderatorMapper.getOrDefault(item.getId(), null));
+                            lastModifiers.getOrDefault(item.getId(), null));
                 }).
                 collect(toList());
     }
 
     protected HarvestTaxationReportDTO transform(@Nonnull final HarvestTaxationReport item) {
-        SystemUser moderator = null;
-        if (item.getModifiedByUserId() != null && item.getModifiedByUserId() > 0) {
-            moderator = userRepository.getOne(item.getModifiedByUserId());
-        }
-
+        final LastModifierDTO lastModifier = lastModifierService.getLastModifier(item);
 
         final List<HarvestTaxationReportAttachment> attachments = attachmentRepository.findAllByHarvestTaxationReport(item);
 
@@ -81,7 +72,7 @@ public class HarvestTaxationReportDTOTransformer extends ListTransformer<Harvest
                 item.getRhy(),
                 item.getHta(),
                 attachments,
-                moderator);
+                lastModifier);
     }
 
     private Function<HarvestTaxationReport, GameSpecies> getGameSpeciesMapper(final List<HarvestTaxationReport> items) {
@@ -98,13 +89,5 @@ public class HarvestTaxationReportDTOTransformer extends ListTransformer<Harvest
 
     private Map<HarvestTaxationReport, List<HarvestTaxationReportAttachment>> getAttachments(final List<HarvestTaxationReport> items) {
         return JpaGroupingUtils.groupRelations(items, HarvestTaxationReportAttachment_.harvestTaxationReport, attachmentRepository);
-    }
-
-    private Map<Long, SystemUser> getModeratorMapper(final List<HarvestTaxationReport> items) {
-        final Set<Long> moderatorIds = items
-                .stream()
-                .map(HarvestTaxationReport::getModifiedByUserId)
-                .filter(Objects::nonNull).collect(toSet());
-        return F.indexById(userRepository.findAllById(moderatorIds));
     }
 }

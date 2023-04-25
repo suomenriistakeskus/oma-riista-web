@@ -77,7 +77,6 @@ public class HuntingControlEventPdfReportApiResource {
     @PostMapping(value = "{rhyId:\\d+}/pdf", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void pdf(final @PathVariable long rhyId,
                     final @Valid @RequestBody HuntingControlEventReportQueryDTO dto,
-                    final HttpServletRequest httpServletRequest,
                     final HttpServletResponse httpServletResponse,
                     final Locale locale) throws JsonProcessingException {
         final String filters = objectMapper.writeValueAsString(dto);
@@ -89,7 +88,7 @@ public class HuntingControlEventPdfReportApiResource {
         ContentDispositionUtil.addHeader(httpServletResponse, Objects.equals(locale.getLanguage(), "sv") ? "jaktovervakningrapporten.pdf" : "metsastyksenvalvontaraportti.pdf");
 
         try (final OutputStream os = httpServletResponse.getOutputStream()) {
-            pdfExportFactory.create(httpServletRequest)
+            pdfExportFactory.create()
                     .withNoHeaderRight()
                     .withHtmlPath(getHtmlPath(rhyId))
                     .withRequestParams(requestParams)

@@ -1,35 +1,5 @@
 package fi.riista.feature.organization.rhy.taxation;
 
-import fi.riista.feature.account.user.SystemUser;
-import fi.riista.feature.error.NotFoundException;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.gis.hta.GISHirvitalousalue;
-import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
-import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
-import fi.riista.test.Asserts;
-import fi.riista.test.EmbeddedDatabaseTest;
-import fi.riista.util.LocalisedString;
-import fi.riista.util.MockTimeProvider;
-import org.joda.time.LocalDate;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Resource;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
 import static fi.riista.feature.organization.occupation.OccupationType.TOIMINNANOHJAAJA;
 import static fi.riista.util.DateUtil.today;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -42,6 +12,36 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
+
+import fi.riista.feature.account.user.SystemUser;
+import fi.riista.feature.error.NotFoundException;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.gis.hta.GISHirvitalousalue;
+import fi.riista.feature.huntingclub.group.fixture.HuntingGroupFixtureMixin;
+import fi.riista.feature.organization.rhy.Riistanhoitoyhdistys;
+import fi.riista.test.Asserts;
+import fi.riista.test.EmbeddedDatabaseTest;
+import fi.riista.util.LocalisedString;
+import fi.riista.util.MockTimeProvider;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.annotation.Resource;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+import org.joda.time.LocalDate;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 public class HarvestTaxationReportingFeatureTest extends EmbeddedDatabaseTest implements HuntingGroupFixtureMixin {
 
@@ -712,7 +712,11 @@ public class HarvestTaxationReportingFeatureTest extends EmbeddedDatabaseTest im
     @Test
     public void testSaveOrUpdateTaxationReport_saveReport_alreadyConfirmed() {
         authenticate(coordinator);
-        final HarvestTaxationReportDTO dto = harvestTaxationReportDTOTransformer.transform(report);
+
+        final AtomicReference<HarvestTaxationReportDTO> dtoHolder = new AtomicReference<>();
+        runInTransaction(() -> dtoHolder.set(harvestTaxationReportDTOTransformer.transform(report)));
+        final HarvestTaxationReportDTO dto = dtoHolder.get();
+
         final Integer initialPercent = dto.getYoungPercent();
         assertThat(initialPercent, is(100));  // just make sure that value truly changes
         dto.setYoungPercent(8);
@@ -723,7 +727,11 @@ public class HarvestTaxationReportingFeatureTest extends EmbeddedDatabaseTest im
     @Test
     public void testSaveOrUpdateTaxationReport_saveReport_alreadyConfirmed_asAdmin() {
         authenticate(admin);
-        final HarvestTaxationReportDTO dto = harvestTaxationReportDTOTransformer.transform(report);
+
+        final AtomicReference<HarvestTaxationReportDTO> dtoHolder = new AtomicReference<>();
+        runInTransaction(() -> dtoHolder.set(harvestTaxationReportDTOTransformer.transform(report)));
+        final HarvestTaxationReportDTO dto = dtoHolder.get();
+
         final Integer initialPercent = dto.getYoungPercent();
         assertThat(initialPercent, is(100));  // just make sure that value truly changes
         dto.setYoungPercent(8);

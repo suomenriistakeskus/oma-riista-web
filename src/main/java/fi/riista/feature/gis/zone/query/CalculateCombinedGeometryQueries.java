@@ -93,10 +93,17 @@ public class CalculateCombinedGeometryQueries {
     }
 
     private void subtractExcludedGeometryFromUnion(final long zoneId) {
+
         // NOTE: ST_Buffer is used to avoid creating invalid line-geometries during ST_Difference
-        jdbcOperations.update("UPDATE zone SET geom =" +
-                        " ST_Difference(geom, ST_Buffer(ST_Transform(excluded_geom, 3067), :bufferZone, 'join=bevel endcap=flat'))" +
-                        " WHERE zone_id = :zoneId AND excluded_geom IS NOT NULL",
+        jdbcOperations.update("WITH final_geom AS ( " +
+                        "                SELECT ST_Difference(geom, ST_Buffer(ST_Transform(excluded_geom, 3067), :bufferZone, 'join=bevel endcap=flat')) AS geom " +
+                        "                FROM zone" +
+                        "                WHERE zone_id = :zoneId AND excluded_geom IS NOT NULL ) " +
+                        "        UPDATE zone " +
+                        "        SET geom = CASE WHEN ST_IsEmpty(final_geom.geom) THEN NULL ELSE final_geom.geom END " +
+                        "        FROM final_geom" +
+                        "        WHERE zone.zone_id = :zoneId " +
+                        "        AND excluded_geom IS NOT NULL",
                 zoneParam(zoneId).addValue("bufferZone", BUFFER_ZONE));
     }
 

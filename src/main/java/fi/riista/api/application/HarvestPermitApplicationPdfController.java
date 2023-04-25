@@ -72,7 +72,6 @@ public class HarvestPermitApplicationPdfController {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @PostMapping(value = "{applicationId:\\d+}/print/pdf", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void getPdf(final @PathVariable long applicationId,
-                       final HttpServletRequest httpServletRequest,
                        final HttpServletResponse httpServletResponse) {
         final HarvestPermitApplicationPdfDTO dto = harvestPermitApplicationPdfFeature.getApplication(applicationId);
 
@@ -89,7 +88,7 @@ public class HarvestPermitApplicationPdfController {
             ContentDispositionUtil.addHeader(httpServletResponse, dto.getFilename());
 
             try (final OutputStream os = httpServletResponse.getOutputStream()) {
-                pdfExportFactory.create(httpServletRequest)
+                pdfExportFactory.create()
                         .withHeaderRight(dto.getHeaderText())
                         .withHtmlPath(getHtmlPath(applicationId))
                         .withLanguage(dto.getLocale())

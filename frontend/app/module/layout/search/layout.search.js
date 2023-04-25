@@ -93,11 +93,9 @@ angular.module('app.layout.search', [])
                     $ctrl.searching = true;
                     $ctrl.searchResults = [];
 
-                    return $http.get('api/v1/search', {
-                        params: {
+                    return $http.post('api/v1/search', {
                             term: term,
                             locale: $translate.use()
-                        }
                     }).then(function (response) {
                         $ctrl.searchResults = transformHttpSearchResults(response.data);
 

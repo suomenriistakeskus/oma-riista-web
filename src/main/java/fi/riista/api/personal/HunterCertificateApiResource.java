@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 
@@ -46,11 +45,10 @@ public class HunterCertificateApiResource {
     @GetMapping(value = "/huntingCard.pdf", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void pdfHuntingCard(@PathVariable String hunterNumber,
                                @RequestParam String lang,
-                               HttpServletRequest httpServletRequest,
                                HttpServletResponse httpServletResponse) {
         final String uri = URL_PREFIX + hunterNumber + "/huntingCard.html";
         final String filename = String.format("hunting-card-%s-%s.pdf", hunterNumber, lang);
-        generatePdf(uri, filename, lang, httpServletRequest, httpServletResponse);
+        generatePdf(uri, filename, lang, httpServletResponse);
     }
 
     @ResponseBody
@@ -58,21 +56,19 @@ public class HunterCertificateApiResource {
     @GetMapping(value = "/foreign.pdf", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void foreignCertificatePdf(@PathVariable String hunterNumber,
                                       @RequestParam String lang,
-                                      HttpServletRequest httpServletRequest,
                                       HttpServletResponse httpServletResponse) {
         final String uri = URL_PREFIX + hunterNumber + "/foreign.html";
         final String filename = String.format("foreign-certificate-%s-%s.pdf", hunterNumber, lang);
-        generatePdf(uri, filename, lang, httpServletRequest, httpServletResponse);
+        generatePdf(uri, filename, lang, httpServletResponse);
     }
 
     private void generatePdf(final String uri, final String filename, final String lang,
-                             final HttpServletRequest httpServletRequest,
                              final HttpServletResponse httpServletResponse) {
         try {
             ContentDispositionUtil.addHeader(httpServletResponse, filename);
 
             try (final OutputStream os = httpServletResponse.getOutputStream()) {
-                pdfExportFactory.create(httpServletRequest)
+                pdfExportFactory.create()
                         .withHtmlPath(uri)
                         .withLanguage(lang)
                         .withMargin(0, 0, 0, 0)

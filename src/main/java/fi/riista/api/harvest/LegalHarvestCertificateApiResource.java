@@ -68,7 +68,6 @@ public class LegalHarvestCertificateApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @PostMapping(value = "{harvestId:\\d+}/print/pdf", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void pdf(final @PathVariable long harvestId,
-                    final HttpServletRequest httpServletRequest,
                     final HttpServletResponse httpServletResponse) {
         httpServletResponse.addHeader(HttpHeaders.CONTENT_TYPE, MediaTypeExtras.APPLICATION_PDF_VALUE);
 
@@ -77,7 +76,7 @@ public class LegalHarvestCertificateApiResource {
         ContentDispositionUtil.addHeader(httpServletResponse, LegalHarvestCertificatePdfFeature.createFileName(harvestCertificateLocale));
 
         try (final OutputStream os = httpServletResponse.getOutputStream()) {
-            pdfExportFactory.create(httpServletRequest)
+            pdfExportFactory.create()
                     .withNoHeaderRight()
                     .withHtmlPath(getHtmlPath(harvestId))
                     .withLanguage(harvestCertificateLocale)

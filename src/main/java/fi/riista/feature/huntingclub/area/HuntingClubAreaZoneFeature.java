@@ -1,23 +1,27 @@
 package fi.riista.feature.huntingclub.area;
 
+import static java.util.Collections.singletonList;
+
+import fi.riista.config.AlertLoggingConstants;
 import fi.riista.feature.RequireEntityService;
 import fi.riista.feature.gis.OnlyStateAreaService;
-import fi.riista.feature.gis.zone.*;
+import fi.riista.feature.gis.zone.CalculateCombinedGeometryJob;
+import fi.riista.feature.gis.zone.GISZone;
+import fi.riista.feature.gis.zone.GISZoneEditService;
+import fi.riista.feature.gis.zone.GISZoneRepository;
+import fi.riista.feature.gis.zone.IllegalZoneStateTransitionException;
 import fi.riista.security.EntityPermission;
 import fi.riista.util.DateUtil;
 import fi.riista.util.GISUtils;
+import java.util.List;
+import java.util.Optional;
+import javax.annotation.Resource;
 import org.geojson.FeatureCollection;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
-import java.util.List;
-import java.util.Optional;
-
-import static java.util.Collections.singletonList;
 
 @Component
 public class HuntingClubAreaZoneFeature {
@@ -80,7 +84,8 @@ public class HuntingClubAreaZoneFeature {
             LOG.info("Already processed zoneId={}", zoneId);
             return;
         } catch (final Exception e) {
-            LOG.error("Could not set zone status to processing for zoneId={}.", zoneId, e);
+            LOG.error("{} Could not set zone status to processing for zoneId={}.",
+                    AlertLoggingConstants.CLUB_AREA_ALERT_PREFIX, zoneId, e);
             return;
         }
 
@@ -97,7 +102,8 @@ public class HuntingClubAreaZoneFeature {
             zoneEditService.setZoneStatusToReady(zoneId);
 
         } catch (final Exception e) {
-            LOG.error("Calculating combined geometry for zone {}.", zoneId, e);
+            LOG.error("{} Failed to calculate combined geometry for zone {}.",
+                    AlertLoggingConstants.CLUB_AREA_ALERT_PREFIX, zoneId, e);
             zoneEditService.setZoneStatusToProcessFailed(zoneId);
         }
     }
@@ -114,9 +120,11 @@ public class HuntingClubAreaZoneFeature {
     public void checkPendingQueueHealth() {
         final long pendingStatusCount = zoneRepository.findInStatusPending().size();
 
-        if(pendingStatusCount > CalculateCombinedGeometryJob.CONCURRENCY_LIMIT) {
-         LOG.warn("Hunting club area zone calculation queue length is over the threshold. Current count: {}/{}",
-                 pendingStatusCount, CalculateCombinedGeometryJob.CONCURRENCY_LIMIT);
+        if (pendingStatusCount > CalculateCombinedGeometryJob.CONCURRENCY_LIMIT) {
+            LOG.warn("{} Hunting club area zone calculation queue length is over the threshold. Current count: {}/{}",
+                    AlertLoggingConstants.CLUB_AREA_ALERT_PREFIX,
+                    pendingStatusCount,
+                    CalculateCombinedGeometryJob.CONCURRENCY_LIMIT);
         }
     }
 

@@ -1,21 +1,15 @@
 package fi.riista.feature.account.payment;
 
+import static java.util.Collections.singletonList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import fi.riista.feature.common.money.FinnishBankAccount;
-import fi.riista.util.DateUtil;
+import java.util.List;
 import org.iban4j.IbanFormatException;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
-import java.util.List;
-
-import static fi.riista.util.DateUtil.today;
-import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-@SuppressWarnings("unused")
 public class HuntingPaymentInfoTest {
 
     private static final String IBAN = "FI7850000120378442";
@@ -25,9 +19,31 @@ public class HuntingPaymentInfoTest {
             singletonList(FinnishBankAccount.fromIban(IBAN));
 
     @Test
-    public void testYear2020_Adult() {
-        final LocalDate dateOfBirth = new LocalDate(2002, 7, 31);
-        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2020, dateOfBirth, INVOICE_REFERENCE);
+    public void testYear2023_Adult() {
+        final LocalDate dateOfBirth = new LocalDate(2005, 7, 31);
+        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2023, dateOfBirth, INVOICE_REFERENCE);
+        assertNotNull(paymentInfo);
+        verifyCommonPaymentInfo(paymentInfo);
+        assertEquals("43.00", paymentInfo.getAmountText());
+        assertEquals("484800013000353500000430000000000000014507700161000000",
+                paymentInfo.createBarCodeMessage(null));
+    }
+
+    @Test
+    public void testYear2023_Underage() {
+        final LocalDate dateOfBirth = new LocalDate(2005, 8, 1);
+        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2023, dateOfBirth, INVOICE_REFERENCE);
+        assertNotNull(paymentInfo);
+        verifyCommonPaymentInfo(paymentInfo);
+        assertEquals("10.00", paymentInfo.getAmountText());
+        assertEquals("484800013000353500000100000000000000014507700161000000",
+                paymentInfo.createBarCodeMessage(null));
+    }
+
+    @Test
+    public void testYear2022_Adult() {
+        final LocalDate dateOfBirth = new LocalDate(2004, 7, 31);
+        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2022, dateOfBirth, INVOICE_REFERENCE);
         assertNotNull(paymentInfo);
         verifyCommonPaymentInfo(paymentInfo);
         assertEquals("39.00", paymentInfo.getAmountText());
@@ -36,46 +52,13 @@ public class HuntingPaymentInfoTest {
     }
 
     @Test
-    public void testYear2020_Underage() {
-        final LocalDate dateOfBirth = new LocalDate(2002, 8, 1);
-        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2020, dateOfBirth, INVOICE_REFERENCE);
+    public void testYear2022_Underage() {
+        final LocalDate dateOfBirth = new LocalDate(2004, 8, 1);
+        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2022, dateOfBirth, INVOICE_REFERENCE);
         assertNotNull(paymentInfo);
         verifyCommonPaymentInfo(paymentInfo);
         assertEquals("20.00", paymentInfo.getAmountText());
         assertEquals("484800013000353500000200000000000000014507700161000000",
-                paymentInfo.createBarCodeMessage(null));
-    }
-
-    @Test
-    public void testYear2019_Adult() {
-        final LocalDate dateOfBirth = new LocalDate(2001, 7, 31);
-        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2019, dateOfBirth, INVOICE_REFERENCE);
-        assertNotNull(paymentInfo);
-        verifyOldPaymentInfo(paymentInfo);
-        assertEquals("39.00", paymentInfo.getAmountText());
-        assertEquals("478500001203784420000390000000000000014507700161000000",
-                paymentInfo.createBarCodeMessage(null));
-    }
-
-    @Test
-    public void testYear2019_Underage() {
-        final LocalDate dateOfBirth = new LocalDate(2001, 8, 1);
-        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2019, dateOfBirth, INVOICE_REFERENCE);
-        assertNotNull(paymentInfo);
-        verifyOldPaymentInfo(paymentInfo);
-        assertEquals("20.00", paymentInfo.getAmountText());
-        assertEquals("478500001203784420000200000000000000014507700161000000",
-                paymentInfo.createBarCodeMessage(null));
-    }
-
-    @Test
-    public void testYear2018() {
-        final LocalDate dateOfBirth = new LocalDate(2001, 7, 31);
-        final HuntingPaymentInfo paymentInfo = HuntingPaymentInfo.create(2018, dateOfBirth, INVOICE_REFERENCE);
-        assertNotNull(paymentInfo);
-        verifyOldPaymentInfo(paymentInfo);
-        assertEquals("39.00", paymentInfo.getAmountText());
-        assertEquals("478500001203784420000390000000000000014507700161000000",
                 paymentInfo.createBarCodeMessage(null));
     }
 
@@ -85,7 +68,8 @@ public class HuntingPaymentInfoTest {
                         "Nordea       FI12 1660 3000 1072 12",
                 paymentInfo.getPaymentReceiverIban());
         assertEquals("FI8480001300035350", paymentInfo.getIbanForBarCode().toString());
-        assertEquals("DABAFIHH\n" +
+        assertEquals("" +
+                        "DABAFIHH\n" +
                         "NDEAFIHH",
                 paymentInfo.getPaymentReceiverBic());
         assertEquals("1 45077 00161", paymentInfo.getInvoiceReferenceForHuman());
@@ -98,7 +82,8 @@ public class HuntingPaymentInfoTest {
                         "Danske       FI84 8000 1300 0353 50",
                 paymentInfo.getPaymentReceiverIban());
         assertEquals("FI7850000120378442", paymentInfo.getIbanForBarCode().toString());
-        assertEquals("OKOYFIHH\n" +
+        assertEquals("" +
+                        "OKOYFIHH\n" +
                         "NDEAFIHH\n" +
                         "DABAFIHH",
                 paymentInfo.getPaymentReceiverBic());

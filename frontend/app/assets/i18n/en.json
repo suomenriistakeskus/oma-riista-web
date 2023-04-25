@@ -794,12 +794,12 @@
                 "requested": {
                     "status": "User account deletion request has been sent",
                     "message1": "An automatic e-mail message regarding the user account deletion request has been sent to the customer service of the Oma riista service {{date}}\u00A0{{time}}, and a copy of the message has also been forwarded to the e-mail address specified in your personal information. Typically, the user account is deleted by the customer service in two weeks.",
-                    "message2": "Please contact customer service at <a href=\"mailto:oma@riista.fi\">oma@riista.fi</a>, if you requested to delete the user account in error.",
+                    "message2": "Please contact customer service at <a href=\"mailto:oma@riista.fi\">oma@riista.fi</a>, if you requested to delete the user account in error.<br><br>Deleting your Oma riista account does not delete your information from the register of hunters. You must contact the register of hunters in writing if you want your information to be deleted from the register of hunters as well. Deleting data from the register of hunters means ending the hunting hobby.",
                     "messageEmail": "An automatic e-mail message regarding the user account deletion request has been sent to the customer service of the Oma riista service {{date}}\u00A0{{time}}."
                 },
                 "notRequested": {
                     "status": "User account deletion has not been requested",
-                    "message": "I want to delete my voluntary game data, user account and personal data from the Oma riista service. I understand that my data cannot be restored after deletion.",
+                    "message": "I want to delete my voluntary game data, user account and personal data from the Oma riista service. I understand that my data cannot be restored after deletion.<br><br>Deleting your Oma riista account does not delete your information from the register of hunters. You must contact the register of hunters in writing if you want your information to be deleted from the register of hunters as well. Deleting data from the register of hunters means ending the hunting hobby.",
                     "confirmUnregisterMessage": "Are you sure you want to delete your user account?"
                 }
             },

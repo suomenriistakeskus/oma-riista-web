@@ -39,7 +39,7 @@ public class MobileShootingTestSummaryExportApiResource {
                                       final HttpServletResponse httpServletResponse) {
         final String uri = URL_PREFIX_MOBILE + eventId + "/event-summary.html";
 
-        shootingTestSummaryExportApiResource.generatePdf(uri, eventId, lang, httpServletRequest, httpServletResponse);
+        shootingTestSummaryExportApiResource.generatePdf(uri, eventId, lang, httpServletResponse);
     }
 
     // HTML

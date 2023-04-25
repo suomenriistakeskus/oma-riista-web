@@ -64,7 +64,6 @@ public class SrvaPdfReportApiResource {
     @CacheControl(policy = CachePolicy.NO_CACHE)
     @PostMapping(value = "{id:\\d+}/report/pdf", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void pdf(final @PathVariable long id,
-                    final HttpServletRequest httpServletRequest,
                     final HttpServletResponse httpServletResponse,
                     final Locale locale) {
         httpServletResponse.addHeader(HttpHeaders.CONTENT_TYPE, MediaTypeExtras.APPLICATION_PDF_VALUE);
@@ -72,7 +71,7 @@ public class SrvaPdfReportApiResource {
         ContentDispositionUtil.addHeader(httpServletResponse, "srva-raportti.pdf");
 
         try (final OutputStream os = httpServletResponse.getOutputStream()) {
-            pdfExportFactory.create(httpServletRequest)
+            pdfExportFactory.create()
                     .withNoHeaderRight()
                     .withHtmlPath(getHtmlPath(id))
                     .withLanguage(locale)

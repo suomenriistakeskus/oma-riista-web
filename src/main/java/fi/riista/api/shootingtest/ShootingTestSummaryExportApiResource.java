@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 
@@ -47,11 +46,10 @@ public class ShootingTestSummaryExportApiResource {
             produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void pdfEventSummary(@PathVariable final String calendarEventId,
                                 @RequestParam(required = false, defaultValue = "fi") final String lang,
-                                final HttpServletRequest httpServletRequest,
                                 final HttpServletResponse httpServletResponse) {
         final String uri = ShootingTestApiResource.URL_PREFIX + "/summary/event/" + calendarEventId + "/event-summary.html";
         httpServletResponse.setContentType(MediaTypeExtras.APPLICATION_PDF_VALUE);
-        generatePdf(uri, calendarEventId, lang, httpServletRequest, httpServletResponse);
+        generatePdf(uri, calendarEventId, lang, httpServletResponse);
     }
 
     // HTML
@@ -80,14 +78,13 @@ public class ShootingTestSummaryExportApiResource {
     }
 
     public void generatePdf(final String uri, final String calendarEventId, final String lang,
-                            final HttpServletRequest httpServletRequest,
                             final HttpServletResponse httpServletResponse) {
         try {
             final String filename = String.format("event-summary-%s-%s.pdf", calendarEventId, lang);
             ContentDispositionUtil.addHeader(httpServletResponse, filename);
 
             try (final OutputStream os = httpServletResponse.getOutputStream()) {
-                pdfExportFactory.create(httpServletRequest)
+                pdfExportFactory.create()
                         .withHtmlPath(uri)
                         .withLanguage(lang)
                         .build()

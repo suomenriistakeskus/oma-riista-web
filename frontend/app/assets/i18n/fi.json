@@ -794,12 +794,12 @@
                 "requested": {
                     "status": "Käyttäjätilin poistopyyntö on lähetetty",
                     "message1": "Käyttäjätilin poistopyynnöstä on lähetetty automaattinen sähköpostiviesti Oma riista -palvelun ylläpitoon {{date}}\u00A0{{time}} sekä kopio viestistä on välitetty myös omissa tiedoissasi määriteltyyn sähköpostiosoitteeseen. Tyypillisesti käyttäjätili poistetaan ylläpidon toimesta kahden viikon kuluessa.",
-                    "message2": "Ole hyvä ja ota yhteyttä asiakaspalveluun <a href=\"mailto:oma@riista.fi\">oma@riista.fi</a>, mikäli pyysit käyttäjätilin poistoa erheellisesti.",
+                    "message2": "Ole hyvä ja ota yhteyttä asiakaspalveluun <a href=\"mailto:oma@riista.fi\">oma@riista.fi</a>, mikäli pyysit käyttäjätilin poistoa erheellisesti.<br><br>Oma riista -tilin poistaminen ei poista tietojanne metsästäjärekisteristä. Teidän tulee olla kirjallisesti yhteydessä metsästäjärekisteriin, mikäli haluatte tietonne poistettavan myös metsästäjärekisteristä. Tietojen poistaminen metsästäjärekisteristä tarkoittaa metsästysharrastuksen päättämistä.",
                     "messageEmail": "Käyttäjätilin poistopyynnöstä on lähetetty automaattinen sähköpostiviesti Oma riista -palvelun ylläpitoon {{date}}\u00A0{{time}}."
                 },
                 "notRequested": {
                     "status": "Käyttäjätilin poistoa ei ole pyydetty",
-                    "message": "Haluan poistaa vapaaehtoiset riistatietoni, käyttäjätilini sekä henkilötietoni Oma riista -palvelusta. Ymmärrän, että tietojani ei voida palauttaa poistamisen jälkeen.",
+                    "message": "Haluan poistaa vapaaehtoiset riistatietoni, käyttäjätilini sekä henkilötietoni Oma riista -palvelusta. Ymmärrän, että tietojani ei voida palauttaa poistamisen jälkeen.<br><br>Oma riista -tilin poistaminen ei poista tietojanne metsästäjärekisteristä. Teidän tulee olla kirjallisesti yhteydessä metsästäjärekisteriin, mikäli haluatte tietonne poistettavan myös metsästäjärekisteristä. Tietojen poistaminen metsästäjärekisteristä tarkoittaa metsästysharrastuksen päättämistä.",
                     "confirmUnregisterMessage": "Oletko varma, että haluat poistaa käyttäjätilisi?"
                 }
             },

@@ -794,12 +794,12 @@
                 "requested": {
                     "status": "Begäran om radering av användarkontot har skickats",
                     "message1": "Ett automatiskt e-postmeddelande har skickats till Oma riista -tjänstens underhåll {{date}}\u00A0{{time}} angående begäran om radering av användarkontot och en kopia av meddelandet har även vidarebefordrats till den e-postadress som angetts i dina egna uppgifter. Vanligen raderas användarkontot av underhållet inom två veckor.",
-                    "message2": "Var vänlig och ta kontakt med kundtjänsten <a href=\"mailto:oma@riista.fi\">oma@riista.fi</a>, ifall du i misstag har begärt om radering av användarkontot.",
+                    "message2": "Var vänlig och ta kontakt med kundtjänsten <a href=\"mailto:oma@riista.fi\">oma@riista.fi</a>, ifall du i misstag har begärt om radering av användarkontot.<br><br>Om du raderar Oma riista -kontot, raderas inte dina uppgifter från Jägarregistret. Du måste kontakta Jägarregistret skriftiligen om du vill att dina uppgifter ska raderas även därifrån. Genom att radera uppgifterna från jägarregistret förfaller jägarexamen och det går inte längre att utöva jakt.",
                     "messageEmail": "Ett automatiskt e-postmeddelande har skickats till Oma riista -tjänstens underhåll {{date}}\u00A0{{time}} angående begäran om radering av användarkontot."
                 },
                 "notRequested": {
                     "status": "Radering av användarkontot har inte begärts",
-                    "message": "Jag vill radera mina frivilliga viltuppgifter, användarkonto samt mina personuppgifter från Oma riista -tjänsten. Jag förstår, att mina uppgifter inte kan returneras efter raderingen.",
+                    "message": "Jag vill radera mina frivilliga viltuppgifter, användarkonto samt mina personuppgifter från Oma riista -tjänsten. Jag förstår, att mina uppgifter inte kan returneras efter raderingen.<br><br>Om du raderar Oma riista -kontot, raderas inte dina uppgifter från Jägarregistret. Du måste kontakta Jägarregistret skriftiligen om du vill att dina uppgifter ska raderas även därifrån. Genom att radera uppgifterna från jägarregistret förfaller jägarexamen och det går inte längre att utöva jakt.",
                     "confirmUnregisterMessage": "Är du säker på att du vill radera din användarkonto?"
                 }
             },

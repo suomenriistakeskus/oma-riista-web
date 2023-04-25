@@ -1,33 +1,5 @@
 package fi.riista.feature.permit.decision.publish;
 
-import fi.riista.feature.account.user.ActiveUserService;
-import fi.riista.feature.common.decision.GrantStatus;
-import fi.riista.feature.gamediary.GameSpecies;
-import fi.riista.feature.harvestpermit.HarvestPermit;
-import fi.riista.feature.harvestpermit.HarvestPermitDTO;
-import fi.riista.feature.harvestpermit.HarvestPermitRepository;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
-import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
-import fi.riista.feature.permit.PermitAlertLogging;
-import fi.riista.feature.permit.decision.PermitDecision;
-import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
-import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmountRepository;
-import fi.riista.util.F;
-import org.joda.time.LocalDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Resource;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static fi.riista.util.F.mapNullable;
@@ -36,6 +8,30 @@ import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+
+import fi.riista.config.AlertLoggingConstants;
+import fi.riista.feature.account.user.ActiveUserService;
+import fi.riista.feature.common.decision.GrantStatus;
+import fi.riista.feature.gamediary.GameSpecies;
+import fi.riista.feature.harvestpermit.HarvestPermit;
+import fi.riista.feature.harvestpermit.HarvestPermitDTO;
+import fi.riista.feature.harvestpermit.HarvestPermitRepository;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmount;
+import fi.riista.feature.harvestpermit.HarvestPermitSpeciesAmountRepository;
+import fi.riista.feature.permit.decision.PermitDecision;
+import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmount;
+import fi.riista.feature.permit.decision.species.PermitDecisionSpeciesAmountRepository;
+import fi.riista.util.F;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nonnull;
+import javax.annotation.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class HarvestPermitDecisionSynchronizer {
@@ -66,13 +62,13 @@ public class HarvestPermitDecisionSynchronizer {
         final Map<Integer, List<PermitDecisionSpeciesAmount>> map = permitDecisionSpeciesAmountRepository.findByPermitDecision(permitDecision).stream()
                 .collect(groupingBy(PermitDecisionSpeciesAmount::getPermitYear, toList()));
 
-        map.entrySet().forEach(e-> {
+        map.entrySet().forEach(e -> {
             final int distinctSpeciesCount = e.getValue().stream()
                     .map(PermitDecisionSpeciesAmount::getGameSpecies)
                     .map(GameSpecies::getId)
                     .collect(toSet()).size();
             if (distinctSpeciesCount != e.getValue().size()) {
-                LOG.warn("{} Duplicate species for permit year {}", PermitAlertLogging.PERMIT_ALERT_PREFIX, e.getKey());
+                LOG.warn("{} Duplicate species for permit year {}", AlertLoggingConstants.PERMIT_ALERT_PREFIX, e.getKey());
             }
         });
 

@@ -26,7 +26,7 @@ import java.util.Set;
 public class Riistanhoitoyhdistys extends Organisation {
 
     public static final int ANNUAL_STATISTICS_FIRST_YEAR = 2017;
-    public static final int ANNUAL_STATISTICS_DEFAULT_LAST_YEAR = 2022; // TODO Update when new annual statistics opened
+    public static final int ANNUAL_STATISTICS_DEFAULT_LAST_YEAR = 2023; // TODO Update when new annual statistics opened
 
     public static final String RHY_OFFICIAL_CODE_HELSINKI = "602";
 

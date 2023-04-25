@@ -5,11 +5,9 @@ import fi.riista.feature.account.user.ActiveUserService;
 import fi.riista.util.PdfExport;
 import org.joda.time.Duration;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 
 @Component
 public class PdfExportFactory {
@@ -23,10 +21,6 @@ public class PdfExportFactory {
 
     public PdfExport.Builder create() {
         return create(UriComponentsBuilder.fromUri(runtimeEnvironmentUtil.getBackendBaseUri()));
-    }
-
-    public PdfExport.Builder create(final HttpServletRequest request) {
-        return create(ServletUriComponentsBuilder.fromRequestUri(request));
     }
 
     public PdfExport.Builder create(final UriComponentsBuilder uriBuilder) {

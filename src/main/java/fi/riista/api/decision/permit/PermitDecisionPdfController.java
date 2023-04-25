@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.OutputStream;
 
@@ -64,14 +63,13 @@ public class PermitDecisionPdfController {
     @ResponseBody
     @PostMapping(value = "{decisionId:\\d+}/print/pdf", produces = MediaTypeExtras.APPLICATION_PDF_VALUE)
     public void pdf(final @PathVariable long decisionId,
-                    final HttpServletRequest httpServletRequest,
                     final HttpServletResponse httpServletResponse) {
         final PermitDecisionPdfFileDTO dto = permitDecisionPrintFeature.getDecisionPermitNumber(decisionId);
 
         ContentDispositionUtil.addHeader(httpServletResponse, dto.getFilename());
 
         try (final OutputStream os = httpServletResponse.getOutputStream()) {
-            pdfExportFactory.create(httpServletRequest)
+            pdfExportFactory.create()
                     .withHeaderRight(dto.getHeaderText())
                     .withHtmlPath(getHtmlPath(decisionId))
                     .build()

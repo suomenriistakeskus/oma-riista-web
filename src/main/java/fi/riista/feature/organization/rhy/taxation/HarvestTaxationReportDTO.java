@@ -1,16 +1,20 @@
 package fi.riista.feature.organization.rhy.taxation;
 
-import fi.riista.feature.account.user.SystemUser;
+import static fi.riista.feature.organization.rhy.taxation.HarvestTaxationReport.MAX_PERCENTAGE;
+import static fi.riista.feature.organization.rhy.taxation.HarvestTaxationReport.MIN_PERCENTAGE;
+import static java.util.Objects.requireNonNull;
+
 import fi.riista.feature.common.dto.BaseEntityDTO;
+import fi.riista.feature.common.dto.LastModifierDTO;
 import fi.riista.feature.gamediary.GameSpecies;
 import fi.riista.feature.gis.hta.GISHirvitalousalue;
 import fi.riista.feature.organization.Organisation;
 import fi.riista.util.DateUtil;
 import fi.riista.util.DtoUtil;
+import fi.riista.util.F;
 import fi.riista.validation.DoNotValidate;
-import org.hibernate.validator.constraints.SafeHtml;
-import org.joda.time.LocalDate;
-
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.AssertFalse;
 import javax.validation.constraints.AssertTrue;
@@ -18,13 +22,8 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.ArrayList;
-import java.util.List;
-
-import static fi.riista.feature.organization.rhy.taxation.HarvestTaxationReport.MAX_PERCENTAGE;
-import static fi.riista.feature.organization.rhy.taxation.HarvestTaxationReport.MIN_PERCENTAGE;
-import static fi.riista.util.DateUtil.today;
-import static java.util.Objects.requireNonNull;
+import org.hibernate.validator.constraints.SafeHtml;
+import org.joda.time.LocalDate;
 
 public class HarvestTaxationReportDTO extends BaseEntityDTO<Long> {
 
@@ -188,13 +187,13 @@ public class HarvestTaxationReportDTO extends BaseEntityDTO<Long> {
     @AssertTrue
     public boolean isBoardMeetingPastOrPresent() {
         return this.getApprovedAtTheBoardMeeting() == null ||
-                today().plusDays(1).isAfter(this.getApprovedAtTheBoardMeeting());
+                DateUtil.today().plusDays(1).isAfter(this.getApprovedAtTheBoardMeeting());
     }
 
     @AssertTrue
     public boolean isStakeholdersConsultedPastOrPresent() {
         return this.getStakeholdersConsulted() == null ||
-                today().plusDays(1).isAfter(this.getStakeholdersConsulted());
+                DateUtil.today().plusDays(1).isAfter(this.getStakeholdersConsulted());
     }
 
 
@@ -203,7 +202,7 @@ public class HarvestTaxationReportDTO extends BaseEntityDTO<Long> {
                                                   @Nonnull final Organisation rhy,
                                                   @Nonnull final GISHirvitalousalue hta,
                                                   final List<HarvestTaxationReportAttachment> attachments,
-                                                  final SystemUser editorUser) {
+                                                  final LastModifierDTO lastModifier) {
         requireNonNull(entity);
         requireNonNull(species);
         requireNonNull(rhy);
@@ -245,13 +244,8 @@ public class HarvestTaxationReportDTO extends BaseEntityDTO<Long> {
 
         dto.setState(entity.getHarvestTaxationReportState());
 
-        if (editorUser != null) {
-            dto.setModifiedUser(editorUser.getFullName());
-        }
-
-        if (entity.getModificationTime() != null) {
-            dto.setModifiedDate(entity.getModificationTime().toLocalDate());
-        }
+        dto.setModifiedUser(F.mapNullable(lastModifier, LastModifierDTO::getFullName));
+        dto.setModifiedDate(DateUtil.toLocalDateNullSafe(entity.getModificationTime()));
 
         attachments.forEach(attachment -> dto.getAttachments().add(HarvestTaxationReportAttachmentDTO.create(attachment))
         );

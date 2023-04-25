@@ -226,4 +226,14 @@
             <column name="deer_census_id"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="2023-04-24-rename-municipality-200-to-abroad" author="vincit-terole">
+        <update tableName="municipality">
+            <column name="name_finnish" type="VARCHAR(255)" value="Ulkomaat"/>
+            <column name="name_swedish" type="VARCHAR(255)" value="Utlandet"/>
+            <where>
+                official_code = '200'
+            </where>
+        </update>
+    </changeSet>
 </databaseChangeLog>

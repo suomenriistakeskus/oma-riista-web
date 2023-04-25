@@ -144,7 +144,7 @@
         })
 
         .constant('AnnualStatisticsLastAvailableYear', {
-            LAST_YEAR: 2022 // TODO: Update when new annual statistics opened
+            LAST_YEAR: 2023 // TODO: Update when new annual statistics opened
         })
 
         .factory('AnnualStatisticsYears', function ($resource) {
